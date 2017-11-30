@@ -753,15 +753,15 @@ namespace RINGMesh
         }
         return NO_ID;
     }
-    template class RINGMESH_API WellEntity< 2 >;
-    template class RINGMESH_API WellCorner< 2 >;
-    template class RINGMESH_API WellPart< 2 >;
-    template class RINGMESH_API Well< 2 >;
-    template class RINGMESH_API WellGroup< 2 >;
+    template class mesh_api WellEntity< 2 >;
+    template class mesh_api WellCorner< 2 >;
+    template class mesh_api WellPart< 2 >;
+    template class mesh_api Well< 2 >;
+    template class mesh_api WellGroup< 2 >;
 
-    template class RINGMESH_API WellEntity< 3 >;
-    template class RINGMESH_API WellCorner< 3 >;
-    template class RINGMESH_API WellPart< 3 >;
-    template class RINGMESH_API Well< 3 >;
-    template class RINGMESH_API WellGroup< 3 >;
+    template class mesh_api WellEntity< 3 >;
+    template class mesh_api WellCorner< 3 >;
+    template class mesh_api WellPart< 3 >;
+    template class mesh_api Well< 3 >;
+    template class mesh_api WellGroup< 3 >;
 } // namespace RINGMesh

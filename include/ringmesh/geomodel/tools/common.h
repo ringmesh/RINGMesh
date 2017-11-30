@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/tools/export.h>
 
 namespace RINGMesh
 {

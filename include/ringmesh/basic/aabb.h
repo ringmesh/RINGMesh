@@ -52,7 +52,7 @@ namespace RINGMesh
      *  Storage: |empty|ROOT|A1|A2|B1|B2|B3|B4|
      */
     template < index_t DIMENSION >
-    class RINGMESH_API AABBTree
+    class basic_api AABBTree
     {
         ringmesh_disable_copy_and_move( AABBTree );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -247,7 +247,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API BoxAABBTree : public AABBTree< DIMENSION >
+    class basic_api BoxAABBTree : public AABBTree< DIMENSION >
     {
     public:
         explicit BoxAABBTree( const std::vector< Box< DIMENSION > >& bboxes );

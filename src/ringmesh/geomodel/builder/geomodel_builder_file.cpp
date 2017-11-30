@@ -64,7 +64,7 @@ namespace RINGMesh
         this->end_geomodel();
     }
 
-    template class RINGMESH_API GeoModelBuilderFile< 2 >;
-    template class RINGMESH_API GeoModelBuilderFile< 3 >;
+    template class geomodel_builder_api GeoModelBuilderFile< 2 >;
+    template class geomodel_builder_api GeoModelBuilderFile< 3 >;
 
 } // namespace RINGMesh

@@ -115,7 +115,7 @@ void ringmesh_unused( const T& /*unused*/ )
 
 namespace RINGMesh
 {
-    class libRINGMesh_basic
+    class basic_api libRINGMesh_basic
     {
     public:
         libRINGMesh_basic();
@@ -129,7 +129,7 @@ namespace RINGMesh
 
     static libRINGMesh_basic libRINGMesh_basic_instance;
 
-    void RINGMESH_API print_header_information();
+    void basic_api print_header_information();
 
     /*!
      * RINGMesh exception class.
@@ -146,7 +146,7 @@ namespace RINGMesh
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException : public std::runtime_error
+    class basic_api RINGMeshException : public std::runtime_error
     {
     public:
         template < typename... Args >
@@ -198,7 +198,7 @@ namespace RINGMesh
      *      // do something
      *    }
      */
-    class RINGMESH_API range
+    class basic_api range
     {
     public:
         template < typename T1, typename T2 >
@@ -240,5 +240,5 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
+    vecn< DIMENSION > basic_api initialize_vecn_coordinates( double value );
 } // namespace RINGMesh

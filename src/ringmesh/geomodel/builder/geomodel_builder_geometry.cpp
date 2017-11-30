@@ -1071,8 +1071,8 @@ namespace RINGMesh
             geomodel, region_type_name_static() );
     }
 
-    template class RINGMESH_API GeoModelBuilderGeometry< 2 >;
-    template class RINGMESH_API GeoModelBuilderGeometryBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeometry< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeometryBase< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderGeometryBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderGeometryBase< 3 >;
 } // namespace RINGMesh

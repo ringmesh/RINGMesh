@@ -464,7 +464,7 @@ namespace RINGMesh
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
 
-    template class RINGMESH_API GeoModelBuilderGeology< 2 >;
-    template class RINGMESH_API GeoModelBuilderGeology< 3 >;
+    template class geomodel_builder_api GeoModelBuilderGeology< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeology< 3 >;
 
 } // namespace RINGMesh

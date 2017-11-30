@@ -46,7 +46,6 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/task_handler.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel.h>
@@ -56,7 +55,9 @@
 
 #include <ringmesh/io/zip_file.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/well.h>
 
 /*!
@@ -217,9 +218,9 @@ namespace RINGMesh
         save( geomodel, filename );
     }
 
-    template class RINGMESH_API GeoModelInputHandler< 2 >;
-    template class RINGMESH_API GeoModelOutputHandler< 2 >;
-    template class RINGMESH_API GeoModelOutputHandler< 3 >;
-    template class RINGMESH_API GeoModelInputHandler< 3 >;
+    template class io_api GeoModelInputHandler< 2 >;
+    template class io_api GeoModelOutputHandler< 2 >;
+    template class io_api GeoModelOutputHandler< 3 >;
+    template class io_api GeoModelInputHandler< 3 >;
 
 } // namespace RINGMesh

@@ -345,17 +345,17 @@ namespace RINGMesh
         return result.length();
     }
 
-    template double RINGMESH_API inner_point_box_distance(
+    template double basic_api inner_point_box_distance(
         const vec2&, const Box2D& );
-    template double RINGMESH_API point_box_signed_distance(
+    template double basic_api point_box_signed_distance(
         const vec2&, const Box2D& );
-    template class RINGMESH_API AABBTree< 2 >;
-    template class RINGMESH_API BoxAABBTree< 2 >;
+    template class basic_api AABBTree< 2 >;
+    template class basic_api BoxAABBTree< 2 >;
 
-    template double RINGMESH_API inner_point_box_distance(
+    template double basic_api inner_point_box_distance(
         const vec3&, const Box3D& );
-    template double RINGMESH_API point_box_signed_distance(
+    template double basic_api point_box_signed_distance(
         const vec3&, const Box3D& );
-    template class RINGMESH_API AABBTree< 3 >;
-    template class RINGMESH_API BoxAABBTree< 3 >;
+    template class basic_api AABBTree< 3 >;
+    template class basic_api BoxAABBTree< 3 >;
 } // namespace RINGMesh

@@ -3187,18 +3187,18 @@ namespace RINGMesh
         }
     }
 
-    template class RINGMESH_API GeoModelMeshBase< 2 >;
-    template class RINGMESH_API GeoModelMesh< 2 >;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 2 >;
-    template class RINGMESH_API GeoModelMeshWells< 2 >;
-    template class RINGMESH_API GeoModelMeshEdges< 2 >;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 >;
+    template class geomodel_core_api GeoModelMeshBase< 2 >;
+    template class geomodel_core_api GeoModelMesh< 2 >;
+    template class geomodel_core_api GeoModelMeshVerticesBase< 2 >;
+    template class geomodel_core_api GeoModelMeshWells< 2 >;
+    template class geomodel_core_api GeoModelMeshEdges< 2 >;
+    template class geomodel_core_api GeoModelMeshPolygonsBase< 2 >;
 
-    template class RINGMESH_API GeoModelMeshBase< 3 >;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 3 >;
-    template class RINGMESH_API GeoModelMeshWells< 3 >;
-    template class RINGMESH_API GeoModelMeshEdges< 3 >;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 3 >;
-    template class RINGMESH_API GeoModelMeshCells< 3 >;
+    template class geomodel_core_api GeoModelMeshBase< 3 >;
+    template class geomodel_core_api GeoModelMeshVerticesBase< 3 >;
+    template class geomodel_core_api GeoModelMeshWells< 3 >;
+    template class geomodel_core_api GeoModelMeshEdges< 3 >;
+    template class geomodel_core_api GeoModelMeshPolygonsBase< 3 >;
+    template class geomodel_core_api GeoModelMeshCells< 3 >;
 
 } // namespace RINGMesh

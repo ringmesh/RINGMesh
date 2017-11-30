@@ -648,7 +648,7 @@ namespace RINGMesh
         repairer.repair( repair_mode );
     }
 
-    template void RINGMESH_API repair_geomodel( GeoModel2D&, RepairMode );
+    template void geomodel_tools_api repair_geomodel( GeoModel2D&, RepairMode );
 
-    template void RINGMESH_API repair_geomodel( GeoModel3D&, RepairMode );
+    template void geomodel_tools_api repair_geomodel( GeoModel3D&, RepairMode );
 } // namespace RINGMesh

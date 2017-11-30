@@ -36,10 +36,11 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/export.h>
 
 namespace RINGMesh
 {
-    class libRINGMesh_geogram_extension
+    class geogram_extension_api libRINGMesh_geogram_extension
     {
     public:
         libRINGMesh_geogram_extension();

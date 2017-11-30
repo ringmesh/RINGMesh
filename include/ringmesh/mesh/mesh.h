@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/common.h>
 
 #include <algorithm>
 #include <memory>
@@ -76,7 +76,7 @@ namespace RINGMesh
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template < index_t DIMENSION >
-    class RINGMESH_API MeshBase
+    class mesh_api MeshBase
     {
         ringmesh_disable_copy_and_move( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -149,7 +149,7 @@ namespace RINGMesh
      * class for encapsulating mesh composed of points
      */
     template < index_t DIMENSION >
-    class RINGMESH_API PointSetMesh : public MeshBase< DIMENSION >
+    class mesh_api PointSetMesh : public MeshBase< DIMENSION >
     {
         friend class PointSetMeshBuilder< DIMENSION >;
 
@@ -176,7 +176,7 @@ namespace RINGMesh
      * class for encapsulating line mesh (composed of edges)
      */
     template < index_t DIMENSION >
-    class RINGMESH_API LineMesh : public MeshBase< DIMENSION >
+    class mesh_api LineMesh : public MeshBase< DIMENSION >
     {
         friend class LineMeshBuilder< DIMENSION >;
 
@@ -261,7 +261,7 @@ namespace RINGMesh
      * class for encapsulating surface mesh component
      */
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBase : public MeshBase< DIMENSION >
+    class mesh_api SurfaceMeshBase : public MeshBase< DIMENSION >
     {
         friend class SurfaceMeshBuilder< DIMENSION >;
 
@@ -543,7 +543,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh : public SurfaceMeshBase< DIMENSION >
+    class mesh_api SurfaceMesh : public SurfaceMeshBase< DIMENSION >
     {
     };
 
@@ -552,7 +552,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template <>
-    class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 >
+    class mesh_api SurfaceMesh< 3 > : public SurfaceMeshBase< 3 >
     {
     public:
         /*!
@@ -581,7 +581,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API SurfaceMesh< 2 > : public SurfaceMeshBase< 2 >
+    class mesh_api SurfaceMesh< 2 > : public SurfaceMeshBase< 2 >
     {
     public:
         /*!
@@ -598,7 +598,7 @@ namespace RINGMesh
      * class for encapsulating volume mesh component
      */
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeMesh : public MeshBase< DIMENSION >
+    class mesh_api VolumeMesh : public MeshBase< DIMENSION >
     {
         ringmesh_template_assert_3d( DIMENSION );
         friend class VolumeMeshBuilder< DIMENSION >;
@@ -837,7 +837,7 @@ namespace RINGMesh
      * class composed of meshes from all the dimensions
      */
     template < index_t DIMENSION >
-    class RINGMESH_API MeshSetBase
+    class mesh_api MeshSetBase
     {
         ringmesh_disable_copy_and_move( MeshSetBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -860,14 +860,14 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API MeshSet : public MeshSetBase< DIMENSION >
+    class mesh_api MeshSet : public MeshSetBase< DIMENSION >
     {
     public:
         MeshSet() = default;
     };
 
     template <>
-    class RINGMESH_API MeshSet< 3 > : public MeshSetBase< 3 >
+    class mesh_api MeshSet< 3 > : public MeshSetBase< 3 >
     {
     public:
         MeshSet();

@@ -1505,10 +1505,10 @@ namespace RINGMesh
         remove.remove_mesh_entities( to_erase );
     }
 
-    template class RINGMESH_API GeoModelBuilderBase< 2 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 2 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderBase< 3 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 3 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 3 >;
 
 } // namespace RINGMesh

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/common.h>
 
 #include <memory>
 #include <numeric>
@@ -63,7 +63,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API MeshBaseBuilder
+    class mesh_api MeshBaseBuilder
     {
         ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -300,7 +300,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
@@ -337,7 +337,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
@@ -505,7 +505,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
@@ -874,7 +874,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 

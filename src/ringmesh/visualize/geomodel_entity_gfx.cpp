@@ -606,16 +606,16 @@ namespace RINGMesh
         region( region_id ).set_shrink( shrink );
     }
 
-    template class RINGMESH_API GeoModelGfxEntity< 2 >;
-    template class RINGMESH_API CornerGfxEntity< 2 >;
-    template class RINGMESH_API LineGfxEntity< 2 >;
-    template class RINGMESH_API SurfaceGfxEntity< 2 >;
+    template class visualize_api GeoModelGfxEntity< 2 >;
+    template class visualize_api CornerGfxEntity< 2 >;
+    template class visualize_api LineGfxEntity< 2 >;
+    template class visualize_api SurfaceGfxEntity< 2 >;
 
-    template class RINGMESH_API GeoModelGfxEntity< 3 >;
-    template class RINGMESH_API CornerGfxEntity< 3 >;
-    template class RINGMESH_API LineGfxEntity< 3 >;
-    template class RINGMESH_API SurfaceGfxEntity< 3 >;
-    template class RINGMESH_API RegionGfxEntity< 3 >;
+    template class visualize_api GeoModelGfxEntity< 3 >;
+    template class visualize_api CornerGfxEntity< 3 >;
+    template class visualize_api LineGfxEntity< 3 >;
+    template class visualize_api SurfaceGfxEntity< 3 >;
+    template class visualize_api RegionGfxEntity< 3 >;
 } // namespace RINGMesh
 
 #endif

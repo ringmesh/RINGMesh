@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 
@@ -50,7 +50,7 @@ namespace RINGMesh
      * @brief Abstract interface class to load and build GeoModels from files
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderFile : public GeoModelBuilder< DIMENSION >
+    class geomodel_builder_api GeoModelBuilderFile : public GeoModelBuilder< DIMENSION >
     {
     public:
         GeoModelBuilderFile(

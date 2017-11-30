@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/common.h>
 
 #include <memory>
 
@@ -115,7 +115,7 @@ protected:                                                                     \
     std::unique_ptr< GEO::Mesh > mesh_
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramPointSetMesh : public PointSetMesh< DIMENSION >
+    class geogram_extension_api GeogramPointSetMesh : public PointSetMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
     };
@@ -123,7 +123,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramPointSetMesh );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramLineMesh : public LineMesh< DIMENSION >
+    class geogram_extension_api GeogramLineMesh : public LineMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
 
@@ -149,7 +149,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramLineMesh );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMesh : public SurfaceMesh< DIMENSION >
+    class geogram_extension_api GeogramSurfaceMesh : public SurfaceMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
 
@@ -192,7 +192,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramSurfaceMesh );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMesh : public VolumeMesh< DIMENSION >
+    class geogram_extension_api GeogramVolumeMesh : public VolumeMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
 

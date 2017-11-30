@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/io/export.h>
 
 namespace RINGMesh
 {

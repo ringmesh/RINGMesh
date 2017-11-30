@@ -264,13 +264,13 @@ namespace RINGMesh
     }
 
     template <>
-    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel2D& geomodel )
+    void geomodel_tools_api print_geomodel_mesh_stats( const GeoModel2D& geomodel )
     {
         print_geomodel_base_mesh_stats( geomodel );
     }
 
     template <>
-    void RINGMESH_API print_geomodel_mesh_stats( const GeoModel3D& geomodel )
+    void geomodel_tools_api print_geomodel_mesh_stats( const GeoModel3D& geomodel )
     {
         print_geomodel_base_mesh_stats( geomodel );
 
@@ -341,7 +341,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void RINGMESH_API copy_geomodel(
+    void geomodel_tools_api copy_geomodel(
         const GeoModel< DIMENSION >& from, GeoModel< DIMENSION >& to )
     {
         GeoModelBuilder< DIMENSION > to_builder( to );
@@ -502,24 +502,24 @@ namespace RINGMesh
         geomodel.mesh.vertices.clear();
     }
 
-    template void RINGMESH_API print_geomodel( const GeoModel2D& );
-    template void RINGMESH_API copy_geomodel( const GeoModel2D&, GeoModel2D& );
-    template index_t RINGMESH_API find_mesh_entity_id_from_name(
+    template void geomodel_tools_api print_geomodel( const GeoModel2D& );
+    template void geomodel_tools_api copy_geomodel( const GeoModel2D&, GeoModel2D& );
+    template index_t geomodel_tools_api find_mesh_entity_id_from_name(
         const GeoModel2D&, const MeshEntityType&, const std::string& );
-    template index_t RINGMESH_API find_geological_entity_id_from_name(
+    template index_t geomodel_tools_api find_geological_entity_id_from_name(
         const RINGMesh::GeoModel2D&,
         const RINGMesh::GeologicalEntityType&,
         const std::string& );
-    template void RINGMESH_API translate( GeoModel2D&, const vec2& );
+    template void geomodel_tools_api translate( GeoModel2D&, const vec2& );
 
-    template void RINGMESH_API print_geomodel( const GeoModel3D& );
-    template void RINGMESH_API copy_geomodel( const GeoModel3D&, GeoModel3D& );
-    template index_t RINGMESH_API find_mesh_entity_id_from_name(
+    template void geomodel_tools_api print_geomodel( const GeoModel3D& );
+    template void geomodel_tools_api copy_geomodel( const GeoModel3D&, GeoModel3D& );
+    template index_t geomodel_tools_api find_mesh_entity_id_from_name(
         const GeoModel3D&, const MeshEntityType&, const std::string& );
-    template index_t RINGMESH_API find_geological_entity_id_from_name(
+    template index_t geomodel_tools_api find_geological_entity_id_from_name(
         const RINGMesh::GeoModel3D&,
         const RINGMesh::GeologicalEntityType&,
         const std::string& );
-    template void RINGMESH_API translate( GeoModel3D&, const vec3& );
+    template void geomodel_tools_api translate( GeoModel3D&, const vec3& );
 
 } // namespace RINGMesh

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/tools/common.h>
 
 /*!
  * @file ringmesh/geomodel_api.h
@@ -79,14 +79,14 @@ namespace RINGMesh
      * Output the volume of the geomodel and the volume per cell type.
      * @param[in] geomodel the geomodel to compute the statistics on
      */
-    void RINGMESH_API print_geomodel_mesh_cell_volumes(
+    void geomodel_tools_api print_geomodel_mesh_cell_volumes(
         const GeoModel3D& geomodel );
 
     /*!
      * Copy GeoModel \param from into GeoModel \param to
      */
     template < index_t DIMENSION >
-    void RINGMESH_API copy_geomodel(
+    void geomodel_tools_api copy_geomodel(
         const GeoModel< DIMENSION >& from, GeoModel< DIMENSION >& to );
 
     /*!
@@ -124,7 +124,7 @@ namespace RINGMesh
      * @param[in] add_steiner_points if true (default value), the mesher will
      * add some points inside the region.
      */
-    void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
+    void geomodel_tools_api tetrahedralize( GeoModel3D& geomodel,
         index_t region_id = NO_ID,
         bool add_steiner_points = true );
 
@@ -139,7 +139,7 @@ namespace RINGMesh
      * generation.
      * There is one vector per region.
      */
-    void RINGMESH_API tetrahedralize( GeoModel3D& geomodel,
+    void geomodel_tools_api tetrahedralize( GeoModel3D& geomodel,
         index_t region_id,
         bool add_steiner_points,
         const std::vector< std::vector< vec3 > >& internal_vertices );
@@ -174,7 +174,7 @@ namespace RINGMesh
      * @param[in] degrees true is \p angle is in degrees, false
      * if in radians.
      */
-    void RINGMESH_API rotate( GeoModel3D& geomodel,
+    void geomodel_tools_api rotate( GeoModel3D& geomodel,
         const vec3& origin,
         const vec3& axis,
         double angle,

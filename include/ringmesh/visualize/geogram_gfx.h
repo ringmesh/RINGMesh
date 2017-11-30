@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/visualize/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
@@ -84,7 +84,7 @@ private:                                                                       \
     GEO::MeshGfx mesh_gfx_
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramPointSetMeshGfx
+    class visualize_api GeogramPointSetMeshGfx
         : public PointSetMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramPointSetMeshGfx );
@@ -101,7 +101,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramPointSetMeshGfx );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramLineMeshGfx : public LineMeshGfx< DIMENSION >
+    class visualize_api GeogramLineMeshGfx : public LineMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramLineMeshGfx );
 
@@ -133,7 +133,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramLineMeshGfx );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMeshGfx
+    class visualize_api GeogramSurfaceMeshGfx
         : public SurfaceMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramSurfaceMeshGfx );
@@ -179,7 +179,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramSurfaceMeshGfx );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMeshGfx : public VolumeMeshGfx< DIMENSION >
+    class visualize_api GeogramVolumeMeshGfx : public VolumeMeshGfx< DIMENSION >
     {
         COMMON_GEOGRAM_GFX_IMPLEMENTATION( GeogramVolumeMeshGfx );
 

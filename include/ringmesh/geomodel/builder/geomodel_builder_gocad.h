@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <array>
 
@@ -60,9 +60,9 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    void RINGMESH_API initialize_gocad_import_factories();
+    void geomodel_builder_api initialize_gocad_import_factories();
 
-    class RINGMESH_API GeoModelBuilderGocad : public GeoModelBuilderFile< 3 >
+    class geomodel_builder_api GeoModelBuilderGocad : public GeoModelBuilderFile< 3 >
     {
     public:
         GeoModelBuilderGocad( GeoModel3D& geomodel, std::string filename )
@@ -111,7 +111,7 @@ namespace RINGMesh
         GeoModel3D& geomodel_;
     };
 
-    struct RINGMESH_API GocadLoadingStorage
+    struct geomodel_builder_api GocadLoadingStorage
     {
         GocadLoadingStorage();
 
@@ -151,7 +151,7 @@ namespace RINGMesh
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class RINGMESH_API GocadLineParser : public GocadBaseParser
+    class geomodel_builder_api GocadLineParser : public GocadBaseParser
     {
     public:
         virtual void execute(
@@ -545,7 +545,7 @@ namespace RINGMesh
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class RINGMESH_API GeoModelBuilderTSolid final : public GeoModelBuilderGocad
+    class geomodel_builder_api GeoModelBuilderTSolid final : public GeoModelBuilderGocad
     {
     public:
         static const index_t NB_TYPE = 2;
@@ -735,7 +735,7 @@ namespace RINGMesh
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class RINGMESH_API GeoModelBuilderML final : public GeoModelBuilderGocad
+    class geomodel_builder_api GeoModelBuilderML final : public GeoModelBuilderGocad
     {
     public:
         GeoModelBuilderML( GeoModel3D& geomodel, std::string filename )

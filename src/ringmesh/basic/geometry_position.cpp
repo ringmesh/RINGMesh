@@ -356,7 +356,7 @@ namespace RINGMesh
                 point.data(), p0.data(), p1.data(), p2.data() ) );
         }
 
-        double RINGMESH_API segment_angle( const Geometry::Segment2D& segment1,
+        double basic_api segment_angle( const Geometry::Segment2D& segment1,
             const Geometry::Segment2D& segment2 )
         {
             vec2 seg1{ segment1.direction() };
@@ -371,16 +371,16 @@ namespace RINGMesh
             return angle_between_pi_and_minus_pi;
         }
 
-        template bool RINGMESH_API point_inside_triangle(
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
-        template bool RINGMESH_API point_inside_segment(
+        template bool basic_api point_inside_segment(
             const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
 
-        template bool RINGMESH_API point_inside_triangle(
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
 
-        template bool RINGMESH_API point_inside_segment(
+        template bool basic_api point_inside_segment(
             const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
     } // namespace Position
 } // namespace RINGMesh

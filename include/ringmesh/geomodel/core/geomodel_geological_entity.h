@@ -40,7 +40,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <memory>
 
@@ -68,7 +68,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntity
+    class geomodel_core_api GeoModelGeologicalEntity
         : public GeoModelEntity< DIMENSION >
     {
     public:
@@ -194,7 +194,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API Contact : public GeoModelGeologicalEntity< DIMENSION >
+    class geomodel_core_api Contact : public GeoModelGeologicalEntity< DIMENSION >
     {
     public:
         explicit Contact( const GeoModel< DIMENSION >& geomodel )
@@ -210,7 +210,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( Contact );
 
     template < index_t DIMENSION >
-    class RINGMESH_API Interface : public GeoModelGeologicalEntity< DIMENSION >
+    class geomodel_core_api Interface : public GeoModelGeologicalEntity< DIMENSION >
     {
     public:
         explicit Interface( const GeoModel< DIMENSION >& geomodel )
@@ -226,7 +226,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( Interface );
 
     template < index_t DIMENSION >
-    class RINGMESH_API Layer : public GeoModelGeologicalEntity< DIMENSION >
+    class geomodel_core_api Layer : public GeoModelGeologicalEntity< DIMENSION >
     {
     public:
         explicit Layer( const GeoModel< DIMENSION >& geomodel )

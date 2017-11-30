@@ -60,7 +60,7 @@
 namespace RINGMesh
 {
 #ifdef RINGMESH_WITH_TETGEN
-    class RINGMESH_API TetraGen_TetGen final : public TetraGen
+    class tetrahedralize_api TetraGen_TetGen final : public TetraGen
     {
     public:
         TetraGen_TetGen( GeoModel3D& geomodel, index_t region_id )
@@ -115,7 +115,7 @@ namespace RINGMesh
 #endif
     }
 
-    class RINGMESH_API TetraGen_MG_Tetra final : public TetraGen
+    class tetrahedralize_api TetraGen_MG_Tetra final : public TetraGen
     {
     public:
         TetraGen_MG_Tetra( GeoModel3D& geomodel, index_t region_id )

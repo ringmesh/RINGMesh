@@ -102,7 +102,7 @@ namespace RINGMesh
 {
     template <>
     std::unique_ptr< MeshBaseBuilder< 2 > >
-        RINGMESH_API MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
+        mesh_api MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -116,7 +116,7 @@ namespace RINGMesh
 
     template <>
     std::unique_ptr< MeshBaseBuilder< 3 > >
-        RINGMESH_API MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
+        mesh_api MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -260,18 +260,18 @@ namespace RINGMesh
         volume_mesh_.cell_aabb_.reset();
     }
 
-    template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API
+    template std::unique_ptr< PointSetMeshBuilder< 2 > > mesh_api
         PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
 
-    template std::unique_ptr< PointSetMeshBuilder< 3 > > RINGMESH_API
+    template std::unique_ptr< PointSetMeshBuilder< 3 > > mesh_api
         PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
 
-    template class RINGMESH_API MeshBaseBuilder< 2 >;
-    template class RINGMESH_API LineMeshBuilder< 2 >;
-    template class RINGMESH_API SurfaceMeshBuilder< 2 >;
+    template class mesh_api MeshBaseBuilder< 2 >;
+    template class mesh_api LineMeshBuilder< 2 >;
+    template class mesh_api SurfaceMeshBuilder< 2 >;
 
-    template class RINGMESH_API MeshBaseBuilder< 3 >;
-    template class RINGMESH_API LineMeshBuilder< 3 >;
-    template class RINGMESH_API SurfaceMeshBuilder< 3 >;
-    template class RINGMESH_API VolumeMeshBuilder< 3 >;
+    template class mesh_api MeshBaseBuilder< 3 >;
+    template class mesh_api LineMeshBuilder< 3 >;
+    template class mesh_api SurfaceMeshBuilder< 3 >;
+    template class mesh_api VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

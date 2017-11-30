@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/common.h>
 
 #include <mutex>
 
@@ -92,7 +92,7 @@ namespace RINGMesh
 
     /*! @brief complement the available MeshIOHandler
      */
-    void RINGMESH_API ringmesh_geogram_mesh_io_initialize();
+    void geogram_extension_api ringmesh_geogram_mesh_io_initialize();
 
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
@@ -103,7 +103,7 @@ namespace RINGMesh
      * @param[in] c the cell index
      * @return the signed volume of the cell
      */
-    double RINGMESH_API mesh_cell_signed_volume(
+    double geogram_extension_api mesh_cell_signed_volume(
         const GEO::Mesh& M, index_t c );
     /*!
      * Computes the volume of a Mesh cell
@@ -111,7 +111,7 @@ namespace RINGMesh
      * @param[in] c the cell index
      * @return the volume of the cell
      */
-    double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c );
+    double geogram_extension_api mesh_cell_volume( const GEO::Mesh& M, index_t c );
 
     /*!
      * Computes the Mesh cell facet barycenter
@@ -120,7 +120,7 @@ namespace RINGMesh
      * @param[in] f the facet index in the cell
      * @return the cell facet center
      */
-    vec3 RINGMESH_API mesh_cell_facet_barycenter(
+    vec3 geogram_extension_api mesh_cell_facet_barycenter(
         const GEO::Mesh& M, index_t cell, index_t f );
 
     /*!
@@ -130,7 +130,7 @@ namespace RINGMesh
      * @param[in] cell the cell index
      * @return the cell center
      */
-    vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell );
+    vec3 geogram_extension_api mesh_cell_barycenter( const GEO::Mesh& M, index_t cell );
 
     /*!
      * @brief Vector of pointers to Geogram attributes

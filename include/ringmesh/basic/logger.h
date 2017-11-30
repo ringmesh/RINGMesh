@@ -48,7 +48,7 @@
 
 namespace RINGMesh
 {
-    class RINGMESH_API Logger
+    class basic_api Logger
     {
     public:
         static void div( const std::string& title )
@@ -100,7 +100,7 @@ namespace RINGMesh
         static std::mutex lock_;
     };
 
-    class RINGMESH_API ThreadSafeConsoleLogger : public GEO::ConsoleLogger
+    class basic_api ThreadSafeConsoleLogger : public GEO::ConsoleLogger
     {
         using base_class = GEO::ConsoleLogger;
 

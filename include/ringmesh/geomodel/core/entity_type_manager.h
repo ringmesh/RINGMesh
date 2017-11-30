@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <ringmesh/basic/pimpl.h>
 
@@ -59,7 +59,7 @@ namespace RINGMesh
      * type and also their (in) boundary
      */
     template < index_t DIMENSION >
-    class RINGMESH_API MeshEntityTypeManagerBase
+    class geomodel_core_api MeshEntityTypeManagerBase
     {
     public:
         ~MeshEntityTypeManagerBase();
@@ -93,13 +93,13 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API MeshEntityTypeManager
+    class geomodel_core_api MeshEntityTypeManager
         : public MeshEntityTypeManagerBase< DIMENSION >
     {
     };
 
     template <>
-    class RINGMESH_API MeshEntityTypeManager< 3 >
+    class geomodel_core_api MeshEntityTypeManager< 3 >
         : public MeshEntityTypeManagerBase< 3 >
     {
     public:
@@ -113,7 +113,7 @@ namespace RINGMesh
      * entities of each
      * type and also give the opportunity to create and manage new one.
      */
-    class RINGMESH_API GeologicalTypeManager
+    class geomodel_core_api GeologicalTypeManager
     {
         friend class GeoModelBuilderGeology< 2 >;
         friend class GeoModelBuilderGeology< 3 >;
@@ -145,7 +145,7 @@ namespace RINGMesh
      * A "Layer" can be the parent of one or more "Region"
      *
      */
-    class RINGMESH_API RelationshipManager
+    class geomodel_core_api RelationshipManager
     {
         friend class GeoModelBuilderGeology< 2 >;
         friend class GeoModelBuilderTopologyBase< 2 >;
@@ -230,7 +230,7 @@ namespace RINGMesh
      * to give access to different manager to handle the entity types
      */
     template < index_t DIMENSION >
-    struct RINGMESH_API EntityTypeManager
+    struct geomodel_core_api EntityTypeManager
     {
         MeshEntityTypeManager< DIMENSION > mesh_entity_manager;
         GeologicalTypeManager geological_entity_manager;

@@ -444,14 +444,14 @@ namespace RINGMesh
             return std::make_tuple( distance, projected_p );
         }
 
-        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_segment(
+        template std::tuple< double, vecn< 2 > > basic_api point_to_segment(
             const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
-        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_triangle(
+        template std::tuple< double, vecn< 2 > > basic_api point_to_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
-        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_segment(
+        template std::tuple< double, vecn< 3 > > basic_api point_to_segment(
             const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
-        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_triangle(
+        template std::tuple< double, vecn< 3 > > basic_api point_to_triangle(
             const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
     } // namespace Distance
 } // namespace RINGMesh

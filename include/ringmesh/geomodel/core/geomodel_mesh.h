@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <ringmesh/basic/pimpl.h>
 
@@ -90,7 +90,7 @@ namespace RINGMesh
     /*! @todo Move this global variables in a function */
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshCommon
+    class geomodel_core_api GeoModelMeshCommon
     {
         ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -156,7 +156,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshVerticesBase
+    class geomodel_core_api GeoModelMeshVerticesBase
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
@@ -330,7 +330,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshVertices final
+    class geomodel_core_api GeoModelMeshVertices final
         : public GeoModelMeshVerticesBase< DIMENSION >
     {
     public:
@@ -340,7 +340,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelMeshVertices< 3 > final
+    class geomodel_core_api GeoModelMeshVertices< 3 > final
         : public GeoModelMeshVerticesBase< 3 >
     {
     public:
@@ -356,7 +356,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshVertices );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshPolygonsBase
+    class geomodel_core_api GeoModelMeshPolygonsBase
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
@@ -626,7 +626,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshPolygons final
+    class geomodel_core_api GeoModelMeshPolygons final
         : public GeoModelMeshPolygonsBase< DIMENSION >
     {
     public:
@@ -653,7 +653,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshPolygons );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEdges final
+    class geomodel_core_api GeoModelMeshEdges final
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEdges );
@@ -795,7 +795,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshWells final
+    class geomodel_core_api GeoModelMeshWells final
         : public GeoModelMeshCommon< DIMENSION >
     {
     public:
@@ -867,7 +867,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshWells );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshCells final
+    class geomodel_core_api GeoModelMeshCells final
         : public GeoModelMeshCommon< DIMENSION >
     {
         static const std::string region_att_name;
@@ -1338,7 +1338,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshCells );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshBase
+    class geomodel_core_api GeoModelMeshBase
     {
         ringmesh_disable_copy_and_move( GeoModelMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -1399,14 +1399,14 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMesh final : public GeoModelMeshBase< DIMENSION >
+    class geomodel_core_api GeoModelMesh final : public GeoModelMeshBase< DIMENSION >
     {
     public:
         explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template <>
-    class RINGMESH_API GeoModelMesh< 3 > final : public GeoModelMeshBase< 3 >
+    class geomodel_core_api GeoModelMesh< 3 > final : public GeoModelMeshBase< 3 >
     {
         ringmesh_disable_copy_and_move( GeoModelMesh );
 

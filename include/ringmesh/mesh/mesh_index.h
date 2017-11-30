@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/common.h>
 
 namespace RINGMesh
 {
@@ -46,7 +46,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    struct RINGMESH_API ElementLocalVertex
+    struct mesh_api ElementLocalVertex
     {
         ElementLocalVertex() = default;
         ElementLocalVertex( index_t element_id, index_t local_vertex_id )
@@ -62,7 +62,7 @@ namespace RINGMesh
         index_t local_vertex_id{ NO_ID };
     };
 
-    struct RINGMESH_API EdgeLocalVertex
+    struct mesh_api EdgeLocalVertex
     {
         EdgeLocalVertex() = default;
         EdgeLocalVertex( index_t edge_id, index_t local_vertex_id )
@@ -80,7 +80,7 @@ namespace RINGMesh
         index_t local_vertex_id{ NO_ID };
     };
 
-    struct RINGMESH_API PolygonLocalEdge
+    struct mesh_api PolygonLocalEdge
     {
         PolygonLocalEdge() = default;
         PolygonLocalEdge( index_t polygon_id, index_t local_edge_id )
@@ -98,7 +98,7 @@ namespace RINGMesh
         index_t local_edge_id{ NO_ID };
     };
 
-    struct RINGMESH_API CellLocalFacet
+    struct mesh_api CellLocalFacet
     {
         CellLocalFacet() = default;
         CellLocalFacet( index_t cell_id, index_t local_facet_id )

@@ -1487,14 +1487,14 @@ namespace RINGMesh
         return Region3D::type_name_static();
     }
 
-    template class RINGMESH_API GeoModelMeshEntity< 2 >;
-    template class RINGMESH_API Corner< 2 >;
-    template class RINGMESH_API Line< 2 >;
-    template class RINGMESH_API SurfaceBase< 2 >;
+    template class geomodel_core_api GeoModelMeshEntity< 2 >;
+    template class geomodel_core_api Corner< 2 >;
+    template class geomodel_core_api Line< 2 >;
+    template class geomodel_core_api SurfaceBase< 2 >;
 
-    template class RINGMESH_API GeoModelMeshEntity< 3 >;
-    template class RINGMESH_API Corner< 3 >;
-    template class RINGMESH_API Line< 3 >;
-    template class RINGMESH_API SurfaceBase< 3 >;
-    template class RINGMESH_API Region< 3 >;
+    template class geomodel_core_api GeoModelMeshEntity< 3 >;
+    template class geomodel_core_api Corner< 3 >;
+    template class geomodel_core_api Line< 3 >;
+    template class geomodel_core_api SurfaceBase< 3 >;
+    template class geomodel_core_api Region< 3 >;
 } // namespace RINGMesh

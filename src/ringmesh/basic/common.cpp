@@ -126,6 +126,6 @@ namespace RINGMesh
         return vec;
     }
 
-    template vec2 RINGMESH_API initialize_vecn_coordinates( double );
-    template vec3 RINGMESH_API initialize_vecn_coordinates( double );
+    template vec2 basic_api initialize_vecn_coordinates( double );
+    template vec3 basic_api initialize_vecn_coordinates( double );
 } // namespace RINGMesh

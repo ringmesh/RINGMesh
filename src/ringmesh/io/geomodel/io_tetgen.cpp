@@ -85,7 +85,7 @@ namespace
                     {
                         neigh << SPACE;
                         index_t adj = mesh.cells.adjacent( cell, f );
-                        if( adj == GEO::NO_CELL )
+                        if( adj == NO_ID )
                         {
                             neigh << -1;
                         }
