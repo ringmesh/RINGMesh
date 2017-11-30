@@ -259,12 +259,12 @@ namespace RINGMesh
     {
         volume_mesh_.cell_aabb_.reset();
     }
-
-    template std::unique_ptr< PointSetMeshBuilder< 2 > > mesh_api
-        PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
-
-    template std::unique_ptr< PointSetMeshBuilder< 3 > > mesh_api
-        PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
+//
+//    template std::unique_ptr< PointSetMeshBuilder< 2 > > mesh_api
+//        PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
+//
+//    template std::unique_ptr< PointSetMeshBuilder< 3 > > mesh_api
+//        PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
 
     template class mesh_api MeshBaseBuilder< 2 >;
     template class mesh_api PointSetMeshBuilder< 2 >;
