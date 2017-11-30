@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/tetrahedralize/export.h>
-
-namespace RINGMesh
-{
-    class tetrahedralize_api libRINGMesh_tetrahedralize
-    {
-    public:
-        libRINGMesh_tetrahedralize();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_tetrahedralize libRINGMesh_tetrahedralize_instance;
-} // namespace RINGMesh

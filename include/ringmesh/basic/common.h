@@ -115,20 +115,6 @@ void ringmesh_unused( const T& /*unused*/ )
 
 namespace RINGMesh
 {
-    class basic_api libRINGMesh_basic
-    {
-    public:
-        libRINGMesh_basic();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_basic libRINGMesh_basic_instance;
-
     void basic_api print_header_information();
 
     /*!

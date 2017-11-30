@@ -635,7 +635,7 @@ namespace RINGMesh
     };
 
     template <>
-    class GeoModelMeshPolygons< 3 > final : public GeoModelMeshPolygonsBase< 3 >
+    class geomodel_core_api GeoModelMeshPolygons< 3 > final : public GeoModelMeshPolygonsBase< 3 >
     {
     public:
         GeoModelMeshPolygons( GeoModelMesh3D& gmm,

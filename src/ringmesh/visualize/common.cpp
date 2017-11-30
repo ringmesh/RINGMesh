@@ -39,20 +39,18 @@
 
 #include <ringmesh/visualize/geogram_gfx.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_visualize::flag_;
-
-    libRINGMesh_visualize::libRINGMesh_visualize()
+    class libRINGMesh_visualize
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_visualize()
+        {
+            GEO::CmdLine::import_arg_group( "gfx" );
+            RINGMesh::register_geogram_mesh_gfx();
+            RINGMesh::Logger::out( "Library", "RINGMesh_visualize loaded" );
+        }
+    };
 
-    void libRINGMesh_visualize::initialize()
-    {
-        GEO::CmdLine::import_arg_group( "gfx" );
-        register_geogram_mesh_gfx();
-        Logger::out( "Library", "RINGMesh_visualize loaded" );
-    }
-
-} // namespace RINGMesh
+    libRINGMesh_visualize libRINGMesh_visualize_instance;
+} // namespace

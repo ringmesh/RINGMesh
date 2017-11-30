@@ -37,18 +37,16 @@
 
 #include <ringmesh/basic/logger.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_mesh::flag_;
-
-    libRINGMesh_mesh::libRINGMesh_mesh()
+    class libRINGMesh_mesh
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_mesh()
+        {
+            RINGMesh::Logger::out( "Library", "RINGMesh_mesh loaded" );
+        }
+    };
 
-    void libRINGMesh_mesh::initialize()
-    {
-        Logger::out( "Library", "RINGMesh_mesh loaded" );
-    }
-
-} // namespace RINGMesh
+    libRINGMesh_mesh libRINGMesh_mesh_instance;
+} // namespace

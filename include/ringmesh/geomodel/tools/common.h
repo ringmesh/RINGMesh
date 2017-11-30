@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/geomodel/tools/export.h>
-
-namespace RINGMesh
-{
-    class geomodel_tools_api libRINGMesh_geomodel_tools
-    {
-    public:
-        libRINGMesh_geomodel_tools();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_geomodel_tools libRINGMesh_geomodel_tools_instance;
-} // namespace RINGMesh

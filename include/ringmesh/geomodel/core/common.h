@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/geomodel/core/export.h>
-
-namespace RINGMesh
-{
-    class geomodel_core_api libRINGMesh_geomodel_core
-    {
-    public:
-        libRINGMesh_geomodel_core();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_geomodel_core libRINGMesh_geomodel_core_instance;
-} // namespace RINGMesh

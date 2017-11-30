@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/geogram_extension/export.h>
-
-namespace RINGMesh
-{
-    class geogram_extension_api libRINGMesh_geogram_extension
-    {
-    public:
-        libRINGMesh_geogram_extension();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_geogram_extension libRINGMesh_geogram_extension_instance;
-} // namespace RINGMesh

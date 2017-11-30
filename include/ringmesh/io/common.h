@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/io/export.h>
-
-namespace RINGMesh
-{
-    class io_api libRINGMesh_io
-    {
-    public:
-        libRINGMesh_io();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_io libRINGMesh_io_instance;
-} // namespace RINGMesh

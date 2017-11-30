@@ -75,25 +75,24 @@ namespace
         RINGMesh::CmdLine::import_arg_group( "validity" );
     }
 
+    class libRINGMesh_basic
+    {
+    public:
+        libRINGMesh_basic()
+        {
+            GEO::initialize();
+            configure_geogram();
+            configure_ringmesh();
+            RINGMesh::Logger::out( "Library", "RINGMesh_basic loaded" );
+        }
+    };
+
+    libRINGMesh_basic libRINGMesh_basic_instance;
+
 } // namespace
 
 namespace RINGMesh
 {
-    std::once_flag libRINGMesh_basic::flag_;
-
-    libRINGMesh_basic::libRINGMesh_basic()
-    {
-        std::call_once( flag_, &initialize );
-    }
-
-    void libRINGMesh_basic::initialize()
-    {
-        GEO::initialize();
-        configure_geogram();
-        configure_ringmesh();
-        Logger::out( "Library", "RINGMesh_basic loaded" );
-    }
-
     /*!
      * This function configures geogram by setting some geogram options.
      * \pre This function should be call after GEO::initialize().

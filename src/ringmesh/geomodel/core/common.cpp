@@ -37,20 +37,18 @@
 
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_geomodel_core::flag_;
-
-    libRINGMesh_geomodel_core::libRINGMesh_geomodel_core()
+    class libRINGMesh_geomodel_core
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_geomodel_core()
+        {
+            RINGMesh::GeoModelGeologicalEntity2D::initialize();
+            RINGMesh::GeoModelGeologicalEntity3D::initialize();
+            RINGMesh::Logger::out( "Library", "RINGMesh_geomodel_core loaded" );
+        }
+    };
 
-    void libRINGMesh_geomodel_core::initialize()
-    {
-        GeoModelGeologicalEntity2D::initialize();
-        GeoModelGeologicalEntity3D::initialize();
-        Logger::out( "Library", "RINGMesh_geomodel_core loaded" );
-    }
-
-} // namespace RINGMesh
+    libRINGMesh_geomodel_core libRINGMesh_geomodel_core_instance;
+} // namespace

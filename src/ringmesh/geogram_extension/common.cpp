@@ -38,20 +38,19 @@
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_geogram_extension::flag_;
-
-    libRINGMesh_geogram_extension::libRINGMesh_geogram_extension()
+    class libRINGMesh_geogram_extension
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_geogram_extension()
+        {
+            RINGMesh::ringmesh_geogram_mesh_io_initialize();
+            RINGMesh::register_geogram_mesh();
+            RINGMesh::Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
+        }
+    };
 
-    void libRINGMesh_geogram_extension::initialize()
-    {
-        ringmesh_geogram_mesh_io_initialize();
-        register_geogram_mesh();
-        Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
-    }
+    libRINGMesh_geogram_extension libRINGMesh_geogram_extension_instance;
 
-} // namespace RINGMesh
+} // namespace

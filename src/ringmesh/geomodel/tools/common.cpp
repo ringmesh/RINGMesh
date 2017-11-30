@@ -37,18 +37,16 @@
 
 #include <ringmesh/basic/logger.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_geomodel_tools::flag_;
-
-    libRINGMesh_geomodel_tools::libRINGMesh_geomodel_tools()
+    class geomodel_tools_api libRINGMesh_geomodel_tools
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_geomodel_tools()
+        {
+            RINGMesh::Logger::out( "Library", "RINGMesh_geomodel_tools loaded" );
+        }
+    };
 
-    void libRINGMesh_geomodel_tools::initialize()
-    {
-        Logger::out( "Library", "RINGMesh_geomodel_tools loaded" );
-    }
-
-} // namespace RINGMesh
+    libRINGMesh_geomodel_tools libRINGMesh_geomodel_tools_instance;
+} // namespace

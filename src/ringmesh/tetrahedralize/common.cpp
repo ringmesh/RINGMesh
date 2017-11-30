@@ -37,19 +37,18 @@
 
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_tetrahedralize::flag_;
-
-    libRINGMesh_tetrahedralize::libRINGMesh_tetrahedralize()
+    class libRINGMesh_tetrahedralize
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_tetrahedralize()
+        {
+            RINGMesh::TetraGen::initialize();
+            RINGMesh::Logger::out( "Library", "RINGMesh_tetrahedralize loaded" );
+        }
+    };
 
-    void libRINGMesh_tetrahedralize::initialize()
-    {
-        TetraGen::initialize();
-        Logger::out( "Library", "RINGMesh_tetrahedralize loaded" );
-    }
+    libRINGMesh_tetrahedralize libRINGMesh_tetrahedralize_instance;
 
-} // namespace RINGMesh
+} // namespace

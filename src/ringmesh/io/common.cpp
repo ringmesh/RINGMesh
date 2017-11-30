@@ -38,21 +38,18 @@
 #include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/io/io.h>
 
-
-namespace RINGMesh
+namespace
 {
-    std::once_flag libRINGMesh_io::flag_;
-
-    libRINGMesh_io::libRINGMesh_io()
+    class libRINGMesh_io
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_io()
+        {
+            RINGMesh::initialize_gocad_import_factories();
+            RINGMesh::mesh_initialize();
+            RINGMesh::Logger::out( "Library", "RINGMesh_io loaded" );
+        }
+    };
 
-    void libRINGMesh_io::initialize()
-    {
-        initialize_gocad_import_factories();
-        mesh_initialize();
-        Logger::out( "Library", "RINGMesh_io loaded" );
-    }
-
-} // namespace RINGMesh
+    libRINGMesh_io libRINGMesh_io_instance;
+} // namespace

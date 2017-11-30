@@ -37,20 +37,3 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/visualize/export.h>
-
-namespace RINGMesh
-{
-    class visualize_api libRINGMesh_visualize
-    {
-    public:
-        libRINGMesh_visualize();
-
-    private:
-        static void initialize();
-
-    private:
-        static std::once_flag flag_;
-    };
-
-    static libRINGMesh_visualize libRINGMesh_visualize_instance;
-} // namespace RINGMesh
