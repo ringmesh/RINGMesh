@@ -169,12 +169,7 @@ namespace RINGMesh
 
     private:
         void copy_geological_entity(
-            const GeoModelGeologicalEntity< DIMENSION >& from )
-        {
-            this->copy_name( from );
-            geol_feature_ = from.geol_feature_;
-            children_ = from.children_;
-        }
+            const GeoModelGeologicalEntity< DIMENSION >& from );
 
     protected:
         /// Children relations of this entity

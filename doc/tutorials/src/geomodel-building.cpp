@@ -42,7 +42,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/io/io.h>
 
 /*!

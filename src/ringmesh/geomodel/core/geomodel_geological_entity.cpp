@@ -209,6 +209,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelGeologicalEntity< DIMENSION >::copy_geological_entity(
+        const GeoModelGeologicalEntity< DIMENSION >& from )
+    {
+        this->copy_name( from );
+        geol_feature_ = from.geol_feature_;
+        children_ = from.children_;
+    }
+
+    template < index_t DIMENSION >
     bool GeoModelGeologicalEntity< DIMENSION >::is_connectivity_valid() const
     {
         bool valid = true;

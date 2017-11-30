@@ -56,65 +56,11 @@ namespace RINGMesh
 namespace RINGMesh
 {
     /*!
-     * @brief Print in the console the geomodel statistics
-     * @details Output number of polygons, vertices, and of the different entity
-     * types
-     * @todo Implement a test are_geomodels_equals to be able to check that
-     * tests went well
-     */
-    template < index_t DIMENSION >
-    void print_geomodel( const GeoModel< DIMENSION >& geomodel );
-
-    /*!
-     * Output the number of vertices, edges, polygons and cells.
-     * Also output the number of triangles, quads and polygons if any.
-     * Also output the number of tetra, prisms, pyramids, hex and polyhedra if
-     * any.
-     * @param[in] geomodel the geomodel to compute the statistics on
-     */
-    template < index_t DIMENSION >
-    void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
-
-    /*!
-     * Output the volume of the geomodel and the volume per cell type.
-     * @param[in] geomodel the geomodel to compute the statistics on
-     */
-    void geomodel_tools_api print_geomodel_mesh_cell_volumes(
-        const GeoModel3D& geomodel );
-
-    /*!
      * Copy GeoModel \param from into GeoModel \param to
      */
     template < index_t DIMENSION >
     void geomodel_tools_api copy_geomodel(
         const GeoModel< DIMENSION >& from, GeoModel< DIMENSION >& to );
-
-    /*!
-     * @return the index of the mesh entity \param gme_type named as \param name
-     * in the GeoModel \param geomodel.
-     * @note throw exception if no entities have this \param name or if two
-     * entities
-     * have the same \param name
-     */
-    template < index_t DIMENSION >
-    index_t find_mesh_entity_id_from_name(
-        const GeoModel< DIMENSION >& geomodel,
-        const MeshEntityType& gmme_type,
-        const std::string& name );
-
-    /*!
-     * @return the index of the geological entity \param gme_type named as
-     * \param name
-     * in the GeoModel \param geomodel.
-     * @note throw exception if no entities have this \param name or if two
-     * entities
-     * have the same \param name
-     */
-    template < index_t DIMENSION >
-    index_t find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel< DIMENSION >& geomodel,
-        const RINGMesh::GeologicalEntityType& gmge_type,
-        const std::string& name );
 
     /*!
      * Compute the tetrahedral mesh of the input structural geomodel
