@@ -45,7 +45,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel_builder_topology.cpp"
         "${lib_source_dir}/geomodel_builder.cpp"
         "${lib_source_dir}/stratigraphic_column_builder.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_builder_2d_from_3d.h"
         "${lib_include_dir}/geomodel_builder_access.h"

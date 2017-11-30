@@ -38,7 +38,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel_repair.cpp"
         "${lib_source_dir}/geomodel_validity.cpp"
         "${lib_source_dir}/mesh_quality.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_api.h"
         "${lib_include_dir}/geomodel_repair.h"

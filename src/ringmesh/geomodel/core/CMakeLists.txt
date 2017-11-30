@@ -41,7 +41,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel_mesh.cpp"
         "${lib_source_dir}/geomodel.cpp"
         "${lib_source_dir}/stratigraphic_column.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/entity_type_manager.h"
         "${lib_include_dir}/entity_type.h"

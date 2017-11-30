@@ -36,7 +36,7 @@ target_sources(${target_name}
         "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/tetgen_mesher.cpp"
         "${lib_source_dir}/tetra_gen.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/tetgen_mesher.h"
         "${lib_include_dir}/tetra_gen.h"

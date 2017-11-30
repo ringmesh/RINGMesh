@@ -36,7 +36,7 @@ target_sources(${target_name}
         "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/geogram_extension.cpp"
         "${lib_source_dir}/geogram_mesh.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geogram_extension.h"
         "${lib_include_dir}/geogram_mesh.h"

@@ -39,7 +39,7 @@ target_sources(${target_name}
         "${lib_source_dir}/io_well_group.cpp"
         "${lib_source_dir}/io.cpp"
         "${lib_source_dir}/zip_file.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/io.h"
         "${lib_include_dir}/zip_file.h"

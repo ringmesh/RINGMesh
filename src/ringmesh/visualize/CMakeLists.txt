@@ -39,7 +39,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel_gfx.cpp"
         "${lib_source_dir}/gfx_application.cpp"
         "${lib_source_dir}/mesh_entity_gfx.cpp"
-    PUBLIC
+    PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geogram_gfx.h"
         "${lib_include_dir}/geomodel_entity_gfx.h"
