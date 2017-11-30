@@ -51,7 +51,8 @@ namespace RINGMesh
     /*!
      * @brief Base class for GeoModel2D building from GeoModel3D.
      */
-    class geomodel_builder_api GeoModelBuilder2DFrom3D : public GeoModelBuilder< 2 >
+    class geomodel_builder_api GeoModelBuilder2DFrom3D
+        : public GeoModelBuilder< 2 >
     {
     public:
         GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,

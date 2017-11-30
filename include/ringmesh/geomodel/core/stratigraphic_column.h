@@ -201,7 +201,8 @@ namespace RINGMesh
         RockFeature rock_;
     };
 
-    class geomodel_core_api UnsubdividedStratigraphicUnit : public StratigraphicUnit
+    class geomodel_core_api UnsubdividedStratigraphicUnit
+        : public StratigraphicUnit
     {
     public:
         UnsubdividedStratigraphicUnit( std::string name,
@@ -264,7 +265,8 @@ namespace RINGMesh
         double max_thick_;
     };
 
-    class geomodel_core_api SubdividedStratigraphicUnit : public StratigraphicUnit
+    class geomodel_core_api SubdividedStratigraphicUnit
+        : public StratigraphicUnit
     {
     public:
         SubdividedStratigraphicUnit( std::string name,

@@ -1399,14 +1399,16 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geomodel_core_api GeoModelMesh final : public GeoModelMeshBase< DIMENSION >
+    class geomodel_core_api GeoModelMesh final
+        : public GeoModelMeshBase< DIMENSION >
     {
     public:
         explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template <>
-    class geomodel_core_api GeoModelMesh< 3 > final : public GeoModelMeshBase< 3 >
+    class geomodel_core_api GeoModelMesh< 3 > final
+        : public GeoModelMeshBase< 3 >
     {
         ringmesh_disable_copy_and_move( GeoModelMesh );
 

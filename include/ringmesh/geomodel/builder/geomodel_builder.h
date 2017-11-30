@@ -35,8 +35,8 @@
 
 #pragma once
 
-#include <ringmesh/geomodel/builder/common.h>
 #include <ringmesh/basic/pimpl.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/builder/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
@@ -150,12 +150,14 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geomodel_builder_api GeoModelBuilder : public GeoModelBuilderBase< DIMENSION >
+    class geomodel_builder_api GeoModelBuilder
+        : public GeoModelBuilderBase< DIMENSION >
     {
     };
 
     template <>
-    class geomodel_builder_api GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 >
+    class geomodel_builder_api GeoModelBuilder< 2 >
+        : public GeoModelBuilderBase< 2 >
     {
     public:
         explicit GeoModelBuilder( GeoModel2D& geomodel );
@@ -169,7 +171,8 @@ namespace RINGMesh
     };
 
     template <>
-    class geomodel_builder_api GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 >
+    class geomodel_builder_api GeoModelBuilder< 3 >
+        : public GeoModelBuilderBase< 3 >
     {
     public:
         explicit GeoModelBuilder( GeoModel3D& geomodel );
