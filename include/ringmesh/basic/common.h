@@ -198,7 +198,7 @@ namespace RINGMesh
      *      // do something
      *    }
      */
-    class basic_api range
+    class range
     {
     public:
         template < typename T1, typename T2 >
