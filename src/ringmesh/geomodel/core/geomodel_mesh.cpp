@@ -581,6 +581,13 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshVerticesBase< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->vertex_nn_search();
+    }
+
+    template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::fill_vertices_for_entity_type(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& entity_type,
@@ -1923,6 +1930,20 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->cell_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_facet_nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->cell_facet_nn_search();
+    }
+
+    template < index_t DIMENSION >
     const VolumeAABBTree< DIMENSION >&
         GeoModelMeshCells< DIMENSION >::aabb() const
     {
@@ -2100,6 +2121,19 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshEdges< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->edge_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshEdges< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->edge_nn_search();
+    }
+
+    template < index_t DIMENSION >
     const LineAABBTree< DIMENSION >&
         GeoModelMeshEdges< DIMENSION >::aabb() const
     {
@@ -2145,6 +2179,19 @@ namespace RINGMesh
     {
         surface_id_.clear();
         polygon_id_.clear();
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshPolygonsBase< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->polygon_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshPolygonsBase< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->polygon_nn_search();
     }
 
     template < index_t DIMENSION >
@@ -2801,6 +2848,12 @@ namespace RINGMesh
                 }
             }
         }
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshWells< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->edge_attribute_manager();
     }
 
     template < index_t DIMENSION >

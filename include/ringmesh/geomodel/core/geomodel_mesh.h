@@ -267,11 +267,7 @@ namespace RINGMesh
 
         void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->vertex_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief Remove colocated vertices
@@ -368,10 +364,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshPolygonsBase();
 
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_->polygon_attribute_manager();
-        }
+        GEO::AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh polygons are initialized
@@ -550,11 +543,7 @@ namespace RINGMesh
          */
         double area( index_t polygon ) const;
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->polygon_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief return the AABB tree for the polygons of the mesh
@@ -666,10 +655,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshEdges();
 
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_->edge_attribute_manager();
-        }
+        GEO::AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh edges are initialized
@@ -736,11 +722,7 @@ namespace RINGMesh
          */
         double length( index_t edge ) const;
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->edge_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief return the AABB tree for the edges of the mesh
@@ -803,10 +785,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const
-        {
-            return mesh_->edge_attribute_manager();
-        }
+        GEO::AttributesManager& attribute_manager() const;
 
         /*!
          * Tests if the mesh edges needs to be initialized and initialize it
@@ -1198,16 +1177,9 @@ namespace RINGMesh
          */
         double volume( index_t cell ) const;
 
-        const NNSearch< DIMENSION >& cell_nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->cell_nn_search();
-        }
-        const NNSearch< DIMENSION >& cell_facet_nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->cell_facet_nn_search();
-        }
+        const NNSearch< DIMENSION >& cell_nn_search() const;
+
+        const NNSearch< DIMENSION >& cell_facet_nn_search() const;
 
         /*!
          * @brief return the AABB tree for the cells of the mesh
