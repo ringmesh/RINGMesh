@@ -217,7 +217,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class geomodel_core_api Edge
+    class Edge
     {
     public:
         Edge( const vecn< DIMENSION >& v0, const vecn< DIMENSION >& v1 )
