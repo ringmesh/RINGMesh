@@ -68,7 +68,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geomodel_core_api corner_range : public entity_range< DIMENSION >
+    class corner_range : public entity_range< DIMENSION >
     {
     public:
         explicit corner_range( const GeoModel< DIMENSION >& geomodel )

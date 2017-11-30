@@ -35,7 +35,7 @@
 
 #include <ringmesh/geomodel/builder/common.h>
 
-#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/basic/logger.h>
 
 namespace RINGMesh
 {
@@ -48,7 +48,6 @@ namespace RINGMesh
 
     void libRINGMesh_geomodel_builder::initialize()
     {
-        initialize_gocad_import_factories();
         Logger::out( "Library", "RINGMesh_geomodel_builder loaded" );
     }
 

@@ -35,7 +35,9 @@
 
 #include <ringmesh/io/common.h>
 
+#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/io/io.h>
+
 
 namespace RINGMesh
 {
@@ -48,6 +50,7 @@ namespace RINGMesh
 
     void libRINGMesh_io::initialize()
     {
+        initialize_gocad_import_factories();
         mesh_initialize();
         Logger::out( "Library", "RINGMesh_io loaded" );
     }

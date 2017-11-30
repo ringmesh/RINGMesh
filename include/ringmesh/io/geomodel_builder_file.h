@@ -33,38 +33,36 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/builder/geomodel_builder_file.h>
-#include <ringmesh/io/io.h>
+#pragma once
+
+#include <ringmesh/io/common.h>
+
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
 
 /*!
- * @file ringmesh/geomodel/builder/geomodel_builder_file.cpp
- * @brief Implementation of the classes to build GeoModel from various inputs
+ * @brief Classes to build GeoModel from various inputs
  * @author Jeanne Pellerin
  */
 
 namespace RINGMesh
 {
+    /*!
+     * @brief Abstract interface class to load and build GeoModels from files
+     */
     template < index_t DIMENSION >
-    GeoModelBuilderFile< DIMENSION >::GeoModelBuilderFile(
-        GeoModel< DIMENSION >& geomodel, std::string filename )
-        : GeoModelBuilder< DIMENSION >( geomodel ),
-          filename_( std::move( filename ) )
+    class io_api GeoModelBuilderFile
+        : public GeoModelBuilder< DIMENSION >
     {
-    }
+    public:
+        GeoModelBuilderFile(
+            GeoModel< DIMENSION >& geomodel, std::string filename );
 
-    template < index_t DIMENSION >
-    void GeoModelBuilderFile< DIMENSION >::build_geomodel()
-    {
-        if( find_geomodel_dimension( filename_ ) != DIMENSION )
-        {
-            throw RINGMeshException(
-                "I/O", "Dimension of the GeoModel does not match the file" );
-        }
-        load_file();
-        this->end_geomodel();
-    }
+        void build_geomodel();
 
-    template class geomodel_builder_api GeoModelBuilderFile< 2 >;
-    template class geomodel_builder_api GeoModelBuilderFile< 3 >;
+    private:
+        virtual void load_file() = 0;
 
+    protected:
+        std::string filename_{};
+    };
 } // namespace RINGMesh

@@ -36,7 +36,7 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_api.h>
