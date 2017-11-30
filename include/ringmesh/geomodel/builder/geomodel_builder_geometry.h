@@ -158,8 +158,7 @@ namespace RINGMesh
          * @param[in] point the coordinates to set
          */
         void set_mesh_entity_vertex(
-            index_t geomodel_vertex_id,
-            const vecn< DIMENSION >& point );
+            index_t geomodel_vertex_id, const vecn< DIMENSION >& point );
 
         /*!
          * @brief Adds vertices to the mesh
