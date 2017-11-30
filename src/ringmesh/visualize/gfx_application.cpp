@@ -1209,7 +1209,6 @@ namespace RINGMesh
         GEO::CmdLine::declare_arg( "attributes", true, "load mesh attributes" );
         GEO::CmdLine::declare_arg(
             "single_precision", false, "use single precision vertices (FP32)" );
-        configure_ringmesh();
 
         auto ringmesh_2d_extensions =
             GeoModelInputHandlerFactory2D::list_creators();

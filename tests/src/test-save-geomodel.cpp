@@ -234,8 +234,6 @@ int main()
 
     try
     {
-        default_configure();
-
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
         test_output_geomodel< 2 >();
         test_output_geomodel< 3 >();

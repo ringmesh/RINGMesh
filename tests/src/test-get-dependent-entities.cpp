@@ -341,7 +341,6 @@ int main()
 {
     try
     {
-        default_configure();
         Logger::out(
             "TEST", "Test GeoModelBuilderTopology::get_dependent_entities" );
 

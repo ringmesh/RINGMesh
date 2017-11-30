@@ -283,8 +283,6 @@ int main()
 
     try
     {
-        default_configure();
-
         GeoModel3D geomodel;
         build_geomodel( geomodel );
         test_translate( geomodel );

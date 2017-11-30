@@ -178,8 +178,6 @@ int main()
 {
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Import GeoModel files" );
         test_input_geomodels< 2 >();
         test_input_geomodels< 3 >();

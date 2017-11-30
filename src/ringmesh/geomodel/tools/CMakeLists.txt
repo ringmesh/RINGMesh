@@ -33,11 +33,13 @@
 
 target_sources(${target_name}
     PRIVATE
+        "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/geomodel_api.cpp"
         "${lib_source_dir}/geomodel_repair.cpp"
         "${lib_source_dir}/geomodel_validity.cpp"
         "${lib_source_dir}/mesh_quality.cpp"
     PUBLIC
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_api.h"
         "${lib_include_dir}/geomodel_repair.h"
         "${lib_include_dir}/geomodel_validity.h"

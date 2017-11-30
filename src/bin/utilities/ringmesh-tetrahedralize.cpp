@@ -68,7 +68,6 @@ int main( int argc, char** argv )
 {
     try
     {
-        default_configure();
         import_arg_groups();
 
         if( argc == 1 )

@@ -33,25 +33,23 @@
  *     FRANCE
  */
 
-#include <ringmesh/geogram_extension/common.h>
+#pragma once
 
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
+#include <ringmesh/basic/common.h>
 
 namespace RINGMesh
 {
-    std::once_flag libRINGMesh_geogram_extension::flag_;
-
-    libRINGMesh_geogram_extension::libRINGMesh_geogram_extension()
+    class libRINGMesh_mesh
     {
-        std::call_once( flag_, &initialize );
-    }
+    public:
+        libRINGMesh_mesh();
 
-    void libRINGMesh_geogram_extension::initialize()
-    {
-        ringmesh_geogram_mesh_io_initialize();
-        register_geogram_mesh();
-        Logger::out( "Library", "Ringmesh_geogram_extension loaded" );
-    }
+    private:
+        static void initialize();
 
+    private:
+        static std::once_flag flag_;
+    };
+
+    static libRINGMesh_mesh libRINGMesh_mesh_instance;
 } // namespace RINGMesh

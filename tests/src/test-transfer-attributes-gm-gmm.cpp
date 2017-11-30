@@ -735,8 +735,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Tests of attribute transfer between the geomodel "
                              "and the geomodelmesh" );
         run_tests();

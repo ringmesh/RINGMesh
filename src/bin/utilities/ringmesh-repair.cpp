@@ -121,7 +121,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
         hello();
         import_arg_groups();
 

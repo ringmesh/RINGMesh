@@ -33,25 +33,22 @@
  *     FRANCE
  */
 
-#include <ringmesh/geogram_extension/common.h>
+#include <ringmesh/geomodel/tools/common.h>
 
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
+#include <ringmesh/basic/logger.h>
 
 namespace RINGMesh
 {
-    std::once_flag libRINGMesh_geogram_extension::flag_;
+    std::once_flag libRINGMesh_geomodel_tools::flag_;
 
-    libRINGMesh_geogram_extension::libRINGMesh_geogram_extension()
+    libRINGMesh_geomodel_tools::libRINGMesh_geomodel_tools()
     {
         std::call_once( flag_, &initialize );
     }
 
-    void libRINGMesh_geogram_extension::initialize()
+    void libRINGMesh_geomodel_tools::initialize()
     {
-        ringmesh_geogram_mesh_io_initialize();
-        register_geogram_mesh();
-        Logger::out( "Library", "Ringmesh_geogram_extension loaded" );
+        Logger::out( "Library", "Ringmesh_geomodel_tools loaded" );
     }
 
 } // namespace RINGMesh

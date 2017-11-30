@@ -103,11 +103,6 @@ int main()
 
     try
     {
-        // This line stands for the initialization
-        // of Geogram and the factories of RINGMesh
-        // IT IS MANDATORY
-        default_configure();
-
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );

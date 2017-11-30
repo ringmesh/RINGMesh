@@ -119,7 +119,6 @@ int main()
 
     try
     {
-        default_configure();
         Logger::out( "TEST", "Test GeoModelMeshVertices" );
 
         std::string input_model_file_name =

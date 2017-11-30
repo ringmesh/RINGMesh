@@ -35,6 +35,8 @@
 
 #include <ringmesh/visualize/common.h>
 
+#include <geogram/basic/command_line_args.h>
+
 #include <ringmesh/visualize/geogram_gfx.h>
 
 namespace RINGMesh
@@ -43,6 +45,7 @@ namespace RINGMesh
 
     libRINGMesh_visualize::libRINGMesh_visualize()
     {
+        std::cout << "#############" << std::endl;
         std::call_once( flag_, &initialize );
     }
 
@@ -50,6 +53,7 @@ namespace RINGMesh
     {
         GEO::CmdLine::import_arg_group( "gfx" );
         register_geogram_mesh_gfx();
+        Logger::out( "Library", "Ringmesh_visualize loaded" );
     }
 
 } // namespace RINGMesh

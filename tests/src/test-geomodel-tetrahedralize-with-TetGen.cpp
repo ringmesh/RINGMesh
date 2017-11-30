@@ -55,7 +55,6 @@ int main()
 
     try
     {
-        default_configure();
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
 

@@ -315,8 +315,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test connected components" );
         run_tests();
     }

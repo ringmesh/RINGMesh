@@ -50,6 +50,7 @@ namespace RINGMesh
     {
         GeoModelGeologicalEntity2D::initialize();
         GeoModelGeologicalEntity3D::initialize();
+        Logger::out( "Library", "Ringmesh_geomodel_core loaded" );
     }
 
 } // namespace RINGMesh

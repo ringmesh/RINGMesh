@@ -146,8 +146,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test Matrix" );
         run_tests();
     }

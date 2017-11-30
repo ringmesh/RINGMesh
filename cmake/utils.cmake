@@ -138,13 +138,13 @@ function(add_ringmesh_binary bin_path)
 endfunction()
 
 function(add_ringmesh_utility bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities")
+    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)
-    add_ringmesh_executable(${cpp_file_path} "Tests")
+    add_ringmesh_executable(${cpp_file_path} "Tests" ${ARGN})
     # Add the test to CTest
     add_test(NAME ${exe_name} COMMAND ${exe_name})
     set_target_properties(${exe_name} PROPERTIES 
@@ -153,7 +153,9 @@ endfunction()
 
 
 function(add_ringmesh_tutorial cpp_file_path)
-    add_ringmesh_test(${cpp_file_path} "Tutorials")
+    add_ringmesh_executable(${cpp_file_path} "Tutorials" ${ARGN})
+    # Add the test to CTest
+    add_test(NAME ${exe_name} COMMAND ${exe_name})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
 endfunction()

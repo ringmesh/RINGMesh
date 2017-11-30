@@ -115,16 +115,19 @@ void ringmesh_unused( const T& /*unused*/ )
 
 namespace RINGMesh
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void RINGMESH_API configure_geogram();
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
-    void RINGMESH_API configure_ringmesh();
-    void RINGMESH_API default_configure();
+    class libRINGMesh_common
+    {
+    public:
+        libRINGMesh_common();
+
+    private:
+        static void initialize();
+
+    private:
+        static std::once_flag flag_;
+    };
+
+    static libRINGMesh_common libRINGMesh_common_instance;
 
     void RINGMESH_API print_header_information();
 

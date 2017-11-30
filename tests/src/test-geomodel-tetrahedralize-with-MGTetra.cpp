@@ -55,8 +55,6 @@ int main()
 
     try
     {
-        default_configure();
-
 #ifdef USE_MG_TETRA
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "MG_Tetra" );

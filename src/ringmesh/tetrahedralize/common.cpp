@@ -49,6 +49,7 @@ namespace RINGMesh
     void libRINGMesh_tetrahedralize::initialize()
     {
         TetraGen::initialize();
+        Logger::out( "Library", "Ringmesh_tetrahedralize loaded" );
     }
 
 } // namespace RINGMesh

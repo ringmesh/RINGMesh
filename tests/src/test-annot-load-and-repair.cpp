@@ -50,8 +50,6 @@ int main()
 
     try
     {
-        default_configure();
-
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
 

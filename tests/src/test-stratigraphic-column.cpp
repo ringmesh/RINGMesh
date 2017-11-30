@@ -369,8 +369,6 @@ int main()
 
     try
     {
-        default_configure();
-
         // Set an output log file
         std::string log_file( ringmesh_test_output_path );
         log_file += "log.txt";

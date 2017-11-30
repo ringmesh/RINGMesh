@@ -33,12 +33,14 @@
 
 target_sources(${target_name}
     PRIVATE
+        "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/mesh_aabb.cpp"
         "${lib_source_dir}/mesh_builder.cpp"
         "${lib_source_dir}/mesh_index.cpp"
         "${lib_source_dir}/mesh.cpp"
         "${lib_source_dir}/well.cpp"
     PUBLIC
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/mesh_aabb.h"
         "${lib_include_dir}/mesh_builder.h"
         "${lib_include_dir}/mesh_index.h"

@@ -80,8 +80,6 @@ int main()
 {
     try
     {
-        default_configure();
-
         // Load a model without region : 6 surfaces defining a cube with holes
         // between surfaces (all surface borders are free borders)
         GeoModel3D not_sealed_cube_geomodel;

@@ -51,16 +51,13 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/basic/logger.h>
 
-namespace RINGMesh
+namespace
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
     void configure_geogram()
     {
-        Logger::instance()->unregister_all_clients();
-        Logger::instance()->register_client( new ThreadSafeConsoleLogger );
+        RINGMesh::Logger::instance()->unregister_all_clients();
+        RINGMesh::Logger::instance()->register_client(
+            new RINGMesh::ThreadSafeConsoleLogger );
         GEO::CmdLine::import_arg_group( "sys" );
 #ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" );
@@ -74,16 +71,33 @@ namespace RINGMesh
 
     void configure_ringmesh()
     {
-        CmdLine::import_arg_group( "global" );
-        CmdLine::import_arg_group( "validity" );
+        RINGMesh::CmdLine::import_arg_group( "global" );
+        RINGMesh::CmdLine::import_arg_group( "validity" );
     }
 
-    void default_configure()
+} // namespace
+
+namespace RINGMesh
+{
+    std::once_flag libRINGMesh_common::flag_;
+
+    libRINGMesh_common::libRINGMesh_common()
+    {
+        std::call_once( flag_, &initialize );
+    }
+
+    void libRINGMesh_common::initialize()
     {
         GEO::initialize();
         configure_geogram();
         configure_ringmesh();
+        Logger::out( "Library", "Ringmesh_common loaded" );
     }
+
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
 
     void print_header_information()
     {

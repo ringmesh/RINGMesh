@@ -40,7 +40,7 @@ target_sources(${target_name}
         "${lib_source_dir}/io.cpp"
         "${lib_source_dir}/zip_file.cpp"
     PUBLIC
-        "${lib_inlcude_dir}/common.h"
+        "${lib_include_dir}/common.h"
         "${lib_include_dir}/io.h"
         "${lib_include_dir}/zip_file.h"
 )

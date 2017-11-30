@@ -61,8 +61,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test GeoModel building from Surface" );
 
         std::vector< std::future< void > > futures;

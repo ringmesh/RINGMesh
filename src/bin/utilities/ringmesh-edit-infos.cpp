@@ -85,8 +85,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
-
         print_header_information();
         Logger::div( "RINGMesh" );
         Logger::out( "", "Welcome to RINGMesh-edit-infos !" );
