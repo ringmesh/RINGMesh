@@ -50,8 +50,7 @@ namespace RINGMesh
      * @brief Abstract interface class to load and build GeoModels from files
      */
     template < index_t DIMENSION >
-    class io_api GeoModelBuilderFile
-        : public GeoModelBuilder< DIMENSION >
+    class io_api GeoModelBuilderFile : public GeoModelBuilder< DIMENSION >
     {
     public:
         GeoModelBuilderFile(
