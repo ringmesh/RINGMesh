@@ -45,7 +45,7 @@ target_sources(${target_name}
         "${lib_source_dir}/logger.cpp"
         "${lib_source_dir}/nn_search.cpp"
         "${lib_source_dir}/ringmesh_assert.cpp"
-    PUBLIC
+    PRIVATE
         "${lib_include_dir}/aabb.h"
         "${lib_include_dir}/algorithm.h"
         "${lib_include_dir}/box.h"

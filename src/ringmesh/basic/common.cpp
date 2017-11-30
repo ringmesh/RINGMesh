@@ -79,19 +79,19 @@ namespace
 
 namespace RINGMesh
 {
-    std::once_flag libRINGMesh_common::flag_;
+    std::once_flag libRINGMesh_basic::flag_;
 
-    libRINGMesh_common::libRINGMesh_common()
+    libRINGMesh_basic::libRINGMesh_basic()
     {
         std::call_once( flag_, &initialize );
     }
 
-    void libRINGMesh_common::initialize()
+    void libRINGMesh_basic::initialize()
     {
         GEO::initialize();
         configure_geogram();
         configure_ringmesh();
-        Logger::out( "Library", "RINGMesh_common loaded" );
+        Logger::out( "Library", "RINGMesh_basic loaded" );
     }
 
     /*!
