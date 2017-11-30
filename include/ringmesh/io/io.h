@@ -74,8 +74,7 @@ namespace RINGMesh
      * @param[in] f2 the second filename
      * @return return True if the files are identical
      */
-    bool io_api compare_files(
-        const std::string& f1, const std::string& f2 );
+    bool io_api compare_files( const std::string& f1, const std::string& f2 );
     /*!
      * Loads a GeoModel from a file
      * @param[out] geomodel the geomodel to fill
@@ -97,8 +96,7 @@ namespace RINGMesh
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
-    void io_api well_load(
-        const std::string& filename, WellGroup3D& wells );
+    void io_api well_load( const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename

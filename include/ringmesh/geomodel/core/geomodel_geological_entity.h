@@ -194,7 +194,8 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelGeologicalEntityFactory );
 
     template < index_t DIMENSION >
-    class geomodel_core_api Contact : public GeoModelGeologicalEntity< DIMENSION >
+    class geomodel_core_api Contact
+        : public GeoModelGeologicalEntity< DIMENSION >
     {
     public:
         explicit Contact( const GeoModel< DIMENSION >& geomodel )
@@ -210,7 +211,8 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( Contact );
 
     template < index_t DIMENSION >
-    class geomodel_core_api Interface : public GeoModelGeologicalEntity< DIMENSION >
+    class geomodel_core_api Interface
+        : public GeoModelGeologicalEntity< DIMENSION >
     {
     public:
         explicit Interface( const GeoModel< DIMENSION >& geomodel )

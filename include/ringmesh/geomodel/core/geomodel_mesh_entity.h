@@ -96,7 +96,8 @@ namespace RINGMesh
      * the RINGMesh::Mesh geometry.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api GeoModelMeshEntity : public GeoModelEntity< DIMENSION >
+    class geomodel_core_api GeoModelMeshEntity
+        : public GeoModelEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -378,7 +379,8 @@ namespace RINGMesh
      * @details It is a unique point.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api Corner final : public GeoModelMeshEntity< DIMENSION >
+    class geomodel_core_api Corner final
+        : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( Corner );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -813,7 +815,8 @@ namespace RINGMesh
      * Its volumetric mesh is optional.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api Region final : public GeoModelMeshEntity< DIMENSION >
+    class geomodel_core_api Region final
+        : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( Region );
         ringmesh_template_assert_3d( DIMENSION );

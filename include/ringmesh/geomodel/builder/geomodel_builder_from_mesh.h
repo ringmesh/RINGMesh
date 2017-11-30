@@ -58,7 +58,8 @@ namespace RINGMesh
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class geomodel_builder_api GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
+    class geomodel_builder_api GeoModelBuilderSurfaceMesh
+        : public GeoModelBuilder< 3 >
     {
     public:
         GeoModelBuilderSurfaceMesh(
