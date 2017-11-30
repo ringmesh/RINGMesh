@@ -48,7 +48,7 @@ namespace RINGMesh
 
     void libRINGMesh_geomodel_tools::initialize()
     {
-        Logger::out( "Library", "Ringmesh_geomodel_tools loaded" );
+        Logger::out( "Library", "RINGMesh_geomodel_tools loaded" );
     }
 
 } // namespace RINGMesh

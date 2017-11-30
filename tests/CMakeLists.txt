@@ -56,6 +56,6 @@ file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile} geomodel_tools io)
+    add_ringmesh_test(${testsourcefile} geogram_extension geomodel_tools io)
 endforeach(testsourcefile ${TESTS})
 

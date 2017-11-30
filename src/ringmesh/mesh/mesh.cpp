@@ -53,7 +53,7 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
-            return create_mesh( "geogram" );
+            return create_mesh( "GeogramPointSetMesh" );
         }
         auto mesh = PointSetMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -63,7 +63,7 @@ namespace RINGMesh
             Logger::warn( "PointSetMesh",
                 "Falling back to GeogramPointSetMesh data structure" );
 
-            return create_mesh( "geogram" );
+            return create_mesh();
         }
         return mesh;
     }
@@ -85,7 +85,7 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
-            return create_mesh( "geogram" );
+            return create_mesh( "GeogramLineMesh" );
         }
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -95,7 +95,7 @@ namespace RINGMesh
             Logger::warn(
                 "LineMesh", "Falling back to GeogramLineMesh data structure" );
 
-            return create_mesh( "geogram" );
+            return create_mesh();
         }
         return mesh;
     }
@@ -282,7 +282,7 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
-            return create_mesh( "geogram" );
+            return create_mesh( "GeogramSurfaceMesh" );
         }
         auto mesh = SurfaceMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -292,7 +292,7 @@ namespace RINGMesh
             Logger::warn( "SurfaceMesh",
                 "Falling back to GeogramSurfaceMesh data structure" );
 
-            return create_mesh( "geogram" );
+            return create_mesh();
         }
         return mesh;
     }
@@ -801,7 +801,7 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
-            return create_mesh( "geogram" );
+            return create_mesh( "GeogramVolumeMesh" );
         }
         auto mesh = VolumeMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -811,7 +811,7 @@ namespace RINGMesh
             Logger::warn( "VolumeMesh",
                 "Falling back to GeogramVolumeMesh data structure" );
 
-            return create_mesh( "geogram" );
+            return create_mesh();
         }
         return mesh;
     }

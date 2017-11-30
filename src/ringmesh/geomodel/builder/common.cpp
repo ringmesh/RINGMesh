@@ -49,7 +49,7 @@ namespace RINGMesh
     void libRINGMesh_geomodel_builder::initialize()
     {
         initialize_gocad_import_factories();
-        Logger::out( "Library", "Ringmesh_geomodel_builder loaded" );
+        Logger::out( "Library", "RINGMesh_geomodel_builder loaded" );
     }
 
 } // namespace RINGMesh

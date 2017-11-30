@@ -51,7 +51,7 @@ namespace RINGMesh
     {
         ringmesh_geogram_mesh_io_initialize();
         register_geogram_mesh();
-        Logger::out( "Library", "Ringmesh_geogram_extension loaded" );
+        Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
     }
 
 } // namespace RINGMesh

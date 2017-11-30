@@ -48,7 +48,7 @@ namespace RINGMesh
 
     void libRINGMesh_mesh::initialize()
     {
-        Logger::out( "Library", "Ringmesh_mesh loaded" );
+        Logger::out( "Library", "RINGMesh_mesh loaded" );
     }
 
 } // namespace RINGMesh

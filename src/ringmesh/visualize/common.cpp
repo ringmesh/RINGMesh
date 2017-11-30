@@ -45,7 +45,6 @@ namespace RINGMesh
 
     libRINGMesh_visualize::libRINGMesh_visualize()
     {
-        std::cout << "#############" << std::endl;
         std::call_once( flag_, &initialize );
     }
 
@@ -53,7 +52,7 @@ namespace RINGMesh
     {
         GEO::CmdLine::import_arg_group( "gfx" );
         register_geogram_mesh_gfx();
-        Logger::out( "Library", "Ringmesh_visualize loaded" );
+        Logger::out( "Library", "RINGMesh_visualize loaded" );
     }
 
 } // namespace RINGMesh

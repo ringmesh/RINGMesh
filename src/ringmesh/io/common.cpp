@@ -49,7 +49,7 @@ namespace RINGMesh
     void libRINGMesh_io::initialize()
     {
         mesh_initialize();
-        Logger::out( "Library", "Ringmesh_io loaded" );
+        Logger::out( "Library", "RINGMesh_io loaded" );
     }
 
 } // namespace RINGMesh

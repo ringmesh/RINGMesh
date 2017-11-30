@@ -91,7 +91,7 @@ namespace RINGMesh
         GEO::initialize();
         configure_geogram();
         configure_ringmesh();
-        Logger::out( "Library", "Ringmesh_common loaded" );
+        Logger::out( "Library", "RINGMesh_common loaded" );
     }
 
     /*!

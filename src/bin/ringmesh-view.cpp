@@ -87,13 +87,11 @@
 
 int main( int argc, char** argv )
 {
-    std::cout << "=============" << std::endl;
     using namespace RINGMesh;
 
     try
     {
         RINGMeshApplication app( argc, argv );
-        std::cout << "=============" << std::endl;
         app.start();
         return 0;
     }

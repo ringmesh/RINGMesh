@@ -48,4 +48,4 @@ target_sources(${target_name}
         "${lib_include_dir}/mesh_entity_gfx.h"
 )
 
-target_link_libraries(${target_name} PUBLIC geomodel_core io Geogram::geogram_gfx)
+target_link_libraries(${target_name} PUBLIC geogram_extension geomodel_core io Geogram::geogram_gfx)
