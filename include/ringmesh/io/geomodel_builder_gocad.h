@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/geomodel/builder/common.h>
+#include <ringmesh/io/common.h>
 
 #include <array>
 
@@ -60,9 +60,9 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    void geomodel_builder_api initialize_gocad_import_factories();
+    void io_api initialize_gocad_import_factories();
 
-    class geomodel_builder_api GeoModelBuilderGocad
+    class io_api GeoModelBuilderGocad
         : public GeoModelBuilderFile< 3 >
     {
     public:
@@ -112,7 +112,7 @@ namespace RINGMesh
         GeoModel3D& geomodel_;
     };
 
-    struct geomodel_builder_api GocadLoadingStorage
+    struct io_api GocadLoadingStorage
     {
         GocadLoadingStorage();
 
@@ -152,7 +152,7 @@ namespace RINGMesh
         std::vector< index_t > cur_surf_polygon_ptr_;
     };
 
-    class geomodel_builder_api GocadLineParser : public GocadBaseParser
+    class io_api GocadLineParser : public GocadBaseParser
     {
     public:
         virtual void execute(
@@ -546,7 +546,7 @@ namespace RINGMesh
     /*!
      * @brief Builds a meshed GeoModel from a Gocad TSolid (file.so)
      */
-    class geomodel_builder_api GeoModelBuilderTSolid final
+    class io_api GeoModelBuilderTSolid final
         : public GeoModelBuilderGocad
     {
     public:
@@ -737,7 +737,7 @@ namespace RINGMesh
     /*!
      * @brief Build a GeoModel from a Gocad Model3D (file_model.ml)
      */
-    class geomodel_builder_api GeoModelBuilderML final
+    class io_api GeoModelBuilderML final
         : public GeoModelBuilderGocad
     {
     public:
