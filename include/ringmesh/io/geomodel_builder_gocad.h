@@ -89,7 +89,12 @@ namespace RINGMesh
     protected:
         virtual void read_line() = 0;
 
-    protected:
+        GEO::LineInput& file_line()
+        {
+            return file_line_;
+        }
+
+    private:
         GEO::LineInput file_line_{ filename() };
     };
 
@@ -108,6 +113,16 @@ namespace RINGMesh
         }
 
     protected:
+        GeoModel3D& geomodel()
+        {
+            return geomodel_;
+        }
+        GeoModelBuilderGocad& builder()
+        {
+            return builder_;
+        }
+
+    private:
         GeoModelBuilderGocad& builder_;
         GeoModel3D& geomodel_;
     };
@@ -478,7 +493,6 @@ namespace RINGMesh
          */
         std::vector< std::string > region_names_;
 
-    private:
         /*!
          * TSolids & LightTSolids
          * Mapping the indices of vertices from Gocad .so file
@@ -606,10 +620,8 @@ namespace RINGMesh
          */
         void compute_surfaces_internal_borders();
 
-    protected:
-        TSolidLoadingStorage tsolid_load_storage_;
-
     private:
+        TSolidLoadingStorage tsolid_load_storage_;
         TSolidType file_type_{ TSolidType::TSOLID };
         std::array< std::unique_ptr< GeoModelBuilderTSolidImpl >, NB_TYPE >
             type_impl_;

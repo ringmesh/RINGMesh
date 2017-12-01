@@ -681,9 +681,9 @@ namespace
             ringmesh_unused( load_storage );
             std::string interface_name = read_name_with_spaces( 1, line );
             // Create an interface and set its name
-            gmge_id interface_id = builder_.geology.create_geological_entity(
+            gmge_id interface_id = builder().geology.create_geological_entity(
                 Interface3D::type_name_static() );
-            builder_.info.set_geological_entity_name(
+            builder().info.set_geological_entity_name(
                 interface_id, interface_name );
         }
     };
@@ -712,7 +712,7 @@ namespace
             {
                 if( !load_storage.vertices_.empty() )
                 {
-                    assign_mesh_surface( builder_, load_storage );
+                    assign_mesh_surface( builder(), load_storage );
                     auto nb_vertices =
                         static_cast< index_t >( load_storage.vertices_.size() );
                     load_storage.tface_vertex_ptr_ = nb_vertices;
@@ -724,16 +724,16 @@ namespace
             const std::string& interface_name, const std::string& type )
         {
             gmge_id parent = find_geological_entity(
-                geomodel_, Interface3D::type_name_static(), interface_name );
+                geomodel(), Interface3D::type_name_static(), interface_name );
             if( !interface_name.empty() )
             {
                 ringmesh_assert( parent.is_defined() );
             }
 
-            gmme_id children = builder_.topology.create_mesh_entity(
+            gmme_id children = builder().topology.create_mesh_entity(
                 Surface3D::type_name_static() );
-            builder_.geology.add_parent_children_relation( parent, children );
-            builder_.geology.set_geological_entity_geol_feature( parent,
+            builder().geology.add_parent_children_relation( parent, children );
+            builder().geology.set_geological_entity_geol_feature( parent,
                 GeoModelGeologicalEntity3D::determine_geological_type( type ) );
         }
     };
@@ -753,9 +753,9 @@ namespace
             ringmesh_unused( load_storage );
             /// Build the volumetric layers from their name and
             /// the ids of the regions they contain
-            gmge_id layer_id = builder_.geology.create_geological_entity(
+            gmge_id layer_id = builder().geology.create_geological_entity(
                 Layer3D::type_name_static() );
-            builder_.info.set_geological_entity_name(
+            builder().info.set_geological_entity_name(
                 layer_id, line.field( 1 ) );
             bool end_layer = false;
             while( !end_layer )
@@ -771,9 +771,9 @@ namespace
                         break;
                     }
                     // Remove Universe region
-                    region_id -= geomodel_.nb_surfaces() + 1;
+                    region_id -= geomodel().nb_surfaces() + 1;
                     // Correction because ids begin at 1 in the file
-                    builder_.geology.add_parent_children_relation(
+                    builder().geology.add_parent_children_relation(
                         layer_id, gmme_id( Region3D::type_name_static(),
                                       region_id - GOCAD_OFFSET ) );
                 }
@@ -800,7 +800,7 @@ namespace
             }
             else
             {
-                assign_mesh_surface( builder_, load_storage );
+                assign_mesh_surface( builder(), load_storage );
                 load_storage.vertices_.clear();
                 load_storage.tface_vertex_ptr_ = 0;
             }
@@ -820,13 +820,13 @@ namespace
             GEO::LineInput& line, MLLoadingStorage& load_storage ) final
         {
             index_t v_id = line.field_as_uint( 1 ) - GOCAD_OFFSET;
-            if( !find_corner( geomodel_, load_storage.vertices_[v_id] )
+            if( !find_corner( geomodel(), load_storage.vertices_[v_id] )
                      .is_defined() )
             {
                 // Create the corner
-                gmme_id corner_gme = builder_.topology.create_mesh_entity(
+                gmme_id corner_gme = builder().topology.create_mesh_entity(
                     Corner3D::type_name_static() );
-                builder_.geometry.set_corner(
+                builder().geometry.set_corner(
                     corner_gme.index(), load_storage.vertices_[v_id] );
             }
         }
@@ -856,14 +856,14 @@ namespace
             // Set the region name and boundaries
             if( name != "Universe" )
             {
-                const gmme_id region_id = builder_.topology.create_mesh_entity(
+                const gmme_id region_id = builder().topology.create_mesh_entity(
                     Region3D::type_name_static() );
-                builder_.info.set_mesh_entity_name( region_id, name );
+                builder().info.set_mesh_entity_name( region_id, name );
                 for( const std::pair< index_t, bool >& info :
                     region_boundaries )
                 {
                     const index_t surface_id{ info.first };
-                    builder_.topology.add_region_surface_boundary_relation(
+                    builder().topology.add_region_surface_boundary_relation(
                         region_id.index(), surface_id, info.second );
                 }
             }
@@ -939,10 +939,10 @@ namespace
         {
             if( !load_storage.vertices_.empty() )
             {
-                builder_.geometry.set_region_geometry( load_storage.cur_region_,
+                builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 assign_attributes_to_mesh(
-                    geomodel_.region( load_storage.cur_region_ ), load_storage,
+                    geomodel().region( load_storage.cur_region_ ), load_storage,
                     load_storage.attributes_ );
             }
 
@@ -958,7 +958,7 @@ namespace
 
             load_storage.attributes_.clear();
             load_storage.cur_region_ =
-                initialize_region( region_name, builder_ );
+                initialize_region( region_name, builder() );
             load_storage.vertices_.clear();
             load_storage.tetra_corners_.clear();
         }
@@ -1001,7 +1001,7 @@ namespace
                     region_name );
             if( !found )
             {
-                region_id = initialize_region( region_name, builder_ );
+                region_id = initialize_region( region_name, builder() );
                 load_storage.vertex_map_.add_new_region(
                     region_id, region_name );
             }
@@ -1133,7 +1133,7 @@ namespace
                 static_cast< index_t >( load_storage.vertices_.size() );
             load_storage.vertex_map_.add_vertex(
                 vertex_id, load_storage.cur_region_ );
-            GocadLineFactory::create( "VRTX", builder_, geomodel_ )
+            GocadLineFactory::create( "VRTX", builder(), geomodel() )
                 ->execute( line, load_storage );
         }
         void execute_light(
@@ -1142,7 +1142,7 @@ namespace
             load_storage.vertex_map_.add_vertex(
                 line.field_as_uint( 1 ) - GOCAD_OFFSET,
                 load_storage.cur_region_ );
-            GocadLineFactory::create( "VRTX", builder_, geomodel_ )
+            GocadLineFactory::create( "VRTX", builder(), geomodel() )
                 ->execute( line, load_storage );
         }
     };
@@ -1159,7 +1159,7 @@ namespace
         void execute(
             GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            read_and_add_atom_to_region_vertices( geomodel_, line, load_storage,
+            read_and_add_atom_to_region_vertices( geomodel(), line, load_storage,
                 load_storage.vertices_, load_storage.attributes_,
                 load_storage.vertex_map_ );
         }
@@ -1320,9 +1320,9 @@ namespace
         {
             ringmesh_unused( load_storage );
             // Set to the GeoModel name if empty
-            if( geomodel_.name().empty() )
+            if( geomodel().name().empty() )
             {
-                builder_.info.set_geomodel_name(
+                builder().info.set_geomodel_name(
                     read_name_with_spaces( 1, line ) );
             }
         }
@@ -1344,10 +1344,10 @@ namespace
             ringmesh_unused( line );
             if( !load_storage.vertices_.empty() )
             {
-                builder_.geometry.set_region_geometry( load_storage.cur_region_,
+                builder().geometry.set_region_geometry( load_storage.cur_region_,
                     load_storage.vertices_, load_storage.tetra_corners_ );
                 assign_attributes_to_mesh(
-                    geomodel_.region( load_storage.cur_region_ ), load_storage,
+                    geomodel().region( load_storage.cur_region_ ), load_storage,
                     load_storage.attributes_ );
 
                 load_storage.attributes_.clear();
@@ -1440,11 +1440,11 @@ namespace
                 load_storage.vertex_map_.get_tetra_corners_with_this_region_id(
                     region_id, region_tetra_corners_local[region_id] );
 
-                builder_.geometry.set_region_geometry( region_id,
+                builder().geometry.set_region_geometry( region_id,
                     region_vertices[region_id],
                     region_tetra_corners_local[region_id] );
 
-                assign_attributes_to_mesh( geomodel_.region( region_id ),
+                assign_attributes_to_mesh( geomodel().region( region_id ),
                     load_storage, region_attributes[region_id] );
             }
             load_storage.tetra_corners_.clear();
@@ -1467,10 +1467,10 @@ namespace
             GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             gmge_id created_interface =
-                builder_.geology.create_geological_entity(
+                builder().geology.create_geological_entity(
                     Interface3D::type_name_static() );
             load_storage.cur_interface_ = created_interface.index();
-            builder_.info.set_geological_entity_name(
+            builder().info.set_geological_entity_name(
                 created_interface, line.field( 1 ) );
         }
         void execute_light(
@@ -1497,13 +1497,13 @@ namespace
             // Compute the surface
             if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() )
             {
-                build_surface( builder_, geomodel_, load_storage );
+                build_surface( builder(), geomodel(), load_storage );
             }
             // Create a new surface
-            gmme_id new_surface = builder_.topology.create_mesh_entity(
+            gmme_id new_surface = builder().topology.create_mesh_entity(
                 Surface3D::type_name_static() );
             load_storage.cur_surface_ = new_surface.index();
-            builder_.geology.add_parent_children_relation(
+            builder().geology.add_parent_children_relation(
                 gmge_id( Interface3D::type_name_static(),
                     load_storage.cur_interface_ ),
                 new_surface );
@@ -1533,7 +1533,7 @@ namespace
             // Compute the last surface
             if( !load_storage.cur_surf_polygon_corners_gocad_id_.empty() )
             {
-                build_surface( builder_, geomodel_, load_storage );
+                build_surface( builder(), geomodel(), load_storage );
             }
         }
         void execute_light(
@@ -1634,10 +1634,10 @@ namespace RINGMesh
 
     void GeoModelBuilderGocad::read_file()
     {
-        while( !file_line_.eof() && file_line_.get_line() )
+        while( !file_line().eof() && file_line().get_line() )
         {
-            file_line_.get_fields();
-            if( file_line_.nb_fields() > 0 )
+            file_line().get_fields();
+            if( file_line().nb_fields() > 0 )
             {
                 read_line();
             }
@@ -1654,9 +1654,9 @@ namespace RINGMesh
         : GeoModelBuilderGocad( geomodel, std::move( filename ) )
     {
         type_impl_[0].reset( new GeoModelBuilderTSolidImpl_TSolid(
-            *this, geomodel, file_line_, tsolid_load_storage_ ) );
+            *this, geomodel, file_line(), tsolid_load_storage_ ) );
         type_impl_[1].reset( new GeoModelBuilderTSolidImpl_LightTSolid(
-            *this, geomodel, file_line_, tsolid_load_storage_ ) );
+            *this, geomodel, file_line(), tsolid_load_storage_ ) );
     }
 
     void GeoModelBuilderTSolid::read_number_of_vertices()
@@ -1690,7 +1690,7 @@ namespace RINGMesh
         // triangle edges common to at least two surfaces)
         compute_surfaces_internal_borders();
         build_lines_and_corners_from_surfaces();
-        compute_boundaries_of_geomodel_regions( *this, ( *this ).geomodel_ );
+        compute_boundaries_of_geomodel_regions( *this, this->geomodel_ );
         geology.build_contacts();
     }
 
@@ -1818,12 +1818,12 @@ namespace RINGMesh
 
     void GeoModelBuilderML::read_line()
     {
-        std::string keyword = file_line_.field( 0 );
+        std::string keyword = file_line().field( 0 );
         std::unique_ptr< MLLineParser > tsolid_parser(
             MLLineFactory::create( keyword, *this, geomodel_ ) );
         if( tsolid_parser )
         {
-            tsolid_parser->execute( file_line_, ml_load_storage_ );
+            tsolid_parser->execute( file_line(), ml_load_storage_ );
         }
         else
         {
@@ -1831,7 +1831,7 @@ namespace RINGMesh
                 GocadLineFactory::create( keyword, *this, geomodel_ );
             if( gocad_parser )
             {
-                gocad_parser->execute( file_line_, ml_load_storage_ );
+                gocad_parser->execute( file_line(), ml_load_storage_ );
             }
         }
     }
