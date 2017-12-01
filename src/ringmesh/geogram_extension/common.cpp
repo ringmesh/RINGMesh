@@ -45,8 +45,9 @@ namespace
     public:
         libRINGMesh_geogram_extension()
         {
-            RINGMesh::ringmesh_geogram_mesh_io_initialize();
-            RINGMesh::register_geogram_mesh();
+//            Disable on purpose
+//            RINGMesh::ringmesh_geogram_mesh_io_initialize();
+//            RINGMesh::register_geogram_mesh();
             RINGMesh::Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
         }
     };
