@@ -53,28 +53,28 @@ namespace RINGMesh
     public:
         static void div( const std::string& title )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             GEO::Logger::div( title );
         }
 
         template < typename... Args >
         static void out( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::out( feature ), args... );
         }
 
         template < typename... Args >
         static void err( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::err( feature ), args... );
         }
 
         template < typename... Args >
         static void warn( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::warn( feature ), args... );
         }
 
@@ -96,8 +96,11 @@ namespace RINGMesh
             log( os, args... );
         }
 
-    private:
-        static std::mutex lock_;
+        static std::mutex& lock()
+        {
+            static std::mutex lock;
+            return lock;
+        }
     };
 
     class basic_api ThreadSafeConsoleLogger : public GEO::ConsoleLogger
