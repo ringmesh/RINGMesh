@@ -55,6 +55,7 @@ function(add_ringmesh_library directory)
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
         target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
+        add_dependencies(copy_dll ${target_name})
     endif()
     export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
     generate_export_header(${target_name} 
@@ -75,32 +76,32 @@ macro(copy_for_windows directory)
     # The dll and debug info of RINGMesh are in
     # build/ringmesh/Debug or build/ringmesh/Release.
 if(WIN32)
-    add_custom_command(TARGET basic POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET basic POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET basic POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_INSTALL_PREFIX}/lib"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram visualization libraries")
-    add_custom_command(TARGET basic POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_ROOT}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET basic POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-#    add_custom_command(TARGET basic POST_BUILD
+#    add_custom_command(TARGET copy_dll POST_BUILD
 #        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
 #            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
 #            "${directory}/$<CONFIGURATION>"
@@ -115,8 +116,11 @@ macro(add_ringmesh_executable exe_path folder_name)
     add_executable(${exe_name} ${exe_path})    
     foreach(dependency ${ARGN})
         target_link_libraries(${exe_name} PRIVATE ${dependency})
-        add_dependencies(${exe_name} ${dependency})
     endforeach()
+    
+    if(WIN32)
+        add_dependencies(copy_dll ${exe_name})
+    endif()
 
     # Add the project to a folder of projects for the tests
     set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})

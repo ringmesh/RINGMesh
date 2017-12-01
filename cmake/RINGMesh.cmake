@@ -46,6 +46,7 @@ else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
         message(WARNING "RINGMesh on Windows is only tested with Microsoft Visual C++")
     endif()
+    add_custom_target(copy_dll ALL)
 endif(UNIX)
 
 # RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
