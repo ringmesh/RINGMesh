@@ -396,6 +396,11 @@ int main()
     {
         register_geogram_mesh();
         Logger::out( "TEST", "Test AABB" );
+        std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+        std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
+        LineMeshFactory2D::register_creator< GeogramLineMesh2D >( GeogramLineMesh2D::type_name_static() );
+        std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+        std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();
         test_SurfaceAABB< 2 >();

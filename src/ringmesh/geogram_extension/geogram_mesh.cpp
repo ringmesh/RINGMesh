@@ -40,6 +40,7 @@ namespace RINGMesh
 {
     void register_geogram_mesh()
     {
+        std::cout << "je passe au debut " << std::endl;
         PointSetMeshFactory2D::register_creator< GeogramPointSetMesh2D >(
             GeogramPointSetMesh2D::type_name_static() );
         LineMeshFactory2D::register_creator< GeogramLineMesh2D >(
@@ -76,5 +77,9 @@ namespace RINGMesh
         VolumeMeshBuilderFactory3D::
             register_creator< GeogramVolumeMeshBuilder3D >(
                 GeogramVolumeMesh3D::type_name_static() );
+        std::cout << "je suis a la fin " << std::endl;
+        std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+        std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
+
     }
 } // namespace RINGMesh

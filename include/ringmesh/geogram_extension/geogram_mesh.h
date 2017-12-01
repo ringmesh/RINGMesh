@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/mesh/common.h>
+#include <ringmesh/geogram_extension/common.h>
 
 #include <memory>
 
