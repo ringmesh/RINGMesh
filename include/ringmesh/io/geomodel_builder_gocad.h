@@ -698,8 +698,7 @@ namespace RINGMesh
             else
             {
                 std::unique_ptr< GocadLineParser > gocad_parser =
-                    GocadLineFactory::create(
-                        keyword, builder(), geomodel() );
+                    GocadLineFactory::create( keyword, builder(), geomodel() );
                 if( gocad_parser )
                 {
                     gocad_parser->execute( file_line(), tsolid_load_storage() );
@@ -734,8 +733,7 @@ namespace RINGMesh
             else
             {
                 std::unique_ptr< GocadLineParser > gocad_parser =
-                    GocadLineFactory::create(
-                        keyword, builder(), geomodel() );
+                    GocadLineFactory::create( keyword, builder(), geomodel() );
                 if( gocad_parser )
                 {
                     gocad_parser->execute( file_line(), tsolid_load_storage() );
