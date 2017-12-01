@@ -377,6 +377,13 @@ void test_locate_edge_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
 template < index_t DIMENSION >
 void test_LineAABB()
 {
+    std::cout << "line mesh" << std::endl;
+    std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+    std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
+    LineMeshFactory2D::register_creator< GeogramLineMesh2D >( GeogramLineMesh2D::type_name_static() );
+    std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+    std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
+
     Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
     auto mesh = LineMesh< DIMENSION >::create_mesh();
     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
@@ -401,6 +408,7 @@ int main()
         LineMeshFactory2D::register_creator< GeogramLineMesh2D >( GeogramLineMesh2D::type_name_static() );
         std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
         std::cout << LineMeshFactory<2>::list_creators().size() << std::endl;
+
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();
         test_SurfaceAABB< 2 >();
