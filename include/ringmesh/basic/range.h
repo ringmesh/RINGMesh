@@ -37,8 +37,6 @@
 
 #include <ringmesh/basic/types.h>
 
-#include <ringmesh/ringmesh_export.h>
-
 namespace RINGMesh
 {
     /*!
@@ -54,7 +52,7 @@ namespace RINGMesh
      *      // do something
      *    }
      */
-    class RINGMESH_API range
+    class range
     {
     public:
         template < typename T1, typename T2 >
