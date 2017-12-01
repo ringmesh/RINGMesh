@@ -129,6 +129,6 @@ namespace RINGMesh
     };
 
     template < typename Key, typename BaseClass, typename... Args >
-    basic_api typename Factory< Key, BaseClass, Args... >::FactoryStore
+    typename Factory< Key, BaseClass, Args... >::FactoryStore basic_api
         Factory< Key, BaseClass, Args... >::store_;
 } // namespace RINGMesh
