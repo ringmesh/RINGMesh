@@ -1661,7 +1661,7 @@ namespace RINGMesh
 
     void GeoModelBuilderTSolid::read_number_of_vertices()
     {
-        GEO::LineInput line( filename_ );
+        GEO::LineInput line( filename() );
         tsolid_load_storage_.nb_vertices_ = 0;
         while( !line.eof() && line.get_line() )
         {
@@ -1696,7 +1696,7 @@ namespace RINGMesh
 
     void GeoModelBuilderTSolid::read_type()
     {
-        GEO::LineInput line( filename_ );
+        GEO::LineInput line( filename() );
         while( !line.eof() && line.get_line() )
         {
             line.get_fields();

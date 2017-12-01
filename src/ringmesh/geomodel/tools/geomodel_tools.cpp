@@ -111,10 +111,6 @@ namespace RINGMesh
     void tetrahedralize(
         GeoModel3D& geomodel, index_t region_id, bool add_steiner_points )
     {
-        /* @todo Review: Maybe rethink these functions
-         *       to have a function that can mesh a region of a geomodel
-         *       taking only one vector of points [JP]
-         */
         std::vector< std::vector< vec3 > > internal_vertices(
             geomodel.nb_regions() );
         tetrahedralize(

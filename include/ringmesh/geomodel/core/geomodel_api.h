@@ -46,8 +46,6 @@
 
 namespace RINGMesh
 {
-    class MeshEntityType;
-    class GeologicalEntityType;
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
 
     ALIAS_3D( GeoModel );

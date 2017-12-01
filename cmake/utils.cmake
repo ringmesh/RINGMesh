@@ -118,10 +118,6 @@ macro(add_ringmesh_executable exe_path folder_name)
         target_link_libraries(${exe_name} PRIVATE ${dependency})
     endforeach()
     
-    if(WIN32)
-        add_dependencies(copy_dll ${exe_name})
-    endif()
-
     # Add the project to a folder of projects for the tests
     set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
     

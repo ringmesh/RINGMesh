@@ -488,7 +488,7 @@ namespace RINGMesh
         void compute_conformal_mesh(
             const LineMesh< DIMENSION >& in, LineMesh< DIMENSION >& out );
 
-    protected:
+    private:
         /// Vector of the wells
         std::vector< Well< DIMENSION >* > wells_;
         /// Associated GeoModel

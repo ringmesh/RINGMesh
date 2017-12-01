@@ -58,10 +58,16 @@ namespace RINGMesh
 
         void build_geomodel();
 
+    protected:
+        const std::string& filename() const
+        {
+            return filename_;
+        }
+
     private:
         virtual void load_file() = 0;
 
-    protected:
-        std::string filename_{};
+    private:
+        const std::string filename_;
     };
 } // namespace RINGMesh

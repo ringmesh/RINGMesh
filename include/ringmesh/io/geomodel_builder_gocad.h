@@ -67,14 +67,15 @@ namespace RINGMesh
     public:
         GeoModelBuilderGocad( GeoModel3D& geomodel, std::string filename )
             : GeoModelBuilderFile( geomodel, std::move( filename ) ),
-              file_line_( filename_ )
+              file_line_( this->filename() )
         {
             if( !file_line_.OK() )
             {
                 throw RINGMeshException(
-                    "I/O", "Failed to open file ", filename_ );
+                    "I/O", "Failed to open file ", this->filename() );
             }
         }
+        virtual ~GeoModelBuilderGocad() = default;
 
         /*!
          * @brief Parses the file and loads the GeoModel
@@ -89,7 +90,7 @@ namespace RINGMesh
         virtual void read_line() = 0;
 
     protected:
-        GEO::LineInput file_line_{ filename_ };
+        GEO::LineInput file_line_{ filename() };
     };
 
     class GocadBaseParser
@@ -555,6 +556,8 @@ namespace RINGMesh
             LIGHT_TSOLID
         };
         GeoModelBuilderTSolid( GeoModel3D& geomodel, std::string filename );
+
+        virtual ~GeoModelBuilderTSolid() = default;
 
     private:
         void read_number_of_vertices();

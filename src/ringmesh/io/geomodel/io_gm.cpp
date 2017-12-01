@@ -345,11 +345,11 @@ namespace
         {
             const std::string directory_to_unzip{
                 GEO::FileSystem::normalized_path(
-                    GEO::FileSystem::dir_name( this->filename_ ) )
+                    GEO::FileSystem::dir_name( this->filename() ) )
                 + "/" + std::to_string(
-                            std::hash< std::string >()( this->filename_ ) )
+                            std::hash< std::string >()( this->filename() ) )
             };
-            UnZipFile uz{ this->filename_, directory_to_unzip };
+            UnZipFile uz{ this->filename(), directory_to_unzip };
 
             const auto mesh_entity_file = uz.get_file( "mesh_entities.txt" );
             load_mesh_entities( mesh_entity_file );
