@@ -60,7 +60,7 @@ namespace RINGMesh
      *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
      */
     template < typename Key, typename BaseClass, typename... Args >
-    class basic_api Factory
+    class Factory
     {
         static_assert( std::has_virtual_destructor< BaseClass >::value,
             "BaseClass must have a virtual destructor" );
@@ -74,8 +74,7 @@ namespace RINGMesh
             static_assert(
                 std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass is not constructible with Args..." );
-            auto& store = instance();
-            if( !store
+            if( !store_
                      .emplace(
                          key, Creator( create_function_impl< DerivedClass > ) )
                      .second )
@@ -88,9 +87,8 @@ namespace RINGMesh
         static std::unique_ptr< BaseClass > create(
             const Key& key, const Args&... args )
         {
-            auto& store = instance();
-            auto creator = store.find( key );
-            if( creator != store.end() )
+            auto creator = store_.find( key );
+            if( creator != store_.end() )
             {
                 return creator->second(
                     std::forward< const Args& >( args )... );
@@ -100,10 +98,9 @@ namespace RINGMesh
 
         static std::vector< Key > list_creators()
         {
-            auto& store = instance();
             std::vector< Key > creators;
-            creators.reserve( store.size() );
-            for( const auto& creator : store )
+            creators.reserve( store_.size() );
+            for( const auto& creator : store_ )
             {
                 creators.emplace_back( creator.first );
             }
@@ -112,8 +109,7 @@ namespace RINGMesh
 
         static bool has_creator( const Key& key )
         {
-            auto& store = instance();
-            return store.find( key ) != store.end();
+            return store_.find( key ) != store_.end();
         }
 
         using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >(
@@ -129,11 +125,10 @@ namespace RINGMesh
                 std::forward< Args >( args )... } };
         }
 
-        static FactoryStore& instance()
-        {
-            static FactoryStore store;
-            return store;
-        }
+        static FactoryStore store_;
     };
 
+    template < typename Key, typename BaseClass, typename... Args >
+    basic_api typename Factory< Key, BaseClass, Args... >::FactoryStore
+        Factory< Key, BaseClass, Args... >::store_;
 } // namespace RINGMesh
