@@ -278,6 +278,41 @@ namespace
         index_t edge_vertex_;
         index_t vertex_from_;
     };
+
+    std::vector< std::vector< index_t > > get_edges_around_vertices(
+        const LineMesh3D& conformal_mesh )
+    {
+        std::vector< std::vector< index_t > > edges_around_vertices(
+            conformal_mesh.nb_vertices() );
+        for( auto e : range( conformal_mesh.nb_edges() ) )
+        {
+            for( auto i : range( 2 ) )
+            {
+                auto v = conformal_mesh.edge_vertex( { e, i } );
+                edges_around_vertices[v].push_back( e );
+            }
+        }
+        return edges_around_vertices;
+    }
+
+    void process_linear_edges(
+        const std::vector< index_t >& edges,
+        std::vector< bool >& edge_visited,
+        const LineMesh3D& conformal_mesh,
+        std::stack< OrientedEdge >& S_part,
+        index_t v_to_id )
+    {
+        index_t count = 0;
+        for( auto edge : edges )
+        {
+            if( !edge_visited[edge] )
+            {
+                S_part.emplace( conformal_mesh, edge, v_to_id );
+                count++;
+            }
+        }
+        ringmesh_assert( count == 1 );
+    }
 } // namespace
 
 namespace RINGMesh
@@ -654,23 +689,12 @@ namespace RINGMesh
         auto conformal_mesh = LineMesh3D::create_mesh();
         compute_conformal_mesh( mesh, *conformal_mesh );
 
-        std::vector< std::vector< index_t > > edges_around_vertices(
-            conformal_mesh->nb_vertices() );
-        for( auto e : range( conformal_mesh->nb_edges() ) )
-        {
-            for( auto i : range( 2 ) )
-            {
-                index_t v =
-                    conformal_mesh
-                    ->edge_vertex( ElementLocalVertex( e, i ) );
-                edges_around_vertices[v].push_back( e );
-            }
-        }
+        auto edges_around_vertices = get_edges_around_vertices( *conformal_mesh );
 
         std::stack< OrientedEdge > S;
         for( auto v : range( conformal_mesh->nb_vertices() ) )
         {
-            const std::vector< index_t >& edges = edges_around_vertices[v];
+            const auto& edges = edges_around_vertices[v];
             if( edges.size() == 1 )
             {
                 S.emplace( *conformal_mesh, edges.front(), v );
@@ -711,20 +735,11 @@ namespace RINGMesh
                 const vec3& v_to = conformal_mesh->vertex( v_to_id );
                 well_part_points.push_back( v_from );
 
-                const std::vector< index_t >& edges =
-                    edges_around_vertices[v_to_id];
+                const auto& edges = edges_around_vertices[v_to_id];
                 if( edges.size() == 2 )
                 {
-                    index_t count = 0;
-                    for( auto edge : edges )
-                    {
-                        if( !edge_visited[edge] )
-                        {
-                            S_part.emplace( *conformal_mesh, edge, v_to_id );
-                            count++;
-                        }
-                    }
-                    ringmesh_assert( count == 1 );
+                    process_linear_edges( edges, edge_visited, *conformal_mesh,
+                        S_part, v_to_id );
                 }
                 else
                 {

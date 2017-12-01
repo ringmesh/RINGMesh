@@ -649,6 +649,24 @@ namespace RINGMesh
         virtual void read_line() = 0;
 
     protected:
+        GeoModelBuilderTSolid& builder()
+        {
+            return builder_;
+        }
+        GeoModel3D& geomodel()
+        {
+            return geomodel_;
+        }
+        GEO::LineInput& file_line()
+        {
+            return file_line_;
+        }
+        TSolidLoadingStorage& tsolid_load_storage()
+        {
+            return tsolid_load_storage_;
+        }
+
+    private:
         GeoModelBuilderTSolid& builder_;
         GeoModel3D& geomodel_;
         GEO::LineInput& file_line_;
@@ -670,21 +688,21 @@ namespace RINGMesh
 
         void read_line() override
         {
-            std::string keyword = file_line_.field( 0 );
+            std::string keyword = file_line().field( 0 );
             std::unique_ptr< TSolidLineParser > tsolid_parser =
-                TSolidLineFactory::create( keyword, this->builder_, geomodel_ );
+                TSolidLineFactory::create( keyword, builder(), geomodel() );
             if( tsolid_parser )
             {
-                tsolid_parser->execute( file_line_, tsolid_load_storage_ );
+                tsolid_parser->execute( file_line(), tsolid_load_storage() );
             }
             else
             {
                 std::unique_ptr< GocadLineParser > gocad_parser =
                     GocadLineFactory::create(
-                        keyword, this->builder_, geomodel_ );
+                        keyword, builder(), geomodel() );
                 if( gocad_parser )
                 {
-                    gocad_parser->execute( file_line_, tsolid_load_storage_ );
+                    gocad_parser->execute( file_line(), tsolid_load_storage() );
                 }
             }
         }
@@ -705,22 +723,22 @@ namespace RINGMesh
 
         void read_line() override
         {
-            std::string keyword = file_line_.field( 0 );
+            std::string keyword = file_line().field( 0 );
             std::unique_ptr< TSolidLineParser > tsolid_parser =
-                TSolidLineFactory::create( keyword, this->builder_, geomodel_ );
+                TSolidLineFactory::create( keyword, builder(), geomodel() );
             if( tsolid_parser )
             {
                 tsolid_parser->execute_light(
-                    file_line_, tsolid_load_storage_ );
+                    file_line(), tsolid_load_storage() );
             }
             else
             {
                 std::unique_ptr< GocadLineParser > gocad_parser =
                     GocadLineFactory::create(
-                        keyword, this->builder_, geomodel_ );
+                        keyword, builder(), geomodel() );
                 if( gocad_parser )
                 {
-                    gocad_parser->execute( file_line_, tsolid_load_storage_ );
+                    gocad_parser->execute( file_line(), tsolid_load_storage() );
                 }
             }
         }
