@@ -60,7 +60,7 @@ namespace RINGMesh
      *      std::unique_ptr< A > c = MyFactory::create( "C", 2, 8.6 );
      */
     template < typename Key, typename BaseClass, typename... Args >
-    class Factory
+    class basic_api Factory
     {
         static_assert( std::has_virtual_destructor< BaseClass >::value,
             "BaseClass must have a virtual destructor" );
