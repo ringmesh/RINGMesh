@@ -74,7 +74,8 @@ namespace RINGMesh
             static_assert(
                 std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass is not constructible with Args..." );
-            if( !store_
+            auto& store = instance();
+            if( !store
                      .emplace(
                          key, Creator( create_function_impl< DerivedClass > ) )
                      .second )
@@ -87,8 +88,9 @@ namespace RINGMesh
         static std::unique_ptr< BaseClass > create(
             const Key& key, const Args&... args )
         {
-            auto creator = store_.find( key );
-            if( creator != store_.end() )
+            auto& store = instance();
+            auto creator = store.find( key );
+            if( creator != store.end() )
             {
                 return creator->second(
                     std::forward< const Args& >( args )... );
@@ -98,9 +100,10 @@ namespace RINGMesh
 
         static std::vector< Key > list_creators()
         {
+            auto& store = instance();
             std::vector< Key > creators;
-            creators.reserve( store_.size() );
-            for( const auto& creator : store_ )
+            creators.reserve( store.size() );
+            for( const auto& creator : store )
             {
                 creators.emplace_back( creator.first );
             }
@@ -109,7 +112,8 @@ namespace RINGMesh
 
         static bool has_creator( const Key& key )
         {
-            return store_.find( key ) != store_.end();
+            auto& store = instance();
+            return store.find( key ) != store.end();
         }
 
         using Creator = typename std::add_pointer< std::unique_ptr< BaseClass >(
@@ -125,10 +129,11 @@ namespace RINGMesh
                 std::forward< Args >( args )... } };
         }
 
-        static FactoryStore store_;
+        static FactoryStore& instance()
+        {
+            static FactoryStore store;
+            return store;
+        }
     };
 
-    template < typename Key, typename BaseClass, typename... Args >
-    typename Factory< Key, BaseClass, Args... >::FactoryStore
-        Factory< Key, BaseClass, Args... >::store_;
 } // namespace RINGMesh
