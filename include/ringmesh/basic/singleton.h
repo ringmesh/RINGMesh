@@ -50,22 +50,24 @@ namespace RINGMesh
     class basic_api Singleton
     {
     protected:
-        template< class SingletinType >
+        template < class SingletinType >
         static SingletinType& instance()
         {
-            auto singleton = reinterpret_cast< SingletinType* >( instance(
-                typeid(SingletinType) ) );
+            auto singleton = reinterpret_cast< SingletinType* >(
+                instance( typeid( SingletinType ) ) );
             if( singleton == nullptr )
             {
-                instance = new SingletinType { };
-                set_instance( typeid(SingletinType), singleton );
+                instance = new SingletinType{};
+                set_instance( typeid( SingletinType ), singleton );
             }
 
             return *singleton;
         }
+
     private:
-        static void set_instance( const std::type_info &type, Singleton* singleton );
-        static Singleton* instance( const std::type_info &type );
+        static void set_instance(
+            const std::type_info& type, Singleton* singleton );
+        static Singleton* instance( const std::type_info& type );
     };
 
 } // namespace RINGMesh
