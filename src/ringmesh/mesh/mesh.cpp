@@ -69,6 +69,12 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "PointSetMesh",
+                    "Default mesh data structure not registered" );
+            }
             return create_mesh( "GeogramPointSetMesh" );
         }
         auto mesh = PointSetMeshFactory< DIMENSION >::create( new_type );
@@ -101,6 +107,12 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "LineMesh",
+                    "Default mesh data structure not registered" );
+            }
             return create_mesh( "GeogramLineMesh" );
         }
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
@@ -324,6 +336,12 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "SurfaceMesh",
+                    "Default mesh data structure not registered" );
+            }
             return create_mesh( "GeogramSurfaceMesh" );
         }
         auto mesh = SurfaceMeshFactory< DIMENSION >::create( new_type );
@@ -843,6 +861,12 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "VolumeMesh",
+                    "Default mesh data structure not registered" );
+            }
             return create_mesh( "GeogramVolumeMesh" );
         }
         auto mesh = VolumeMeshFactory< DIMENSION >::create( new_type );
