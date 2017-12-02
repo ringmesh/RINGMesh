@@ -57,7 +57,7 @@ namespace RINGMesh
                 instance( typeid( SingletinType ) ) );
             if( singleton == nullptr )
             {
-                instance = new SingletinType{};
+                singleton = new SingletinType{};
                 set_instance( typeid( SingletinType ), singleton );
             }
 

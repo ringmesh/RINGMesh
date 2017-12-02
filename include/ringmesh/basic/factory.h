@@ -75,7 +75,7 @@ namespace RINGMesh
             static_assert(
                 std::is_constructible< DerivedClass, Args... >::value,
                 "DerivedClass is not constructible with Args..." );
-            auto& store = instance();
+            auto& store = get_store();
             if( !store
                      .emplace(
                          key, Creator( create_function_impl< DerivedClass > ) )
@@ -89,7 +89,7 @@ namespace RINGMesh
         static std::unique_ptr< BaseClass > create(
             const Key& key, const Args&... args )
         {
-            auto& store = instance();
+            auto& store = get_store();
             auto creator = store.find( key );
             if( creator != store.end() )
             {
@@ -101,7 +101,7 @@ namespace RINGMesh
 
         static std::vector< Key > list_creators()
         {
-            auto& store = instance();
+            auto& store = get_store();
             std::vector< Key > creators;
             creators.reserve( store.size() );
             for( const auto& creator : store )
@@ -113,7 +113,7 @@ namespace RINGMesh
 
         static bool has_creator( const Key& key )
         {
-            auto& store = instance();
+            auto& store = get_store();
             return store.find( key ) != store.end();
         }
 
@@ -130,11 +130,13 @@ namespace RINGMesh
                 std::forward< Args >( args )... } };
         }
 
-        static FactoryStore& instance()
+        static FactoryStore& get_store()
         {
-            static FactoryStore store;
-            return store;
+            return Singleton::instance< Factory >().store_;
         }
+
+    private:
+        FactoryStore store_;
     };
 
 } // namespace RINGMesh
