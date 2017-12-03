@@ -52,18 +52,26 @@ namespace RINGMesh
 
     std::map< std::string,
         std::add_pointer< std::unique_ptr< AttributeStore >() >::type >
-        AttributeStore::type_name_to_creator_;
+        AttributeStoreManager::type_name_to_creator_;
 
     std::map< std::string, std::string >
-        AttributeStore::typeid_name_to_type_name_;
+        AttributeStoreManager::typeid_name_to_type_name_;
 
     std::map< std::string, std::string >
-        AttributeStore::type_name_to_typeid_name_;
+        AttributeStoreManager::type_name_to_typeid_name_;
 
     AttributeStore::~AttributeStore()
     {
         // It is illegal to keep an Attribute<> active
         // when the object it is bound to is destroyed.
+    }
+
+    std::unique_ptr< RINGMesh::AttributeStore > AttributeStore::clone() const
+    {
+        auto new_attstore = AttributeStoreManager::create_attribute_store_by_element_type_name(
+            store_->element_typeid_name() );
+        new_attstore->set_store( store_->clone() );
+        return new_attstore;
     }
 
     /*************************************************************************/

@@ -446,13 +446,7 @@ namespace RINGMesh
          *  of this AttributeStore.
          * \details Only the data is copied.
          */
-        std::unique_ptr< RINGMesh::AttributeStore > clone() const
-        {
-            auto new_attstore = create_attribute_store_by_element_type_name(
-                store_->element_typeid_name() );
-            new_attstore->set_store( store_->clone() );
-            return new_attstore;
-        }
+        std::unique_ptr< RINGMesh::AttributeStore > clone() const;
 
         /**
          * \brief Gets a pointer to the stored data.
@@ -487,6 +481,14 @@ namespace RINGMesh
             return store_->elements_type_matches( type_name );
         }
 
+    protected:
+        std::unique_ptr< Store > store_{ nullptr };
+    };
+
+
+    class RINGMESH_API AttributeStoreManager
+    {
+    public:
         /**
          * \brief Tests whether a given element type is registered in
          *   the system.
@@ -624,9 +626,8 @@ namespace RINGMesh
             register_attribute_creator< vec3 >( "vec3" );
         }
 
-    protected:
-        std::unique_ptr< Store > store_{ nullptr };
 
+    private:
         static std::map< std::string,
             std::add_pointer< std::unique_ptr< AttributeStore >() >::type >
             type_name_to_creator_;

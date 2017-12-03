@@ -2957,15 +2957,15 @@ namespace RINGMesh
 
                     if( !reg_v_attr_mgr.is_defined( cur_attr_name ) )
                     {
-                        const auto cur_type_name = AttributeStore::
+                        const auto cur_type_name = AttributeStoreManager::
                             element_type_name_by_element_typeid_name(
                                 cur_v_att_store_in_gmm->get_store()
                                     .element_typeid_name() );
                         ringmesh_assert(
-                            AttributeStore::element_type_name_is_known(
+                            AttributeStoreManager::element_type_name_is_known(
                                 cur_type_name ) );
                         cur_v_att_store_in_reg =
-                            AttributeStore::
+                            AttributeStoreManager::
                                 create_attribute_store_by_element_type_name(
                                     cur_type_name )
                                     .release();
@@ -3024,14 +3024,14 @@ namespace RINGMesh
                 AttributeStore* cur_v_att_store{ nullptr };
                 if( !vertices.attribute_manager().is_defined( cur_attr_name ) )
                 {
-                    const auto cur_type_name = AttributeStore::
+                    const auto cur_type_name = AttributeStoreManager::
                         element_type_name_by_element_typeid_name(
                             cur_v_att_store_in_reg->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStore::element_type_name_is_known(
+                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
                         cur_type_name ) );
                     cur_v_att_store =
-                        AttributeStore::
+                        AttributeStoreManager::
                             create_attribute_store_by_element_type_name(
                                 cur_type_name )
                                 .release();
@@ -3090,14 +3090,14 @@ namespace RINGMesh
 
                 if( !reg_c_attr_mgr.is_defined( cur_attr_name ) )
                 {
-                    const auto cur_type_name = AttributeStore::
+                    const auto cur_type_name = AttributeStoreManager::
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_gmm->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStore::element_type_name_is_known(
+                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
                         cur_type_name ) );
                     cur_c_att_store_in_reg =
-                        AttributeStore::
+                        AttributeStoreManager::
                             create_attribute_store_by_element_type_name(
                                 cur_type_name )
                                 .release();
@@ -3154,14 +3154,14 @@ namespace RINGMesh
                 RINGMesh::AttributeStore* cur_c_att_store;
                 if( !cells.attribute_manager().is_defined( cur_attr_name ) )
                 {
-                    const std::string cur_type_name = AttributeStore::
+                    const std::string cur_type_name = AttributeStoreManager::
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_reg->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStore::element_type_name_is_known(
+                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
                         cur_type_name ) );
                     cur_c_att_store =
-                        AttributeStore::
+                        AttributeStoreManager::
                             create_attribute_store_by_element_type_name(
                                 cur_type_name )
                                 .release();
