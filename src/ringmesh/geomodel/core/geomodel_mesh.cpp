@@ -3028,8 +3028,9 @@ namespace RINGMesh
                         element_type_name_by_element_typeid_name(
                             cur_v_att_store_in_reg->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
-                        cur_type_name ) );
+                    ringmesh_assert(
+                        AttributeStoreManager::element_type_name_is_known(
+                            cur_type_name ) );
                     cur_v_att_store =
                         AttributeStoreManager::
                             create_attribute_store_by_element_type_name(
@@ -3094,8 +3095,9 @@ namespace RINGMesh
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_gmm->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
-                        cur_type_name ) );
+                    ringmesh_assert(
+                        AttributeStoreManager::element_type_name_is_known(
+                            cur_type_name ) );
                     cur_c_att_store_in_reg =
                         AttributeStoreManager::
                             create_attribute_store_by_element_type_name(
@@ -3158,8 +3160,9 @@ namespace RINGMesh
                         element_type_name_by_element_typeid_name(
                             cur_c_att_store_in_reg->get_store()
                                 .element_typeid_name() );
-                    ringmesh_assert( AttributeStoreManager::element_type_name_is_known(
-                        cur_type_name ) );
+                    ringmesh_assert(
+                        AttributeStoreManager::element_type_name_is_known(
+                            cur_type_name ) );
                     cur_c_att_store =
                         AttributeStoreManager::
                             create_attribute_store_by_element_type_name(

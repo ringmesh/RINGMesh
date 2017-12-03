@@ -485,7 +485,6 @@ namespace RINGMesh
         std::unique_ptr< Store > store_{ nullptr };
     };
 
-
     class RINGMESH_API AttributeStoreManager
     {
     public:
@@ -625,7 +624,6 @@ namespace RINGMesh
             register_attribute_creator< vec2 >( "vec2" );
             register_attribute_creator< vec3 >( "vec3" );
         }
-
 
     private:
         static std::map< std::string,

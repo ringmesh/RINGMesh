@@ -68,8 +68,9 @@ namespace RINGMesh
 
     std::unique_ptr< RINGMesh::AttributeStore > AttributeStore::clone() const
     {
-        auto new_attstore = AttributeStoreManager::create_attribute_store_by_element_type_name(
-            store_->element_typeid_name() );
+        auto new_attstore =
+            AttributeStoreManager::create_attribute_store_by_element_type_name(
+                store_->element_typeid_name() );
         new_attstore->set_store( store_->clone() );
         return new_attstore;
     }
