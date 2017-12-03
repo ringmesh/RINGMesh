@@ -108,7 +108,9 @@ bool compare_double( std::string word1, std::string word2 )
     }
     try
     {
+        DEBUG( word1 );
         auto value1 = std::stol( word1 );
+        DEBUG( word2 );
         auto value2 = std::stol( word2 );
         return std::abs( value1 - value2 ) <= MAX_DIFF_DIGIT;
     }
