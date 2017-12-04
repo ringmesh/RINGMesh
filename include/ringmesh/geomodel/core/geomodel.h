@@ -413,8 +413,9 @@ namespace RINGMesh
                 for( auto c : range( region.nb_mesh_elements() ) )
                 {
                     auto gmm_cell = mesh.cells.cell( region.index(), c );
-                    new_attribute.set_value(mesh.cells.index_in_region( gmm_cell ),
-                        old_attribute[gmm_cell]);
+                    new_attribute.set_value(
+                        mesh.cells.index_in_region( gmm_cell ),
+                        old_attribute[gmm_cell] );
                 }
             }
         }
@@ -436,7 +437,7 @@ namespace RINGMesh
                 for( auto c : range( region.nb_mesh_elements() ) )
                 {
                     auto gmm_cell = mesh.cells.cell( region.index(), c );
-                    new_attribute.set_value( gmm_cell, old_attribute[c]);
+                    new_attribute.set_value( gmm_cell, old_attribute[c] );
                 }
             }
         }
@@ -458,8 +459,9 @@ namespace RINGMesh
                 for( auto v : range( region.nb_vertices() ) )
                 {
 <<<<<<< HEAD
-                    new_attribute.set_value(v, old_attribute[mesh.vertices.geomodel_vertex_id(
-                        region.gmme(), v )]);
+                    new_attribute.set_value(
+                        v, old_attribute[mesh.vertices.geomodel_vertex_id(
+                               region.gmme(), v )] );
 =======
                     new_attribute[v] =
                         old_attribute[mesh.vertices.geomodel_vertex_id(
@@ -486,8 +488,9 @@ namespace RINGMesh
                 for( auto v : range( region.nb_vertices() ) )
                 {
 <<<<<<< HEAD
-                    new_attribute.set_value(mesh.vertices.geomodel_vertex_id( region.gmme(), v ),
-                        old_attribute[v]);
+                    new_attribute.set_value(
+                        mesh.vertices.geomodel_vertex_id( region.gmme(), v ),
+                        old_attribute[v] );
 =======
                     new_attribute[mesh.vertices.geomodel_vertex_id(
                         region.gmme(), v )] = old_attribute[v];
