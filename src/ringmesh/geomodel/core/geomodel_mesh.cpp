@@ -2949,8 +2949,8 @@ namespace RINGMesh
                 auto att_store_in_region = att_store_in_gmm->clone();
                 att_store_in_region->compress( old2new );
                 att_store_in_region->resize( region.nb_vertices() );
-                reg_attr_mgr.bind_attribute_store( attr_name,
-                    std::move( att_store_in_region ) );
+                reg_attr_mgr.bind_attribute_store(
+                    attr_name, std::move( att_store_in_region ) );
             }
         }
     }
@@ -2958,65 +2958,73 @@ namespace RINGMesh
     void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gm_regions_to_gmm()
         const
     {
-        throw RINGMeshException( "GeoModelMesh", "Transfert not implemented yet" );
-//        for( const auto& cur_reg : geomodel().regions() )
-//        {
-//            AttributesManager& reg_vertex_attr_mgr =
-//                cur_reg.vertex_attribute_manager();
-//            std::vector< std::string > att_v_names =
-//                reg_vertex_attr_mgr.attribute_names();
-//            for( const auto& cur_attr_name : att_v_names )
-//            {
-//                auto* cur_v_att_store_in_reg =
-//                    reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
-//                ringmesh_assert( cur_v_att_store_in_reg != nullptr );
-//                AttributeStore* cur_v_att_store{ nullptr };
-//                if( !vertices.attribute_manager().is_defined( cur_attr_name ) )
-//                {
-//                    const auto cur_type_name = AttributeStoreManager::
-//                        element_type_name_by_element_typeid_name(
-//                            cur_v_att_store_in_reg->get_store()
-//                                .element_typeid_name() );
-//                    ringmesh_assert(
-//                        AttributeStoreManager::element_type_name_is_known(
-//                            cur_type_name ) );
-//                    cur_v_att_store =
-//                        AttributeStoreManager::
-//                            create_attribute_store_by_element_type_name(
-//                                cur_type_name )
-//                                .release();
-//                    vertices.attribute_manager().bind_attribute_store(
-//                        cur_attr_name, cur_v_att_store );
-//                }
-//                else
-//                {
-//                    cur_v_att_store =
-//                        vertices.attribute_manager().find_attribute_store(
-//                            cur_attr_name );
-//                }
-//                ringmesh_assert( cur_v_att_store != nullptr );
-//                ringmesh_assert(
-//                    cur_v_att_store->get_store().element_size()
-//                    == cur_v_att_store_in_reg->get_store().element_size() );
-//
-//                for( auto v_in_reg_itr : range( cur_reg.nb_vertices() ) )
-//                {
-//                    auto v_id_in_gmm = vertices.geomodel_vertex_id(
-//                        cur_reg.gmme(), v_in_reg_itr );
-//                    GEO::Memory::copy(
-//                        static_cast< GEO::Memory::pointer >(
-//                            cur_v_att_store->data() )
-//                            + v_id_in_gmm
-//                                  * cur_v_att_store->get_store().element_size(),
-//                        static_cast< GEO::Memory::pointer >(
-//                            cur_v_att_store_in_reg->data() )
-//                            + v_in_reg_itr
-//                                  * cur_v_att_store_in_reg->get_store()
-//                                        .element_size(),
-//                        cur_v_att_store->get_store().element_size() );
-//                }
-//            }
-//        }
+        throw RINGMeshException(
+            "GeoModelMesh", "Transfert not implemented yet" );
+        //        for( const auto& cur_reg : geomodel().regions() )
+        //        {
+        //            AttributesManager& reg_vertex_attr_mgr =
+        //                cur_reg.vertex_attribute_manager();
+        //            std::vector< std::string > att_v_names =
+        //                reg_vertex_attr_mgr.attribute_names();
+        //            for( const auto& cur_attr_name : att_v_names )
+        //            {
+        //                auto* cur_v_att_store_in_reg =
+        //                    reg_vertex_attr_mgr.find_attribute_store(
+        //                    cur_attr_name );
+        //                ringmesh_assert( cur_v_att_store_in_reg != nullptr );
+        //                AttributeStore* cur_v_att_store{ nullptr };
+        //                if( !vertices.attribute_manager().is_defined(
+        //                cur_attr_name ) )
+        //                {
+        //                    const auto cur_type_name = AttributeStoreManager::
+        //                        element_type_name_by_element_typeid_name(
+        //                            cur_v_att_store_in_reg->get_store()
+        //                                .element_typeid_name() );
+        //                    ringmesh_assert(
+        //                        AttributeStoreManager::element_type_name_is_known(
+        //                            cur_type_name ) );
+        //                    cur_v_att_store =
+        //                        AttributeStoreManager::
+        //                            create_attribute_store_by_element_type_name(
+        //                                cur_type_name )
+        //                                .release();
+        //                    vertices.attribute_manager().bind_attribute_store(
+        //                        cur_attr_name, cur_v_att_store );
+        //                }
+        //                else
+        //                {
+        //                    cur_v_att_store =
+        //                        vertices.attribute_manager().find_attribute_store(
+        //                            cur_attr_name );
+        //                }
+        //                ringmesh_assert( cur_v_att_store != nullptr );
+        //                ringmesh_assert(
+        //                    cur_v_att_store->get_store().element_size()
+        //                    ==
+        //                    cur_v_att_store_in_reg->get_store().element_size()
+        //                    );
+        //
+        //                for( auto v_in_reg_itr : range( cur_reg.nb_vertices()
+        //                ) )
+        //                {
+        //                    auto v_id_in_gmm = vertices.geomodel_vertex_id(
+        //                        cur_reg.gmme(), v_in_reg_itr );
+        //                    GEO::Memory::copy(
+        //                        static_cast< GEO::Memory::pointer >(
+        //                            cur_v_att_store->data() )
+        //                            + v_id_in_gmm
+        //                                  *
+        //                                  cur_v_att_store->get_store().element_size(),
+        //                        static_cast< GEO::Memory::pointer >(
+        //                            cur_v_att_store_in_reg->data() )
+        //                            + v_in_reg_itr
+        //                                  *
+        //                                  cur_v_att_store_in_reg->get_store()
+        //                                        .element_size(),
+        //                        cur_v_att_store->get_store().element_size() );
+        //                }
+        //            }
+        //        }
     }
 
     void GeoModelMesh< 3 >::transfer_cell_attributes_from_gmm_to_gm_regions()
@@ -3046,8 +3054,8 @@ namespace RINGMesh
                 auto att_store_in_region = att_store_in_gmm->clone();
                 att_store_in_region->compress( old2new );
                 att_store_in_region->resize( region.nb_mesh_elements() );
-                reg_attr_mgr.bind_attribute_store( attr_name,
-                    std::move( att_store_in_region ) );
+                reg_attr_mgr.bind_attribute_store(
+                    attr_name, std::move( att_store_in_region ) );
             }
         }
     }
@@ -3055,68 +3063,81 @@ namespace RINGMesh
     void GeoModelMesh< 3 >::transfer_cell_attributes_from_gm_regions_to_gmm()
         const
     {
-        throw RINGMeshException( "GeoModelMesh", "Transfert not implemented yet" );
-//        const auto& nn_search = cells.cell_nn_search();
-//        for( const auto& cur_reg : geomodel().regions() )
-//        {
-//            auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
-//            std::vector< std::string > att_c_names =
-//                reg_cell_attr_mgr.attribute_names();
-//            for( const auto& cur_attr_name : att_c_names )
-//            {
-//                auto* cur_c_att_store_in_reg =
-//                    reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
-//                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-//                RINGMesh::AttributeStore* cur_c_att_store;
-//                if( !cells.attribute_manager().is_defined( cur_attr_name ) )
-//                {
-//                    const std::string cur_type_name = AttributeStoreManager::
-//                        element_type_name_by_element_typeid_name(
-//                            cur_c_att_store_in_reg->get_store()
-//                                .element_typeid_name() );
-//                    ringmesh_assert(
-//                        AttributeStoreManager::element_type_name_is_known(
-//                            cur_type_name ) );
-//                    cur_c_att_store =
-//                        AttributeStoreManager::
-//                            create_attribute_store_by_element_type_name(
-//                                cur_type_name )
-//                                .release();
-//                    cells.attribute_manager().bind_attribute_store(
-//                        cur_attr_name, cur_c_att_store );
-//                }
-//                else
-//                {
-//                    cur_c_att_store =
-//                        cells.attribute_manager().find_attribute_store(
-//                            cur_attr_name );
-//                }
-//                ringmesh_assert( cur_c_att_store != nullptr );
-//                ringmesh_assert(
-//                    cur_c_att_store->get_store().element_size()
-//                    == cur_c_att_store_in_reg->get_store().element_size() );
-//
-//                for( auto c_in_reg_itr : range( cur_reg.nb_mesh_elements() ) )
-//                {
-//                    auto center =
-//                        cur_reg.mesh_element_barycenter( c_in_reg_itr );
-//                    auto c_in_geom_model_mesh =
-//                        nn_search.get_neighbors( center, geomodel_.epsilon() );
-//                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
-//                    GEO::Memory::copy(
-//                        static_cast< GEO::Memory::pointer >(
-//                            cur_c_att_store->data() )
-//                            + c_in_geom_model_mesh[0]
-//                                  * cur_c_att_store->get_store().element_size(),
-//                        static_cast< GEO::Memory::pointer >(
-//                            cur_c_att_store_in_reg->data() )
-//                            + c_in_reg_itr
-//                                  * cur_c_att_store_in_reg->get_store()
-//                                        .element_size(),
-//                        cur_c_att_store->get_store().element_size() );
-//                }
-//            }
-//        }
+        throw RINGMeshException(
+            "GeoModelMesh", "Transfert not implemented yet" );
+        //        const auto& nn_search = cells.cell_nn_search();
+        //        for( const auto& cur_reg : geomodel().regions() )
+        //        {
+        //            auto& reg_cell_attr_mgr =
+        //            cur_reg.cell_attribute_manager();
+        //            std::vector< std::string > att_c_names =
+        //                reg_cell_attr_mgr.attribute_names();
+        //            for( const auto& cur_attr_name : att_c_names )
+        //            {
+        //                auto* cur_c_att_store_in_reg =
+        //                    reg_cell_attr_mgr.find_attribute_store(
+        //                    cur_attr_name );
+        //                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
+        //                RINGMesh::AttributeStore* cur_c_att_store;
+        //                if( !cells.attribute_manager().is_defined(
+        //                cur_attr_name ) )
+        //                {
+        //                    const std::string cur_type_name =
+        //                    AttributeStoreManager::
+        //                        element_type_name_by_element_typeid_name(
+        //                            cur_c_att_store_in_reg->get_store()
+        //                                .element_typeid_name() );
+        //                    ringmesh_assert(
+        //                        AttributeStoreManager::element_type_name_is_known(
+        //                            cur_type_name ) );
+        //                    cur_c_att_store =
+        //                        AttributeStoreManager::
+        //                            create_attribute_store_by_element_type_name(
+        //                                cur_type_name )
+        //                                .release();
+        //                    cells.attribute_manager().bind_attribute_store(
+        //                        cur_attr_name, cur_c_att_store );
+        //                }
+        //                else
+        //                {
+        //                    cur_c_att_store =
+        //                        cells.attribute_manager().find_attribute_store(
+        //                            cur_attr_name );
+        //                }
+        //                ringmesh_assert( cur_c_att_store != nullptr );
+        //                ringmesh_assert(
+        //                    cur_c_att_store->get_store().element_size()
+        //                    ==
+        //                    cur_c_att_store_in_reg->get_store().element_size()
+        //                    );
+        //
+        //                for( auto c_in_reg_itr : range(
+        //                cur_reg.nb_mesh_elements() ) )
+        //                {
+        //                    auto center =
+        //                        cur_reg.mesh_element_barycenter( c_in_reg_itr
+        //                        );
+        //                    auto c_in_geom_model_mesh =
+        //                        nn_search.get_neighbors( center,
+        //                        geomodel_.epsilon() );
+        //                    ringmesh_assert( c_in_geom_model_mesh.size() == 1
+        //                    );
+        //                    GEO::Memory::copy(
+        //                        static_cast< GEO::Memory::pointer >(
+        //                            cur_c_att_store->data() )
+        //                            + c_in_geom_model_mesh[0]
+        //                                  *
+        //                                  cur_c_att_store->get_store().element_size(),
+        //                        static_cast< GEO::Memory::pointer >(
+        //                            cur_c_att_store_in_reg->data() )
+        //                            + c_in_reg_itr
+        //                                  *
+        //                                  cur_c_att_store_in_reg->get_store()
+        //                                        .element_size(),
+        //                        cur_c_att_store->get_store().element_size() );
+        //                }
+        //            }
+        //        }
     }
 
     template class RINGMESH_API GeoModelMeshBase< 2 >;

@@ -532,7 +532,8 @@ namespace RINGMesh
         }
 
     private:
-        using Creator = std::add_pointer< std::unique_ptr< AttributeStore >() >::type;
+        using Creator =
+            std::add_pointer< std::unique_ptr< AttributeStore >() >::type;
         static std::map< std::string, Creator > typeid_to_creator_;
     };
 
@@ -714,13 +715,13 @@ namespace RINGMesh
             store_ = manager_.find_attribute_store( name );
             if( store_ == nullptr )
             {
-                store_ = new AttributeStore ;
+                store_ = new AttributeStore;
                 auto store = std::unique_ptr< AttributeStore >{ store_ };
                 store->set_store( new VectorStore< T > );
                 store->resize( manager_.nb_items() );
                 manager_.bind_attribute_store( name, std::move( store ) );
                 if( !AttributeStoreManager::element_typeid_name_is_known(
-                    typeid(T).name() ) )
+                        typeid( T ).name() ) )
                 {
                     AttributeStoreManager::register_attribute_creator< T >();
                 }
