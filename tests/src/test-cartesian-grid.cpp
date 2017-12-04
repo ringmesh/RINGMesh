@@ -40,12 +40,13 @@
 #include <ringmesh/mesh/cartesian_grid.h>
 
 /*!
+ * @file Tests for the frame structures and the cartesian grids
  * @author Melchior Schuh-Senlis
  */
 
 using namespace RINGMesh;
 
-void test_frames()
+void test_frames_and_cartesian_grid()
 {
     vec3 origin{ 1, 1, 1 };
     vec3 x{ 0.5, 0, 0 };
@@ -67,6 +68,19 @@ void test_frames()
         throw RINGMeshException(
             "TEST", "Error in coordinate reference change" );
     }
+    if( !ReferenceFrameManipulator3D::frame_is_orthogonal( reference_frame ) )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in checking the orthogonality of a frame" );
+    }
+    vec3 z2{ 1, 1, 2 };
+    Frame3D frame2{ x, y, z2 };
+    ReferenceFrame3D reference_frame2{ origin, frame2 };
+    if( ReferenceFrameManipulator3D::frame_is_orthogonal( reference_frame2 ) )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in checking the orthogonality of a frame" );
+    }
 
     ReferenceFrame3D inverse_frame =
         ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
@@ -78,10 +92,9 @@ void test_frames()
     {
         throw RINGMeshException( "TEST", "Error in reference frame change" );
     }
-}
 
-void test_cartesian_grid()
-{
+    ivec3 dimensions_grille{ 10, 8, 9 };
+    CartesianGrid< 3 > cartesiangrid{ dimensions_grille, reference_frame };
 }
 
 int main()
@@ -94,8 +107,7 @@ int main()
 
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
-        test_frames();
-        test_cartesian_grid();
+        test_frames_and_cartesian_grid();
     }
     catch( const RINGMeshException& e )
     {

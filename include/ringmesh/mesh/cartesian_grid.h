@@ -77,6 +77,12 @@ namespace RINGMesh
               inverse_cartesian_frame_( ReferenceFrameManipulator< DIMENSION >::
                       reference_frame_from_global_to_local( cartesian_frame_ ) )
         {
+        	if ( !ReferenceFrameManipulator< DIMENSION >::frame_is_orthogonal( cartesian_frame_) )
+        	{
+        		throw RINGMeshException( "RINGMesh Test",
+					"Warning : the frame of the Cartesian Grid "
+					"you're trying to create is not orthogonal " );
+        	}
             for( auto i : range( DIMENSION ) )
             {
                 if( nb_cells_in_each_direction[i] < 1 )
@@ -104,7 +110,7 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-        void resize( ivecn< DIMENSION >& new_size )
+        void resize( ivecn< DIMENSION >& new_size, ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
             nb_cells_in_each_direction_ = std::move( new_size );
             nb_total_cells_ = 1;
@@ -120,11 +126,24 @@ namespace RINGMesh
                 }
                 nb_total_cells_ *= nb_cells_in_each_direction_[i];
             }
+            if ( !ReferenceFrameManipulator< DIMENSION >::frame_is_orthogonal( vec_cartesian_axis) )
+			{
+				throw RINGMeshException( "RINGMesh Test",
+					"Warning : the frame of the Cartesian Grid "
+					"you're trying to create is not orthogonal " );
+			}
+            cartesian_frame_ = std::move( vec_cartesian_axis );
             //            attributes_manager_.resize(nb_total_cells_);
         }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
+        	if ( !ReferenceFrameManipulator< DIMENSION >::frame_is_orthogonal( vec_cartesian_axis) )
+			{
+				throw RINGMeshException( "RINGMesh Test",
+					"Warning : the frame of the Cartesian Grid "
+					"you're trying to create is not orthogonal " );
+			}
             cartesian_frame_ = std::move( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
                 reference_frame_from_global_to_local( cartesian_frame_ );
