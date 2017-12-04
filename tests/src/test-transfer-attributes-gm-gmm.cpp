@@ -137,8 +137,9 @@ namespace
             attribute_names[0] );
         geomodel.transfer_vertex_attribute_from_gm_regions< vec3 >(
             attribute_names[3] );
-        geomodel.transfer_vertex_attribute_from_gm_regions< std::vector< double > >(
-            attribute_names[4] );
+        geomodel
+            .transfer_vertex_attribute_from_gm_regions< std::vector< double > >(
+                attribute_names[4] );
         geomodel.transfer_vertex_attribute_from_gm_regions< char >(
             attribute_names[5] );
     }
@@ -174,8 +175,9 @@ namespace
             attribute_names[0] );
         geomodel.transfer_vertex_attribute_to_gm_regions< vec3 >(
             attribute_names[3] );
-        geomodel.transfer_vertex_attribute_to_gm_regions< std::vector< double > >(
-            attribute_names[4] );
+        geomodel
+            .transfer_vertex_attribute_to_gm_regions< std::vector< double > >(
+                attribute_names[4] );
         geomodel.transfer_vertex_attribute_to_gm_regions< char >(
             attribute_names[5] );
     }
@@ -245,8 +247,9 @@ namespace
             attribute_names[0] );
         geomodel.transfer_cell_attribute_from_gm_regions< vec3 >(
             attribute_names[3] );
-        geomodel.transfer_cell_attribute_from_gm_regions< std::vector< double > >(
-            attribute_names[4] );
+        geomodel
+            .transfer_cell_attribute_from_gm_regions< std::vector< double > >(
+                attribute_names[4] );
         geomodel.transfer_cell_attribute_from_gm_regions< char >(
             attribute_names[5] );
     }
