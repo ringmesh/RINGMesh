@@ -1410,18 +1410,7 @@ namespace RINGMesh
         explicit GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
 
-        /*! @}
-         * \name Transfers of attributes
-         * @{
-         */
-        void transfer_attributes_from_gmm_to_gm_regions() const;
-        void transfer_attributes_from_gm_regions_to_gmm() const;
-        void transfer_cell_attributes_from_gmm_to_gm_regions() const;
-        void transfer_cell_attributes_from_gm_regions_to_gmm() const;
-        void transfer_vertex_attributes_from_gmm_to_gm_regions() const;
-        void transfer_vertex_attributes_from_gm_regions_to_gmm() const;
-
-        /*! @}
+        /*!
          * \name Vertex duplication
          * @{
          */

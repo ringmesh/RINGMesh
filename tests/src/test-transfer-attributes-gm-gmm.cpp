@@ -129,6 +129,18 @@ namespace
                     vertex_char_attr );
             }
         }
+        geomodel.transfer_vertex_attribute_from_gm_regions< long int >(
+            attribute_names[0] );
+        geomodel.transfer_vertex_attribute_from_gm_regions< bool >(
+            attribute_names[1] );
+        geomodel.transfer_vertex_attribute_from_gm_regions< double >(
+            attribute_names[0] );
+        geomodel.transfer_vertex_attribute_from_gm_regions< vec3 >(
+            attribute_names[3] );
+        geomodel.transfer_vertex_attribute_from_gm_regions< std::vector< double > >(
+            attribute_names[4] );
+        geomodel.transfer_vertex_attribute_from_gm_regions< char >(
+            attribute_names[5] );
     }
 
     void set_vertex_attributes_on_geomodelmesh( const GeoModel3D& geomodel )
@@ -154,6 +166,18 @@ namespace
                 vertex_long_int_attr, vertex_bool_attr, vertex_double_attr,
                 vertex_vec3_attr, vertex_dim_6_double_attr, vertex_char_attr );
         }
+        geomodel.transfer_vertex_attribute_to_gm_regions< long int >(
+            attribute_names[0] );
+        geomodel.transfer_vertex_attribute_to_gm_regions< bool >(
+            attribute_names[1] );
+        geomodel.transfer_vertex_attribute_to_gm_regions< double >(
+            attribute_names[0] );
+        geomodel.transfer_vertex_attribute_to_gm_regions< vec3 >(
+            attribute_names[3] );
+        geomodel.transfer_vertex_attribute_to_gm_regions< std::vector< double > >(
+            attribute_names[4] );
+        geomodel.transfer_vertex_attribute_to_gm_regions< char >(
+            attribute_names[5] );
     }
 
     void assign_cell_attribute_values( index_t cell_i,
@@ -213,6 +237,18 @@ namespace
                     cell_vec3_attr, cell_dim_6_double_attr, cell_char_attr );
             }
         }
+        geomodel.transfer_cell_attribute_from_gm_regions< long int >(
+            attribute_names[0] );
+        geomodel.transfer_cell_attribute_from_gm_regions< bool >(
+            attribute_names[1] );
+        geomodel.transfer_cell_attribute_from_gm_regions< double >(
+            attribute_names[0] );
+        geomodel.transfer_cell_attribute_from_gm_regions< vec3 >(
+            attribute_names[3] );
+        geomodel.transfer_cell_attribute_from_gm_regions< std::vector< double > >(
+            attribute_names[4] );
+        geomodel.transfer_cell_attribute_from_gm_regions< char >(
+            attribute_names[5] );
     }
 
     void set_cell_attributes_on_geomodelmesh( const GeoModel3D& geomodel )
@@ -239,6 +275,18 @@ namespace
                 cell_double_attr, cell_vec3_attr, cell_dim_6_double_attr,
                 cell_char_attr );
         }
+        geomodel.transfer_cell_attribute_to_gm_regions< long int >(
+            attribute_names[0] );
+        geomodel.transfer_cell_attribute_to_gm_regions< bool >(
+            attribute_names[1] );
+        geomodel.transfer_cell_attribute_to_gm_regions< double >(
+            attribute_names[0] );
+        geomodel.transfer_cell_attribute_to_gm_regions< vec3 >(
+            attribute_names[3] );
+        geomodel.transfer_cell_attribute_to_gm_regions< std::vector< double > >(
+            attribute_names[4] );
+        geomodel.transfer_cell_attribute_to_gm_regions< char >(
+            attribute_names[5] );
     }
 
     void check_attribute_exists( AttributesManager& attr_mgr,
@@ -680,8 +728,6 @@ namespace
 
         set_vertex_attributes_on_geomodel_regions( geomodel );
         set_cell_attributes_on_geomodel_regions( geomodel );
-        const GeoModelMesh3D& gmm = geomodel.mesh;
-        gmm.transfer_attributes_from_gm_regions_to_gmm();
         check_attr_transfer_from_geomodel_regions_to_geomodelmesh( geomodel );
     }
 
@@ -692,8 +738,6 @@ namespace
 
         set_vertex_attributes_on_geomodelmesh( geomodel );
         set_cell_attributes_on_geomodelmesh( geomodel );
-        const GeoModelMesh3D& gmm = geomodel.mesh;
-        gmm.transfer_attributes_from_gmm_to_gm_regions();
         check_attr_transfer_from_geomodelmesh_to_geomodel_regions( geomodel );
     }
 

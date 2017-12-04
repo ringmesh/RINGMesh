@@ -43,6 +43,7 @@
 
 #include <ringmesh/geomodel/core/entity_type_manager.h>
 #include <ringmesh/geomodel/core/geomodel_mesh.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_ranges.h>
 
 /*!
@@ -55,11 +56,6 @@ namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( WellGroup );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelGeologicalEntity );
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelMeshEntity );
-    FORWARD_DECLARATION_DIMENSION_CLASS( Corner );
-    FORWARD_DECLARATION_DIMENSION_CLASS( Surface );
-    FORWARD_DECLARATION_DIMENSION_CLASS( Line );
-    FORWARD_DECLARATION_DIMENSION_CLASS( Region );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelAccess );
     FORWARD_DECLARATION_DIMENSION_STRUCT( EntityTypeManager );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderTopologyBase );
@@ -74,9 +70,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
-
-    ALIAS_2D_AND_3D( GeoModelMeshEntity );
-    ALIAS_2D_AND_3D( Region );
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -398,6 +391,104 @@ namespace RINGMesh
             return epsilon2() * epsilon();
         }
         SurfaceSide voi_surfaces() const;
+
+
+        /*!
+         * \name Transfers of attributes
+         * @{
+         */
+        template< typename AttributeType >
+        void transfer_cell_attribute_to_gm_regions(
+            const std::string& attribute_name ) const
+        {
+            if( !mesh.cells.is_initialized() )
+            {
+                return;
+            }
+            Attribute< AttributeType > old_attribute( mesh.cells.attribute_manager(),
+                attribute_name );
+            for( const auto& region : regions() )
+            {
+                Attribute< AttributeType > new_attribute(
+                    region.cell_attribute_manager(), attribute_name );
+                for( auto c : range( region.nb_mesh_elements() ) )
+                {
+                    auto gmm_cell = mesh.cells.cell( region.index(), c );
+                    new_attribute[mesh.cells.index_in_region( gmm_cell )] =
+                        old_attribute[gmm_cell];
+                }
+            }
+        }
+
+        template< typename AttributeType >
+        void transfer_cell_attribute_from_gm_regions(
+            const std::string& attribute_name ) const
+        {
+            if( !mesh.cells.is_initialized() )
+            {
+                mesh.cells.nb();
+            }
+            Attribute< AttributeType > new_attribute( mesh.cells.attribute_manager(),
+                attribute_name );
+            for( const auto& region : regions() )
+            {
+                Attribute< AttributeType > old_attribute(
+                    region.cell_attribute_manager(), attribute_name );
+                for( auto c : range( region.nb_mesh_elements() ) )
+                {
+                    auto gmm_cell = mesh.cells.cell( region.index(), c );
+                    new_attribute[gmm_cell] = old_attribute[c];
+                }
+            }
+        }
+
+        template< typename AttributeType >
+        void transfer_vertex_attribute_to_gm_regions(
+            const std::string& attribute_name ) const
+        {
+            if( !mesh.vertices.is_initialized() )
+            {
+                return;
+            }
+            Attribute< AttributeType > old_attribute( mesh.vertices.attribute_manager(),
+                attribute_name );
+            for( const auto& region : regions() )
+            {
+                Attribute< AttributeType > new_attribute(
+                    region.vertex_attribute_manager(), attribute_name );
+                for( auto v : range( region.nb_vertices() ) )
+                {
+                    new_attribute[v] = old_attribute[mesh.vertices.geomodel_vertex_id(
+                        region.gmme(), v )];
+                }
+            }
+        }
+
+        template< typename AttributeType >
+        void transfer_vertex_attribute_from_gm_regions(
+            const std::string& attribute_name ) const
+        {
+            if( !mesh.vertices.is_initialized() )
+            {
+                mesh.vertices.nb();
+            }
+            Attribute< AttributeType > new_attribute( mesh.vertices.attribute_manager(),
+                attribute_name );
+            for( const auto& region : regions() )
+            {
+                Attribute< AttributeType > old_attribute(
+                    region.vertex_attribute_manager(), attribute_name );
+                for( auto v : range( region.nb_vertices() ) )
+                {
+                    new_attribute[mesh.vertices.geomodel_vertex_id( region.gmme(), v )] =
+                        old_attribute[v];
+                }
+            }
+        }
+
+        /*!
+         * @}
+         */
 
     private:
         const std::vector< std::unique_ptr< GeoModelMeshEntity3D > >&
