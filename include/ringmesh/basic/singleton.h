@@ -71,4 +71,3 @@ namespace RINGMesh
     };
 
 } // namespace RINGMesh
-
