@@ -458,15 +458,9 @@ namespace RINGMesh
                     region.vertex_attribute_manager(), attribute_name );
                 for( auto v : range( region.nb_vertices() ) )
                 {
-<<<<<<< HEAD
                     new_attribute.set_value(
                         v, old_attribute[mesh.vertices.geomodel_vertex_id(
                                region.gmme(), v )] );
-=======
-                    new_attribute[v] =
-                        old_attribute[mesh.vertices.geomodel_vertex_id(
-                            region.gmme(), v )];
->>>>>>> branch 'ringmesh_attributes' of https://github.com/ringmesh/RINGMesh
                 }
             }
         }
@@ -487,14 +481,9 @@ namespace RINGMesh
                     region.vertex_attribute_manager(), attribute_name );
                 for( auto v : range( region.nb_vertices() ) )
                 {
-<<<<<<< HEAD
                     new_attribute.set_value(
                         mesh.vertices.geomodel_vertex_id( region.gmme(), v ),
                         old_attribute[v] );
-=======
-                    new_attribute[mesh.vertices.geomodel_vertex_id(
-                        region.gmme(), v )] = old_attribute[v];
->>>>>>> branch 'ringmesh_attributes' of https://github.com/ringmesh/RINGMesh
                 }
             }
         }
