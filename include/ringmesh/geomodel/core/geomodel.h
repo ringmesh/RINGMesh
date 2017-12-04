@@ -392,12 +392,11 @@ namespace RINGMesh
         }
         SurfaceSide voi_surfaces() const;
 
-
         /*!
          * \name Transfers of attributes
          * @{
          */
-        template< typename AttributeType >
+        template < typename AttributeType >
         void transfer_cell_attribute_to_gm_regions(
             const std::string& attribute_name ) const
         {
@@ -405,8 +404,8 @@ namespace RINGMesh
             {
                 return;
             }
-            Attribute< AttributeType > old_attribute( mesh.cells.attribute_manager(),
-                attribute_name );
+            Attribute< AttributeType > old_attribute(
+                mesh.cells.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > new_attribute(
@@ -420,7 +419,7 @@ namespace RINGMesh
             }
         }
 
-        template< typename AttributeType >
+        template < typename AttributeType >
         void transfer_cell_attribute_from_gm_regions(
             const std::string& attribute_name ) const
         {
@@ -428,8 +427,8 @@ namespace RINGMesh
             {
                 mesh.cells.nb();
             }
-            Attribute< AttributeType > new_attribute( mesh.cells.attribute_manager(),
-                attribute_name );
+            Attribute< AttributeType > new_attribute(
+                mesh.cells.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > old_attribute(
@@ -442,7 +441,7 @@ namespace RINGMesh
             }
         }
 
-        template< typename AttributeType >
+        template < typename AttributeType >
         void transfer_vertex_attribute_to_gm_regions(
             const std::string& attribute_name ) const
         {
@@ -450,21 +449,27 @@ namespace RINGMesh
             {
                 return;
             }
-            Attribute< AttributeType > old_attribute( mesh.vertices.attribute_manager(),
-                attribute_name );
+            Attribute< AttributeType > old_attribute(
+                mesh.vertices.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > new_attribute(
                     region.vertex_attribute_manager(), attribute_name );
                 for( auto v : range( region.nb_vertices() ) )
                 {
+<<<<<<< HEAD
                     new_attribute.set_value(v, old_attribute[mesh.vertices.geomodel_vertex_id(
                         region.gmme(), v )]);
+=======
+                    new_attribute[v] =
+                        old_attribute[mesh.vertices.geomodel_vertex_id(
+                            region.gmme(), v )];
+>>>>>>> branch 'ringmesh_attributes' of https://github.com/ringmesh/RINGMesh
                 }
             }
         }
 
-        template< typename AttributeType >
+        template < typename AttributeType >
         void transfer_vertex_attribute_from_gm_regions(
             const std::string& attribute_name ) const
         {
@@ -472,16 +477,21 @@ namespace RINGMesh
             {
                 mesh.vertices.nb();
             }
-            Attribute< AttributeType > new_attribute( mesh.vertices.attribute_manager(),
-                attribute_name );
+            Attribute< AttributeType > new_attribute(
+                mesh.vertices.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > old_attribute(
                     region.vertex_attribute_manager(), attribute_name );
                 for( auto v : range( region.nb_vertices() ) )
                 {
+<<<<<<< HEAD
                     new_attribute.set_value(mesh.vertices.geomodel_vertex_id( region.gmme(), v ),
                         old_attribute[v]);
+=======
+                    new_attribute[mesh.vertices.geomodel_vertex_id(
+                        region.gmme(), v )] = old_attribute[v];
+>>>>>>> branch 'ringmesh_attributes' of https://github.com/ringmesh/RINGMesh
                 }
             }
         }
