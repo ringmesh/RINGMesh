@@ -50,15 +50,8 @@ namespace RINGMesh
 {
     /******************************************************************/
 
-    std::map< std::string,
-        std::add_pointer< std::unique_ptr< AttributeStore >() >::type >
-        AttributeStoreManager::type_name_to_creator_;
-
-    std::map< std::string, std::string >
-        AttributeStoreManager::typeid_name_to_type_name_;
-
-    std::map< std::string, std::string >
-        AttributeStoreManager::type_name_to_typeid_name_;
+    std::map< std::string, AttributeStoreManager::Creator >
+        AttributeStoreManager::typeid_to_creator_;
 
     AttributeStore::~AttributeStore()
     {
@@ -108,10 +101,10 @@ namespace RINGMesh
     }
 
     void AttributesManager::bind_attribute_store(
-        const std::string& name, AttributeStore* as )
+        const std::string& name, std::unique_ptr< AttributeStore > as )
     {
         ringmesh_assert( find_attribute_store( name ) == nullptr );
-        attributes_[name].reset( as );
+        attributes_[name] = std::move( as );
     }
 
     std::vector< std::string > AttributesManager::attribute_names() const
@@ -189,7 +182,7 @@ namespace RINGMesh
         resize( rhs.nb_items() );
         for( auto& it : attributes_ )
         {
-            bind_attribute_store( it.first, it.second->clone().get() );
+            bind_attribute_store( it.first, it.second->clone() );
         }
     }
 

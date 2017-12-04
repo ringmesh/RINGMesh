@@ -48,7 +48,6 @@
 #include <geogram_gfx/basic/common.h>
 #endif
 
-#include <ringmesh/basic/attributes.h>
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
@@ -90,7 +89,6 @@ namespace RINGMesh
         TetraGen::initialize();
         GeoModelGeologicalEntity2D::initialize();
         GeoModelGeologicalEntity3D::initialize();
-        AttributeStoreManager::initialize();
         ringmesh_mesh_io_initialize();
         initialize_gocad_import_factories();
         register_geogram_mesh();
