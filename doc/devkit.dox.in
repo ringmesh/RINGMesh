@@ -1,10 +1,10 @@
 # Doxygen configuration file for generating
 # the standard developer RINGMesh documentation
 
-OUTPUT_DIRECTORY       = @doc_output_dir@/devkit-lite
+OUTPUT_DIRECTORY       = @doc_output_dir@/devkit
 PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
 @INCLUDE               = @CMAKE_SOURCE_DIR@/doc/common.dox
-WARN_LOGFILE           = @doc_output_dir@/devkit-lite.log
+WARN_LOGFILE           = @doc_output_dir@/devkit.log
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
 GENERATE_TODOLIST   = NO
 
