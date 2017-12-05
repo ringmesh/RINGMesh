@@ -756,8 +756,6 @@ namespace
 
         if( !is_geomodel_vertex_valid_base( geomodel, entities ) )
         {
-            DEBUG( i );
-            DEBUG( geomodel.mesh.vertices.vertex( i ) );
             return false;
         }
         if( !is_region_vertex_valid< 3 >( geomodel, entities ) )
@@ -948,7 +946,7 @@ namespace
             builder.set_edge_vertex( EdgeLocalVertex( e, 1 ), 2 * e + 1 );
         }
         mesh.save_mesh(
-            get_validity_errors_directory() + "/non_manifold_edges.mesh" );
+            get_validity_errors_directory() + "/non_manifold_edges.geogram" );
     }
 
     template < index_t DIMENSION >
@@ -1048,8 +1046,6 @@ namespace
                 line_abbb.closest_edge( barycenter );
             if( distance > geomodel.epsilon() )
             {
-                DEBUG( barycenter );
-                DEBUG( distance );
                 border_edges_on_line[border_edge] = false;
             }
         }
