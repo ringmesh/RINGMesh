@@ -371,20 +371,20 @@ namespace
             if( std::abs(
                     cur_vertex.x - vertex_vector_double_attr[vertex_i][0] )
                     > geomodel.epsilon()
-                || std::abs( cur_vertex.y
-                             - vertex_vector_double_attr[vertex_i][1] )
+                || std::abs(
+                       cur_vertex.y - vertex_vector_double_attr[vertex_i][1] )
                        > geomodel.epsilon()
-                || std::abs( cur_vertex.z
-                             - vertex_vector_double_attr[vertex_i][2] )
+                || std::abs(
+                       cur_vertex.z - vertex_vector_double_attr[vertex_i][2] )
                        > geomodel.epsilon()
-                || std::abs( cur_vertex.x
-                             - vertex_vector_double_attr[vertex_i][3] )
+                || std::abs(
+                       cur_vertex.x - vertex_vector_double_attr[vertex_i][3] )
                        > geomodel.epsilon()
-                || std::abs( cur_vertex.y
-                             - vertex_vector_double_attr[vertex_i][4] )
+                || std::abs(
+                       cur_vertex.y - vertex_vector_double_attr[vertex_i][4] )
                        > geomodel.epsilon()
-                || std::abs( cur_vertex.z
-                             - vertex_vector_double_attr[vertex_i][5] )
+                || std::abs(
+                       cur_vertex.z - vertex_vector_double_attr[vertex_i][5] )
                        > geomodel.epsilon() )
             {
                 throw RINGMeshException( "RINGMesh Test",
@@ -466,8 +466,8 @@ namespace
                         "region for vec3." );
                 }
 
-                if( std::abs( cur_vertex.x
-                              - vertex_vector_double_attr[vertex_i][0] )
+                if( std::abs(
+                        cur_vertex.x - vertex_vector_double_attr[vertex_i][0] )
                         > geomodel.epsilon()
                     || std::abs( cur_vertex.y
                                  - vertex_vector_double_attr[vertex_i][1] )
@@ -563,20 +563,20 @@ namespace
             if( std::abs(
                     cell_barycenter.x - cell_vector_double_attr[cell_i][0] )
                     > geomodel.epsilon()
-                || std::abs( cell_barycenter.y
-                             - cell_vector_double_attr[cell_i][1] )
+                || std::abs(
+                       cell_barycenter.y - cell_vector_double_attr[cell_i][1] )
                        > geomodel.epsilon()
-                || std::abs( cell_barycenter.z
-                             - cell_vector_double_attr[cell_i][2] )
+                || std::abs(
+                       cell_barycenter.z - cell_vector_double_attr[cell_i][2] )
                        > geomodel.epsilon()
-                || std::abs( cell_barycenter.x
-                             - cell_vector_double_attr[cell_i][3] )
+                || std::abs(
+                       cell_barycenter.x - cell_vector_double_attr[cell_i][3] )
                        > geomodel.epsilon()
-                || std::abs( cell_barycenter.y
-                             - cell_vector_double_attr[cell_i][4] )
+                || std::abs(
+                       cell_barycenter.y - cell_vector_double_attr[cell_i][4] )
                        > geomodel.epsilon()
-                || std::abs( cell_barycenter.z
-                             - cell_vector_double_attr[cell_i][5] )
+                || std::abs(
+                       cell_barycenter.z - cell_vector_double_attr[cell_i][5] )
                        > geomodel.epsilon() )
             {
                 throw RINGMeshException( "RINGMesh Test",
@@ -660,8 +660,8 @@ namespace
                         "to geomodel region for vec3." );
                 }
 
-                if( std::abs( cell_barycenter.x
-                              - cell_vector_double_attr[cell_i][0] )
+                if( std::abs(
+                        cell_barycenter.x - cell_vector_double_attr[cell_i][0] )
                         > geomodel.epsilon()
                     || std::abs( cell_barycenter.y
                                  - cell_vector_double_attr[cell_i][1] )

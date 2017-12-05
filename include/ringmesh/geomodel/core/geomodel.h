@@ -413,7 +413,8 @@ namespace RINGMesh
                 for( auto c : range( region.nb_mesh_elements() ) )
                 {
                     auto gmm_cell = mesh.cells.cell( region.index(), c );
-                    new_attribute.set_value( mesh.cells.index_in_region( gmm_cell ),
+                    new_attribute.set_value(
+                        mesh.cells.index_in_region( gmm_cell ),
                         old_attribute[gmm_cell] );
                 }
             }
