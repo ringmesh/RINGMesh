@@ -608,7 +608,6 @@ namespace RINGMesh
         void connect_polygons(
             const std::vector< index_t >& polygons_to_connect )
         {
-            DEBUG("reconnect polygons");
             // Initialization of the number of local vertices
             index_t nb_local_vertices{ 0 };
             for( auto polygon : polygons_to_connect )

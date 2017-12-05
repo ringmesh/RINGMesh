@@ -1011,7 +1011,6 @@ namespace RINGMesh
     template < index_t DIMENSION >
     void GeoModelBuilderBase< DIMENSION >::end_geomodel()
     {
-        DEBUG("call end_geomodel()");
         if( geomodel_.name().empty() )
         {
             info.set_geomodel_name( "model_default_name" );

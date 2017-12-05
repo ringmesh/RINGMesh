@@ -54,52 +54,6 @@ namespace {
     using namespace RINGMesh;
 
     template< index_t DIMENSION >
-    void compare_vec_of_vec(
-        const std::vector< vecn< DIMENSION > >& before,
-        const std::vector< vecn< DIMENSION > >& after,
-        const std::vector< double >& after_len,
-        const std::vector< index_t > tata,
-        const SurfaceMesh< DIMENSION >& surface )
-    {
-        std::vector< vecn< DIMENSION > > news;
-        for( auto v_id : range( after.size() ) ) {
-            bool not_find { true };
-            for( auto v2 : before ) {
-                if( ( after[v_id] - v2 ).length2() == 0 ) {
-                    not_find = false;
-                    break;
-                }
-            }
-            if( not_find ) {
-                DEBUG( after[v_id] );
-                DEBUG( after_len[v_id] );
-                news.push_back( after[v_id] );
-                DEBUG( tata[2 * v_id] );
-                DEBUG( tata[2 * v_id + 1] );
-            }
-        }
-        if( news.size() >= 2 ) {
-            DEBUG( ( news[0] - news[1] ).length() );
-        }
-        for( auto p : range( surface.nb_polygons() ) ) {
-            if( surface.polygon_vertex( { p, 0 } ) == 616
-                || surface.polygon_vertex( { p, 1 } ) == 616
-                || surface.polygon_vertex( { p, 2 } ) == 616 ) {
-                if( surface.polygon_vertex( { p, 0 } ) == 617
-                    || surface.polygon_vertex( { p, 1 } ) == 617
-                    || surface.polygon_vertex( { p, 2 } ) == 617 ) {
-                    DEBUG(p);
-                    DEBUG(surface.polygon_vertex( { p, 0 } ));
-                    DEBUG(surface.polygon_vertex( { p, 1 } ));
-                    DEBUG(surface.polygon_vertex( { p, 2 } ));
-                    DEBUG(surface.polygon_area(p));
-                    std::cout << surface.polygon_barycenter(p) <<std::endl ;
-                }
-            }
-        }
-    }
-
-    template< index_t DIMENSION >
     class GeoModelRepair {
     ringmesh_disable_copy_and_move( GeoModelRepair );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -111,7 +65,6 @@ namespace {
         }
 
         /*!
-         * @brief Repair a GeoModel according a repair mode.
          * @param[in] repair_mode repair mode to apply.
          */
         void repair( RepairMode repair_mode )
@@ -152,7 +105,6 @@ namespace {
          */
         void geomodel_mesh_repair()
         {
-            DEBUG( "in geomodel_mesh_repair()" );
             // Remove colocated vertices in each entity
             remove_colocated_entity_vertices_and_update_gm();
 
@@ -186,7 +138,6 @@ namespace {
 
             remove_colocated_entity_vertices( empty_mesh_entities );
             if( !empty_mesh_entities.empty() ) {
-                DEBUG("emptyyy");
                 builder_.topology.get_dependent_entities( empty_mesh_entities,
                     empty_geological_entities );
                 builder_.remove.remove_mesh_entities( empty_mesh_entities );
@@ -287,7 +238,6 @@ namespace {
             builder_.geometry.delete_line_edges(
                 line.index(), degenerate, false );
             return nb;
-//            return 0;
         }
 
         /*!
@@ -393,31 +343,22 @@ namespace {
             for( const auto& line : geomodel_.lines() ) {
                 auto nb = repair_line_mesh( line );
                 if( nb > 0 ) {
-                    Logger::out( "Repair", nb, " degenerated edges removed in LINE ",
-                        line.index() );
-                    DEBUG( line.nb_mesh_elements() );
+                    Logger::out( "Repair", nb, " degenerated edges removed in ",
+                        line.gmme() );
                     // If the Line is set it to remove
                     if( line.nb_mesh_elements() == 0 ) {
-                        DEBUG( line.gmme() );
                         to_remove.insert( line.gmme() );
                     }
                 }
             }
-            // The builder might be needed
-
             double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
             for( const auto& surface : geomodel_.surfaces() ) {
                 auto nb = detect_degenerate_polygons( surface );
                 /// @todo Check if that cannot be simplified
                 if( nb > 0 ) {
-                    surface.save(
-                        "toto_before_" + std::to_string( surface.index() )
-                            + ".geogram" );
                     if( surface.nb_vertices() > 0 ) {
                         auto builder = builder_.geometry.create_surface_builder(
                             surface.index() );
-                        DEBUG( "surface id for rem_dupplic" );
-                        DEBUG( surface.index() );
                         remove_dupplicated_or_degenerated_polygons( surface.mesh(),
                             *builder );
                         remove_small_connected_components( surface.mesh(), *builder,
@@ -427,8 +368,6 @@ namespace {
                         || surface.nb_mesh_elements() == 0 ) {
                         to_remove.insert( surface.gmme() );
                     }
-                    surface.save(
-                        "toto_" + std::to_string( surface.index() ) + ".geogram" );
                 }
             }
         }
@@ -454,9 +393,6 @@ namespace {
             const SurfaceMesh< DIMENSION >& surface,
             std::vector< bool >& remove_polygon )
         {
-//            auto mesh = SurfaceMesh< DIMENSION >::create_mesh( "" );
-//            auto builder = SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh );
-
             const auto& polygon_search = surface.polygon_nn_search();
             index_t nb_duplicates;
             std::vector< index_t > mapping;
@@ -464,34 +400,17 @@ namespace {
                 polygon_search.get_colocated_index_mapping( geomodel_.epsilon() );
             for( auto p : range( surface.nb_polygons() ) ) {
                 if( mapping[p] != p ) {
-                    DEBUG(p);
-                    DEBUG(mapping[p]);
-                    DEBUG(surface.polygon_vertex({p,0}));
-                    DEBUG(surface.polygon_vertex({p,1}));
-                    DEBUG(surface.polygon_vertex({p,2}));
-                    DEBUG(surface.polygon_area(p));
-                    DEBUG(surface.polygon_vertex({mapping[p],0}));
-                    DEBUG(surface.polygon_vertex({mapping[p],1}));
-                    DEBUG(surface.polygon_vertex({mapping[p],2}));
                     remove_polygon[p] = true;
-                    // Check if duplicated is adjacent to its duplicate
-                    bool are_polygons_adjacent = false;
+                    // Check if duplicated polygons are adjacent
                     for( auto v : range( surface.nb_polygon_vertices(p))) {
                         if( surface.polygon_adjacent({p, v}) == mapping[p] ) {
-                            are_polygons_adjacent = true;
+                            // If the duplicated polygons are adjacent, the shared
+                            // edges will become a non-manifold edge.
+                            // The two polygons should be removed.
+                            remove_polygon[mapping[p]] = true;
+                            break;
                         }
                     }
-
-                    if( are_polygons_adjacent ) {
-                        remove_polygon[mapping[p]] = true;
-                    }
-//                    std::vector< index_t > indices;
-//                    for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
-//                        auto new_vertex = builder->create_vertex(
-//                            surface.vertex( surface.polygon_vertex( { p, v } ) ) );
-//                        indices.push_back( new_vertex );
-//                    }
-//                    builder->create_polygon( indices );
                 }
             }
 
@@ -500,23 +419,11 @@ namespace {
                 if( !remove_polygon[p] && polygon_is_degenerate( surface, p ) ) {
                     nb_degenerate++;
                     remove_polygon[p] = true;
-                    DEBUG("dege");
-                    DEBUG(p);
-//                    std::vector< index_t > indices;
-//                    for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
-//                        auto new_vertex = builder->create_vertex(
-//                            surface.vertex( surface.polygon_vertex( { p, v } ) ) );
-//                        indices.push_back( new_vertex );
-//                    }
-//                    builder->create_polygon( indices );
                 }
             }
             if( nb_duplicates != 0 || nb_degenerate != 0 ) {
-                Logger::out( "Validate", "Detected ", nb_duplicates,
-                    " duplicate and ", nb_degenerate, " degenerate facets\n" );
-//                ( *mesh ).save_mesh(
-//                    "problems_polygon_" + std::to_string( ( *mesh ).nb_polygons() )
-//                        + ".mesh" );
+                Logger::out( "Repair", "Detected ", nb_duplicates,
+                    " duplicate and ", nb_degenerate, " degenerate facets." );
             }
         }
 
@@ -524,86 +431,15 @@ namespace {
             const SurfaceMesh< DIMENSION >& surface,
             SurfaceMeshBuilder< DIMENSION >& builder )
         {
-            auto nb_polygon_before = surface.nb_polygons();
-            index_t nb_borders { 0 };
-            std::vector< vecn< DIMENSION > > before;
-            for( auto p : range( surface.nb_polygons() ) ) {
-                for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
-                    if( surface.polygon_adjacent( { p, v } ) == NO_ID ) {
-                        nb_borders++;
-                        before.push_back(
-                            surface.polygon_edge_barycenter( { p, v } ) );
-                    }
-                }
-            }
-            DEBUG( nb_borders );
-            NNSearch< DIMENSION > nn_before( before );
-            index_t nb_col_before;
-            std::tie( nb_col_before, std::ignore ) =
-                nn_before.get_colocated_index_mapping( geomodel_.epsilon() );
-            DEBUG( nb_col_before );
-
-            nb_borders = 0;
             std::vector< bool > remove_polygon( surface.nb_polygons(), false );
-            DEBUG( std::count(remove_polygon.begin(), remove_polygon.end(), true) );
             detect_bad_facets( surface, remove_polygon );
-            DEBUG( std::count(remove_polygon.begin(), remove_polygon.end(), true) );
             builder.delete_polygons( remove_polygon, false );
             for( auto p : range( surface.nb_polygons() ) ) {
                 for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
                     builder.set_polygon_adjacent( { p, v }, NO_ID );
                 }
             }
-            std::vector< vecn< DIMENSION > > after;
-            std::vector< double > after_len;
-            std::vector< index_t > tata;
-            for( auto p : range( surface.nb_polygons() ) ) {
-                for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
-                    if( surface.polygon_adjacent( { p, v } ) == NO_ID ) {
-                        nb_borders++;
-                    }
-                }
-            }
-            DEBUG( nb_borders );
-            nb_borders = 0;
             builder.connect_polygons();
-            for( auto p : range( surface.nb_polygons() ) ) {
-                for( auto v : range( surface.nb_polygon_vertices( p ) ) ) {
-                    if( surface.polygon_adjacent( { p, v } ) == NO_ID ) {
-//                        DEBUG("border");
-//                        DEBUG(p);
-                        nb_borders++;
-                        after.push_back(
-                            surface.polygon_edge_barycenter( { p, v } ) );
-                        after_len.push_back(
-                            surface.polygon_edge_length( { p, v } ) );
-                        tata.push_back( surface.polygon_edge_vertex( { p, v }, 0 ) );
-                        tata.push_back( surface.polygon_edge_vertex( { p, v }, 1 ) );
-                    }
-                }
-            }
-            if(surface.nb_vertices() > 1042 ) {
-                auto bidule = surface.polygons_around_vertex(1038, false, 1280);
-                DEBUG(bidule.size());
-                for(auto b : bidule) {
-                    DEBUG(b);
-                }
-            }
-            DEBUG( nb_borders );
-            NNSearch< DIMENSION > nn_after( after );
-            index_t nb_col_after;
-            std::tie( nb_col_after, std::ignore ) =
-                nn_after.get_colocated_index_mapping( geomodel_.epsilon() );
-            DEBUG( nb_col_after );
-
-            nb_borders = 0;
-            auto nb_polygon_after = surface.nb_polygons();
-            if( nb_polygon_after != nb_polygon_before ) {
-                DEBUG( nb_polygon_before );
-                DEBUG( nb_polygon_after );
-            }
-            compare_vec_of_vec( before, after, after_len, tata, surface );
-            DEBUG( geomodel_.epsilon() );
         }
 
         /*!
@@ -639,7 +475,6 @@ namespace {
                 if( comp_area[component] < min_area
                     || comp_polygons[component] < min_polygons ) {
                     polygon_to_delete[p] = true;
-                    DEBUG("small_cc:delete_1_pol");
                 }
             }
             builder.delete_polygons( polygon_to_delete, true );
@@ -680,9 +515,6 @@ namespace {
                         } else {
                             // The point is to remove
                             to_delete[v] = true;
-                            DEBUG( E.vertex( v ) );
-                            DEBUG(v);
-                            DEBUG(colocated[v]);
                             nb_todelete++;
                         }
                     }
@@ -691,10 +523,6 @@ namespace {
                         // Nothing to do there
                         continue;
                     }
-                    DEBUG( nb_todelete );
-                    E.save(
-                        "tototo_very_before_" + std::to_string( E.index() )
-                            + ".geogram" );
                     if( nb_todelete == E.nb_vertices() ) {
                         // The complete entity should be removed
                         to_remove.insert( E.gmme() );
@@ -705,13 +533,6 @@ namespace {
                         for( auto p_itr : range( E.nb_mesh_elements() ) ) {
                             for( auto fpv_itr : range(
                                 E.nb_mesh_element_vertices( p_itr ) ) ) {
-                                if( E.mesh_element_vertex_index({p_itr, fpv_itr}) != colocated[E.mesh_element_vertex_index(
-                                    { p_itr, fpv_itr } )] ){
-                                    DEBUG(p_itr);
-                                    DEBUG(E.mesh_element_vertex_index({p_itr, 0}));
-                                    DEBUG(E.mesh_element_vertex_index({p_itr, 1}));
-                                    DEBUG(E.mesh_element_vertex_index({p_itr, 2}));
-                                }
                                 builder->set_polygon_vertex( { p_itr, fpv_itr },
                                     colocated[E.mesh_element_vertex_index(
                                         { p_itr, fpv_itr } )] );
@@ -720,9 +541,6 @@ namespace {
                         builder->delete_vertices( to_delete );
                         Logger::out( "Repair", nb_todelete,
                             " colocated vertices deleted in ", entity_id );
-                        E.save(
-                            "tototo_after_pts_del_" + std::to_string( E.index() )
-                                + ".geogram" );
                     } else if( type == Line< DIMENSION >::type_name_static() ) {
                         auto builder = builder_.geometry.create_line_builder( e );
                         for( auto e_itr : range( E.nb_mesh_elements() ) ) {
@@ -859,7 +677,6 @@ namespace RINGMesh {
     {
         GeoModelRepair< DIMENSION > repairer( geomodel );
         repairer.repair( repair_mode );
-//        geomodel.mesh.clear();
     }
 
     template void RINGMESH_API repair_geomodel( GeoModel2D&, RepairMode );
