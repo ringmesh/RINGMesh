@@ -68,12 +68,12 @@ namespace RINGMesh
     using vec3 = vecn< 3 >;
     // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
-    // This is an array template of signed integers
+    // This is an array template of unsigned integers
     template < index_t DIMENSION >
-    using ivecn = GEO::vecng< DIMENSION, signed_index_t >;
-    // This is an array of 3 signed integers
+    using ivecn = GEO::vecng< DIMENSION, index_t >;
+    // This is an array of 3 unsigned integers
     using ivec3 = ivecn< 3 >;
-    // This is an array of 2 signed integers
+    // This is an array of 2 unsigned integers
     using ivec2 = ivecn< 2 >;
 
     template < index_t DIMENSION >

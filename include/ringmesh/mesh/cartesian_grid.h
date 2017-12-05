@@ -69,14 +69,12 @@ namespace RINGMesh
         friend class CartesianGridBuilder< DIMENSION >;
 
     public:
-        CartesianGrid() = default;
-
         CartesianGrid( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
             : nb_cells_in_each_direction_(
                   std::move( nb_cells_in_each_direction ) ),
+	          nb_total_cells_( 1 ),
               cartesian_frame_( std::move( vec_cartesian_axis ) ),
-              nb_total_cells_( 1 ),
               inverse_cartesian_frame_( ReferenceFrameManipulator< DIMENSION >::
                       reference_frame_from_global_to_local( cartesian_frame_ ) )
         {
@@ -258,6 +256,8 @@ namespace RINGMesh
         }
 
     protected:
+        CartesianGrid() = default;
+
         ivecn< DIMENSION > nb_cells_in_each_direction_;
         index_t nb_total_cells_;
 
