@@ -36,8 +36,7 @@
 #pragma once
 
 #include <ringmesh/basic/common.h>
-#include <ringmesh/basic/frame.h>
-
+#include <ringmesh/basic/frame.h
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
 #include <ringmesh/mesh/mesh.h>
@@ -46,7 +45,6 @@ namespace GEO
 {
     class AttributesManager;
 } // namespace GEO
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( CartesianGridBuilder );
