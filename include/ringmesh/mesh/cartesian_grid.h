@@ -111,36 +111,41 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-//        void resize( ivecn< DIMENSION >& new_size,
-//            ReferenceFrame< DIMENSION > vec_cartesian_axis )
-//        {
-//            Logger::warn( "Warning : You are currently changing the size of "
-//                          "the Cartesian grid, this will affect the values of "
-//                          "the attributes in the grid !" );
-//            nb_cells_in_each_direction_ = std::move( new_size );
-//            nb_total_cells_ = 1;
-//            for( auto i : range( DIMENSION ) )
-//            {
-//                if( nb_cells_in_each_direction_[i] < 1 )
-//                {
-//                    throw RINGMeshException( "RINGMesh Test",
-//                        "Warning : You're trying to create a Cartesian Grid "
-//                        "with no cell in direction ",
-//                        i, ", and Cartesian Grid must have at least one cell "
-//                           "in each direction" );
-//                }
-//                nb_total_cells_ *= nb_cells_in_each_direction_[i];
-//            }
-//            if( !ReferenceFrameManipulator< DIMENSION >::frame_is_orthogonal(
-//                    vec_cartesian_axis ) )
-//            {
-//                throw RINGMeshException( "RINGMesh Test",
-//                    "Warning : the frame of the Cartesian Grid "
-//                    "you're trying to create is not orthogonal " );
-//            }
-//            cartesian_frame_ = std::move( vec_cartesian_axis );
-//            attributes_manager_.resize( nb_total_cells_ );
-//        }
+        //        void resize( ivecn< DIMENSION >& new_size,
+        //            ReferenceFrame< DIMENSION > vec_cartesian_axis )
+        //        {
+        //            Logger::warn( "Warning : You are currently changing the
+        //            size of "
+        //                          "the Cartesian grid, this will affect the
+        //                          values of "
+        //                          "the attributes in the grid !" );
+        //            nb_cells_in_each_direction_ = std::move( new_size );
+        //            nb_total_cells_ = 1;
+        //            for( auto i : range( DIMENSION ) )
+        //            {
+        //                if( nb_cells_in_each_direction_[i] < 1 )
+        //                {
+        //                    throw RINGMeshException( "RINGMesh Test",
+        //                        "Warning : You're trying to create a Cartesian
+        //                        Grid "
+        //                        "with no cell in direction ",
+        //                        i, ", and Cartesian Grid must have at least
+        //                        one cell "
+        //                           "in each direction" );
+        //                }
+        //                nb_total_cells_ *= nb_cells_in_each_direction_[i];
+        //            }
+        //            if( !ReferenceFrameManipulator< DIMENSION
+        //            >::frame_is_orthogonal(
+        //                    vec_cartesian_axis ) )
+        //            {
+        //                throw RINGMeshException( "RINGMesh Test",
+        //                    "Warning : the frame of the Cartesian Grid "
+        //                    "you're trying to create is not orthogonal " );
+        //            }
+        //            cartesian_frame_ = std::move( vec_cartesian_axis );
+        //            attributes_manager_.resize( nb_total_cells_ );
+        //        }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
