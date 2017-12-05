@@ -399,11 +399,11 @@ namespace RINGMesh
             {
                 double distance{ max_float64() };
                 vec3 cur_p;
-                std::tie( distance, cur_p ) = point_to_triangle(
-                    point, Geometry::Triangle3D{
-                               vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
-                               vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
-                               vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] } );
+                std::tie( distance, cur_p ) = point_to_triangle( point,
+                    Geometry::Triangle3D{
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] } );
                 if( distance < dist )
                 {
                     dist = distance;

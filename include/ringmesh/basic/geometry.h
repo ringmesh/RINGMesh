@@ -46,33 +46,6 @@
 
 namespace RINGMesh
 {
-    template < index_t DIMENSION >
-    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-    {
-        for( auto i : range( DIMENSION ) )
-        {
-            if( u[i] != v[i] )
-            {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    template < index_t DIMENSION >
-    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-    {
-        return !( u == v );
-    }
-
-    template < index_t DIMENSION >
-    bool inexact_equal( const vecn< DIMENSION >& v1,
-        const vecn< DIMENSION >& v2,
-        double epsilon )
-    {
-        return length( v2 - v1 ) < epsilon;
-    }
-
     double RINGMESH_API dot_perp( const vec2& v0, const vec2& v1 );
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
@@ -212,7 +185,8 @@ namespace RINGMesh
             vec3 p1{};
             vec3 p2{};
             vec3 p3{};
-            static const std::array< std::array< index_t, 3 >, 4 > tetra_facet_vertex;
+            static const std::array< std::array< index_t, 3 >, 4 >
+                tetra_facet_vertex;
         };
 
         template < index_t DIMENSION >
