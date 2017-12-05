@@ -110,6 +110,7 @@ void ringmesh_unused( const T& /*unused*/ )
 #include <sstream>
 #include <stdexcept>
 
+#include <ringmesh/basic/range.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
@@ -181,61 +182,4 @@ namespace RINGMesh
     protected:
         std::string category_{};
     };
-
-    /*!
-     * This class can be used to iterate over integer loop.
-     * Example:
-     *              = C++98 loop =
-     *    for( index_t i = 0; i < n; i++ ) {
-     *      // do something
-     *    }
-     *
-     *            = C++11-like loop =
-     *    for( index_t i : range( n ) ) {
-     *      // do something
-     *    }
-     */
-    class RINGMESH_API range
-    {
-    public:
-        template < typename T1, typename T2 >
-        range( T1 begin, T2 end )
-            : iter_( static_cast< index_t >( begin ) ),
-              last_( static_cast< index_t >( end ) )
-        {
-        }
-        template < typename T >
-        explicit range( T end ) : last_( static_cast< index_t >( end ) )
-        {
-        }
-        // Iterable functions
-        const range& begin() const
-        {
-            return *this;
-        }
-        const range& end() const
-        {
-            return *this;
-        }
-        // Iterator functions
-        bool operator!=( const range& /*unused*/ ) const
-        {
-            return iter_ < last_;
-        }
-        void operator++()
-        {
-            ++iter_;
-        }
-        index_t operator*() const
-        {
-            return iter_;
-        }
-
-    protected:
-        index_t iter_{ 0 };
-        index_t last_{ 0 };
-    };
-
-    template < index_t DIMENSION >
-    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
 } // namespace RINGMesh

@@ -85,6 +85,16 @@ add_folder(ringmesh_src ringmesh_include visualize)
 # Add the RINGMesh target as a shared library
 add_library(RINGMesh SHARED ${ringmesh_include} ${ringmesh_src})
 
+# Exports RINGMesh target
+include ( CMakePackageConfigHelpers )
+export(TARGETS RINGMesh NAMESPACE RINGMesh:: FILE RINGMeshTargets.cmake)
+configure_package_config_file(
+    cmake/RINGMeshConfig.cmake.in 
+    ${CMAKE_BINARY_DIR}/RINGMeshConfig.cmake
+    INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+    PATH_VARS GEOGRAM_INSTALL_PREFIX
+)
+
 #------------------------------------------------------------------------------------------------
 # Build configuration
 set_target_properties(RINGMesh PROPERTIES LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
@@ -181,13 +191,6 @@ if(RINGMESH_WITH_TESTS)
     copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)
 endif()
 
-
-# Documentation
-if(BUILD_DOCUMENTATION)
-    message(STATUS "Configuring RINGMesh with doxygen")
-    add_subdirectory(doc)
-endif()
-
 # additional target to perform clang-tidy run, requires clang-tidy
 find_program(CLANG_TIDY "clang-tidy")
 if(CLANG_TIDY)
@@ -204,19 +207,6 @@ if(CLANG_TIDY)
         --
         -std=c++11
         ${include_dirs}
-    )
-endif()
-
-# additional target to perform clang-format run, requires clang-format
-find_program(CLANG_FORMAT "clang-format")
-if(CLANG_FORMAT)
-    message(STATUS "Configuring RINGMesh with clang-format")
-    add_custom_target(
-        format
-        COMMAND ${CLANG_FORMAT}
-        -style=file
-        -i
-        ${ringmesh_files}
     )
 endif()
 

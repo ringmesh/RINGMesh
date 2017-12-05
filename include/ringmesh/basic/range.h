@@ -33,27 +33,66 @@
  *     FRANCE
  */
 
-/*!
- * Configuration file generated at the configuration step by CMake
- * Do not modify it directly but modify the include/ringmesh_config.h.in file
- * and re-run project configuration.
- */
-
 #pragma once
+
+#include <ringmesh/basic/types.h>
+
+#include <ringmesh/ringmesh_export.h>
 
 namespace RINGMesh
 {
-#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR @
-#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR @
+    /*!
+     * This class can be used to iterate over integer loop.
+     * Example:
+     *              = C++98 loop =
+     *    for( index_t i = 0; i < n; i++ ) {
+     *      // do something
+     *    }
+     *
+     *            = C++11-like loop =
+     *    for( index_t i : range( n ) ) {
+     *      // do something
+     *    }
+     */
+    class RINGMESH_API range
+    {
+    public:
+        template < typename T1, typename T2 >
+        range( T1 begin, T2 end )
+            : iter_( static_cast< index_t >( begin ) ),
+              last_( static_cast< index_t >( end ) )
+        {
+        }
+        template < typename T >
+        explicit range( T end ) : last_( static_cast< index_t >( end ) )
+        {
+        }
+        // Iterable functions
+        const range& begin() const
+        {
+            return *this;
+        }
+        const range& end() const
+        {
+            return *this;
+        }
+        // Iterator functions
+        bool operator!=( const range& /*unused*/ ) const
+        {
+            return iter_ < last_;
+        }
+        void operator++()
+        {
+            ++iter_;
+        }
+        index_t operator*() const
+        {
+            return iter_;
+        }
 
-/* Optional components with which RINGMesh can be compiled */
-#cmakedefine USE_MG_TETRA
-#cmakedefine USE_OPENMP
-#cmakedefine RINGMESH_WITH_TETGEN
+    protected:
+        index_t iter_{ 0 };
+        index_t last_{ 0 };
+    };
 
-/* Optional components of RINGMesh */
-#cmakedefine RINGMESH_WITH_GRAPHICS
-#cmakedefine RINGMESH_WITH_UTILITIES
-#cmakedefine RINGMESH_WITH_TESTS
-#cmakedefine RINGMESH_TEST_GRAPHICS
 } // namespace RINGMesh
