@@ -40,6 +40,8 @@
 
 #include <ringmesh/mesh/mesh.h>
 
+#include <geogram/basic/attributes.h>
+
 namespace GEO
 {
     class AttributesManager;
