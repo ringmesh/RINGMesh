@@ -62,7 +62,6 @@ else()
 
     # Add a custom documentation targets
     add_doc_target(devkit)
-    add_doc_target(devkit-lite)
 endif()
 
 # additional target to perform clang-format run, requires clang-format
