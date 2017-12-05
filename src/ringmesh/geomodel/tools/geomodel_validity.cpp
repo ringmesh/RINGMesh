@@ -756,6 +756,8 @@ namespace
 
         if( !is_geomodel_vertex_valid_base( geomodel, entities ) )
         {
+            DEBUG(i);
+            DEBUG(geomodel.mesh.vertices.vertex(i));
             return false;
         }
         if( !is_region_vertex_valid< 3 >( geomodel, entities ) )
@@ -946,7 +948,7 @@ namespace
             builder.set_edge_vertex( EdgeLocalVertex( e, 1 ), 2 * e + 1 );
         }
         mesh.save_mesh(
-            get_validity_errors_directory() + "/non_manifold_edges.geogram" );
+            get_validity_errors_directory() + "/non_manifold_edges.mesh" );
     }
 
     template < index_t DIMENSION >
@@ -1047,6 +1049,7 @@ namespace
             if( distance > geomodel.epsilon() )
             {
                 DEBUG( barycenter );
+                DEBUG(distance);
                 border_edges_on_line[border_edge] = false;
             }
         }
@@ -1663,7 +1666,6 @@ namespace RINGMesh
         // As the geomodel lines are independent meshes, they have different
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
-        // The following repair merges such vertices and enables a homogeneous
         // line orientation [BC].
         GEO::mesh_repair( line.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components;
