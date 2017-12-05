@@ -73,7 +73,7 @@ namespace RINGMesh
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
             : nb_cells_in_each_direction_(
                   std::move( nb_cells_in_each_direction ) ),
-	          nb_total_cells_( 1 ),
+              nb_total_cells_( 1 ),
               cartesian_frame_( std::move( vec_cartesian_axis ) ),
               inverse_cartesian_frame_( ReferenceFrameManipulator< DIMENSION >::
                       reference_frame_from_global_to_local( cartesian_frame_ ) )
