@@ -59,6 +59,9 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
+	/**
+	 * Template class for Cartesian grids of different dimensions
+	 */
     template < index_t DIMENSION >
     class RINGMESH_API CartesianGrid
     {
@@ -95,7 +98,7 @@ namespace RINGMesh
                 }
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
-            //            attributes_manager_.resize(nb_total_cells_);
+            attributes_manager_.resize(nb_total_cells_);
         }
 
         void save_mesh( const std::string& filename ) const
@@ -112,6 +115,7 @@ namespace RINGMesh
 
         void resize( ivecn< DIMENSION >& new_size, ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
+            Logger::warn("Warning : You are currently changing the size of the Cartesian grid, this will affect the values of the attributes in the grid !");
             nb_cells_in_each_direction_ = std::move( new_size );
             nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
@@ -133,7 +137,7 @@ namespace RINGMesh
 					"you're trying to create is not orthogonal " );
 			}
             cartesian_frame_ = std::move( vec_cartesian_axis );
-            //            attributes_manager_.resize(nb_total_cells_);
+            attributes_manager_.resize(nb_total_cells_);
         }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
@@ -144,16 +148,17 @@ namespace RINGMesh
 					"Warning : the frame of the Cartesian Grid "
 					"you're trying to create is not orthogonal " );
 			}
-            cartesian_frame_ = std::move( vec_cartesian_axis );
+        	Logger::warn("Warning : You are currently changing the frame of the Cartesian grid, this will affect where the values of the attributes in the grid are stored in space !");
+        	cartesian_frame_ = std::move( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
                 reference_frame_from_global_to_local( cartesian_frame_ );
         }
 
-        //        void change_attribute_manager( GEO::AttributesManager
-        //        attributes_manager )
-        //        {
-        //        	attributes_manager_ = std::move( attributes_manager );
-        //        }
+        void change_attribute_manager( GEO::AttributesManager
+        attributes_manager )
+        {
+        	attributes_manager_ = std::move( attributes_manager );
+        }
 
         vecn< DIMENSION >& cell_center_global_coords(
             const ivecn< DIMENSION >& cartesian_coords ) const
@@ -221,10 +226,10 @@ namespace RINGMesh
             return nb_total_cells_;
         }
 
-        //        GEO::AttributesManager& attributes_manager() const
-        //        {
-        //            return attributes_manager_;
-        //        }
+        GEO::AttributesManager& attributes_manager() const
+        {
+            return attributes_manager_;
+        }
 
         double cell_volume() const
         {
@@ -250,47 +255,47 @@ namespace RINGMesh
         ReferenceFrame< DIMENSION > cartesian_frame_;
         ReferenceFrame< DIMENSION > inverse_cartesian_frame_;
 
-        //        GEO::AttributesManager attributes_manager_;
+		GEO::AttributesManager attributes_manager_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 
-    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh< 3 >
-    {
-    public:
-        CartesianGridVolumeMesh() = default;
-
-        static MeshType type_name_static()
-        {
-            return "CartesianGrid";
-        }
-
-        MeshType type_name() const override
-        {
-            return type_name_static();
-        }
-
-        index_t nb_cells() const override
-        {
-            return cartesian_grid_.nb_cells();
-        }
-
-        //        GEO::AttributesManager& cell_attribute_manager() const
-        //        override
-        //        {
-        //            return cartesian_grid_.attributes_manager();
-        //        }
-
-        CellType cell_type( index_t cell_id ) const override
-        {
-            return static_cast< CellType >( 1 );
-        }
-
-        double cell_volume( index_t cell_id ) const override
-        {
-            return cartesian_grid_.cell_volume();
-        }
-
-    private:
-        CartesianGrid3D cartesian_grid_;
-    };
+//    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh3D
+//    {
+//    public:
+//        CartesianGridVolumeMesh() = default;
+//
+//        static MeshType type_name_static()
+//        {
+//            return "CartesianGrid";
+//        }
+//
+//        MeshType type_name() const override
+//        {
+//            return type_name_static();
+//        }
+//
+//        index_t nb_cells() const override
+//        {
+//            return cartesian_grid_.nb_cells();
+//        }
+//
+//        //        GEO::AttributesManager& cell_attribute_manager() const
+//        //        override
+//        //        {
+//        //            return cartesian_grid_.attributes_manager();
+//        //        }
+//
+//        CellType cell_type( index_t cell_id ) const override
+//        {
+//            return static_cast< CellType >( 1 );
+//        }
+//
+//        double cell_volume( index_t cell_id ) const override
+//        {
+//            return cartesian_grid_.cell_volume();
+//        }
+//
+//    private:
+//        CartesianGrid3D cartesian_grid_;
+//    };
 }
