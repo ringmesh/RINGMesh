@@ -226,7 +226,7 @@ namespace
         auto v0 = surface_mesh_builder->create_vertex( { 0., 0., 0. } );
         auto v1 = surface_mesh_builder->create_vertex( { 1., 0., 0. } );
         auto v2 = surface_mesh_builder->create_vertex( { 0., 1., 0. } );
-        surface_mesh_builder->create_polygon( {v0, v1, v2} );
+        surface_mesh_builder->create_polygon( { v0, v1, v2 } );
         surface_mesh_builder->connect_polygons();
         std::tie( nb_connected_components, connected_components ) =
             surface_mesh->connected_components();

@@ -756,8 +756,8 @@ namespace
 
         if( !is_geomodel_vertex_valid_base( geomodel, entities ) )
         {
-            DEBUG(i);
-            DEBUG(geomodel.mesh.vertices.vertex(i));
+            DEBUG( i );
+            DEBUG( geomodel.mesh.vertices.vertex( i ) );
             return false;
         }
         if( !is_region_vertex_valid< 3 >( geomodel, entities ) )
@@ -1049,7 +1049,7 @@ namespace
             if( distance > geomodel.epsilon() )
             {
                 DEBUG( barycenter );
-                DEBUG(distance);
+                DEBUG( distance );
                 border_edges_on_line[border_edge] = false;
             }
         }
@@ -1079,7 +1079,7 @@ namespace
     public:
         GeoModelValidityCheck( const GeoModel< DIMENSION >& geomodel,
             const ValidityCheckMode validity_check_mode )
-             : geomodel_( geomodel ),
+            : geomodel_( geomodel ),
               valid_( true ),
               mode_( validity_check_mode )
         {
@@ -1667,7 +1667,8 @@ namespace RINGMesh
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
         // line orientation [BC].
-        GEO::mesh_repair( line.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        GEO::mesh_repair(
+            line.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             line.connected_components();
@@ -1738,7 +1739,8 @@ namespace RINGMesh
         // produce several connected components with colocated vertices.
         // The following repair merges such vertices and enables a homogeneous
         // surface orientation [BC].
-        GEO::mesh_repair( surface.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        GEO::mesh_repair(
+            surface.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
             surface.connected_components();
