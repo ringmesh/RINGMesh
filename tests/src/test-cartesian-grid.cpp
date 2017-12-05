@@ -94,7 +94,7 @@ void test_frames_and_cartesian_grid()
     }
 
     ivec3 dimensions_grille{ 10, 8, 9 };
-    CartesianGrid< 3 > cartesiangrid{ dimensions_grille, reference_frame };
+    CartesianGrid3D cartesiangrid{ dimensions_grille, reference_frame };
 }
 
 int main()
