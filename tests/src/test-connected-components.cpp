@@ -250,7 +250,6 @@ namespace
             surface_mesh->connected_components();
         solution.push_back( 0 );
         solution.push_back( 1 );
-        DEBUG( nb_connected_components );
         if( nb_connected_components != 2 || connected_components != solution )
         {
             throw RINGMeshException( "RINGMesh Test",

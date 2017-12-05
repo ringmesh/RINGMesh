@@ -60,7 +60,6 @@ int main()
 
         // Check only model geometry
         GEO::CmdLine::set_arg( "validity:do_not_check", "tGI" );
-        GEO::CmdLine::set_arg( "epsilon", 5e-8 );
 
         // Load the geomodel
         GeoModel3D geomodel;
