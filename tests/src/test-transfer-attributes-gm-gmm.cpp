@@ -53,7 +53,7 @@ namespace
     using namespace RINGMesh;
 
     const std::string attribute_names[6] = { "long_int_attr", "bool_attr",
-        "double_attr", "vec3_attr", "dim_6_double_attr", "char_attr" };
+        "double_attr", "vec3_attr", "vector_double_attr", "char_attr" };
 
     std::mutex lock;
 
@@ -78,7 +78,7 @@ namespace
         Attribute< bool >& vertex_bool_attr,
         Attribute< double >& vertex_double_attr,
         Attribute< vec3 >& vertex_vec3_attr,
-        Attribute< std::vector< double > >& vertex_dim_6_double_attr,
+        Attribute< std::vector< double > >& vertex_vector_double_attr,
         Attribute< char >& vertex_char_attr )
     {
         const long int rounded_vertex_xy =
@@ -92,7 +92,7 @@ namespace
             cur_vertex.x, cur_vertex.y, cur_vertex.z };
         std::vector< double > six_doubles(
             mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
-        vertex_dim_6_double_attr.set_value( vertex_i, six_doubles );
+        vertex_vector_double_attr.set_value( vertex_i, six_doubles );
 
         vertex_char_attr.set_value(
             vertex_i, std::to_string( cur_vertex.y ).data()[0] );
@@ -114,7 +114,7 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< std::vector< double > > vertex_dim_6_double_attr(
+            Attribute< std::vector< double > > vertex_vector_double_attr(
                 reg_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_attr_mgr, attribute_names[5] );
@@ -125,7 +125,7 @@ namespace
                 const vec3& cur_vertex = cur_reg.vertex( vertex_i );
                 assign_vertex_attribute_values( vertex_i, cur_vertex,
                     vertex_long_int_attr, vertex_bool_attr, vertex_double_attr,
-                    vertex_vec3_attr, vertex_dim_6_double_attr,
+                    vertex_vec3_attr, vertex_vector_double_attr,
                     vertex_char_attr );
             }
         }
@@ -134,7 +134,7 @@ namespace
         geomodel.transfer_vertex_attribute_from_gm_regions< bool >(
             attribute_names[1] );
         geomodel.transfer_vertex_attribute_from_gm_regions< double >(
-            attribute_names[0] );
+            attribute_names[2] );
         geomodel.transfer_vertex_attribute_from_gm_regions< vec3 >(
             attribute_names[3] );
         geomodel
@@ -156,7 +156,7 @@ namespace
         Attribute< double > vertex_double_attr(
             gmmv_attr_mgr, attribute_names[2] );
         Attribute< vec3 > vertex_vec3_attr( gmmv_attr_mgr, attribute_names[3] );
-        Attribute< std::vector< double > > vertex_dim_6_double_attr(
+        Attribute< std::vector< double > > vertex_vector_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
         Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
@@ -165,14 +165,14 @@ namespace
             const vec3& cur_vertex = gmmv.vertex( v_i );
             assign_vertex_attribute_values( v_i, cur_vertex,
                 vertex_long_int_attr, vertex_bool_attr, vertex_double_attr,
-                vertex_vec3_attr, vertex_dim_6_double_attr, vertex_char_attr );
+                vertex_vec3_attr, vertex_vector_double_attr, vertex_char_attr );
         }
         geomodel.transfer_vertex_attribute_to_gm_regions< long int >(
             attribute_names[0] );
         geomodel.transfer_vertex_attribute_to_gm_regions< bool >(
             attribute_names[1] );
         geomodel.transfer_vertex_attribute_to_gm_regions< double >(
-            attribute_names[0] );
+            attribute_names[2] );
         geomodel.transfer_vertex_attribute_to_gm_regions< vec3 >(
             attribute_names[3] );
         geomodel
@@ -189,7 +189,7 @@ namespace
         Attribute< bool >& cell_bool_attr,
         Attribute< double >& cell_double_attr,
         Attribute< vec3 >& cell_vec3_attr,
-        Attribute< std::vector< double > >& cell_dim_6_double_attr,
+        Attribute< std::vector< double > >& cell_vector_double_attr,
         Attribute< char >& cell_char_attr )
     {
         const long int rounded_volume = std::lrint( cell_volume );
@@ -197,13 +197,11 @@ namespace
         cell_bool_attr.set_value( cell_i, ( rounded_volume % 2 == 0 ) );
         cell_double_attr.set_value( cell_i, cell_volume );
         cell_vec3_attr.set_value( cell_i, cell_barycenter );
-        double mydoubles[] = { cell_vec3_attr[cell_i].x,
+        std::vector< double > six_doubles{ cell_vec3_attr[cell_i].x,
             cell_vec3_attr[cell_i].y, cell_vec3_attr[cell_i].z,
             cell_vec3_attr[cell_i].x, cell_vec3_attr[cell_i].y,
             cell_vec3_attr[cell_i].z };
-        std::vector< double > six_doubles(
-            mydoubles, mydoubles + sizeof( mydoubles ) / sizeof( double ) );
-        cell_dim_6_double_attr.set_value( cell_i, six_doubles );
+        cell_vector_double_attr.set_value( cell_i, six_doubles );
 
         cell_char_attr.set_value(
             cell_i, std::to_string( cell_vec3_attr[cell_i].y ).data()[0] );
@@ -211,11 +209,9 @@ namespace
 
     void set_cell_attributes_on_geomodel_regions( const GeoModel3D& geomodel )
     {
-        for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
+        for( const auto& region : geomodel.regions() )
         {
-            const Region3D& cur_reg = geomodel.region( reg_i );
-
-            AttributesManager& reg_attr_mgr = cur_reg.cell_attribute_manager();
+            AttributesManager& reg_attr_mgr = region.cell_attribute_manager();
             Attribute< long int > cell_long_int_attr(
                 reg_attr_mgr, attribute_names[0] );
             Attribute< bool > cell_bool_attr(
@@ -224,19 +220,19 @@ namespace
                 reg_attr_mgr, attribute_names[2] );
             Attribute< vec3 > cell_vec3_attr(
                 reg_attr_mgr, attribute_names[3] );
-            Attribute< std::vector< double > > cell_dim_6_double_attr(
+            Attribute< std::vector< double > > cell_vector_double_attr(
                 reg_attr_mgr, attribute_names[4] );
             Attribute< char > cell_char_attr(
                 reg_attr_mgr, attribute_names[5] );
 
-            for( index_t cell_i = 0; cell_i < cur_reg.nb_mesh_elements();
+            for( index_t cell_i = 0; cell_i < region.nb_mesh_elements();
                  ++cell_i )
             {
-                const double cell_volume = cur_reg.mesh_element_size( cell_i );
+                const double cell_volume = region.mesh_element_size( cell_i );
                 assign_cell_attribute_values( cell_i, cell_volume,
-                    cur_reg.mesh_element_barycenter( cell_i ),
+                    region.mesh_element_barycenter( cell_i ),
                     cell_long_int_attr, cell_bool_attr, cell_double_attr,
-                    cell_vec3_attr, cell_dim_6_double_attr, cell_char_attr );
+                    cell_vec3_attr, cell_vector_double_attr, cell_char_attr );
             }
         }
         geomodel.transfer_cell_attribute_from_gm_regions< long int >(
@@ -244,7 +240,7 @@ namespace
         geomodel.transfer_cell_attribute_from_gm_regions< bool >(
             attribute_names[1] );
         geomodel.transfer_cell_attribute_from_gm_regions< double >(
-            attribute_names[0] );
+            attribute_names[2] );
         geomodel.transfer_cell_attribute_from_gm_regions< vec3 >(
             attribute_names[3] );
         geomodel
@@ -266,7 +262,7 @@ namespace
         Attribute< double > cell_double_attr(
             gmmc_attr_mgr, attribute_names[2] );
         Attribute< vec3 > cell_vec3_attr( gmmc_attr_mgr, attribute_names[3] );
-        Attribute< std::vector< double > > cell_dim_6_double_attr(
+        Attribute< std::vector< double > > cell_vector_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
         Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
@@ -275,7 +271,7 @@ namespace
             const double cell_volume = gmmc.volume( cell_i );
             assign_cell_attribute_values( cell_i, cell_volume,
                 gmmc.barycenter( cell_i ), cell_long_int_attr, cell_bool_attr,
-                cell_double_attr, cell_vec3_attr, cell_dim_6_double_attr,
+                cell_double_attr, cell_vec3_attr, cell_vector_double_attr,
                 cell_char_attr );
         }
         geomodel.transfer_cell_attribute_to_gm_regions< long int >(
@@ -283,7 +279,7 @@ namespace
         geomodel.transfer_cell_attribute_to_gm_regions< bool >(
             attribute_names[1] );
         geomodel.transfer_cell_attribute_to_gm_regions< double >(
-            attribute_names[0] );
+            attribute_names[2] );
         geomodel.transfer_cell_attribute_to_gm_regions< vec3 >(
             attribute_names[3] );
         geomodel.transfer_cell_attribute_to_gm_regions< std::vector< double > >(
@@ -329,7 +325,7 @@ namespace
         Attribute< double > vertex_double_attr(
             gmmv_attr_mgr, attribute_names[2] );
         Attribute< vec3 > vertex_vec3_attr( gmmv_attr_mgr, attribute_names[3] );
-        Attribute< double > vertex_dim_6_double_attr(
+        Attribute< std::vector< double > > vertex_vector_double_attr(
             gmmv_attr_mgr, attribute_names[4] );
         Attribute< char > vertex_char_attr( gmmv_attr_mgr, attribute_names[5] );
 
@@ -373,27 +369,27 @@ namespace
             }
 
             if( std::abs(
-                    cur_vertex.x - vertex_dim_6_double_attr[6 * vertex_i + 0] )
+                    cur_vertex.x - vertex_vector_double_attr[vertex_i][0] )
                     > geomodel.epsilon()
                 || std::abs( cur_vertex.y
-                             - vertex_dim_6_double_attr[6 * vertex_i + 1] )
+                             - vertex_vector_double_attr[vertex_i][1] )
                        > geomodel.epsilon()
                 || std::abs( cur_vertex.z
-                             - vertex_dim_6_double_attr[6 * vertex_i + 2] )
+                             - vertex_vector_double_attr[vertex_i][2] )
                        > geomodel.epsilon()
                 || std::abs( cur_vertex.x
-                             - vertex_dim_6_double_attr[6 * vertex_i + 3] )
+                             - vertex_vector_double_attr[vertex_i][3] )
                        > geomodel.epsilon()
                 || std::abs( cur_vertex.y
-                             - vertex_dim_6_double_attr[6 * vertex_i + 4] )
+                             - vertex_vector_double_attr[vertex_i][4] )
                        > geomodel.epsilon()
                 || std::abs( cur_vertex.z
-                             - vertex_dim_6_double_attr[6 * vertex_i + 5] )
+                             - vertex_vector_double_attr[vertex_i][5] )
                        > geomodel.epsilon() )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad vertex transfer from geomodel region "
-                    "to geomodelmesh for double dim 6." );
+                    "to geomodelmesh for double vector." );
             }
 
             const char char_vec3_y = std::to_string( cur_vertex.y ).data()[0];
@@ -425,7 +421,7 @@ namespace
                 reg_v_attr_mgr, attribute_names[2] );
             Attribute< vec3 > vertex_vec3_attr(
                 reg_v_attr_mgr, attribute_names[3] );
-            Attribute< double > vertex_dim_6_double_attr(
+            Attribute< std::vector< double > > vertex_vector_double_attr(
                 reg_v_attr_mgr, attribute_names[4] );
             Attribute< char > vertex_char_attr(
                 reg_v_attr_mgr, attribute_names[5] );
@@ -471,27 +467,27 @@ namespace
                 }
 
                 if( std::abs( cur_vertex.x
-                              - vertex_dim_6_double_attr[6 * vertex_i + 0] )
+                              - vertex_vector_double_attr[vertex_i][0] )
                         > geomodel.epsilon()
                     || std::abs( cur_vertex.y
-                                 - vertex_dim_6_double_attr[6 * vertex_i + 1] )
+                                 - vertex_vector_double_attr[vertex_i][1] )
                            > geomodel.epsilon()
                     || std::abs( cur_vertex.z
-                                 - vertex_dim_6_double_attr[6 * vertex_i + 2] )
+                                 - vertex_vector_double_attr[vertex_i][2] )
                            > geomodel.epsilon()
                     || std::abs( cur_vertex.x
-                                 - vertex_dim_6_double_attr[6 * vertex_i + 3] )
+                                 - vertex_vector_double_attr[vertex_i][3] )
                            > geomodel.epsilon()
                     || std::abs( cur_vertex.y
-                                 - vertex_dim_6_double_attr[6 * vertex_i + 4] )
+                                 - vertex_vector_double_attr[vertex_i][4] )
                            > geomodel.epsilon()
                     || std::abs( cur_vertex.z
-                                 - vertex_dim_6_double_attr[6 * vertex_i + 5] )
+                                 - vertex_vector_double_attr[vertex_i][5] )
                            > geomodel.epsilon() )
                 {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad vertex transfer from geomodelmesh to geomodel "
-                        "region for double dim 6." );
+                        "region for double vector." );
                 }
 
                 const char char_vec3_y =
@@ -521,7 +517,7 @@ namespace
         Attribute< double > cell_double_attr(
             gmmc_attr_mgr, attribute_names[2] );
         Attribute< vec3 > cell_vec3_attr( gmmc_attr_mgr, attribute_names[3] );
-        Attribute< double > cell_dim_6_double_attr(
+        Attribute< std::vector< double > > cell_vector_double_attr(
             gmmc_attr_mgr, attribute_names[4] );
         Attribute< char > cell_char_attr( gmmc_attr_mgr, attribute_names[5] );
 
@@ -565,27 +561,27 @@ namespace
             }
 
             if( std::abs(
-                    cell_barycenter.x - cell_dim_6_double_attr[6 * cell_i + 0] )
+                    cell_barycenter.x - cell_vector_double_attr[cell_i][0] )
                     > geomodel.epsilon()
                 || std::abs( cell_barycenter.y
-                             - cell_dim_6_double_attr[6 * cell_i + 1] )
+                             - cell_vector_double_attr[cell_i][1] )
                        > geomodel.epsilon()
                 || std::abs( cell_barycenter.z
-                             - cell_dim_6_double_attr[6 * cell_i + 2] )
+                             - cell_vector_double_attr[cell_i][2] )
                        > geomodel.epsilon()
                 || std::abs( cell_barycenter.x
-                             - cell_dim_6_double_attr[6 * cell_i + 3] )
+                             - cell_vector_double_attr[cell_i][3] )
                        > geomodel.epsilon()
                 || std::abs( cell_barycenter.y
-                             - cell_dim_6_double_attr[6 * cell_i + 4] )
+                             - cell_vector_double_attr[cell_i][4] )
                        > geomodel.epsilon()
                 || std::abs( cell_barycenter.z
-                             - cell_dim_6_double_attr[6 * cell_i + 5] )
+                             - cell_vector_double_attr[cell_i][5] )
                        > geomodel.epsilon() )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Bad cell transfer from geomodel region "
-                    "to geomodelmesh for double dim 6." );
+                    "to geomodelmesh for double vector." );
             }
 
             const char char_vec3_y =
@@ -618,7 +614,7 @@ namespace
                 reg_c_attr_mgr, attribute_names[2] );
             Attribute< vec3 > cell_vec3_attr(
                 reg_c_attr_mgr, attribute_names[3] );
-            Attribute< double > cell_dim_6_double_attr(
+            Attribute< std::vector< double > > cell_vector_double_attr(
                 reg_c_attr_mgr, attribute_names[4] );
             Attribute< char > cell_char_attr(
                 reg_c_attr_mgr, attribute_names[5] );
@@ -665,27 +661,27 @@ namespace
                 }
 
                 if( std::abs( cell_barycenter.x
-                              - cell_dim_6_double_attr[6 * cell_i + 0] )
+                              - cell_vector_double_attr[cell_i][0] )
                         > geomodel.epsilon()
                     || std::abs( cell_barycenter.y
-                                 - cell_dim_6_double_attr[6 * cell_i + 1] )
+                                 - cell_vector_double_attr[cell_i][1] )
                            > geomodel.epsilon()
                     || std::abs( cell_barycenter.z
-                                 - cell_dim_6_double_attr[6 * cell_i + 2] )
+                                 - cell_vector_double_attr[cell_i][2] )
                            > geomodel.epsilon()
                     || std::abs( cell_barycenter.x
-                                 - cell_dim_6_double_attr[6 * cell_i + 3] )
+                                 - cell_vector_double_attr[cell_i][3] )
                            > geomodel.epsilon()
                     || std::abs( cell_barycenter.y
-                                 - cell_dim_6_double_attr[6 * cell_i + 4] )
+                                 - cell_vector_double_attr[cell_i][4] )
                            > geomodel.epsilon()
                     || std::abs( cell_barycenter.z
-                                 - cell_dim_6_double_attr[6 * cell_i + 5] )
+                                 - cell_vector_double_attr[cell_i][5] )
                            > geomodel.epsilon() )
                 {
                     throw RINGMeshException( "RINGMesh Test",
                         "Bad cell transfer from geomodelmesh to geomodel "
-                        "region for double dim 6." );
+                        "region for double vector." );
                 }
 
                 const char char_vec3_y =
