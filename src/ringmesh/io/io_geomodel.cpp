@@ -110,10 +110,12 @@ namespace RINGMesh
     template <>
     void GeoModelOutputHandler< 2 >::initialize()
     {
-//        GeoModelOutputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
-//            "gm" );
-//        GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
-//            "mfem" );
+        //        GeoModelOutputHandlerFactory2D::register_creator<
+        //        GeoModelHandlerGM2D >(
+        //            "gm" );
+        //        GeoModelOutputHandlerFactory2D::register_creator<
+        //        MFEMIOHandler2D >(
+        //            "mfem" );
     }
 
     template <>
@@ -133,36 +135,49 @@ namespace RINGMesh
     template <>
     void GeoModelOutputHandler< 3 >::initialize()
     {
-//        GeoModelOutputHandlerFactory3D::register_creator< TetGenIOHandler >(
-//            "tetgen" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        TetGenIOHandler >(
+        //            "tetgen" );
         GeoModelOutputHandlerFactory3D::register_creator< TSolidIOHandler >(
             "so" );
-//        GeoModelOutputHandlerFactory3D::register_creator< CSMPIOHandler >(
-//            "csmp" );
-//        GeoModelOutputHandlerFactory3D::register_creator< AsterIOHandler >(
-//            "mail" );
-//        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >(
-//            "vtk" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        CSMPIOHandler >(
+        //            "csmp" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        AsterIOHandler >(
+        //            "mail" );
+        //        GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler
+        //        >(
+        //            "vtk" );
         // todo GPRS export is not working for the moment [AB]
         //        GeoModelOutputHandlerFactory3D::register_creator<
         //        GPRSIOHandler >( "gprs" );
-//        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >(
-//            "msh" );
-//        GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
-//            "mfem" );
-//        GeoModelOutputHandlerFactory3D::register_creator< GeoModelHandlerGM3D >(
-//            "gm" );
-//        GeoModelOutputHandlerFactory3D::register_creator< AbaqusIOHandler >(
-//            "inp" );
-//        GeoModelOutputHandlerFactory3D::register_creator< AdeliIOHandler >(
-//            "adeli" );
-//        GeoModelOutputHandlerFactory3D::register_creator< FeflowIOHandler >(
-//            "fem" );
-//        GeoModelOutputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
-//        GeoModelOutputHandlerFactory3D::register_creator< SMESHIOHandler >(
-//            "smesh" );
-//        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >(
-//            "stl" );
+        //        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler
+        //        >(
+        //            "msh" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        MFEMIOHandler3D >(
+        //            "mfem" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        GeoModelHandlerGM3D >(
+        //            "gm" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        AbaqusIOHandler >(
+        //            "inp" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        AdeliIOHandler >(
+        //            "adeli" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        FeflowIOHandler >(
+        //            "fem" );
+        //        GeoModelOutputHandlerFactory3D::register_creator< MLIOHandler
+        //        >( "ml" );
+        //        GeoModelOutputHandlerFactory3D::register_creator<
+        //        SMESHIOHandler >(
+        //            "smesh" );
+        //        GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler
+        //        >(
+        //            "stl" );
     }
 
     template <>
