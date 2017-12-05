@@ -721,12 +721,6 @@ namespace RINGMesh
         }
 
         /*!@}
-         * \name SurfaceMesh algorithms
-         * @{
-         */
-        virtual void triangulate(
-            const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
-        /*!@}
          */
         /*!
          * @brief Remove vertices not connected to any mesh element

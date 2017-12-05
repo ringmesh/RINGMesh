@@ -39,7 +39,6 @@
 
 #include <geogram/basic/command_line.h>
 
-#include <geogram/voronoi/CVT.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
@@ -192,21 +191,6 @@ private:                                                                       \
             : SurfaceMeshBuilder< DIMENSION >( mesh ),
               mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
         {
-        }
-
-        void triangulate(
-            const SurfaceMeshBase< DIMENSION >& surface_in ) override
-        {
-            Logger::instance()->set_minimal( true );
-            const auto& geogram_surf_in =
-                dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >(
-                    surface_in );
-            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(),
-                3, GEO::CmdLine::get_arg( "algo:delaunay" ) );
-            CVT.set_points(
-                mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
-            CVT.compute_surface( mesh_.mesh_.get(), false );
-            Logger::instance()->set_minimal( false );
         }
 
         index_t do_create_polygon(
