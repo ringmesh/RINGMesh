@@ -116,6 +116,7 @@ namespace
                     reg_vertex_attr_mgr.attribute_names();
                 ringmesh_assert(
                     att_v_names.size() == reg_vertex_attr_mgr.nb_attributes() );
+                DEBUG( att_v_names.size() );
                 for( const std::string& cur_att_v_name : att_v_names )
                 {
                     if( cur_att_v_name == "point" )
@@ -154,6 +155,7 @@ namespace
             const auto nb_numeric_like_vertex_attribute_names =
                 static_cast< index_t >(
                     numeric_like_vertex_attribute_names_.size() );
+            DEBUG( nb_numeric_like_vertex_attribute_names );
             if( !numeric_like_vertex_attribute_names_.empty() )
             {
                 ringmesh_assert( nb_numeric_like_vertex_attribute_names > 0 );
