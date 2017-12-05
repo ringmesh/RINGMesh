@@ -1,5 +1,5 @@
 # Doxygen configuration file for generating
-# the standard developer RINGMesh documentation excluding geogram
+# the standard developer RINGMesh documentation
 
 OUTPUT_DIRECTORY       = @doc_output_dir@/devkit-lite
 PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
