@@ -383,7 +383,7 @@ namespace
                     {
                         auto builder = builder_.geometry.create_surface_builder(
                             surface.index() );
-                        remove_dupplicated_or_degenerated_polygons(
+                        remove_duplicated_or_degenerated_polygons(
                             surface.mesh(), *builder );
                         remove_small_connected_components(
                             surface.mesh(), *builder, epsilon_sq, 3 );
@@ -463,7 +463,7 @@ namespace
             }
         }
 
-        void remove_dupplicated_or_degenerated_polygons(
+        void remove_duplicated_or_degenerated_polygons(
             const SurfaceMesh< DIMENSION >& surface,
             SurfaceMeshBuilder< DIMENSION >& builder )
         {
