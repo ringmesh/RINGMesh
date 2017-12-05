@@ -217,8 +217,7 @@ namespace RINGMesh
             {
                 for( auto j : range( i + 1, DIMENSION ) )
                 {
-                    if( dot( reference_frame[i], reference_frame[j] )
-                        != 0 )
+                    if( dot( reference_frame[i], reference_frame[j] ) != 0 )
                     {
                         return false;
                     }
