@@ -56,7 +56,7 @@ public:                                                                        \
         mesh_.mesh_->copy(                                                     \
             *geogrammesh.mesh_, copy_attributes, GEO::MESH_ALL_ELEMENTS );     \
     }                                                                          \
-    void load_mesh( const std::string& filename ) override                     \
+    void do_load_mesh( const std::string& filename ) override                  \
     {                                                                          \
         GEO::MeshIOFlags ioflags;                                              \
         ioflags.set_attribute( GEO::MESH_ALL_ATTRIBUTES );                     \

@@ -80,7 +80,7 @@ namespace RINGMesh
                      .second )
             {
                 Logger::warn(
-                    "Factory", "Trying to register twice the same key" );
+                    "Factory", "Trying to register twice the same key: ", key );
             }
         }
 

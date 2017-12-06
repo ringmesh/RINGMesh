@@ -41,6 +41,7 @@
 
 #include <geogram/basic/attributes.h>
 #include <geogram/basic/memory.h>
+#include <ringmesh/basic/attributes.h>
 
 /*!
  * @file Helper functions on classes defined in Geogram
@@ -140,31 +141,31 @@ namespace RINGMesh
      * @todo Probably extremely prone to bugs. Is it worth the risk?
      */
     template < typename T >
-    class AttributeVector : public std::vector< GEO::Attribute< T >* >
+    class AttributeVector : public std::vector< Attribute< T >* >
     {
         ringmesh_disable_copy_and_move( AttributeVector );
 
     public:
-        using base_class = std::vector< GEO::Attribute< T >* >;
+        using base_class = std::vector< Attribute< T >* >;
         AttributeVector() = default;
         explicit AttributeVector( index_t size ) : base_class( size, nullptr )
         {
         }
 
         void bind_one_attribute( index_t i,
-            GEO::AttributesManager& manager,
+            AttributesManager& manager,
             const std::string& attribute_name )
         {
             base_class::operator[]( i ) =
-                new GEO::Attribute< T >( manager, attribute_name );
+                new Attribute< T >( manager, attribute_name );
         }
 
-        GEO::Attribute< T >& operator[]( index_t i )
+        Attribute< T >& operator[]( index_t i )
         {
             return *base_class::operator[]( i );
         }
 
-        const GEO::Attribute< T >& operator[]( index_t i ) const
+        const Attribute< T >& operator[]( index_t i ) const
         {
             return *base_class::operator[]( i );
         }
@@ -193,8 +194,6 @@ namespace RINGMesh
             }
         }
     };
-
-    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M );
 
     class RINGMESH_API ThreadSafeConsoleLogger : public GEO::ConsoleLogger
     {

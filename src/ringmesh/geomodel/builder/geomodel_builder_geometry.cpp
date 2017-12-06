@@ -908,10 +908,9 @@ namespace RINGMesh
             ringmesh_assert( cell != NO_ID && cell_vertex != NO_ID );
         }
 
-        GEO::vector< std::string > names;
-        geomodel_.region( region_id )
-            .vertex_attribute_manager()
-            .list_attribute_names( names );
+        std::vector< std::string > names = geomodel_.region( region_id )
+                                               .vertex_attribute_manager()
+                                               .attribute_names();
 
         auto& E = geomodel_access_.modifiable_mesh_entity( region_gme );
         auto vertices_nb = E.nb_vertices();
@@ -936,16 +935,10 @@ namespace RINGMesh
             {
                 if( name != "model_vertex_map" && name != "point" )
                 {
-                    GEO::Attribute< double > attr(
-                        geomodel_.region( region_id )
-                            .vertex_attribute_manager(),
+                    Attribute< double > attr( geomodel_.region( region_id )
+                                                  .vertex_attribute_manager(),
                         name );
-                    auto dim_nb = attr.dimension();
-                    for( auto dim : range( dim_nb ) )
-                    {
-                        attr[( vertices_nb + v ) * dim_nb + dim] =
-                            attr[cell_vertex * dim_nb + dim];
-                    }
+                    attr.set_value( ( vertices_nb + v ), attr[cell_vertex] );
                 }
             }
         }

@@ -110,12 +110,12 @@ namespace
             for( index_t reg_i = 0; reg_i < geomodel.nb_regions(); ++reg_i )
             {
                 const Region3D& cur_reg = geomodel.region( reg_i );
-                GEO::AttributesManager& reg_vertex_attr_mgr =
+                AttributesManager& reg_vertex_attr_mgr =
                     cur_reg.vertex_attribute_manager();
-                GEO::vector< std::string > att_v_names;
-                reg_vertex_attr_mgr.list_attribute_names( att_v_names );
+                std::vector< std::string > att_v_names =
+                    reg_vertex_attr_mgr.attribute_names();
                 ringmesh_assert(
-                    att_v_names.size() == reg_vertex_attr_mgr.nb() );
+                    att_v_names.size() == reg_vertex_attr_mgr.nb_attributes() );
                 for( const std::string& cur_att_v_name : att_v_names )
                 {
                     if( cur_att_v_name == "point" )
@@ -129,30 +129,25 @@ namespace
                         continue;
                     }
 
-                    const GEO::AttributeStore* attr_store =
+                    const AttributeStore* attr_store =
                         reg_vertex_attr_mgr.find_attribute_store(
                             cur_att_v_name );
                     ringmesh_assert( attr_store != nullptr );
 
-                    if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            attr_store ) )
-                    {
-                        continue;
-                    }
-
                     numeric_like_vertex_attribute_names_.push_back(
                         cur_att_v_name );
-                    index_t cur_dim = attr_store->dimension();
-                    vertex_attribute_dimensions_.push_back( cur_dim );
+                    vertex_attribute_dimensions_.push_back( 1 );
 
-                    const GEO::ReadOnlyScalarAttributeAdapter adapter(
-                        reg_vertex_attr_mgr, cur_att_v_name );
-                    ringmesh_assert(
-                        adapter.element_type()
-                        != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
+                    const AttributeStore* attstore =
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            cur_att_v_name );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > adapter =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_vertex_attr_mgr, cur_att_v_name );
+                    ringmesh_assert( adapter != nullptr );
                     is_integer_like_attribute.push_back(
-                        adapter.element_type()
-                        < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        adapter->is_integer_like_attribute() );
                 }
             }
 
@@ -252,9 +247,10 @@ namespace
             for( const auto& cur_reg : region_range< 3 >( geomodel ) )
             {
                 auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
-                GEO::vector< std::string > att_c_names;
-                reg_cell_attr_mgr.list_attribute_names( att_c_names );
-                ringmesh_assert( att_c_names.size() == reg_cell_attr_mgr.nb() );
+                std::vector< std::string > att_c_names =
+                    reg_cell_attr_mgr.attribute_names();
+                ringmesh_assert(
+                    att_c_names.size() == reg_cell_attr_mgr.nb_attributes() );
                 for( const auto& cur_att_c_name : att_c_names )
                 {
                     if( contains( numeric_like_cell_attribute_names_,
@@ -268,25 +264,20 @@ namespace
                             cur_att_c_name );
                     ringmesh_assert( attr_store != nullptr );
 
-                    if( !GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            attr_store ) )
-                    {
-                        continue;
-                    }
-
                     numeric_like_cell_attribute_names_.push_back(
                         cur_att_c_name );
-                    auto cur_dim = attr_store->dimension();
-                    cell_attribute_dimensions_.push_back( cur_dim );
+                    cell_attribute_dimensions_.push_back( 1 );
 
-                    const GEO::ReadOnlyScalarAttributeAdapter adapter(
-                        reg_cell_attr_mgr, cur_att_c_name );
-                    ringmesh_assert(
-                        adapter.element_type()
-                        != GEO::ReadOnlyScalarAttributeAdapter::ET_NONE );
+                    const AttributeStore* attstore =
+                        reg_cell_attr_mgr.find_attribute_store(
+                            cur_att_c_name );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > adapter =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_cell_attr_mgr, cur_att_c_name );
+                    ringmesh_assert( adapter != nullptr );
                     is_integer_like_attribute.push_back(
-                        adapter.element_type()
-                        < GEO::ReadOnlyScalarAttributeAdapter::ET_FLOAT32 );
+                        adapter->is_integer_like_attribute() );
                 }
             }
 
@@ -453,29 +444,26 @@ namespace
                         reg_vertex_attr_mgr.find_attribute_store(
                             numeric_like_vertex_attribute_names_[attr_dbl_itr] )
                         != nullptr );
-                    ringmesh_assert(
-                        reg_vertex_attr_mgr
-                            .find_attribute_store(
-                                numeric_like_vertex_attribute_names_
-                                    [attr_dbl_itr] )
-                            ->dimension()
-                        == vertex_attribute_dimensions_[attr_dbl_itr] );
-                    ringmesh_assert(
-                        GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            reg_vertex_attr_mgr.find_attribute_store(
-                                numeric_like_vertex_attribute_names_
-                                    [attr_dbl_itr] ) ) );
-                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
-                        reg_vertex_attr_mgr,
-                        numeric_like_vertex_attribute_names_[attr_dbl_itr] );
+
+                    const AttributeStore* attstore =
+                        reg_vertex_attr_mgr.find_attribute_store(
+                            numeric_like_vertex_attribute_names_
+                                [attr_dbl_itr] );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > cur_attr =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_vertex_attr_mgr,
+                            numeric_like_vertex_attribute_names_
+                                [attr_dbl_itr] );
                     for( auto dim_itr :
                         range( vertex_attribute_dimensions_[attr_dbl_itr] ) )
                     {
                         out_ << " "
-                             << cur_attr[vertex_id_in_reg
-                                             * vertex_attribute_dimensions_
-                                                   [attr_dbl_itr]
-                                         + dim_itr];
+                             << cur_attr->operator[](
+                                    vertex_id_in_reg*
+                                        vertex_attribute_dimensions_
+                                            [attr_dbl_itr]
+                                    + dim_itr );
                     }
                 }
                 else
@@ -630,29 +618,23 @@ namespace
                         reg_cell_attr_mgr.find_attribute_store(
                             numeric_like_cell_attribute_names_[attr_dbl_itr] )
                         != nullptr );
-                    ringmesh_assert(
-                        reg_cell_attr_mgr
-                            .find_attribute_store(
-                                numeric_like_cell_attribute_names_
-                                    [attr_dbl_itr] )
-                            ->dimension()
-                        == cell_attribute_dimensions_[attr_dbl_itr] );
-                    ringmesh_assert(
-                        GEO::ReadOnlyScalarAttributeAdapter::can_be_bound_to(
-                            reg_cell_attr_mgr.find_attribute_store(
-                                numeric_like_cell_attribute_names_
-                                    [attr_dbl_itr] ) ) );
-                    GEO::ReadOnlyScalarAttributeAdapter cur_attr(
-                        reg_cell_attr_mgr,
-                        numeric_like_cell_attribute_names_[attr_dbl_itr] );
+
+                    const AttributeStore* attstore =
+                        reg_cell_attr_mgr.find_attribute_store(
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] );
+                    std::unique_ptr< ReadOnlyScalarAttributeAdapter > cur_attr =
+                        ReadOnlyScalarAttributeAdapterFactory::create(
+                            attstore->get_store().element_typeid_name(),
+                            reg_cell_attr_mgr,
+                            numeric_like_cell_attribute_names_[attr_dbl_itr] );
                     for( auto dim_itr :
                         range( cell_attribute_dimensions_[attr_dbl_itr] ) )
                     {
-                        out_
-                            << " "
-                            << cur_attr[c_in_reg[0] * cell_attribute_dimensions_
-                                                          [attr_dbl_itr]
-                                        + dim_itr];
+                        out_ << " "
+                             << cur_attr->operator[](
+                                    c_in_reg[0] * cell_attribute_dimensions_
+                                                      [attr_dbl_itr]
+                                    + dim_itr );
                     }
                 }
                 else

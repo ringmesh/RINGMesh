@@ -55,47 +55,6 @@ namespace
 {
     using namespace RINGMesh;
 
-    std::vector< std::string > bounded_attribute_names(
-        GEO::AttributesManager& manager )
-    {
-        GEO::vector< std::string > names;
-        manager.list_attribute_names( names );
-        std::vector< std::string > bounded_names;
-        bounded_names.reserve( names.size() );
-        if( !names.empty() )
-        {
-            for( std::string name : names )
-            {
-                if( manager.find_attribute_store( name )->has_observers() )
-                {
-                    bounded_names.push_back( name );
-                }
-            }
-        }
-        return bounded_names;
-    }
-
-    void print_bounded_attributes( const std::vector< std::string >& names,
-        const std::string& output_location )
-    {
-        if( !names.empty() )
-        {
-            Logger::err( "Attributes", "Attributes still bounded on ",
-                output_location, ":" );
-            for( std::string name : names )
-            {
-                Logger::err( "Attributes", " ", name );
-            }
-        }
-    }
-
-    void print_bounded_attributes(
-        GEO::AttributesManager& manager, const std::string& output_location )
-    {
-        std::vector< std::string > names = bounded_attribute_names( manager );
-        print_bounded_attributes( names, output_location );
-    }
-
     /*!
      * @brief TSurfMeshIOHandler for importing .ts files into a mesh.
      */
@@ -727,22 +686,6 @@ namespace RINGMesh
             result += GEO::Geom::mesh_vertex( M, M.cells.vertex( cell, v ) );
         }
         return ( 1.0 / M.cells.nb_vertices( cell ) ) * result;
-    }
-
-    void print_bounded_attributes( const GEO::Mesh& M )
-    {
-        std::vector< std::string > names =
-            bounded_attribute_names( M.vertices.attributes() );
-        names.erase( std::find( names.begin(), names.end(), "point" ) );
-        ::print_bounded_attributes( names, "vertices" );
-        ::print_bounded_attributes( M.edges.attributes(), "edges" );
-        ::print_bounded_attributes( M.facets.attributes(), "facets" );
-        ::print_bounded_attributes(
-            M.facet_corners.attributes(), "facet_corners" );
-        ::print_bounded_attributes( M.cells.attributes(), "cells" );
-        ::print_bounded_attributes(
-            M.cell_corners.attributes(), "cell_corners" );
-        ::print_bounded_attributes( M.cell_facets.attributes(), "cell_facets" );
     }
 
 } // namespace RINGMesh

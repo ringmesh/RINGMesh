@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 
+#include <ringmesh/basic/attributes.h>
 #include <ringmesh/basic/pimpl.h>
 
 #include <ringmesh/geomodel/core/entity_type.h>
@@ -46,11 +47,6 @@
  * @brief Classes to manage globally the indexing of mesh entities of a GeoModel
  * @author Arnaud Botella and Jeanne Pellerin
  */
-
-namespace GEO
-{
-    class AttributesManager;
-} // namespace GEO
 
 namespace RINGMesh
 {
@@ -169,7 +165,7 @@ namespace RINGMesh
 
         ~GeoModelMeshVerticesBase();
 
-        GEO::AttributesManager& attribute_manager() const;
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Tests if the mesh vertices need to be initialized,
@@ -369,7 +365,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshPolygonsBase();
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->polygon_attribute_manager();
         }
@@ -666,7 +662,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshEdges();
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->edge_attribute_manager();
         }
@@ -803,7 +799,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const
+        AttributesManager& attribute_manager() const
         {
             return mesh_->edge_attribute_manager();
         }
@@ -896,7 +892,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< VolumeMesh< DIMENSION > >& mesh );
 
-        GEO::AttributesManager& attribute_manager() const;
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh cells are duplicated
@@ -1414,18 +1410,7 @@ namespace RINGMesh
         explicit GeoModelMesh( GeoModel3D& geomodel );
         virtual ~GeoModelMesh();
 
-        /*! @}
-         * \name Transfers of attributes
-         * @{
-         */
-        void transfer_attributes_from_gmm_to_gm_regions() const;
-        void transfer_attributes_from_gm_regions_to_gmm() const;
-        void transfer_cell_attributes_from_gmm_to_gm_regions() const;
-        void transfer_cell_attributes_from_gm_regions_to_gmm() const;
-        void transfer_vertex_attributes_from_gmm_to_gm_regions() const;
-        void transfer_vertex_attributes_from_gm_regions_to_gmm() const;
-
-        /*! @}
+        /*!
          * \name Vertex duplication
          * @{
          */

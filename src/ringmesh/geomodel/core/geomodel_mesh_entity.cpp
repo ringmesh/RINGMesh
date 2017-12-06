@@ -208,7 +208,6 @@ namespace RINGMesh
     {
 #ifdef RINGMESH_DEBUG
         ringmesh_assert( mesh_ != nullptr );
-        mesh_->print_mesh_bounded_attributes();
 #endif
     }
 
@@ -220,7 +219,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         GeoModelMeshEntity< DIMENSION >::vertex_attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -936,7 +935,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         SurfaceBase< DIMENSION >::polygon_attribute_manager() const
     {
         return surface_mesh_->polygon_attribute_manager();
@@ -1180,7 +1179,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& Region< DIMENSION >::cell_attribute_manager() const
+    AttributesManager& Region< DIMENSION >::cell_attribute_manager() const
     {
         return volume_mesh_->cell_attribute_manager();
     }

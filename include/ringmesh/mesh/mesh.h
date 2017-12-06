@@ -35,20 +35,15 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
-
 #include <algorithm>
 #include <memory>
+#include <ringmesh/basic/attributes.h>
+#include <ringmesh/basic/common.h>
 
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/mesh_aabb.h>
-
-namespace GEO
-{
-    class AttributesManager;
-} // namespace GEO
 
 namespace RINGMesh
 {
@@ -90,12 +85,6 @@ namespace RINGMesh
         virtual std::tuple< index_t, std::vector< index_t > >
             connected_components() const = 0;
 
-        // TODO maybe reimplement the function with a RINGMesh::Mesh??
-        virtual void print_mesh_bounded_attributes() const = 0;
-        /*!
-         * \name Vertex methods
-         * @{
-         */
         /*!
          * @brief Gets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
@@ -107,7 +96,10 @@ namespace RINGMesh
          */
         virtual index_t nb_vertices() const = 0;
 
-        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0;
+        AttributesManager& vertex_attribute_manager() const
+        {
+            return vertex_attributes_manager_;
+        }
 
         /*!
          * @brief return the NNSearch at vertices
@@ -144,6 +136,7 @@ namespace RINGMesh
 
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
+        mutable AttributesManager vertex_attributes_manager_;
     };
     ALIAS_2D_AND_3D( MeshBase );
 
@@ -239,7 +232,10 @@ namespace RINGMesh
             return *edge_aabb_.get();
         }
 
-        virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+        AttributesManager& edge_attribute_manager() const
+        {
+            return edge_attributes_manager_;
+        }
 
         bool is_mesh_valid() const override;
 
@@ -252,6 +248,7 @@ namespace RINGMesh
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_{};
         mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_{};
+        mutable AttributesManager edge_attributes_manager_;
     };
     ALIAS_2D_AND_3D( LineMesh );
 
@@ -413,7 +410,10 @@ namespace RINGMesh
         virtual index_t polygon_adjacent(
             const PolygonLocalEdge& polygon_local_edge ) const = 0;
 
-        virtual GEO::AttributesManager& polygon_attribute_manager() const = 0;
+        AttributesManager& polygon_attribute_manager() const
+        {
+            return polygon_attributes_manager_;
+        }
 
         /*!
          * @brief Tests whether all the polygons are triangles. when all the
@@ -541,6 +541,7 @@ namespace RINGMesh
     protected:
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
+        mutable AttributesManager polygon_attributes_manager_;
     };
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
@@ -721,10 +722,12 @@ namespace RINGMesh
         virtual index_t cell_adjacent(
             const CellLocalFacet& cell_local_facet ) const = 0;
 
-        virtual GEO::AttributesManager& cell_attribute_manager() const = 0;
+        AttributesManager& cell_attribute_manager() const
+        {
+            return cell_attributes_manager_;
+        }
 
-        virtual GEO::AttributesManager&
-            cell_facet_attribute_manager() const = 0;
+        // virtual AttributesManager& cell_facet_attribute_manager() const = 0;
 
         /*!
          * @brief Gets the type of a cell.
@@ -827,6 +830,7 @@ namespace RINGMesh
             cell_facet_nn_search_{};
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_{};
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_{};
+        mutable AttributesManager cell_attributes_manager_;
     };
 
     using VolumeMesh3D = VolumeMesh< 3 >;

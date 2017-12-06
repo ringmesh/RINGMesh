@@ -40,7 +40,7 @@
 #include <array>
 #include <memory>
 
-#include <geogram/basic/attributes.h>
+#include <ringmesh/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
 
@@ -112,7 +112,7 @@ namespace RINGMesh
             return id_;
         }
 
-        GEO::AttributesManager& vertex_attribute_manager() const;
+        AttributesManager& vertex_attribute_manager() const;
 
     private:
         /// True is the corner is on a surface, false if is in a region
@@ -198,8 +198,8 @@ namespace RINGMesh
         const vecn< DIMENSION >& edge_vertex(
             const ElementLocalVertex& well_edge_local_vertex ) const;
 
-        GEO::AttributesManager& vertex_attribute_manager() const;
-        GEO::AttributesManager& edge_attribute_manager() const;
+        AttributesManager& vertex_attribute_manager() const;
+        AttributesManager& edge_attribute_manager() const;
 
         const NNSearch< DIMENSION >& vertices_nn_search() const;
 

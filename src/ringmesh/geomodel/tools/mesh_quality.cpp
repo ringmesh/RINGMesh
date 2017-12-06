@@ -369,18 +369,18 @@ namespace RINGMesh
         {
             ringmesh_assert( region.is_meshed() );
             ringmesh_assert( region.is_simplicial() );
-            GEO::AttributesManager& reg_attr_mgr =
-                region.cell_attribute_manager();
-            GEO::Attribute< double > attr(
+            AttributesManager& reg_attr_mgr = region.cell_attribute_manager();
+            Attribute< double > attr(
                 reg_attr_mgr, mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
             for( auto cell_itr : range( region.nb_mesh_elements() ) )
             {
-                attr[cell_itr] = get_tet_quality(
-                    region.mesh_element_vertex( { cell_itr, 0 } ),
-                    region.mesh_element_vertex( { cell_itr, 1 } ),
-                    region.mesh_element_vertex( { cell_itr, 2 } ),
-                    region.mesh_element_vertex( { cell_itr, 3 } ),
-                    mesh_qual_mode );
+                attr.set_value(
+                    cell_itr, get_tet_quality(
+                                  region.mesh_element_vertex( { cell_itr, 0 } ),
+                                  region.mesh_element_vertex( { cell_itr, 1 } ),
+                                  region.mesh_element_vertex( { cell_itr, 2 } ),
+                                  region.mesh_element_vertex( { cell_itr, 3 } ),
+                                  mesh_qual_mode ) );
             }
         }
     }
@@ -397,7 +397,7 @@ namespace RINGMesh
         {
             ringmesh_assert( region.is_meshed() );
             ringmesh_assert( region.is_simplicial() );
-            GEO::Attribute< double > quality_attribute(
+            Attribute< double > quality_attribute(
                 region.cell_attribute_manager(),
                 mesh_qual_mode_to_prop_name( mesh_qual_mode ) );
             for( auto cell_id : range( region.nb_mesh_elements() ) )

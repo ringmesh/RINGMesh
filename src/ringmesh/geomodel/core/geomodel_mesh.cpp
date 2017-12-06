@@ -511,7 +511,7 @@ namespace RINGMesh
          * @brief Returns the vertex attribute of a GeoModelMeshEntity
          * @param[in] mesh_entity_id Unique id to a GeoModelMeshEntity
          */
-        GEO::AttributesManager& mesh_entity_vertex_attribute_manager(
+        AttributesManager& mesh_entity_vertex_attribute_manager(
             const gmme_id& mesh_entity_id ) const
         {
             const auto& mesh_entity = geomodel_.mesh_entity( mesh_entity_id );
@@ -553,7 +553,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
+    AttributesManager&
         GeoModelMeshVerticesBase< DIMENSION >::attribute_manager() const
     {
         return mesh_->vertex_attribute_manager();
@@ -947,8 +947,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager&
-        GeoModelMeshCells< DIMENSION >::attribute_manager() const
+    AttributesManager& GeoModelMeshCells< DIMENSION >::attribute_manager() const
     {
         return mesh_->cell_attribute_manager();
     }
@@ -2909,281 +2908,6 @@ namespace RINGMesh
         {
             cells.clear();
             mesh_set_->create_volume_mesh( type );
-        }
-    }
-
-    void GeoModelMesh< 3 >::transfer_attributes_from_gmm_to_gm_regions() const
-    {
-        transfer_vertex_attributes_from_gmm_to_gm_regions();
-        transfer_cell_attributes_from_gmm_to_gm_regions();
-    }
-
-    void GeoModelMesh< 3 >::transfer_attributes_from_gm_regions_to_gmm() const
-    {
-        transfer_vertex_attributes_from_gm_regions_to_gmm();
-        transfer_cell_attributes_from_gm_regions_to_gmm();
-    }
-
-    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gmm_to_gm_regions()
-        const
-    {
-        auto& gmm_v_attr_mgr = vertices.attribute_manager();
-        GEO::vector< std::string > att_v_names;
-        gmm_v_attr_mgr.list_attribute_names( att_v_names );
-        for( const auto& cur_attr_name : att_v_names )
-        {
-            // It is not necessary to copy the coordinates. There are already
-            // there.
-            if( cur_attr_name == "point" )
-            {
-                continue;
-            }
-
-            auto* cur_v_att_store_in_gmm =
-                gmm_v_attr_mgr.find_attribute_store( cur_attr_name );
-            ringmesh_assert( cur_v_att_store_in_gmm != nullptr );
-            auto dim = cur_v_att_store_in_gmm->dimension();
-
-            for( auto v : range( vertices.nb() ) )
-            {
-                auto vertices_on_geomodel_region = vertices.gme_type_vertices(
-                    Region3D::type_name_static(), v );
-                for( const auto& cur_vertex_on_geomodel :
-                    vertices_on_geomodel_region )
-                {
-                    const auto& cur_region =
-                        geomodel_.region( cur_vertex_on_geomodel.gmme.index() );
-                    auto& reg_v_attr_mgr =
-                        cur_region.vertex_attribute_manager();
-                    GEO::AttributeStore* cur_v_att_store_in_reg{ nullptr };
-
-                    if( !reg_v_attr_mgr.is_defined( cur_attr_name ) )
-                    {
-                        const auto cur_type_name = GEO::AttributeStore::
-                            element_type_name_by_element_typeid_name(
-                                cur_v_att_store_in_gmm->element_typeid_name() );
-                        ringmesh_assert(
-                            GEO::AttributeStore::element_type_name_is_known(
-                                cur_type_name ) );
-                        cur_v_att_store_in_reg = GEO::AttributeStore::
-                            create_attribute_store_by_element_type_name(
-                                cur_type_name, dim );
-                        reg_v_attr_mgr.bind_attribute_store(
-                            cur_attr_name, cur_v_att_store_in_reg );
-                    }
-                    else
-                    {
-                        cur_v_att_store_in_reg =
-                            reg_v_attr_mgr.find_attribute_store(
-                                cur_attr_name );
-                    }
-                    ringmesh_assert( cur_v_att_store_in_reg != nullptr );
-                    ringmesh_assert(
-                        cur_v_att_store_in_reg->element_size()
-                        == cur_v_att_store_in_gmm->element_size() );
-
-                    GEO::Memory::copy(
-                        static_cast< GEO::Memory::pointer >(
-                            cur_v_att_store_in_reg->data() )
-                            + cur_vertex_on_geomodel.v_index * dim
-                                  * cur_v_att_store_in_reg->element_size(),
-                        static_cast< GEO::Memory::pointer >(
-                            cur_v_att_store_in_gmm->data() )
-                            + v * dim * cur_v_att_store_in_gmm->element_size(),
-                        dim * cur_v_att_store_in_reg->element_size() );
-                }
-            }
-        }
-    }
-
-    void GeoModelMesh< 3 >::transfer_vertex_attributes_from_gm_regions_to_gmm()
-        const
-    {
-        for( const auto& cur_reg : geomodel().regions() )
-        {
-            GEO::vector< std::string > att_v_names;
-            GEO::AttributesManager& reg_vertex_attr_mgr =
-                cur_reg.vertex_attribute_manager();
-            reg_vertex_attr_mgr.list_attribute_names( att_v_names );
-            for( const auto& cur_attr_name : att_v_names )
-            {
-                // It is not necessary to copy the coordinates. There are
-                // already there.
-                if( cur_attr_name == "point" )
-                {
-                    continue;
-                }
-
-                auto* cur_v_att_store_in_reg =
-                    reg_vertex_attr_mgr.find_attribute_store( cur_attr_name );
-                ringmesh_assert( cur_v_att_store_in_reg != nullptr );
-                index_t dim = cur_v_att_store_in_reg->dimension();
-                GEO::AttributeStore* cur_v_att_store{ nullptr };
-                if( !vertices.attribute_manager().is_defined( cur_attr_name ) )
-                {
-                    const auto cur_type_name = GEO::AttributeStore::
-                        element_type_name_by_element_typeid_name(
-                            cur_v_att_store_in_reg->element_typeid_name() );
-                    ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
-                            cur_type_name ) );
-                    cur_v_att_store = GEO::AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name, dim );
-                    vertices.attribute_manager().bind_attribute_store(
-                        cur_attr_name, cur_v_att_store );
-                }
-                else
-                {
-                    cur_v_att_store =
-                        vertices.attribute_manager().find_attribute_store(
-                            cur_attr_name );
-                }
-                ringmesh_assert( cur_v_att_store != nullptr );
-                ringmesh_assert( cur_v_att_store->element_size()
-                                 == cur_v_att_store_in_reg->element_size() );
-
-                for( auto v_in_reg_itr : range( cur_reg.nb_vertices() ) )
-                {
-                    auto v_id_in_gmm = vertices.geomodel_vertex_id(
-                        cur_reg.gmme(), v_in_reg_itr );
-                    GEO::Memory::copy(
-                        static_cast< GEO::Memory::pointer >(
-                            cur_v_att_store->data() )
-                            + v_id_in_gmm * dim
-                                  * cur_v_att_store->element_size(),
-                        static_cast< GEO::Memory::pointer >(
-                            cur_v_att_store_in_reg->data() )
-                            + v_in_reg_itr * dim
-                                  * cur_v_att_store_in_reg->element_size(),
-                        dim * cur_v_att_store->element_size() );
-                }
-            }
-        }
-    }
-
-    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gmm_to_gm_regions()
-        const
-    {
-        auto& gmm_c_attr_mgr = cells.attribute_manager();
-        GEO::vector< std::string > att_c_names;
-        gmm_c_attr_mgr.list_attribute_names( att_c_names );
-        const auto& nn_search = cells.cell_nn_search();
-
-        for( const auto& cur_attr_name : att_c_names )
-        {
-            auto* cur_c_att_store_in_gmm =
-                gmm_c_attr_mgr.find_attribute_store( cur_attr_name );
-            ringmesh_assert( cur_c_att_store_in_gmm != nullptr );
-            auto dim = cur_c_att_store_in_gmm->dimension();
-
-            for( const auto& cur_region : geomodel_.regions() )
-            {
-                auto& reg_c_attr_mgr = cur_region.cell_attribute_manager();
-                GEO::AttributeStore* cur_c_att_store_in_reg{ nullptr };
-
-                if( !reg_c_attr_mgr.is_defined( cur_attr_name ) )
-                {
-                    const auto cur_type_name = GEO::AttributeStore::
-                        element_type_name_by_element_typeid_name(
-                            cur_c_att_store_in_gmm->element_typeid_name() );
-                    ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
-                            cur_type_name ) );
-                    cur_c_att_store_in_reg = GEO::AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name, dim );
-                    reg_c_attr_mgr.bind_attribute_store(
-                        cur_attr_name, cur_c_att_store_in_reg );
-                }
-                else
-                {
-                    cur_c_att_store_in_reg =
-                        reg_c_attr_mgr.find_attribute_store( cur_attr_name );
-                }
-                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-                ringmesh_assert( cur_c_att_store_in_reg->element_size()
-                                 == cur_c_att_store_in_gmm->element_size() );
-
-                for( auto c : range( cur_region.nb_mesh_elements() ) )
-                {
-                    auto center = cur_region.mesh_element_barycenter( c );
-                    auto c_in_geom_model_mesh =
-                        nn_search.get_neighbors( center, geomodel_.epsilon() );
-                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
-                    GEO::Memory::copy(
-                        static_cast< GEO::Memory::pointer >(
-                            cur_c_att_store_in_reg->data() )
-                            + c * dim * cur_c_att_store_in_reg->element_size(),
-                        static_cast< GEO::Memory::pointer >(
-                            cur_c_att_store_in_gmm->data() )
-                            + c_in_geom_model_mesh[0] * dim
-                                  * cur_c_att_store_in_gmm->element_size(),
-                        dim * cur_c_att_store_in_reg->element_size() );
-                }
-            }
-        }
-    }
-
-    void GeoModelMesh< 3 >::transfer_cell_attributes_from_gm_regions_to_gmm()
-        const
-    {
-        const auto& nn_search = cells.cell_nn_search();
-        for( const auto& cur_reg : geomodel().regions() )
-        {
-            GEO::vector< std::string > att_c_names;
-            auto& reg_cell_attr_mgr = cur_reg.cell_attribute_manager();
-            reg_cell_attr_mgr.list_attribute_names( att_c_names );
-            for( const auto& cur_attr_name : att_c_names )
-            {
-                auto* cur_c_att_store_in_reg =
-                    reg_cell_attr_mgr.find_attribute_store( cur_attr_name );
-                ringmesh_assert( cur_c_att_store_in_reg != nullptr );
-                index_t dim = cur_c_att_store_in_reg->dimension();
-                GEO::AttributeStore* cur_c_att_store{ nullptr };
-                if( !cells.attribute_manager().is_defined( cur_attr_name ) )
-                {
-                    const std::string cur_type_name = GEO::AttributeStore::
-                        element_type_name_by_element_typeid_name(
-                            cur_c_att_store_in_reg->element_typeid_name() );
-                    ringmesh_assert(
-                        GEO::AttributeStore::element_type_name_is_known(
-                            cur_type_name ) );
-                    cur_c_att_store = GEO::AttributeStore::
-                        create_attribute_store_by_element_type_name(
-                            cur_type_name, dim );
-                    cells.attribute_manager().bind_attribute_store(
-                        cur_attr_name, cur_c_att_store );
-                }
-                else
-                {
-                    cur_c_att_store =
-                        cells.attribute_manager().find_attribute_store(
-                            cur_attr_name );
-                }
-                ringmesh_assert( cur_c_att_store != nullptr );
-                ringmesh_assert( cur_c_att_store->element_size()
-                                 == cur_c_att_store_in_reg->element_size() );
-
-                for( auto c_in_reg_itr : range( cur_reg.nb_mesh_elements() ) )
-                {
-                    auto center =
-                        cur_reg.mesh_element_barycenter( c_in_reg_itr );
-                    auto c_in_geom_model_mesh =
-                        nn_search.get_neighbors( center, geomodel_.epsilon() );
-                    ringmesh_assert( c_in_geom_model_mesh.size() == 1 );
-                    GEO::Memory::copy(
-                        static_cast< GEO::Memory::pointer >(
-                            cur_c_att_store->data() )
-                            + c_in_geom_model_mesh[0] * dim
-                                  * cur_c_att_store->element_size(),
-                        static_cast< GEO::Memory::pointer >(
-                            cur_c_att_store_in_reg->data() )
-                            + c_in_reg_itr * dim
-                                  * cur_c_att_store_in_reg->element_size(),
-                        dim * cur_c_att_store->element_size() );
-                }
-            }
         }
     }
 
