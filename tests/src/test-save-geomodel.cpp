@@ -109,8 +109,10 @@ bool compare_double( std::string word1, std::string word2 )
     {
         auto value1 = std::stoll( word1 );
         auto value2 = std::stoll( word2 );
-        if( std::abs( value1 - value2 ) > MAX_DIFF_DIGIT ) {
-            DEBUG( word2 ); DEBUG( word1 );
+        if( std::abs( value1 - value2 ) > MAX_DIFF_DIGIT )
+        {
+            DEBUG( word2 );
+            DEBUG( word1 );
         }
         return std::abs( value1 - value2 ) <= MAX_DIFF_DIGIT;
     }
@@ -217,42 +219,50 @@ void process_extension( const std::string& extension )
         // csmp file format. Going to be fixed...
         return;
     }
-    if( extension == "fem" ) {
+    if( extension == "fem" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // fem file format. Going to be fixed...
         return;
     }
-    if( extension == "inp" ) {
+    if( extension == "inp" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // inp file format. Going to be fixed...
         return;
     }
-    if( extension == "mail" ) {
+    if( extension == "mail" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // mail file format. Going to be fixed...
         return;
     }
-    if( extension == "mfem" ) {
+    if( extension == "mfem" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // mfem file format. Going to be fixed...
         return;
     }
-    if( extension == "so" ) {
+    if( extension == "so" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // so file format. Going to be fixed...
         return;
     }
-    if( extension == "stl" ) {
+    if( extension == "stl" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // stl file format. Going to be fixed...
         return;
     }
-    if( extension == "tetgen" ) {
+    if( extension == "tetgen" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // tetgen file format. Going to be fixed...
         return;
     }
-    if( extension == "vtk" ) {
+    if( extension == "vtk" )
+    {
         // @todo Temporary switch off the test for saving GeoModel into
         // vtk file format. Going to be fixed...
         return;
