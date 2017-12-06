@@ -209,7 +209,7 @@ namespace RINGMesh
             nb_total_cells_ = 1;
             for( auto i : range( DIMENSION ) )
             {
-                if( nb_cells_in_each_direction_[i] < 1 )
+                if( nb_cells_in_each_direction[i] < 1 )
                 {
                     throw RINGMeshException( "RINGMesh Test",
                         "Error: You are trying to create a Cartesian Grid "
@@ -217,7 +217,7 @@ namespace RINGMesh
                         i, ", and Cartesian Grids must have at least one cell "
                            "in each direction." );
                 }
-                nb_total_cells_ *= nb_cells_in_each_direction_[i];
+                nb_total_cells_ *= nb_cells_in_each_direction[i];
             }
             nb_cells_in_each_direction_ =
                 std::move( nb_cells_in_each_direction );
