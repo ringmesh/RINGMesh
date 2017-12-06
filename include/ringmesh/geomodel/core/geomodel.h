@@ -458,7 +458,7 @@ namespace RINGMesh
                 {
                     new_attribute.set_value(
                         vertex, old_attribute[mesh.vertices.geomodel_vertex_id(
-                               region.gmme(), vertex )] );
+                                    region.gmme(), vertex )] );
                 }
             }
         }
@@ -476,8 +476,8 @@ namespace RINGMesh
                     region.vertex_attribute_manager(), attribute_name );
                 for( auto vertex : range( region.nb_vertices() ) )
                 {
-                    new_attribute.set_value(
-                        mesh.vertices.geomodel_vertex_id( region.gmme(), vertex ),
+                    new_attribute.set_value( mesh.vertices.geomodel_vertex_id(
+                                                 region.gmme(), vertex ),
                         old_attribute[vertex] );
                 }
             }
