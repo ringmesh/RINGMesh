@@ -74,7 +74,7 @@ namespace RINGMesh
             check_and_update_number_of_cells( nb_cells_in_each_direction );
             check_and_update_frame( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
-                    reference_frame_from_global_to_local( cartesian_frame_ );
+                reference_frame_from_global_to_local( cartesian_frame_ );
             attributes_manager_.resize( nb_total_cells_ );
         }
 
@@ -90,21 +90,22 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-		void resize( ivecn< DIMENSION >& new_size,
-			ReferenceFrame< DIMENSION > vec_cartesian_axis )
-		{
-			Logger::warn( "You are currently changing the "
-						  "size of the Cartesian grid, this will affect the values of "
-						  "the attributes in the grid." );
-			check_and_update_number_of_cells( new_size );
-        	check_and_update_frame( vec_cartesian_axis );
-			nb_cells_in_each_direction_ = std::move( new_size );
-			attributes_manager_.resize( nb_total_cells_ );
-		}
+        void resize( ivecn< DIMENSION >& new_size,
+            ReferenceFrame< DIMENSION > vec_cartesian_axis )
+        {
+            Logger::warn(
+                "You are currently changing the "
+                "size of the Cartesian grid, this will affect the values of "
+                "the attributes in the grid." );
+            check_and_update_number_of_cells( new_size );
+            check_and_update_frame( vec_cartesian_axis );
+            nb_cells_in_each_direction_ = std::move( new_size );
+            attributes_manager_.resize( nb_total_cells_ );
+        }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
-        	check_and_update_frame( vec_cartesian_axis );
+            check_and_update_frame( vec_cartesian_axis );
             Logger::warn( "You are currently changing the frame of "
                           "the Cartesian grid, this will affect where the "
                           "values of the attributes in the grid are stored in "
@@ -196,38 +197,43 @@ namespace RINGMesh
             double vector_squared_norm;
             for( auto i : range( DIMENSION ) )
             {
-            	cell_volume *= cartesian_frame_[i].length();
+                cell_volume *= cartesian_frame_[i].length();
             }
             return cell_volume;
         }
 
     private:
-        void check_and_update_number_of_cells( ivecn< DIMENSION >& nb_cells_in_each_direction )
+        void check_and_update_number_of_cells(
+            ivecn< DIMENSION >& nb_cells_in_each_direction )
         {
-        	nb_total_cells_ = 1;
-			for( auto i : range( DIMENSION ) )
-			{
-				if( nb_cells_in_each_direction_[i] < 1 )
-				{
-					throw RINGMeshException( "RINGMesh Test",
-						"Error: You are trying to create a Cartesian Grid "
-						"with no cell in direction ", i, ", and Cartesian Grids must have at least one cell "
-						   "in each direction." );
-				}
-				nb_total_cells_ *= nb_cells_in_each_direction_[i];
-			}
-			nb_cells_in_each_direction_ = std::move( nb_cells_in_each_direction );
+            nb_total_cells_ = 1;
+            for( auto i : range( DIMENSION ) )
+            {
+                if( nb_cells_in_each_direction_[i] < 1 )
+                {
+                    throw RINGMeshException( "RINGMesh Test",
+                        "Error: You are trying to create a Cartesian Grid "
+                        "with no cell in direction ",
+                        i, ", and Cartesian Grids must have at least one cell "
+                           "in each direction." );
+                }
+                nb_total_cells_ *= nb_cells_in_each_direction_[i];
+            }
+            nb_cells_in_each_direction_ =
+                std::move( nb_cells_in_each_direction );
         }
 
-        void check_and_update_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
+        void check_and_update_frame(
+            ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
             if( !ReferenceFrameManipulator< DIMENSION >::is_frame_orthogonal(
-            		vec_cartesian_axis ) )
+                    vec_cartesian_axis ) )
             {
-                throw RINGMeshException( "RINGMesh Test",
-                    "Error: the frame you are giving for the Cartesian Grid is not orthogonal. " );
+                throw RINGMeshException(
+                    "RINGMesh Test", "Error: the frame you are giving for the "
+                                     "Cartesian Grid is not orthogonal. " );
             }
-			cartesian_frame_ = std::move( vec_cartesian_axis );
+            cartesian_frame_ = std::move( vec_cartesian_axis );
         }
 
     protected:
