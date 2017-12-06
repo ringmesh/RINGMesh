@@ -190,15 +190,6 @@ namespace RINGMesh
          */
         virtual void do_clear( bool keep_attributes, bool keep_memory ) = 0;
         /*!
-         * \brief Fixes some defaults in a mesh.
-         * \param[in] mode a combination of #MeshRepairMode flags.
-         *  Combine them with the 'bitwise or' (|) operator.
-         * \param[in] colocate_epsilon tolerance used to colocate vertices
-         *  (if #MESH_REPAIR_COLOCATE is set in mode).
-         */
-        virtual void do_repair(
-            GEO::MeshRepairMode mode, double colocate_epsilon ) = 0;
-        /*!
          * @brief Sets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
          * @param[in] vertex the vertex coordinates
