@@ -397,7 +397,7 @@ namespace RINGMesh
          * @{
          */
         template < typename AttributeType >
-        void transfer_cell_attribute_to_gm_regions(
+        void transfer_cell_attribute_from_gmm_to_gm_regions(
             const std::string& attribute_name ) const
         {
             if( !mesh.cells.is_initialized() )
@@ -410,9 +410,9 @@ namespace RINGMesh
             {
                 Attribute< AttributeType > new_attribute(
                     region.cell_attribute_manager(), attribute_name );
-                for( auto c : range( region.nb_mesh_elements() ) )
+                for( auto cell : range( region.nb_mesh_elements() ) )
                 {
-                    auto gmm_cell = mesh.cells.cell( region.index(), c );
+                    auto gmm_cell = mesh.cells.cell( region.index(), cell );
                     new_attribute.set_value(
                         mesh.cells.index_in_region( gmm_cell ),
                         old_attribute[gmm_cell] );
@@ -421,22 +421,19 @@ namespace RINGMesh
         }
 
         template < typename AttributeType >
-        void transfer_cell_attribute_from_gm_regions(
+        void transfer_cell_attribute_from_gm_regions_to_gmm(
             const std::string& attribute_name ) const
         {
-            if( !mesh.cells.is_initialized() )
-            {
-                mesh.cells.nb();
-            }
+            mesh.cells.test_and_initialize();
             Attribute< AttributeType > new_attribute(
                 mesh.cells.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > old_attribute(
                     region.cell_attribute_manager(), attribute_name );
-                for( auto c : range( region.nb_mesh_elements() ) )
+                for( auto cell : range( region.nb_mesh_elements() ) )
                 {
-                    auto gmm_cell = mesh.cells.cell( region.index(), c );
+                    auto gmm_cell = mesh.cells.cell( region.index(), cell );
                     new_attribute.set_value( gmm_cell,
                         old_attribute[mesh.cells.index_in_region( gmm_cell )] );
                 }
@@ -444,7 +441,7 @@ namespace RINGMesh
         }
 
         template < typename AttributeType >
-        void transfer_vertex_attribute_to_gm_regions(
+        void transfer_vertex_attribute_from_gmm_to_gm_regions(
             const std::string& attribute_name ) const
         {
             if( !mesh.vertices.is_initialized() )
@@ -457,34 +454,31 @@ namespace RINGMesh
             {
                 Attribute< AttributeType > new_attribute(
                     region.vertex_attribute_manager(), attribute_name );
-                for( auto v : range( region.nb_vertices() ) )
+                for( auto vertex : range( region.nb_vertices() ) )
                 {
                     new_attribute.set_value(
-                        v, old_attribute[mesh.vertices.geomodel_vertex_id(
-                               region.gmme(), v )] );
+                        vertex, old_attribute[mesh.vertices.geomodel_vertex_id(
+                               region.gmme(), vertex )] );
                 }
             }
         }
 
         template < typename AttributeType >
-        void transfer_vertex_attribute_from_gm_regions(
+        void transfer_vertex_attribute_from_gm_regions_to_gmm(
             const std::string& attribute_name ) const
         {
-            if( !mesh.vertices.is_initialized() )
-            {
-                mesh.vertices.nb();
-            }
+            mesh.vertices.test_and_initialize();
             Attribute< AttributeType > new_attribute(
                 mesh.vertices.attribute_manager(), attribute_name );
             for( const auto& region : regions() )
             {
                 Attribute< AttributeType > old_attribute(
                     region.vertex_attribute_manager(), attribute_name );
-                for( auto v : range( region.nb_vertices() ) )
+                for( auto vertex : range( region.nb_vertices() ) )
                 {
                     new_attribute.set_value(
-                        mesh.vertices.geomodel_vertex_id( region.gmme(), v ),
-                        old_attribute[v] );
+                        mesh.vertices.geomodel_vertex_id( region.gmme(), vertex ),
+                        old_attribute[vertex] );
                 }
             }
         }

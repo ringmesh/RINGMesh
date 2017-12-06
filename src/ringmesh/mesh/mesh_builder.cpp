@@ -136,7 +136,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void MeshBaseBuilder< DIMENSION >::update_vertex_attributes()
+    void MeshBaseBuilder< DIMENSION >::update_vertex_attributes_size()
     {
         mesh_base_.vertex_attribute_manager().resize(
             mesh_base_.nb_vertices() );
@@ -254,7 +254,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void VolumeMeshBuilder< DIMENSION >::update_cell_attributes()
+    void VolumeMeshBuilder< DIMENSION >::update_cell_attributes_size()
     {
         volume_mesh_.cell_attribute_manager().resize( volume_mesh_.nb_cells() );
     }
