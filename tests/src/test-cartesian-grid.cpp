@@ -60,15 +60,15 @@ void test_frames_and_cartesian_grid()
     vec3 frame_test_coordinates =
         ReferenceFrameManipulator3D::coords_from_global_to_frame(
             reference_frame, test_coordinates );
-    vec3 test_coordinates2 =
+    vec3 operation_test_coordinate =
         ReferenceFrameManipulator3D::coords_from_frame_to_global(
             reference_frame, frame_test_coordinates );
-    if( test_coordinates != test_coordinates2 )
+    if( test_coordinates != operation_test_coordinate )
     {
         throw RINGMeshException(
             "TEST", "Error in coordinate reference change" );
     }
-    if( !ReferenceFrameManipulator3D::frame_is_orthogonal( reference_frame ) )
+    if( !ReferenceFrameManipulator3D::is_frame_orthogonal( reference_frame ) )
     {
         throw RINGMeshException(
             "TEST", "Error in checking the orthogonality of a frame" );
@@ -76,7 +76,7 @@ void test_frames_and_cartesian_grid()
     vec3 z2{ 1, 1, 2 };
     Frame3D frame2{ x, y, z2 };
     ReferenceFrame3D reference_frame2{ origin, frame2 };
-    if( ReferenceFrameManipulator3D::frame_is_orthogonal( reference_frame2 ) )
+    if( ReferenceFrameManipulator3D::is_frame_orthogonal( reference_frame2 ) )
     {
         throw RINGMeshException(
             "TEST", "Error in checking the orthogonality of a frame" );
@@ -93,8 +93,8 @@ void test_frames_and_cartesian_grid()
         throw RINGMeshException( "TEST", "Error in reference frame change" );
     }
 
-    ivec3 dimensions_grille{ 10, 8, 9 };
-    CartesianGrid3D cartesiangrid{ dimensions_grille, reference_frame };
+    ivec3 grid_dimensions{ 10, 8, 9 };
+    CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
 }
 
 int main()

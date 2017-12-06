@@ -210,7 +210,7 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
 
-        static bool frame_is_orthogonal(
+        static bool is_frame_orthogonal(
             const ReferenceFrame< DIMENSION >& reference_frame )
         {
             for( auto i : range( DIMENSION ) )
