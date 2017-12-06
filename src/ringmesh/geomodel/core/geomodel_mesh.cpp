@@ -413,7 +413,7 @@ namespace RINGMesh
             // of when all the mesh entities have been deleted (as in Linux
             // or Windows). This fix is temporary and will be removed during
             // the attribute refactoring.
-            if(vertex_maps_.at( mesh_entity_id.type() )->empty())
+            if( vertex_maps_.at( mesh_entity_id.type() )->empty() )
             {
                 resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
             }
