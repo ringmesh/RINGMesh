@@ -77,7 +77,7 @@ namespace RINGMesh
                 reference_frame_from_global_to_local( cartesian_frame_ );
             attributes_manager_.resize( nb_total_cells_ );
         }
-
+      
         void save_mesh( const std::string& filename ) const
         {
             // TODO
