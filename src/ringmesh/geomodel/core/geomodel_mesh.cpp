@@ -404,7 +404,10 @@ namespace RINGMesh
 
         void clear_vertex_map( const gmme_id& mesh_entity_id )
         {
-            resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
+            if(vertex_maps_.at( mesh_entity_id.type() )->empty())
+            {
+                resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
+            }
             ringmesh_assert(
                 mesh_entity_id.index()
                 < vertex_maps_.at( mesh_entity_id.type() )->size() );
