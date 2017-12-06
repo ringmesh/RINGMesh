@@ -404,6 +404,15 @@ namespace RINGMesh
 
         void clear_vertex_map( const gmme_id& mesh_entity_id )
         {
+            // This if statement is a quick dirty fix for MacOS X
+            // since there is a different behavior of the destructor
+            // of std::vector. The problem occurs during the deletion
+            // of the mesh entities of a GeoModel (when the GeoModel
+            // destructor is called). The size of the mesh entity vector
+            // decreases during the mesh enity deletion in MacOS X instead
+            // of when all the mesh entities have been deleted (as in Linux
+            // or Windows). This fix is temporary and will be removed during
+            // the attribute refactoring.
             if(vertex_maps_.at( mesh_entity_id.type() )->empty())
             {
                 resize_all_mesh_entity_vertex_maps( mesh_entity_id.type() );
