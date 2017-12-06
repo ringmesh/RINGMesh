@@ -109,11 +109,6 @@ bool compare_double( std::string word1, std::string word2 )
     {
         auto value1 = std::stoll( word1 );
         auto value2 = std::stoll( word2 );
-        if( std::abs( value1 - value2 ) > MAX_DIFF_DIGIT )
-        {
-            DEBUG( word2 );
-            DEBUG( word1 );
-        }
         return std::abs( value1 - value2 ) <= MAX_DIFF_DIGIT;
     }
     catch( const std::invalid_argument& )
