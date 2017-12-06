@@ -55,6 +55,9 @@ namespace RINGMesh
      */
     class RINGMESH_API Singleton
     {
+    public:
+        virtual ~Singleton() = default;
+
     protected:
         template < class SingletonType >
         static SingletonType& instance()
