@@ -229,9 +229,9 @@ namespace RINGMesh
             if( !ReferenceFrameManipulator< DIMENSION >::is_frame_orthogonal(
                     vec_cartesian_axis ) )
             {
-                throw RINGMeshException(
-                    "RINGMesh Test", "Error: the frame you are giving for the "
-                                     "Cartesian Grid is not orthogonal. " );
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error: the frame you are giving for the "
+                    "Cartesian Grid is not orthogonal. " );
             }
             cartesian_frame_ = std::move( vec_cartesian_axis );
         }
