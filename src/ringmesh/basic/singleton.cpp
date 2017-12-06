@@ -33,27 +33,31 @@
  *     FRANCE
  */
 
-/*!
- * Configuration file generated at the configuration step by CMake
- * Do not modify it directly but modify the include/ringmesh_config.h.in file
- * and re-run project configuration.
- */
+#include <ringmesh/basic/singleton.h>
 
-#pragma once
+#include <map>
+
+namespace
+{
+    std::map< std::string, std::unique_ptr< RINGMesh::Singleton > > singletons;
+}
 
 namespace RINGMesh
 {
-#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR @
-#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR @
+    void Singleton::set_instance(
+        const std::type_info& type, Singleton* singleton )
+    {
+        singletons[type.name()].reset( singleton );
+    }
 
-/* Optional components with which RINGMesh can be compiled */
-#cmakedefine USE_MG_TETRA
-#cmakedefine USE_OPENMP
-#cmakedefine RINGMESH_WITH_TETGEN
+    Singleton* Singleton::instance( const std::type_info& type )
+    {
+        auto iter = singletons.find( type.name() );
+        if( iter == singletons.end() )
+        {
+            return nullptr;
+        }
+        return iter->second.get();
+    }
 
-/* Optional components of RINGMesh */
-#cmakedefine RINGMESH_WITH_GRAPHICS
-#cmakedefine RINGMESH_WITH_UTILITIES
-#cmakedefine RINGMESH_WITH_TESTS
-#cmakedefine RINGMESH_TEST_GRAPHICS
 } // namespace RINGMesh

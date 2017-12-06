@@ -33,27 +33,54 @@
  *     FRANCE
  */
 
-/*!
- * Configuration file generated at the configuration step by CMake
- * Do not modify it directly but modify the include/ringmesh_config.h.in file
- * and re-run project configuration.
- */
-
 #pragma once
+
+#include <ringmesh/basic/common.h>
+
+/*!
+ * @file  Singleton class
+ * @author Arnaud Botella
+ */
 
 namespace RINGMesh
 {
-#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR @
-#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR @
+    /*!
+     * \brief Cross platform singleton implementation
+     * \details Classic templated singleton cannot be exported on Windows.
+     *  To ensure a unique instance of the singleton, we store it and
+     *  export methods to retrieve the unique instance.
+     *
+     *  To use this class, inherit from it and use the protected
+     *  method Singleton::instance().
+     */
+    class RINGMESH_API Singleton
+    {
+        ringmesh_disable_copy_and_move( Singleton );
 
-/* Optional components with which RINGMesh can be compiled */
-#cmakedefine USE_MG_TETRA
-#cmakedefine USE_OPENMP
-#cmakedefine RINGMESH_WITH_TETGEN
+    public:
+        virtual ~Singleton() = default;
 
-/* Optional components of RINGMesh */
-#cmakedefine RINGMESH_WITH_GRAPHICS
-#cmakedefine RINGMESH_WITH_UTILITIES
-#cmakedefine RINGMESH_WITH_TESTS
-#cmakedefine RINGMESH_TEST_GRAPHICS
+    protected:
+        Singleton() = default;
+
+        template < class SingletonType >
+        static SingletonType& instance()
+        {
+            auto singleton = dynamic_cast< SingletonType* >(
+                instance( typeid( SingletonType ) ) );
+            if( singleton == nullptr )
+            {
+                singleton = new SingletonType{};
+                set_instance( typeid( SingletonType ), singleton );
+            }
+
+            return *singleton;
+        }
+
+    private:
+        static void set_instance(
+            const std::type_info& type, Singleton* singleton );
+        static Singleton* instance( const std::type_info& type );
+    };
+
 } // namespace RINGMesh
