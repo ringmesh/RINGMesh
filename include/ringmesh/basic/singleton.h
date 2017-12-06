@@ -55,10 +55,14 @@ namespace RINGMesh
      */
     class RINGMESH_API Singleton
     {
+        ringmesh_disable_copy_and_move( Singleton );
+
     public:
         virtual ~Singleton() = default;
 
     protected:
+        Singleton() = default;
+
         template < class SingletonType >
         static SingletonType& instance()
         {
