@@ -94,15 +94,6 @@ namespace RINGMesh
          */
         void clear( bool keep_attributes, bool keep_memory );
 
-        /*!
-         * \brief Fixes some defaults in a mesh.
-         * \param[in] mode a combination of #MeshRepairMode flags.
-         *  Combine them with the 'bitwise or' (|) operator.
-         * \param[in] colocate_epsilon tolerance used to colocate vertices
-         *  (if #MESH_REPAIR_COLOCATE is set in mode).
-         */
-        void repair( GEO::MeshRepairMode mode, double colocate_epsilon );
-
         /*!@}
          * \name Vertex related methods
          * @{
@@ -565,6 +556,7 @@ namespace RINGMesh
         void connect_polygons(
             const std::vector< index_t >& polygons_to_connect )
         {
+            // Initialization of the number of local vertices
             index_t nb_local_vertices{ 0 };
             for( auto polygon : polygons_to_connect )
             {
@@ -572,6 +564,7 @@ namespace RINGMesh
                     this->surface_mesh_.nb_polygon_vertices( polygon );
             }
 
+            // Initialization of the polygon vertices
             std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
             for( auto polygon : polygons_to_connect )
@@ -675,22 +668,6 @@ namespace RINGMesh
             clear_polygon_linked_objects();
         }
 
-        /*!@}
-         * \name SurfaceMesh algorithms
-         * @{
-         */
-        /**
-         * \brief Removes the connected components that have an area
-         *  smaller than a given threshold.
-         * \param[in] min_area the connected components with an
-         *  area smaller than this threshold are removed
-         * \param[in] min_polygons the connected components with
-         *  less than \param min_polygons polygons are removed
-         */
-        virtual void remove_small_connected_components(
-            double min_area, index_t min_polygons ) = 0;
-        virtual void triangulate(
-            const SurfaceMeshBase< DIMENSION >& surface_in ) = 0;
         /*!@}
          */
         /*!
