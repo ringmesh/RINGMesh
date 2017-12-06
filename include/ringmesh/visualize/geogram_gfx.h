@@ -94,7 +94,7 @@ private:                                                                       \
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramPointSetMesh< DIMENSION >& >( mesh )
-                     .gfx_mesh() );
+                     .geogram_mesh() );
             set_vertex_color( 1, 0, 0 );
         }
     };
@@ -110,7 +110,7 @@ private:                                                                       \
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramLineMesh< DIMENSION >& >( mesh )
-                     .gfx_mesh() );
+                     .geogram_mesh() );
             set_vertex_color( 1, 1, 1 );
             set_edge_color( 1, 1, 1 );
         }
@@ -143,7 +143,7 @@ private:                                                                       \
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >( mesh )
-                     .gfx_mesh() );
+                     .geogram_mesh() );
         }
 
         void draw_surface() override
@@ -188,7 +188,7 @@ private:                                                                       \
         {
             mesh_gfx_.set_mesh(
                 &dynamic_cast< const GeogramVolumeMesh< DIMENSION >& >( mesh )
-                     .gfx_mesh() );
+                     .geogram_mesh() );
         }
 
         void draw_volume() override
