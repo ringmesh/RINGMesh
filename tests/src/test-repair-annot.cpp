@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <geogram/basic/command_line.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/tools/geomodel_repair.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
@@ -50,7 +51,7 @@ int main()
 
     try
     {
-        default_configure();
+        register_geogram_mesh();
 
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
