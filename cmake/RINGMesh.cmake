@@ -83,7 +83,7 @@ configure_package_config_file(
 )
 
 #------------------------------------------------------------------------------------------------
-# Configure the ringmesh librarys
+# Configure the ringmesh libraries
 
 add_ringmesh_library(basic)
 add_ringmesh_library(geogram_extension)
