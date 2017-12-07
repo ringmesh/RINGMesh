@@ -199,6 +199,7 @@ void io_geomodel(
 template < index_t DIMENSION >
 void process_extension( const std::string& extension )
 {
+#ifdef WIN32
     if( extension == "gm" )
     {
         return;
@@ -263,6 +264,7 @@ void process_extension( const std::string& extension )
         // vtk file format. Going to be fixed...
         return;
     }
+#endif
     std::string info{ ringmesh_test_data_path + "save/" + extension
                       + std::to_string( DIMENSION ) + "d.txt" };
     GEO::LineInput in{ info };
