@@ -77,9 +77,9 @@ find_package(RINGMesh REQUIRED PATHS ${RINGMesh_INSTALL_PREFIX})
 
 Using RINGMesh with your code
 -----------------------------
-Add this line to link your library (called MyLib) with RINGMesh:
+Add this line to link your library (called MyLib) with RINGMesh libraries (in this example: geomodel_core and geomodel_tools):
 \code
-target_link_libraries(MyLib RINGMesh::RINGMesh)
+target_link_libraries(MyLib RINGMesh::geomodel_core RINGMesh::geomodel_tools)
 \endcode
 
 */

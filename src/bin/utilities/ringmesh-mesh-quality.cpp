@@ -43,6 +43,7 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/mesh_quality.h>
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -122,13 +123,13 @@ namespace
         {
             auto min_quality =
                 GEO::CmdLine::get_arg_double( "quality:min_value" );
-            GeogramVolumeMesh3D output_mesh;
+            auto output_mesh = VolumeMesh3D::create_mesh();
             double min_cell_quality{ fill_mesh_with_low_quality_cells(
                 static_cast< MeshQualityMode >( quality_mode ), min_quality,
-                geomodel, output_mesh ) };
+                geomodel, *output_mesh ) };
             Logger::out( "Quality", "The minimal value for cell quality is ",
                 min_cell_quality );
-            output_mesh.save_mesh( min_quality_out_name );
+            output_mesh->save_mesh( min_quality_out_name );
         }
 
         auto geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
@@ -147,7 +148,7 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
+        register_geogram_mesh();
         hello();
         import_arg_groups();
         if( argc == 1 )

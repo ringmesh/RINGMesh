@@ -53,7 +53,7 @@ namespace RINGMesh
      *  To use this class, inherit from it and use the protected
      *  method Singleton::instance().
      */
-    class RINGMESH_API Singleton
+    class basic_api Singleton
     {
         ringmesh_disable_copy_and_move( Singleton );
 

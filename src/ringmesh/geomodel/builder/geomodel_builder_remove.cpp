@@ -839,8 +839,8 @@ namespace RINGMesh
         region_access.modifiable_sides().resize( R.nb_boundaries() );
     }
 
-    template class RINGMESH_API GeoModelBuilderRemoveBase< 2 >;
-    template class RINGMESH_API GeoModelBuilderRemove< 2 >;
+    template class geomodel_builder_api GeoModelBuilderRemoveBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderRemove< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderRemoveBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderRemoveBase< 3 >;
 } // namespace RINGMesh

@@ -37,8 +37,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
-#include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 namespace

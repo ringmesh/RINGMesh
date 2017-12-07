@@ -40,6 +40,7 @@
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/stratigraphic_column_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
@@ -369,8 +370,7 @@ int main()
 
     try
     {
-        default_configure();
-
+        register_geogram_mesh();
         // Set an output log file
         std::string log_file( ringmesh_test_output_path );
         log_file += "log.txt";

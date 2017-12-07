@@ -63,5 +63,4 @@ add_custom_target(coverage
 
 	WORKING_DIRECTORY ${PROJECT_BINARY_DIR}
 	COMMENT "Generating gcov output..."
-	DEPENDS RINGMesh
 )

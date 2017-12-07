@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <vector>
 
@@ -95,7 +95,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBase
+    class geomodel_core_api GeoModelBase
     {
         ringmesh_disable_copy_and_move( GeoModelBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -318,7 +318,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModel final : public GeoModelBase< DIMENSION >
+    class geomodel_core_api GeoModel final : public GeoModelBase< DIMENSION >
     {
         friend class GeoModelAccess< DIMENSION >;
 
@@ -345,7 +345,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModel< 3 > final : public GeoModelBase< 3 >
+    class geomodel_core_api GeoModel< 3 > final : public GeoModelBase< 3 >
     {
         friend class GeoModelAccess< 3 >;
 

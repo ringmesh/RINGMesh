@@ -64,7 +64,7 @@ namespace
 
         void load_points()
         {
-            GEO::LineInput file{ filename_ };
+            GEO::LineInput file{ filename() };
             move_to( file, "liste des points\n" );
             file.get_line();
             file.get_fields();
@@ -82,7 +82,7 @@ namespace
 
         void load_interfaces()
         {
-            GEO::LineInput file{ filename_ };
+            GEO::LineInput file{ filename() };
             move_to( file, "liste des horizons\n" );
             file.get_line();
             file.get_fields();
@@ -121,7 +121,7 @@ namespace
 
         void load_media()
         {
-            GEO::LineInput file{ filename_ };
+            GEO::LineInput file{ filename() };
             move_to( file, "liste des milieux\n" );
             file.get_line();
             file.get_fields();

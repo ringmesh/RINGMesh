@@ -106,8 +106,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test geometric tools" );
 
         test_triangle_barycentric_coordinates();

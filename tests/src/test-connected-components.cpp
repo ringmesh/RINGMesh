@@ -37,6 +37,7 @@
 
 #include <vector>
 
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
@@ -290,8 +291,7 @@ int main()
 
     try
     {
-        default_configure();
-
+        register_geogram_mesh();
         Logger::out( "TEST", "Test connected components" );
         run_tests();
     }

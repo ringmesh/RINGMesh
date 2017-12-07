@@ -427,10 +427,10 @@ namespace RINGMesh
     }
 
     template std::tuple< bool, vecn< 2 > >
-        RINGMESH_API point_segment_projection(
+        basic_api point_segment_projection(
             const vecn< 2 >&, const vecn< 2 >&, const vecn< 2 >& );
 
     template std::tuple< bool, vecn< 3 > >
-        RINGMESH_API point_segment_projection(
+        basic_api point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
 } // namespace RINGMesh

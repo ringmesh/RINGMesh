@@ -620,8 +620,6 @@ int main()
 {
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test intersection algorithms" );
 
         test_line_plane_intersection();

@@ -107,8 +107,6 @@ int main()
 {
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Test NNsearch 2D" );
         test_nn_search< 2 >();
         Logger::out( "TEST", "Test NNsearch 3D" );

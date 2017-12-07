@@ -224,6 +224,6 @@ namespace RINGMesh
         return impl_->get_neighbors( v, nb_neighbors );
     }
 
-    template class RINGMESH_API NNSearch< 2 >;
-    template class RINGMESH_API NNSearch< 3 >;
+    template class basic_api NNSearch< 2 >;
+    template class basic_api NNSearch< 3 >;
 } // namespace RINGMesh

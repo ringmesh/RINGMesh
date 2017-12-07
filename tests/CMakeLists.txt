@@ -35,6 +35,7 @@ set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
 set(TEST_SOURCE_DIRECTORY ${TEST_DIRECTORY}/src)
 set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data")
 set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+set(CTEST_OUTPUT_ON_FAILURE ON)
 
 if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
     message(STATUS "Defined data directory for tests does not exists, using default tests/data")
@@ -56,6 +57,6 @@ file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
 
 # For all the test files found
 foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile})
+    add_ringmesh_test(${testsourcefile} geogram_extension geomodel_tools io)
 endforeach(testsourcefile ${TESTS})
 
