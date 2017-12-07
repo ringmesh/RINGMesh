@@ -52,11 +52,11 @@ set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
 set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
 configure_file(${test_config_file_in} ${test_config_file})
 
-# Get the name of the test files
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile} geogram_extension geomodel_tools io)
-endforeach(testsourcefile ${TESTS})
-
+add_subdirectory(src/basic)
+add_subdirectory(src/geogram_extension)
+add_subdirectory(src/geomodel/builder)
+add_subdirectory(src/geomodel/core)
+add_subdirectory(src/geomodel/tools)
+add_subdirectory(src/io)
+add_subdirectory(src/mesh)
+add_subdirectory(src/tetrahedralize)
