@@ -42,7 +42,6 @@ endmacro()
 
 macro(include_file_directory directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
-   # source_group("Header Files\\${directory}" FILES ${sources})
 endmacro()
 
 function(add_ringmesh_library directory)
