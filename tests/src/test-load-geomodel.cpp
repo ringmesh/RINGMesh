@@ -35,6 +35,8 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <geogram/basic/line_stream.h>
+
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
@@ -178,8 +180,7 @@ int main()
 {
     try
     {
-        default_configure();
-
+        register_geogram_mesh();
         Logger::out( "TEST", "Import GeoModel files" );
         test_input_geomodels< 2 >();
         test_input_geomodels< 3 >();

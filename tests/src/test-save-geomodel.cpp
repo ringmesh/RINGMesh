@@ -39,6 +39,7 @@
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 
 #include <ringmesh/io/io.h>
@@ -294,8 +295,7 @@ int main()
 
     try
     {
-        default_configure();
-
+        register_geogram_mesh();
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
         test_output_geomodel< 2 >();
         test_output_geomodel< 3 >();

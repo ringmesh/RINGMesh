@@ -99,7 +99,6 @@ int main()
 
     try
     {
-        default_configure();
         Logger::out( "TEST", "Test Factory" );
 
         using factory = Factory< std::string, Base, A&, B& >;

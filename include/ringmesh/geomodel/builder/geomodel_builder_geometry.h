@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/builder/geomodel_builder_access.h>
 
@@ -62,7 +62,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderGeometryBase
+    class geomodel_builder_api GeoModelBuilderGeometryBase
     {
         ringmesh_disable_copy_and_move( GeoModelBuilderGeometryBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -143,13 +143,22 @@ namespace RINGMesh
          * @param[in] point the coordinates to set
          * @param[in] update if true, updates all the colocated vertices
          * to the new coordinates (i.e. if edit a Corner coordinates, it will
-         * updates
-         * its Lines, Surfaces...)
+         * updates its Lines, Surfaces...)
          */
         void set_mesh_entity_vertex( const gmme_id& entity_id,
             index_t v,
             const vecn< DIMENSION >& point,
             bool update );
+
+        /*!
+         * @brief Sets a vertex coordinates of all GeoModelMeshEntity
+         * from the GeoModelMesh vertex relationships
+         * @param[in] geomodel_vertex Index in GeoModelMeshVertices of the
+         * vertex giving
+         * @param[in] point the coordinates to set
+         */
+        void set_mesh_entity_vertex(
+            index_t geomodel_vertex_id, const vecn< DIMENSION >& point );
 
         /*!
          * @brief Adds vertices to the mesh
@@ -367,7 +376,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelBuilderGeometryBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderGeometry final
+    class geomodel_builder_api GeoModelBuilderGeometry final
         : public GeoModelBuilderGeometryBase< DIMENSION >
     {
         friend class GeoModelBuilderBase< DIMENSION >;
@@ -382,7 +391,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilderGeometry< 3 > final
+    class geomodel_builder_api GeoModelBuilderGeometry< 3 > final
         : public GeoModelBuilderGeometryBase< 3 >
     {
         friend class GeoModelBuilderBase< 3 >;

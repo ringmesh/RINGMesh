@@ -38,10 +38,11 @@
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
@@ -55,7 +56,7 @@ int main()
 
     try
     {
-        default_configure();
+        register_geogram_mesh();
         CmdLine::import_arg_group( "global" );
         GEO::CmdLine::set_arg( "algo:tet", "TetGen" );
 

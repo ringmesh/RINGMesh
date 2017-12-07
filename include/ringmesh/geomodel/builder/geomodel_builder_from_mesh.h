@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 
@@ -58,7 +58,8 @@ namespace RINGMesh
     /*!
      * @brief To build a GeoModel from a set of disconnected polygonal surfaces
      */
-    class RINGMESH_API GeoModelBuilderSurfaceMesh : public GeoModelBuilder< 3 >
+    class geomodel_builder_api GeoModelBuilderSurfaceMesh
+        : public GeoModelBuilder< 3 >
     {
     public:
         GeoModelBuilderSurfaceMesh(

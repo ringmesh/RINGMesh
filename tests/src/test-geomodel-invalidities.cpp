@@ -38,10 +38,12 @@
 #include <future>
 
 #include <geogram/basic/command_line.h>
+
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
@@ -80,8 +82,7 @@ int main()
 {
     try
     {
-        default_configure();
-
+        register_geogram_mesh();
         // Load a model without region : 6 surfaces defining a cube with holes
         // between surfaces (all surface borders are free borders)
         GeoModel3D not_sealed_cube_geomodel;

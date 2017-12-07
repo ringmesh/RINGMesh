@@ -52,7 +52,7 @@ namespace
         void load_file()
         {
             tinyxml2::XMLDocument svg_file;
-            if( svg_file.LoadFile( filename_.c_str() )
+            if( svg_file.LoadFile( filename().c_str() )
                 != tinyxml2::XML_SUCCESS )
             {
                 throw RINGMeshException(

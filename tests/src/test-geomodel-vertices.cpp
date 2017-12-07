@@ -38,6 +38,7 @@
 #include <vector>
 
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
@@ -119,7 +120,7 @@ int main()
 
     try
     {
-        default_configure();
+        register_geogram_mesh();
         Logger::out( "TEST", "Test GeoModelMeshVertices" );
 
         std::string input_model_file_name =

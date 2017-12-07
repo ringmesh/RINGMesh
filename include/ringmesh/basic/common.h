@@ -40,8 +40,8 @@
  include/ringmesh/config_ringmesh.h.in file.
  File is in RINGMESH_BIN/ringmesh directory.
  */
+#include <ringmesh/basic/export.h>
 #include <ringmesh/ringmesh_config.h>
-#include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
 #ifndef WIN32
@@ -116,18 +116,7 @@ void ringmesh_unused( const T& /*unused*/ )
 
 namespace RINGMesh
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void RINGMESH_API configure_geogram();
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
-    void RINGMESH_API configure_ringmesh();
-    void RINGMESH_API default_configure();
-
-    void RINGMESH_API print_header_information();
+    void basic_api print_header_information();
 
     /*!
      * RINGMesh exception class.
@@ -144,7 +133,7 @@ namespace RINGMesh
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException : public std::runtime_error
+    class basic_api RINGMeshException : public std::runtime_error
     {
     public:
         template < typename... Args >

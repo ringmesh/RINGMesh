@@ -39,10 +39,13 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/basic/matrix.h>
+
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_aabb.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * @author Arnaud Botella
@@ -236,7 +239,7 @@ void check_tree( const SurfaceAABBTree< DIMENSION >& tree, index_t size )
 
 template < index_t DIMENSION >
 void create_5_tets_from_hex( VolumeMeshBuilder< DIMENSION >& builder,
-    const GeogramVolumeMesh< DIMENSION >& mesh_hex,
+    const VolumeMesh< DIMENSION >& mesh_hex,
     index_t hex )
 {
     std::vector< index_t > vertices_in_hex( 8 );
@@ -292,8 +295,8 @@ void create_5_tets_from_hex( VolumeMeshBuilder< DIMENSION >& builder,
 }
 
 template < index_t DIMENSION >
-void decompose_in_tet( const GeogramVolumeMesh< DIMENSION >& hex_mesh,
-    GeogramVolumeMesh< DIMENSION >& tet_mesh,
+void decompose_in_tet( const VolumeMesh< DIMENSION >& hex_mesh,
+    VolumeMesh< DIMENSION >& tet_mesh,
     index_t size )
 {
     std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
@@ -310,20 +313,20 @@ template < index_t DIMENSION >
 void test_SurfaceAABB()
 {
     Logger::out( "TEST", "Test Surface AABB ", DIMENSION, "D" );
-    GeogramSurfaceMesh< DIMENSION > geogram_mesh;
+    auto mesh = SurfaceMesh< DIMENSION >::create_mesh();
     std::unique_ptr< SurfaceMeshBuilder< DIMENSION > > builder =
-        SurfaceMeshBuilder< DIMENSION >::create_builder( geogram_mesh );
+        SurfaceMeshBuilder< DIMENSION >::create_builder( *mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
     add_triangles( builder.get(), size );
 
-    SurfaceAABBTree< DIMENSION > tree( geogram_mesh );
+    SurfaceAABBTree< DIMENSION > tree( *mesh );
     check_tree( tree, size );
 }
 
 template < index_t DIMENSION >
-void test_locate_cell_on_3D_mesh( const GeogramVolumeMesh< DIMENSION >& mesh )
+void test_locate_cell_on_3D_mesh( const VolumeMesh< DIMENSION >& mesh )
 {
     for( index_t c : range( mesh.nb_cells() ) )
     {
@@ -341,21 +344,21 @@ template < index_t DIMENSION >
 void test_VolumeAABB()
 {
     Logger::out( "TEST", "Test Volume AABB ", DIMENSION, "D" );
-    GeogramVolumeMesh< DIMENSION > geogram_mesh_hex;
+    auto mesh_hex = VolumeMesh< DIMENSION >::create_mesh();
     std::unique_ptr< VolumeMeshBuilder< DIMENSION > > builder =
-        VolumeMeshBuilder< DIMENSION >::create_builder( geogram_mesh_hex );
+        VolumeMeshBuilder< DIMENSION >::create_builder( *mesh_hex );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
     add_hexs( builder.get(), size );
 
-    GeogramVolumeMesh< DIMENSION > geogram_mesh_tet;
-    decompose_in_tet( geogram_mesh_hex, geogram_mesh_tet, size );
-    test_locate_cell_on_3D_mesh( geogram_mesh_tet );
+    auto mesh_tet = VolumeMesh< DIMENSION >::create_mesh();
+    decompose_in_tet( *mesh_hex, *mesh_tet, size );
+    test_locate_cell_on_3D_mesh( *mesh_tet );
 }
 
 template < index_t DIMENSION >
-void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
+void test_locate_edge_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
 {
     for( index_t e : range( mesh.nb_edges() ) )
     {
@@ -374,15 +377,23 @@ void test_locate_edge_on_1D_mesh( const GeogramLineMesh< DIMENSION >& mesh )
 template < index_t DIMENSION >
 void test_LineAABB()
 {
+    std::cout << "line mesh" << std::endl;
+    std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+    std::cout << LineMeshFactory< 2 >::list_creators().size() << std::endl;
+    LineMeshFactory2D::register_creator< GeogramLineMesh2D >(
+        GeogramLineMesh2D::type_name_static() );
+    std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+    std::cout << LineMeshFactory< 2 >::list_creators().size() << std::endl;
+
     Logger::out( "TEST", "Test Line AABB ", DIMENSION, "D" );
-    GeogramLineMesh< DIMENSION > geogram_mesh;
+    auto mesh = LineMesh< DIMENSION >::create_mesh();
     std::unique_ptr< LineMeshBuilder< DIMENSION > > builder =
-        LineMeshBuilder< DIMENSION >::create_builder( geogram_mesh );
+        LineMeshBuilder< DIMENSION >::create_builder( *mesh );
 
     index_t size = 10;
     add_vertices( builder.get(), size );
     add_edges( builder.get(), size );
-    test_locate_edge_on_1D_mesh( geogram_mesh );
+    test_locate_edge_on_1D_mesh( *mesh );
 }
 
 int main()
@@ -391,8 +402,15 @@ int main()
 
     try
     {
-        default_configure();
+        register_geogram_mesh();
         Logger::out( "TEST", "Test AABB" );
+        std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+        std::cout << LineMeshFactory< 2 >::list_creators().size() << std::endl;
+        LineMeshFactory2D::register_creator< GeogramLineMesh2D >(
+            GeogramLineMesh2D::type_name_static() );
+        std::cout << LineMeshFactory2D::list_creators().size() << std::endl;
+        std::cout << LineMeshFactory< 2 >::list_creators().size() << std::endl;
+
         test_LineAABB< 2 >();
         test_LineAABB< 3 >();
         test_SurfaceAABB< 2 >();

@@ -76,5 +76,6 @@ namespace RINGMesh
         VolumeMeshBuilderFactory3D::
             register_creator< GeogramVolumeMeshBuilder3D >(
                 GeogramVolumeMesh3D::type_name_static() );
+
     }
 } // namespace RINGMesh

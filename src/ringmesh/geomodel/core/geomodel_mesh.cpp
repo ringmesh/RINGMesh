@@ -47,12 +47,12 @@
 #include <ringmesh/basic/pimpl_impl.h>
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
-#include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
 
 /*!
  * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
@@ -596,6 +596,13 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshVerticesBase< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->vertex_nn_search();
+    }
+
+    template < index_t DIMENSION >
     void GeoModelMeshVerticesBase< DIMENSION >::fill_vertices_for_entity_type(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& entity_type,
@@ -787,7 +794,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelMeshVerticesBase< DIMENSION >::update_point(
+    void GeoModelMeshVerticesBase< DIMENSION >::set_point(
         index_t v, const vecn< DIMENSION >& point )
     {
         test_and_initialize();
@@ -796,15 +803,6 @@ namespace RINGMesh
         auto mesh_builder =
             PointSetMeshBuilder< DIMENSION >::create_builder( *mesh_ );
         mesh_builder->set_vertex( v, point );
-
-        GeoModelBuilder< DIMENSION > builder( this->geomodel_ );
-
-        const auto& gme_v = gme_vertices( v );
-        for( const auto& info : gme_v )
-        {
-            builder.geometry.set_mesh_entity_vertex(
-                info.gmme, info.v_index, point, false );
-        }
     }
 
     template < index_t DIMENSION >
@@ -1947,6 +1945,20 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->cell_nn_search();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_facet_nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->cell_facet_nn_search();
+    }
+
+    template < index_t DIMENSION >
     const VolumeAABBTree< DIMENSION >&
         GeoModelMeshCells< DIMENSION >::aabb() const
     {
@@ -2124,6 +2136,19 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshEdges< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->edge_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshEdges< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->edge_nn_search();
+    }
+
+    template < index_t DIMENSION >
     const LineAABBTree< DIMENSION >&
         GeoModelMeshEdges< DIMENSION >::aabb() const
     {
@@ -2169,6 +2194,19 @@ namespace RINGMesh
     {
         surface_id_.clear();
         polygon_id_.clear();
+    }
+
+    template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshPolygonsBase< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->polygon_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& GeoModelMeshPolygonsBase< DIMENSION >::nn_search() const
+    {
+        test_and_initialize();
+        return mesh_->polygon_nn_search();
     }
 
     template < index_t DIMENSION >
@@ -2828,6 +2866,12 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    GEO::AttributesManager& GeoModelMeshWells< DIMENSION >::attribute_manager() const
+    {
+        return mesh_->edge_attribute_manager();
+    }
+
+    template < index_t DIMENSION >
     const LineAABBTree< DIMENSION >&
         GeoModelMeshWells< DIMENSION >::aabb() const
     {
@@ -3202,18 +3246,18 @@ namespace RINGMesh
         }
     }
 
-    template class RINGMESH_API GeoModelMeshBase< 2 >;
-    template class RINGMESH_API GeoModelMesh< 2 >;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 2 >;
-    template class RINGMESH_API GeoModelMeshWells< 2 >;
-    template class RINGMESH_API GeoModelMeshEdges< 2 >;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 2 >;
+    template class geomodel_core_api GeoModelMeshBase< 2 >;
+    template class geomodel_core_api GeoModelMesh< 2 >;
+    template class geomodel_core_api GeoModelMeshVerticesBase< 2 >;
+    template class geomodel_core_api GeoModelMeshWells< 2 >;
+    template class geomodel_core_api GeoModelMeshEdges< 2 >;
+    template class geomodel_core_api GeoModelMeshPolygonsBase< 2 >;
 
-    template class RINGMESH_API GeoModelMeshBase< 3 >;
-    template class RINGMESH_API GeoModelMeshVerticesBase< 3 >;
-    template class RINGMESH_API GeoModelMeshWells< 3 >;
-    template class RINGMESH_API GeoModelMeshEdges< 3 >;
-    template class RINGMESH_API GeoModelMeshPolygonsBase< 3 >;
-    template class RINGMESH_API GeoModelMeshCells< 3 >;
+    template class geomodel_core_api GeoModelMeshBase< 3 >;
+    template class geomodel_core_api GeoModelMeshVerticesBase< 3 >;
+    template class geomodel_core_api GeoModelMeshWells< 3 >;
+    template class geomodel_core_api GeoModelMeshEdges< 3 >;
+    template class geomodel_core_api GeoModelMeshPolygonsBase< 3 >;
+    template class geomodel_core_api GeoModelMeshCells< 3 >;
 
 } // namespace RINGMesh
