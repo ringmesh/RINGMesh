@@ -38,7 +38,7 @@
 #include <ringmesh/basic/common.h>
 
 /*!
- * @file  Factory class
+ * @file  Singleton class
  * @author Arnaud Botella
  */
 
@@ -46,19 +46,32 @@ namespace RINGMesh
 {
     /*!
      * \brief Cross platform singleton implementation
+     * \details Classic templated singleton cannot be exported on Windows.
+     *  To ensure a unique instance of the singleton, we store it and
+     *  export methods to retrieve the unique instance.
+     *
+     *  To use this class, inherit from it and use the protected
+     *  method Singleton::instance().
      */
     class basic_api Singleton
     {
+        ringmesh_disable_copy_and_move( Singleton );
+
+    public:
+        virtual ~Singleton() = default;
+
     protected:
-        template < class SingletinType >
-        static SingletinType& instance()
+        Singleton() = default;
+
+        template < class SingletonType >
+        static SingletonType& instance()
         {
-            auto singleton = reinterpret_cast< SingletinType* >(
-                instance( typeid( SingletinType ) ) );
+            auto singleton = dynamic_cast< SingletonType* >(
+                instance( typeid( SingletonType ) ) );
             if( singleton == nullptr )
             {
-                singleton = new SingletinType{};
-                set_instance( typeid( SingletinType ), singleton );
+                singleton = new SingletonType{};
+                set_instance( typeid( SingletonType ), singleton );
             }
 
             return *singleton;

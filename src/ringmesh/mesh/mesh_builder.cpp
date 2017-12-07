@@ -217,13 +217,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void MeshBaseBuilder< DIMENSION >::repair( GEO::MeshRepairMode mode, double colocate_epsilon )
-    {
-        do_repair( mode, colocate_epsilon );
-        clear_vertex_linked_objects();
-    }
-
-    template < index_t DIMENSION >
     void MeshBaseBuilder< DIMENSION >::set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )
     {
         do_set_vertex( v_id, vertex );
