@@ -32,7 +32,5 @@
 #     FRANCE
 
 
-add_ringmesh_test("test-mesh-aabb.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-connected-components.cpp" geogram_extension geomodel_tools io)
-
-
+add_ringmesh_test(test-mesh-aabb.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-connected-components.cpp geogram_extension geomodel_tools io)

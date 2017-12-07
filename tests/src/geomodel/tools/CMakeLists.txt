@@ -31,6 +31,6 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-add_ringmesh_test("test-annot-load-and-repair.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-geomodel-invalidities.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-repair-annot.cpp" geogram_extension geomodel_tools io)
+add_ringmesh_test(test-annot-load-and-repair.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-geomodel-invalidities.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-repair-annot.cpp geogram_extension geomodel_tools io)

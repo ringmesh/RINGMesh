@@ -31,8 +31,8 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-add_ringmesh_test("test-geomodel-from-surface.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-geomodel-vertices.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-get-dependent-entities.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-stratigraphic-column.cpp" geogram_extension geomodel_tools io)
-add_ringmesh_test("test-transfer-attributes-gm-gmm.cpp" geogram_extension geomodel_tools io)
+add_ringmesh_test(test-geomodel-from-surface.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-geomodel-vertices.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-get-dependent-entities.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-stratigraphic-column.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-transfer-attributes-gm-gmm.cpp geogram_extension geomodel_tools io)
