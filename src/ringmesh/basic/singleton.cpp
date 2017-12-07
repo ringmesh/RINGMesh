@@ -44,8 +44,8 @@ namespace
 
 namespace RINGMesh
 {
-
-    void Singleton::set_instance( const std::type_info& type, Singleton* singleton )
+    void Singleton::set_instance(
+        const std::type_info& type, Singleton* singleton )
     {
         singletons[type.name()].reset( singleton );
     }
@@ -53,7 +53,8 @@ namespace RINGMesh
     Singleton* Singleton::instance( const std::type_info& type )
     {
         auto iter = singletons.find( type.name() );
-        if( iter == singletons.end() ) {
+        if( iter == singletons.end() )
+        {
             return nullptr;
         }
         return iter->second.get();
