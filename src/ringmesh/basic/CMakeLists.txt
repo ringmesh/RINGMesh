@@ -42,7 +42,6 @@ target_sources(${target_name}
         "${lib_source_dir}/geometry_intersection.cpp"
         "${lib_source_dir}/geometry_position.cpp"
         "${lib_source_dir}/geometry.cpp"
-        "${lib_source_dir}/logger.cpp"
         "${lib_source_dir}/nn_search.cpp"
         "${lib_source_dir}/ringmesh_assert.cpp"
         "${lib_source_dir}/singleton.cpp"
