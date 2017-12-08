@@ -394,7 +394,7 @@ int main()
 
     try
     {
-//        register_geogram_mesh();
+        //        register_geogram_mesh();
         Logger::out( "TEST", "Test AABB" );
 
         test_LineAABB< 2 >();
