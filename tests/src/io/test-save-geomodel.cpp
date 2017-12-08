@@ -199,11 +199,11 @@ void io_geomodel(
 template < index_t DIMENSION >
 void process_extension( const std::string& extension )
 {
-#ifdef WIN32
     if( extension == "gm" )
     {
         return;
     }
+#ifdef WIN32
     if( extension == "adeli" )
     {
         // @todo Temporary switch off the test for saving GeoModel into
