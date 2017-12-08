@@ -36,6 +36,7 @@
 #pragma once
 
 #include <ringmesh/geomodel/core/common.h>
+#include <ringmesh/geomodel/core/entity_type.h>
 
 /*!
  * @file ringmesh/geomodel_api.h
@@ -103,7 +104,7 @@ namespace RINGMesh
      */
     template < index_t DIMENSION >
     index_t find_geological_entity_id_from_name(
-        const RINGMesh::GeoModel< DIMENSION >& geomodel,
-        const RINGMesh::GeologicalEntityType& gmge_type,
+        const GeoModel< DIMENSION >& geomodel,
+        const GeologicalEntityType& gmge_type,
         const std::string& name );
 } // namespace RINGMesh

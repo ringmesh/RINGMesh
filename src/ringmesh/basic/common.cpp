@@ -44,10 +44,6 @@
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/common.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
-#include <geogram_gfx/basic/common.h>
-#endif
-
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/basic/logger.h>
 
