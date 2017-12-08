@@ -31,5 +31,5 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-add_ringmesh_test(test-geomodel-tetrahedralize-with-MGTetra.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-geomodel-tetrahedralize-with-TetGen.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-geomodel-tetrahedralize-with-MGTetra.cpp geogram_extension tetrahedralize io)
+add_ringmesh_test(test-geomodel-tetrahedralize-with-TetGen.cpp geogram_extension tetrahedralize io)

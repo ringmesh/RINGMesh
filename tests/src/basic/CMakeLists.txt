@@ -31,10 +31,9 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-add_ringmesh_test(test-factory.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-geometry.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-geometry-intersection.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-geometry-position.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-matrix.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-nn-search.cpp geogram_extension geomodel_tools io)
-add_ringmesh_test(test-transrot.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-factory.cpp basic)
+add_ringmesh_test(test-geometry.cpp basic)
+add_ringmesh_test(test-geometry-intersection.cpp basic)
+add_ringmesh_test(test-geometry-position.cpp basic)
+add_ringmesh_test(test-matrix.cpp basic)
+add_ringmesh_test(test-nn-search.cpp basic)
