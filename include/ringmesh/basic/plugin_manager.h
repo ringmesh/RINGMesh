@@ -33,23 +33,27 @@
  *     FRANCE
  */
 
-#include <ringmesh/mesh/common.h>
+#pragma once
 
-#include <ringmesh/basic/logger.h>
-#include <ringmesh/basic/plugin_manager.h>
-#include <ringmesh/geogram_extension/common.h>
+#include <ringmesh/basic/common.h>
 
-namespace
+#include <ringmesh/basic/pimpl.h>
+
+/*!
+ * @file PluginManger class declaration
+ * @author Arnaud Botella
+ */
+
+namespace RINGMesh
 {
-    class libRINGMesh_mesh
+    class basic_api PluginManger
     {
     public:
-        libRINGMesh_mesh()
-        {
-            RINGMesh::Logger::out( "Library", "RINGMesh_mesh loaded" );
-            RINGMesh::PluginManger::load_module( "RINGMesh_geogram_extension" );
-        }
+        static bool load_module( const std::string& module_name );
+
+    private:
+        class Impl;
+        static PImpl< Impl > impl_;
     };
 
-    libRINGMesh_mesh libRINGMesh_mesh_instance;
-} // namespace
+} // namespace RINGMesh

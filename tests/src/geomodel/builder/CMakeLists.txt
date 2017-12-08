@@ -31,4 +31,4 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-add_ringmesh_test(test-build-2d-geomodels-from-3d.cpp geogram_extension geomodel_tools io)
+add_ringmesh_test(test-build-2d-geomodels-from-3d.cpp geomodel_tools io)
