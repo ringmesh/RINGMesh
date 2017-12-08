@@ -73,6 +73,9 @@ jobs:
 
     - stage: compile and test
       os: osx
+      branches:
+        only:
+        - travis_macos
       env:
         - TEST="Xcode Check"
       script:
@@ -84,6 +87,9 @@ jobs:
 
     - stage: compile and test
       os: osx
+      branches:
+        only:
+        - travis_macos
       env:
         - TEST="Unix Makefile Check"
       script:
