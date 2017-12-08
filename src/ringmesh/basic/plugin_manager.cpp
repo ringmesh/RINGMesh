@@ -49,9 +49,27 @@
 
 namespace
 {
+    std::string plugin_directory( const std::string& executable_directory )
+    {
+        std::string parent_separator;
+        for( auto i : RINGMesh::range( 3 ) )
+        {
+            ringmesh_unused( i );
+            std::string cur_directory { executable_directory + parent_separator
+                + "/lib/" };
+            if( GEO::FileSystem::is_directory( cur_directory ) )
+            {
+                return cur_directory;
+            }
+            parent_separator += "/..";
+        }
+        return executable_directory;
+    }
+
     std::vector< std::string > plugins;
 } //namespace
 
+#ifdef linux
 #include <dlfcn.h>
 #include <limits.h>
 #include <unistd.h>
@@ -97,23 +115,6 @@ namespace RINGMesh
         }
 
     private:
-        std::string plugin_directory( const std::string& executable_directory ) const
-        {
-            std::string parent_separator;
-            for( auto i : range( 3 ) )
-            {
-                ringmesh_unused( i );
-                std::string cur_directory { executable_directory + parent_separator
-                    + "/lib/" };
-                if( GEO::FileSystem::is_directory( cur_directory ) )
-                {
-                    return cur_directory;
-                }
-                parent_separator += "/..";
-            }
-            return executable_directory;
-        }
-
         std::string executable_directory() const
         {
             char buff[PATH_MAX];
@@ -130,6 +131,7 @@ namespace RINGMesh
         const std::string plugin_directory_;
     };
 } // namespace RINGMesh
+#endif
 
 namespace RINGMesh
 {
