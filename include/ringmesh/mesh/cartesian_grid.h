@@ -62,7 +62,7 @@ namespace RINGMesh
      * Template class for Cartesian grids of different dimensions
      */
     template < index_t DIMENSION >
-    class RINGMESH_API CartesianGrid
+    class CartesianGrid
     {
         ringmesh_disable_copy_and_move( CartesianGrid );
         friend class CartesianGridBuilder< DIMENSION >;
