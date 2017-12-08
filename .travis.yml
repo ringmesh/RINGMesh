@@ -4,8 +4,7 @@ sudo: false
 notifications:
     slack: ringmesh:5cOVjJEAHsS8HkmRQxoTWl0f
     on_success: never
-    on_failure: never
-    on_pull_requests: true
+    on_failure: change
 
 env:
   global:
