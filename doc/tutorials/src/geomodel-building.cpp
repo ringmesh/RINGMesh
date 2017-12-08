@@ -39,10 +39,11 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
+#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -103,11 +104,7 @@ int main()
 
     try
     {
-        // This line stands for the initialization
-        // of Geogram and the factories of RINGMesh
-        // IT IS MANDATORY
-        default_configure();
-
+        register_geogram_mesh();
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );

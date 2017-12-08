@@ -1470,7 +1470,7 @@ namespace RINGMesh
         return GEO::CmdLine::get_arg( "validity:directory" );
     }
 
-    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg()
+    ValidityCheckMode geomodel_tools_api get_validity_mode_from_arg()
     {
         return interpret_validity_check_mode(
             GEO::CmdLine::get_arg( "validity:do_not_check" ) );
@@ -1623,7 +1623,7 @@ namespace RINGMesh
     bool has_geomodel_finite_extension( const GeoModel< DIMENSION >& geomodel );
 
     template <>
-    bool RINGMESH_API has_geomodel_finite_extension< 2 >(
+    bool geomodel_tools_api has_geomodel_finite_extension< 2 >(
         const GeoModel2D& geomodel )
     {
         const auto& geomodelmesh = geomodel.mesh;
@@ -1678,7 +1678,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool RINGMESH_API has_geomodel_finite_extension< 3 >(
+    bool geomodel_tools_api has_geomodel_finite_extension< 3 >(
         const GeoModel3D& geomodel )
     {
         const auto& geomodelmesh = geomodel.mesh;
@@ -1749,26 +1749,26 @@ namespace RINGMesh
         return true;
     }
 
-    template bool RINGMESH_API is_geomodel_valid< 2 >(
+    template bool geomodel_tools_api is_geomodel_valid< 2 >(
         const GeoModel2D&, ValidityCheckMode );
-    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+    template bool geomodel_tools_api are_geomodel_geological_entities_valid(
         const GeoModel2D& );
 
-    template bool RINGMESH_API is_geomodel_valid< 3 >(
+    template bool geomodel_tools_api is_geomodel_valid< 3 >(
         const GeoModel3D&, ValidityCheckMode );
-    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+    template bool geomodel_tools_api are_geomodel_geological_entities_valid(
         const GeoModel3D& );
 
 } // namespace RINGMesh

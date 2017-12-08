@@ -45,10 +45,10 @@
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/well.h>
 
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
@@ -60,7 +60,7 @@
 namespace RINGMesh
 {
 #ifdef RINGMESH_WITH_TETGEN
-    class RINGMESH_API TetraGen_TetGen final : public TetraGen
+    class tetrahedralize_api TetraGen_TetGen final : public TetraGen
     {
     public:
         TetraGen_TetGen( GeoModel3D& geomodel, index_t region_id )
@@ -115,7 +115,7 @@ namespace RINGMesh
 #endif
     }
 
-    class RINGMESH_API TetraGen_MG_Tetra final : public TetraGen
+    class tetrahedralize_api TetraGen_MG_Tetra final : public TetraGen
     {
     public:
         TetraGen_MG_Tetra( GeoModel3D& geomodel, index_t region_id )
@@ -564,7 +564,7 @@ namespace RINGMesh
             tetmesh_constraint_.edges.create_edges( nb_well_edges );
             GEO::Attribute< index_t > edge_region(
                 tetmesh_constraint_.edges.attributes(),
-                GeoModelMeshPolygonsBase< 3 >::surface_att_name );
+                "surface");
             index_t cur_vertex_id{ nb_surface_vertices };
             index_t cur_edge{ 0 };
             for( auto w : range( well_edges.size() ) )
@@ -586,7 +586,7 @@ namespace RINGMesh
         tetmesh_constraint_.facets.create_triangles( nb_polygons );
         GEO::Attribute< index_t > surface_region(
             tetmesh_constraint_.facets.attributes(),
-            GeoModelMeshPolygonsBase< 3 >::surface_att_name );
+            "surface" );
         for( const GeoModelMeshEntity3D*& surface : unique_surfaces )
         {
             for( auto t : range( surface->nb_mesh_elements() ) )

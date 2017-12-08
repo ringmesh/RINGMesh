@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/mesh/common.h>
 
 #include <memory>
 #include <numeric>
@@ -63,7 +63,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API MeshBaseBuilder
+    class MeshBaseBuilder
     {
         ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -81,11 +81,7 @@ namespace RINGMesh
          * @return a modifiable reference to the point that corresponds to the
          * vertex.
          */
-        void copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )
-        {
-            do_copy( rhs, copy_attributes );
-            clear_vertex_linked_objects();
-        }
+        void copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes );
 
         virtual void load_mesh( const std::string& filename ) = 0;
         /*!
@@ -96,11 +92,8 @@ namespace RINGMesh
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear( bool keep_attributes, bool keep_memory )
-        {
-            do_clear( keep_attributes, keep_memory );
-            clear_vertex_linked_objects();
-        }
+        void clear( bool keep_attributes, bool keep_memory );
+
         /*!@}
          * \name Vertex related methods
          * @{
@@ -111,53 +104,33 @@ namespace RINGMesh
          * @param[in] vertex the vertex coordinates
          * @return reference to the point that corresponds to the vertex.
          */
-        void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )
-        {
-            do_set_vertex( v_id, vertex );
-            clear_vertex_linked_objects();
-        }
+        void set_vertex( index_t v_id, const vecn< DIMENSION >& vertex );
+
         /*!
          * @brief Creates a new vertex.
          * @return the index of the created vertex
          */
-        index_t create_vertex()
-        {
-            index_t index = do_create_vertex();
-            clear_vertex_linked_objects();
-            return index;
-        }
+        index_t create_vertex();
+
         /*!
          * @brief Creates a new vertex.
          * @param[in] coords a pointer to @function dimension() coordinate.
          * @return the index of the created vertex
          */
-        index_t create_vertex( const vecn< DIMENSION >& vertex )
-        {
-            index_t index = create_vertex();
-            set_vertex( index, vertex );
-            return index;
-        }
+        index_t create_vertex( const vecn< DIMENSION >& vertex );
+
         /*!
          * @brief Creates a contiguous chunk of vertices.
          * @param[in] nb number of sub-entities to create.
          * @return the index of the first created vertex
          */
-        index_t create_vertices( index_t nb )
-        {
-            index_t index = do_create_vertices( nb );
-            clear_vertex_linked_objects();
-            return index;
-        }
+        index_t create_vertices( index_t nb );
 
         /*!
          * @brief set vertex coordinates from a std::vector of coordinates
          * @param[in] point_coordinates a set of x, y (, z) coordinates
          */
-        void assign_vertices( const std::vector< double >& point_coordinates )
-        {
-            do_assign_vertices( point_coordinates );
-            clear_vertex_linked_objects();
-        }
+        void assign_vertices( const std::vector< double >& point_coordinates );
 
         /*!
          * @brief Deletes a set of vertices.
@@ -165,11 +138,8 @@ namespace RINGMesh
          * to_delete[e] is true,
          * then entity e will be destroyed, else it will be kept.
          */
-        void delete_vertices( const std::vector< bool >& to_delete )
-        {
-            do_delete_vertices( to_delete );
-            clear_vertex_linked_objects();
-        }
+        void delete_vertices( const std::vector< bool >& to_delete );
+
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -178,16 +148,9 @@ namespace RINGMesh
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_vertices( bool keep_attributes, bool keep_memory )
-        {
-            do_clear_vertices( keep_attributes, keep_memory );
-            clear_vertex_linked_objects();
-        }
-        void permute_vertices( const std::vector< index_t >& permutation )
-        {
-            do_permute_vertices( permutation );
-            clear_vertex_linked_objects();
-        }
+        void clear_vertices( bool keep_attributes, bool keep_memory );
+
+        void permute_vertices( const std::vector< index_t >& permutation );
         /*!@}
          */
 
@@ -279,13 +242,13 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
             create_builder( PointSetMesh< DIMENSION >& mesh );
 
-        virtual void remove_isolated_vertices()
+        void remove_isolated_vertices()
         {
             // All vertices are isolated in a Mesh0D
         }
@@ -316,7 +279,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
@@ -327,22 +290,15 @@ namespace RINGMesh
          * @param[in] v1_id index of the starting vertex.
          * @param[in] v2_id index of the ending vertex.
          */
-        void create_edge( index_t v1_id, index_t v2_id )
-        {
-            do_create_edge( v1_id, v2_id );
-            clear_edge_linked_objects();
-        }
+        void create_edge( index_t v1_id, index_t v2_id );
+
         /*!
          * \brief Creates a contiguous chunk of edges
          * \param[in] nb_edges number of edges to create
          * \return the index of the first edge
          */
-        index_t create_edges( index_t nb_edges )
-        {
-            index_t index = do_create_edges( nb_edges );
-            clear_edge_linked_objects();
-            return index;
-        }
+        index_t create_edges( index_t nb_edges );
+
         /*!
          * @brief Sets a vertex of a edge by local vertex index.
          * @param[in] edge_local_vertex index of the edge and local index of the
@@ -353,11 +309,8 @@ namespace RINGMesh
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         void set_edge_vertex(
-            const EdgeLocalVertex& edge_local_vertex, index_t vertex_id )
-        {
-            do_set_edge_vertex( edge_local_vertex, vertex_id );
-            clear_edge_linked_objects();
-        }
+            const EdgeLocalVertex& edge_local_vertex, index_t vertex_id );
+
         /*!
          * @brief Deletes a set of edges.
          * @param[in] to_delete a vector of size @function nb().
@@ -367,15 +320,8 @@ namespace RINGMesh
          * that are no longer incident to any entity are deleted.
          */
         void delete_edges( const std::vector< bool >& to_delete,
-            bool remove_isolated_vertices )
-        {
-            do_delete_edges( to_delete );
-            if( remove_isolated_vertices )
-            {
-                this->remove_isolated_vertices();
-            }
-            clear_edge_linked_objects();
-        }
+            bool remove_isolated_vertices );
+
         /*!
          * @brief Removes all the edges and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -384,16 +330,9 @@ namespace RINGMesh
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        void clear_edges( bool keep_attributes, bool keep_memory )
-        {
-            do_clear_edges( keep_attributes, keep_memory );
-            clear_edge_linked_objects();
-        }
-        void permute_edges( const std::vector< index_t >& permutation )
-        {
-            do_permute_edges( permutation );
-            clear_edge_linked_objects();
-        }
+        void clear_edges( bool keep_attributes, bool keep_memory );
+
+        void permute_edges( const std::vector< index_t >& permutation );
 
         /*!
          * @brief Remove vertices not connected to any mesh element
@@ -484,7 +423,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
@@ -839,7 +778,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 

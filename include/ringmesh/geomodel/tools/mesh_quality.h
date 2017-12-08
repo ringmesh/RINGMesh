@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/tools/common.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -84,7 +84,7 @@ namespace RINGMesh
      * @warning The GeoModel must have at least one region. All the regions
      * must be meshed by simplexes (tetrahedra).
      */
-    void RINGMESH_API compute_prop_tet_mesh_quality(
+    void geomodel_tools_api compute_prop_tet_mesh_quality(
         MeshQualityMode mesh_qual_mode, const GeoModel3D& geomodel );
 
     /*!
@@ -99,7 +99,7 @@ namespace RINGMesh
      * @warning The GeoModel must have at least one region. All the regions
      * must be meshed by simplexes (tetrahedra).
      */
-    double RINGMESH_API fill_mesh_with_low_quality_cells(
+    double geomodel_tools_api fill_mesh_with_low_quality_cells(
         MeshQualityMode mesh_qual_mode,
         double min_quality,
         const GeoModel3D& geomodel,

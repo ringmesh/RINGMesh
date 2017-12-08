@@ -55,7 +55,7 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        - cmake --build . --target coverage -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target coverage -- -j2
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
 
@@ -69,5 +69,5 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Debug
         - cmake --build . -- -j2
-        - ctest -j2
+        - ctest --output-on-failure -j2
 

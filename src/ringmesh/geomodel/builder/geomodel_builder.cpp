@@ -44,7 +44,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
@@ -1505,10 +1505,10 @@ namespace RINGMesh
         remove.remove_mesh_entities( to_erase );
     }
 
-    template class RINGMESH_API GeoModelBuilderBase< 2 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 2 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderBase< 3 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 3 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 3 >;
 
 } // namespace RINGMesh
