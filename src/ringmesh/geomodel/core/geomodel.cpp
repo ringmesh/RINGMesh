@@ -54,7 +54,6 @@ namespace
     void compute_mesh_entity_bbox(
         const GeoModelMeshEntity< DIMENSION >& entity, Box< DIMENSION >& bbox )
     {
-        will_not_compile_do_travis_reacts?
         for( auto v : range( entity.nb_vertices() ) )
         {
             bbox.add_point( entity.vertex( v ) );
