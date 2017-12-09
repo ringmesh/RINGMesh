@@ -36,17 +36,12 @@
 #include <ringmesh/geomodel/tools/common.h>
 
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/plugin_manager.h>
 
 namespace
 {
-    class geomodel_tools_api libRINGMesh_geomodel_tools
-    {
-    public:
-        libRINGMesh_geomodel_tools()
-        {
-            RINGMesh::Logger::out( "Library", "RINGMesh_geomodel_tools loaded" );
-        }
-    };
-
-    libRINGMesh_geomodel_tools libRINGMesh_geomodel_tools_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geomodel_tools,
+        // Plugin initialization
+    );
 } // namespace

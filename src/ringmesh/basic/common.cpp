@@ -72,7 +72,9 @@ namespace
         RINGMesh::CmdLine::import_arg_group( "validity" );
     }
 
-    RINGMESH_PLUGIN_INITIALIZE( RINGMesh_basic,
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_basic,
+        // Plugin initialization
         GEO::initialize();
         configure_geogram();
         configure_ringmesh();

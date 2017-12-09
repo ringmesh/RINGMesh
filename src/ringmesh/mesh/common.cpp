@@ -41,15 +41,9 @@
 
 namespace
 {
-    class libRINGMesh_mesh
-    {
-    public:
-        libRINGMesh_mesh()
-        {
-            RINGMesh::Logger::out( "Library", "RINGMesh_mesh loaded" );
-            RINGMesh::PluginManger::load_module( "RINGMesh_geogram_extension" );
-        }
-    };
-
-    libRINGMesh_mesh libRINGMesh_mesh_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_mesh,
+        // Plugin initialization
+        RINGMesh::PluginManger::load_module( "RINGMesh_geogram_extension" );
+    );
 } // namespace

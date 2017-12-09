@@ -35,22 +35,17 @@
 
 #include <ringmesh/geogram_extension/common.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
 namespace
 {
-    class libRINGMesh_geogram_extension
-    {
-    public:
-        libRINGMesh_geogram_extension()
-        {
-            RINGMesh::ringmesh_geogram_mesh_io_initialize();
-            RINGMesh::register_geogram_mesh();
-            RINGMesh::Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
-        }
-    };
-
-    libRINGMesh_geogram_extension libRINGMesh_geogram_extension_instance;
-
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geogram_extension,
+        // Plugin initialization
+        RINGMesh::ringmesh_geogram_mesh_io_initialize();
+        RINGMesh::register_geogram_mesh();
+    );
 } // namespace

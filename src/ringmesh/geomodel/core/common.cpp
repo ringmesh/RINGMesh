@@ -35,20 +35,16 @@
 
 #include <ringmesh/geomodel/core/common.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 
 namespace
 {
-    class libRINGMesh_geomodel_core
-    {
-    public:
-        libRINGMesh_geomodel_core()
-        {
-            RINGMesh::GeoModelGeologicalEntity2D::initialize();
-            RINGMesh::GeoModelGeologicalEntity3D::initialize();
-            RINGMesh::Logger::out( "Library", "RINGMesh_geomodel_core loaded" );
-        }
-    };
-
-    libRINGMesh_geomodel_core libRINGMesh_geomodel_core_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geomodel_core,
+        // Plugin initialization
+        RINGMesh::GeoModelGeologicalEntity2D::initialize();
+        RINGMesh::GeoModelGeologicalEntity3D::initialize();
+    );
 } // namespace
