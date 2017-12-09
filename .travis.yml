@@ -75,7 +75,7 @@ jobs:
       os: osx
       branches:
         only:
-        - travis_macos
+        - master
       env:
         - TEST="Xcode Check"
       script:
@@ -89,7 +89,7 @@ jobs:
       os: osx
       branches:
         only:
-        - travis_macos
+        - master
       env:
         - TEST="Unix Makefile Check"
       script:
