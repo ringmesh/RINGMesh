@@ -110,7 +110,7 @@ namespace RINGMesh
                     NULL,
                     GetLastError(),
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-                    &message,
+                    message,
                     0,
                     NULL
                 );
