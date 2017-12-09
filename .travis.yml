@@ -18,7 +18,6 @@ stages:
   - compile and test
 
 jobs:
-  include:
     - stage: format
       os: linux
       env:
