@@ -58,14 +58,13 @@ namespace RINGMesh
 
 } // namespace RINGMesh
 
-#define RINGMESH_PLUGIN_INITIALIZE( plugin_name, body ) \
-class libplugin_name\
-{\
-public:\
-    libplugin_name()\
-    {\
-      body\
-      RINGMesh::Logger::out( "Plugin", #plugin_name, " loaded" );\
-    }\
-};\
-libplugin_name libplugin_name_instance
+#define RINGMESH_PLUGIN_INITIALIZE( plugin_name, body )                        \
+    class libplugin_name                                                       \
+    {                                                                          \
+    public:                                                                    \
+        libplugin_name()                                                       \
+        {                                                                      \
+            body RINGMesh::Logger::out( "Plugin", #plugin_name, " loaded" );   \
+        }                                                                      \
+    };                                                                         \
+    libplugin_name libplugin_name_instance
