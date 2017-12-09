@@ -49,42 +49,17 @@
 
 namespace
 {
-    std::string plugin_directory( const std::string& executable_directory )
-    {
-        std::string parent_separator;
-        for( auto i : RINGMesh::range( 3 ) )
-        {
-            ringmesh_unused( i );
-            std::string cur_directory { executable_directory + parent_separator
-                + "/lib/" };
-            if( GEO::FileSystem::is_directory( cur_directory ) )
-            {
-                return cur_directory;
-            }
-            parent_separator += "/..";
-        }
-        return executable_directory;
-    }
-
     std::vector< std::string > plugins;
 } //namespace
 
 #ifdef linux
 #include <dlfcn.h>
-#include <limits.h>
-#include <unistd.h>
 
 namespace RINGMesh
 {
-
     class PluginManger::Impl
     {
     public:
-        Impl()
-            : plugin_directory_( plugin_directory( executable_directory() ) )
-        {
-            DEBUG( plugin_directory_ );
-        }
         /*!
          * Loads the given library.
          * RTLD_NOW: All undefined symbols in the library are resolved before dlopen() returns.
@@ -92,43 +67,64 @@ namespace RINGMesh
          * RTLD_GLOBAL: The symbols defined by this library will be made available
          *          for symbol resolution of subsequently loaded libraries.
          */
-        void load_library( const std::string& plugin_path ) const
+        void load_library( const std::string& plugin_name ) const
         {
-            void* plugin_handle = dlopen( plugin_path.c_str(),
+            std::string library{ library_name( plugin_name ) };
+            void* plugin_handle = dlopen( library.c_str(),
             RTLD_NOW | RTLD_GLOBAL );
             if( plugin_handle == nullptr )
             {
-                throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
+                throw RINGMeshException( "Plugin", "Could not load ", library,
                     ": ", dlerror() );
             }
         }
 
-        std::string find_library( const std::string& plugin_name ) const
+    private:
+        std::string library_name( const std::string& plugin_name ) const
         {
-            std::string library_name { "lib" + plugin_name + ".so" };
-            std::string library_path { plugin_directory_ + library_name };
-            if( !GEO::FileSystem::is_file( library_path ) )
+            return { "lib" + plugin_name + ".so" };
+        }
+    };
+} // namespace RINGMesh
+#elif _WIN32
+#include <Windows.h>
+
+namespace RINGMesh
+{
+    class PluginManger::Impl
+    {
+    public:
+        /*!
+         * Loads the given library.
+         */
+        void load_library( const std::string& plugin_path ) const
+        {
+            void* plugin_handle = LoadLibrary( plugin_path.c_str() );
+            if( plugin_handle == nullptr )
             {
-                throw RINGMeshException( "Plugin", plugin_name, " not found" );
+                LPTSTR message;
+                FormatMessage(
+                    FORMAT_MESSAGE_ALLOCATE_BUFFER |
+                    FORMAT_MESSAGE_FROM_SYSTEM |
+                    FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,
+                    GetLastError(),
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
+                    &message,
+                    0,
+                    NULL
+                );
+                throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
+                    ": ", message );
             }
-            return library_path;
         }
 
     private:
-        std::string executable_directory() const
+
+        std::string library_name( const std::string& plugin_name ) const
         {
-            char buff[PATH_MAX];
-            ssize_t len = ::readlink( "/proc/self/exe", buff, sizeof( buff ) - 1 );
-            if( len == -1 )
-            {
-                throw RINGMeshException( "PluginManager",
-                    "Cannot find the location of the curent executable" );
-            }
-            buff[len] = '\0';
-            return GEO::FileSystem::dir_name( std::string( buff ) );
+            return { plugin_name + ".dll" };
         }
-    private:
-        const std::string plugin_directory_;
     };
 } // namespace RINGMesh
 #endif
@@ -147,8 +143,7 @@ namespace RINGMesh
                 throw RINGMeshException( "Plugin", plugin_name, " already loaded" );
             }
 
-            std::string plugin_path = impl_->find_library( plugin_name );
-            impl_->load_library( plugin_path );
+            impl_->load_library( plugin_name );
             plugins.push_back( plugin_name );
         }
         catch( RINGMeshException& e )
