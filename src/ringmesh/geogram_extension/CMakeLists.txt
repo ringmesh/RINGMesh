@@ -43,8 +43,19 @@ target_sources(${target_name}
         "${lib_include_dir}/geogram_mesh_builder.h"
 )
 
+set( GEOGRAM_EXTENSION_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    basic
+    mesh
+)
+#set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${GEOGRAM_EXTENSION_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+foreach(ringmesh_lib ${GEOGRAM_EXTENSION_RINGMESH_LIB_INTERNAL_DEPENDENCIES})
+    if(NOT ${ringmesh_lib} IN_LIST ${MANDATORY_RINGMESH_LIBRARIES})
+        set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${ringmesh_lib} PARENT_SCOPE)
+    endif()
+endforeach()
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
 target_link_libraries(${target_name} 
     PUBLIC 
-        basic 
-        mesh
+        ${GEOGRAM_EXTENSION_RINGMESH_LIB_INTERNAL_DEPENDENCIES}
 )

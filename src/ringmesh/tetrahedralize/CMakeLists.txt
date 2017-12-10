@@ -42,7 +42,19 @@ target_sources(${target_name}
         "${lib_include_dir}/tetra_gen.h"
 )
 
-target_link_libraries(${target_name} PUBLIC geomodel_builder)
+set( TETRAHEDRALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    geomodel_builder
+)
+#set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${TETRAHEDRALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+foreach(ringmesh_lib ${TETRAHEDRALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES})
+    if(NOT ${ringmesh_lib} IN_LIST ${MANDATORY_RINGMESH_LIBRARIES})
+        set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${ringmesh_lib} PARENT_SCOPE)
+    endif()
+endforeach()
+
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
+target_link_libraries(${target_name} PUBLIC ${TETRAHEDRALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES})
 
 if(MG_TETRA)
     target_include_directories(${target_name} PRIVATE ${MG_TETRA}/include)

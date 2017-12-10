@@ -59,6 +59,13 @@ set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL F
 # Project options
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
+option(RINGMESH_WITH_GEOMODEL_CORE "Compile geomodel core lib" ON)
+option(RINGMESH_WITH_GEOMODEL_BUILDER "Compile geomodel builder lib" ON)
+option(RINGMESH_WITH_GEOMODEL_TOOLS "Compile geomodel tools lib" ON)
+option(RINGMESH_WITH_MESH "Compile mesh lib" ON)
+option(RINGMESH_WITH_TETRAHEDRALIZE "Compile tetrahedralize lib" ON)
+option(RINGMESH_WITH_IO "Compile io lib" ON)
+option(RINGMESH_WITH_GEOGRAM_EXTENSION "Compile geogram extension lib" ON)
 option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
