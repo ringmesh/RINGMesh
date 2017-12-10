@@ -71,5 +71,4 @@ ExternalProject_Add(geogram_ext
 
 ExternalProject_Add_Step(geogram_ext forcebuild
     DEPENDERS build
-    ALWAYS 1
 )
