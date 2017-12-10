@@ -52,41 +52,7 @@ namespace
     std::vector< std::string > plugins;
 } //namespace
 
-#ifdef linux
-#include <dlfcn.h>
-
-namespace RINGMesh
-{
-    class PluginManger::Impl
-    {
-    public:
-        /*!
-         * Loads the given library.
-         * RTLD_NOW: All undefined symbols in the library are resolved before dlopen() returns.
-         *          If this cannot be done, an error is returned.
-         * RTLD_GLOBAL: The symbols defined by this library will be made available
-         *          for symbol resolution of subsequently loaded libraries.
-         */
-        void load_library( const std::string& plugin_name ) const
-        {
-            std::string library{ library_name( plugin_name ) };
-            void* plugin_handle = dlopen( library.c_str(),
-            RTLD_NOW | RTLD_GLOBAL );
-            if( plugin_handle == nullptr )
-            {
-                throw RINGMeshException( "Plugin", "Could not load ", library,
-                    ": ", dlerror() );
-            }
-        }
-
-    private:
-        std::string library_name( const std::string& plugin_name ) const
-        {
-            return { "lib" + plugin_name + ".so" };
-        }
-    };
-} // namespace RINGMesh
-#elif _WIN32
+#if _WIN32
 #include <Windows.h>
 
 namespace RINGMesh
@@ -120,10 +86,47 @@ namespace RINGMesh
         }
 
     private:
-
         std::string library_name( const std::string& plugin_name ) const
         {
             return { plugin_name + ".dll" };
+        }
+    };
+} // namespace RINGMesh
+#else
+#include <dlfcn.h>
+
+namespace RINGMesh
+{
+    class PluginManger::Impl
+    {
+    public:
+        /*!
+         * Loads the given library.
+         * RTLD_NOW: All undefined symbols in the library are resolved before dlopen() returns.
+         *          If this cannot be done, an error is returned.
+         * RTLD_GLOBAL: The symbols defined by this library will be made available
+         *          for symbol resolution of subsequently loaded libraries.
+         */
+        void load_library( const std::string& plugin_name ) const
+        {
+            std::string library{ library_name( plugin_name ) };
+            void* plugin_handle = dlopen( library.c_str(),
+            RTLD_NOW | RTLD_GLOBAL );
+            if( plugin_handle == nullptr )
+            {
+                throw RINGMeshException( "Plugin", "Could not load ", library,
+                    ": ", dlerror() );
+            }
+        }
+
+    private:
+        std::string library_name( const std::string& plugin_name ) const
+        {
+#if __APPLE__
+            return { "lib" + plugin_name + ".dylib" };
+#else
+            return { "lib" + plugin_name + ".so" };
+#endif
         }
     };
 } // namespace RINGMesh
