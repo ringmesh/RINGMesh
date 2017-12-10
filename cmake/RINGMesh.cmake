@@ -114,7 +114,13 @@ if(RINGMESH_WITH_GRAPHICS)
     add_ringmesh_library(visualize)
 endif(RINGMESH_WITH_GRAPHICS)
 
-message(STATUS MANDATORY)
+message(STATUS MANDATORY BEFORE)
+foreach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
+    message(STATUS ${mandatory_ringmesh_lib})
+endforeach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
+
+list(REMOVE_DUPLICATES MANDATORY_RINGMESH_LIBRARIES)
+message(STATUS MANDATORY AFTER)
 foreach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
     message(STATUS ${mandatory_ringmesh_lib})
 endforeach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
@@ -123,6 +129,15 @@ message(STATUS WANTED)
 foreach(wanted_ringmesh_lib ${WANTED_RINGMESH_LIBRARIES})
     message(STATUS ${wanted_ringmesh_lib})
 endforeach(wanted_ringmesh_lib ${WANTED_RINGMESH_LIBRARIES})
+
+foreach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
+    list(FIND WANTED_RINGMESH_LIBRARIES ${mandatory_ringmesh_lib} item_index)
+    if(${item_index} EQUAL -1)
+        message(WARNING "Library ${mandatory_ringmesh_lib} is mandatory according to the ones you have selected.")
+        message(WARNING "Library ${mandatory_ringmesh_lib} is now selected.")
+        message(WARNING "To disable the library ${mandatory_ringmesh_lib}, uncheck ALL the libraries which depend on ${mandatory_ringmesh_lib}.")
+    endif()
+endforeach(mandatory_ringmesh_lib ${MANDATORY_RINGMESH_LIBRARIES})
 
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
