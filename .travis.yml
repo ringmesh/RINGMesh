@@ -76,3 +76,26 @@ jobs:
         - cmake --build . -- -j2
         - ctest --output-on-failure -j2
 
+    - stage: compile and test
+      os: osx
+      env:
+        - TEST="Xcode Check"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cmake --build . --config Debug
+        - ctest -C Debug --output-on-failure -j2
+
+    - stage: compile and test
+      os: osx
+      env:
+        - TEST="Unix Makefile Check"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd Debug
+        - cmake --build . -- -j2
+        - ctest --output-on-failure -j2
+
