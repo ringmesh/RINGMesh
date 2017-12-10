@@ -73,9 +73,6 @@ jobs:
 
     - stage: compile and test
       os: osx
-      branches:
-        only:
-          - master
       env:
         - TEST="Xcode Check"
       script:
@@ -87,9 +84,6 @@ jobs:
 
     - stage: compile and test
       os: osx
-      branches:
-        only:
-          - master
       env:
         - TEST="Unix Makefile Check"
       script:
