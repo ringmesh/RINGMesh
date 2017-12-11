@@ -57,7 +57,7 @@ namespace
 
 namespace RINGMesh
 {
-    class PluginManger::Impl
+    class PluginManager::Impl
     {
     public:
         /*!
@@ -107,7 +107,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    class PluginManger::Impl
+    class PluginManager::Impl
     {
     public:
         /*!
@@ -144,9 +144,9 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    PImpl< PluginManger::Impl > PluginManger::impl_;
+    PImpl< PluginManager::Impl > PluginManager::impl_;
 
-    bool PluginManger::load_module( const std::string& plugin_name )
+    bool PluginManager::load_module( const std::string& plugin_name )
     {
         try
         {

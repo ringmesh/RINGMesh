@@ -46,7 +46,7 @@
 
 namespace RINGMesh
 {
-    class basic_api PluginManger
+    class basic_api PluginManager
     {
     public:
         static bool load_module( const std::string& module_name );

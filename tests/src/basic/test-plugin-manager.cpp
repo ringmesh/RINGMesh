@@ -52,27 +52,27 @@ int main()
     {
         Logger::out( "TEST", "Test Plugin Manager" );
 
-        auto status = PluginManger::load_module( "RINGMesh_io" );
+        auto status = PluginManager::load_module( "RINGMesh_io" );
         if( !status )
         {
             throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
         }
 
-        status = PluginManger::load_module( "RINGMesh_geomodel_core" );
+        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
         if( !status )
         {
             throw RINGMeshException(
                 "TEST", "Failed to load RINGMesh_geomodel_core" );
         }
 
-        status = PluginManger::load_module( "RINGMesh_geomodel_core" );
+        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
         if( status )
         {
             throw RINGMeshException(
                 "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
         }
 
-        status = PluginManger::load_module( "Foo" );
+        status = PluginManager::load_module( "Foo" );
         if( status )
         {
             throw RINGMeshException(
