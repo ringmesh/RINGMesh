@@ -35,7 +35,9 @@
 
 #include <ringmesh/basic/plugin_manager.h>
 
+#include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/logger.h>
@@ -50,10 +52,44 @@
 namespace
 {
     std::vector< std::string > plugins;
+
+    bool read_plugins_configuration_file( const std::string& configuration_file )
+    {
+        GEO::LineInput file( configuration_file );
+        try
+        {
+            GEO::LineInput file( configuration_file );
+            ringmesh_assert( file.OK() );
+            while( !file.eof() && file.get_line() )
+            {
+                file.get_fields();
+                ringmesh_assert( file.nb_fields() == 1 );
+                RINGMesh::PluginManger::load_module( file.field( 0 ) );
+            }
+        }
+        catch( const std::logic_error& ex )
+        {
+            RINGMesh::Logger::err( "Plugin", "Got an error: ", ex.what() );
+            return false;
+        }
+        return true;
+    }
+
+    bool load_plugins_configuration( const std::string& configuration_directory )
+    {
+        auto config_file = configuration_directory + "/"
+            + RINGMesh::PluginManger::configuration_file;
+        if( GEO::FileSystem::is_file( config_file ) )
+        {
+            return read_plugins_configuration_file( config_file );
+        }
+        return false;
+    }
 } //namespace
 
 #if _WIN32
 #include <Windows.h>
+#include <KnownFolders.h>
 
 namespace RINGMesh
 {
@@ -73,16 +109,36 @@ namespace RINGMesh
                     FORMAT_MESSAGE_ALLOCATE_BUFFER |
                     FORMAT_MESSAGE_FROM_SYSTEM |
                     FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
+                    nullptr,
                     GetLastError(),
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
                     message,
                     0,
-                    NULL
+                    nullptr
                 );
                 throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
                     ": ", message );
             }
+        }
+
+        std::string home_directory() const
+        {
+            PWSTR path{ nullptr };
+            HRESULT hr = SHGetKnownFolderPath(&FOLDERID_Documents, 0, nullptr, &path);
+            std::string result;
+            if( SUCCEEDED( hr ) )
+            {
+                result = path;
+            }
+            CoTaskMemFree(path);
+            return result;
+        }
+
+        std::string executable_directory() const
+        {
+            TCHAR buff[MAX_PATH];
+            GetModuleFileName( NULL, buff, MAX_PATH);
+            return GEO::FileSystem::dir_name( std::string{ buff } );
         }
 
     private:
@@ -94,6 +150,7 @@ namespace RINGMesh
 } // namespace RINGMesh
 #else
 #include <dlfcn.h>
+#include <pwd.h>
 
 namespace RINGMesh
 {
@@ -119,6 +176,24 @@ namespace RINGMesh
             }
         }
 
+        std::string home_directory() const
+        {
+            std::string homedir{ getenv( "HOME" ) };
+            if( homedir.empty() )
+            {
+                homedir = getpwuid( getuid() )->pw_dir;
+            }
+            return homedir;
+        }
+
+        std::string executable_directory() const
+        {
+            char buff[PATH_MAX];
+            ssize_t len = ::readlink( "/proc/self/exe", buff, sizeof( buff ) - 1 );
+            buff[len] = '\0';
+            return GEO::FileSystem::dir_name( std::string{ buff } );
+        }
+
     private:
         std::string library_name( const std::string& plugin_name ) const
         {
@@ -135,6 +210,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     PImpl< PluginManger::Impl > PluginManger::impl_;
+    const std::string PluginManger::configuration_file = std::string{ "RINGMesh.ini" };
 
     bool PluginManger::load_module( const std::string& plugin_name )
     {
@@ -156,5 +232,26 @@ namespace RINGMesh
         }
         return true;
     }
+
+    bool PluginManger::load_plugins()
+    {
+        auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
+        if( !all_plugin_names.empty() )
+        {
+            std::vector< std::string > plugin_names;
+            GEO::String::split_string( all_plugin_names, ';', plugin_names );
+            for( const auto& plugin_name : plugin_names )
+            {
+                if( !load_module( plugin_name ) )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return load_plugins_configuration( impl_->executable_directory() )
+            || load_plugins_configuration( impl_->home_directory() );
+    }
+
 
 } // namespace RINGMesh

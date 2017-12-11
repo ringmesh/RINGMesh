@@ -49,7 +49,11 @@ namespace RINGMesh
     class basic_api PluginManger
     {
     public:
+        static const std::string configuration_file;
+
         static bool load_module( const std::string& module_name );
+
+        static bool load_plugins();
 
     private:
         class Impl;
