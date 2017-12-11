@@ -41,7 +41,6 @@
 
 #include <geogram/mesh/mesh_io.h>
 
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_from_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
@@ -63,7 +62,6 @@ int main()
 
     try
     {
-        register_geogram_mesh();
         Logger::out( "TEST", "Test GeoModel building from Surface" );
 
         std::vector< std::future< void > > futures;

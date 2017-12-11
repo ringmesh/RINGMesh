@@ -39,7 +39,6 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
@@ -104,7 +103,6 @@ int main()
 
     try
     {
-        register_geogram_mesh();
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );

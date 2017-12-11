@@ -43,6 +43,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geometry_position.cpp"
         "${lib_source_dir}/geometry.cpp"
         "${lib_source_dir}/nn_search.cpp"
+        "${lib_source_dir}/plugin_manager.cpp"
         "${lib_source_dir}/ringmesh_assert.cpp"
         "${lib_source_dir}/singleton.cpp"
     PRIVATE # Could be PUBLIC from CMake 3.3
@@ -58,6 +59,7 @@ target_sources(${target_name}
         "${lib_include_dir}/nn_search.h"
         "${lib_include_dir}/pimpl.h"
         "${lib_include_dir}/pimpl_impl.h"
+        "${lib_include_dir}/plugin_manager.h"
         "${lib_include_dir}/ringmesh_assert.h"
         "${lib_include_dir}/singleton.h"
         "${lib_include_dir}/task_handler.h"

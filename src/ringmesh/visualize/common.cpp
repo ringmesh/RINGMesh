@@ -37,20 +37,16 @@
 
 #include <geogram/basic/command_line_args.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/visualize/geogram_gfx.h>
 
 namespace
 {
-    class libRINGMesh_visualize
-    {
-    public:
-        libRINGMesh_visualize()
-        {
-            GEO::CmdLine::import_arg_group( "gfx" );
-            RINGMesh::register_geogram_mesh_gfx();
-            RINGMesh::Logger::out( "Library", "RINGMesh_visualize loaded" );
-        }
-    };
-
-    libRINGMesh_visualize libRINGMesh_visualize_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_visualize,
+        // Plugin initialization
+        GEO::CmdLine::import_arg_group( "gfx" );
+        RINGMesh::register_geogram_mesh_gfx();
+    );
 } // namespace

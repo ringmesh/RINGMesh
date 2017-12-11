@@ -35,23 +35,58 @@
 
 #include <ringmesh/geogram_extension/common.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/geogram_extension/geogram_extension.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
+#include <ringmesh/geogram_extension/geogram_mesh_builder.h>
 
 namespace
 {
-    class libRINGMesh_geogram_extension
+    void register_geogram_mesh()
     {
-    public:
-        libRINGMesh_geogram_extension()
-        {
-//            Disable on purpose until plugin system works
-//            RINGMesh::ringmesh_geogram_mesh_io_initialize();
-//            RINGMesh::register_geogram_mesh();
-            RINGMesh::Logger::out( "Library", "RINGMesh_geogram_extension loaded" );
-        }
-    };
+        RINGMesh::PointSetMeshFactory2D::register_creator< RINGMesh::GeogramPointSetMesh2D >(
+            RINGMesh::GeogramPointSetMesh2D::type_name_static() );
+        RINGMesh::LineMeshFactory2D::register_creator< RINGMesh::GeogramLineMesh2D >(
+            RINGMesh::GeogramLineMesh2D::type_name_static() );
+        RINGMesh::SurfaceMeshFactory2D::register_creator< RINGMesh::GeogramSurfaceMesh2D >(
+            RINGMesh::GeogramSurfaceMesh2D::type_name_static() );
 
-    libRINGMesh_geogram_extension libRINGMesh_geogram_extension_instance;
+        RINGMesh::PointSetMeshFactory3D::register_creator< RINGMesh::GeogramPointSetMesh3D >(
+            RINGMesh::GeogramPointSetMesh3D::type_name_static() );
+        RINGMesh::LineMeshFactory3D::register_creator< RINGMesh::GeogramLineMesh3D >(
+            RINGMesh::GeogramLineMesh3D::type_name_static() );
+        RINGMesh::SurfaceMeshFactory3D::register_creator< RINGMesh::GeogramSurfaceMesh3D >(
+            RINGMesh::GeogramSurfaceMesh3D::type_name_static() );
+        RINGMesh::VolumeMeshFactory3D::register_creator< RINGMesh::GeogramVolumeMesh3D >(
+            RINGMesh::GeogramVolumeMesh3D::type_name_static() );
 
+        RINGMesh::PointSetMeshBuilderFactory2D::
+            register_creator< RINGMesh::GeogramPointSetMeshBuilder2D >(
+                RINGMesh::GeogramPointSetMesh2D::type_name_static() );
+        RINGMesh::LineMeshBuilderFactory2D::register_creator< RINGMesh::GeogramLineMeshBuilder2D >(
+            RINGMesh::GeogramLineMesh2D::type_name_static() );
+        RINGMesh::SurfaceMeshBuilderFactory2D::
+            register_creator< RINGMesh::GeogramSurfaceMeshBuilder2D >(
+                RINGMesh::GeogramSurfaceMesh2D::type_name_static() );
+
+        RINGMesh::PointSetMeshBuilderFactory3D::
+            register_creator< RINGMesh::GeogramPointSetMeshBuilder3D >(
+                RINGMesh::GeogramPointSetMesh3D::type_name_static() );
+        RINGMesh::LineMeshBuilderFactory3D::register_creator< RINGMesh::GeogramLineMeshBuilder3D >(
+            RINGMesh::GeogramLineMesh3D::type_name_static() );
+        RINGMesh::SurfaceMeshBuilderFactory3D::
+            register_creator< RINGMesh::GeogramSurfaceMeshBuilder3D >(
+                RINGMesh::GeogramSurfaceMesh3D::type_name_static() );
+        RINGMesh::VolumeMeshBuilderFactory3D::
+            register_creator< RINGMesh::GeogramVolumeMeshBuilder3D >(
+                RINGMesh::GeogramVolumeMesh3D::type_name_static() );
+    }
+
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geogram_extension,
+        // Plugin initialization
+        RINGMesh::ringmesh_geogram_mesh_io_initialize();
+        register_geogram_mesh();
+    );
 } // namespace

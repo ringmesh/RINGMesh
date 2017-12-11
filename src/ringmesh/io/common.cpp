@@ -35,21 +35,17 @@
 
 #include <ringmesh/io/common.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/io/io.h>
 
 namespace
 {
-    class libRINGMesh_io
-    {
-    public:
-        libRINGMesh_io()
-        {
-            RINGMesh::initialize_gocad_import_factories();
-            RINGMesh::mesh_initialize();
-            RINGMesh::Logger::out( "Library", "RINGMesh_io loaded" );
-        }
-    };
-
-    libRINGMesh_io libRINGMesh_io_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_io,
+        // Plugin initialization
+        RINGMesh::initialize_gocad_import_factories();
+        RINGMesh::mesh_initialize();
+    );
 } // namespace

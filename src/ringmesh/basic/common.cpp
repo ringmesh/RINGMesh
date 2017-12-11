@@ -46,6 +46,7 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/plugin_manager.h>
 
 namespace
 {
@@ -71,19 +72,13 @@ namespace
         RINGMesh::CmdLine::import_arg_group( "validity" );
     }
 
-    class libRINGMesh_basic
-    {
-    public:
-        libRINGMesh_basic()
-        {
-            GEO::initialize();
-            configure_geogram();
-            configure_ringmesh();
-            RINGMesh::Logger::out( "Library", "RINGMesh_basic loaded" );
-        }
-    };
-
-    libRINGMesh_basic libRINGMesh_basic_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_basic,
+        // Plugin initialization
+        GEO::initialize();
+        configure_geogram();
+        configure_ringmesh();
+    );
 
 } // namespace
 

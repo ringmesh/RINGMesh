@@ -39,7 +39,6 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/mesh_quality.h>
@@ -148,7 +147,6 @@ int main( int argc, char** argv )
 
     try
     {
-        register_geogram_mesh();
         hello();
         import_arg_groups();
         if( argc == 1 )
