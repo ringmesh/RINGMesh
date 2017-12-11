@@ -46,11 +46,17 @@ target_sources(${target_name}
         "${lib_include_dir}/mesh_quality.h"
 )
 
+set( GEOMODEL_TOOLS_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    basic
+    mesh
+    geomodel_core 
+    geomodel_builder 
+    tetrahedralize
+)
+set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${GEOMODEL_TOOLS_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
 target_link_libraries(${target_name} 
     PUBLIC
-        basic
-        mesh
-        geomodel_core 
-        geomodel_builder 
-        tetrahedralize
+        ${GEOMODEL_TOOLS_RINGMESH_LIB_INTERNAL_DEPENDENCIES}
 )

@@ -46,4 +46,10 @@ target_sources(${target_name}
         "${lib_include_dir}/mesh.h"
 )
 
-target_link_libraries(${target_name} PUBLIC basic)
+set( MESH_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    basic
+)
+set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${MESH_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
+target_link_libraries(${target_name} PUBLIC ${MESH_RINGMESH_LIB_INTERNAL_DEPENDENCIES})

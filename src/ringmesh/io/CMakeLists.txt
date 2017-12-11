@@ -49,13 +49,19 @@ target_sources(${target_name}
         "${lib_include_dir}/zip_file.h"
 )
 
+set( IO_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    basic
+    mesh
+    geomodel_core
+    geomodel_builder
+    geomodel_tools
+)
+set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${IO_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
 target_link_libraries(${target_name} 
     PUBLIC
-        basic
-        mesh
-        geomodel_core 
-        geomodel_builder 
-        geomodel_tools 
+        ${IO_RINGMESH_LIB_INTERNAL_DEPENDENCIES}
     PRIVATE 
         tinyxml2 
         MINIZIP::minizip

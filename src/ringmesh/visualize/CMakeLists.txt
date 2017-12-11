@@ -48,12 +48,18 @@ target_sources(${target_name}
         "${lib_include_dir}/mesh_entity_gfx.h"
 )
 
+set( VISUALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES
+    basic
+    mesh
+    geogram_extension
+    geomodel_core 
+    io 
+)
+set(MANDATORY_RINGMESH_LIBRARIES ${MANDATORY_RINGMESH_LIBRARIES} ${VISUALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES} PARENT_SCOPE)
+set(WANTED_RINGMESH_LIBRARIES ${WANTED_RINGMESH_LIBRARIES} ${target_name} PARENT_SCOPE)
+
 target_link_libraries(${target_name} 
-    PUBLIC 
-        basic
-        mesh
-        geogram_extension
-        geomodel_core 
-        io 
+    PUBLIC
+        ${VISUALIZE_RINGMESH_LIB_INTERNAL_DEPENDENCIES}
         Geogram::geogram_gfx
 )
