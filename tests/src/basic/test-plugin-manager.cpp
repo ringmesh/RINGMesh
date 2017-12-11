@@ -94,8 +94,7 @@ void load_plugin_from_code()
     status = PluginManager::load_module( "Foo" );
     if( status )
     {
-        throw RINGMeshException(
-            "TEST", "Not supposed to be able load Foo" );
+        throw RINGMeshException( "TEST", "Not supposed to be able load Foo" );
     }
 }
 
