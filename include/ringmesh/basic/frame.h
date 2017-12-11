@@ -153,7 +153,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( ReferenceFrame );
 
     template < index_t DIMENSION >
-    class RINGMESH_API ReferenceFrameManipulator
+    class basic_api ReferenceFrameManipulator
     {
     public:
         static vecn< DIMENSION > coords_from_global_to_frame(

@@ -79,11 +79,11 @@ namespace RINGMesh
         ( *this )[0] = cross( ( *this )[1], ( *this )[2] );
     }
 
-    template class RINGMESH_API FrameBase< 2 >;
-    template class RINGMESH_API ReferenceFrame< 2 >;
-    template class RINGMESH_API ReferenceFrameManipulator< 2 >;
+    template class basic_api FrameBase< 2 >;
+    template class basic_api ReferenceFrame< 2 >;
+    template class basic_api ReferenceFrameManipulator< 2 >;
 
-    template class RINGMESH_API FrameBase< 3 >;
-    template class RINGMESH_API ReferenceFrame< 3 >;
-    template class RINGMESH_API ReferenceFrameManipulator< 3 >;
+    template class basic_api FrameBase< 3 >;
+    template class basic_api ReferenceFrame< 3 >;
+    template class basic_api ReferenceFrameManipulator< 3 >;
 } // namespace RINGMesh
