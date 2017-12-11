@@ -87,8 +87,9 @@ namespace
 } //namespace
 
 #if _WIN32
-#include <Windows.h>
 #include <KnownFolders.h>
+#include <Shlobj.h>
+#include <Windows.h>
 
 namespace RINGMesh
 {
@@ -137,7 +138,9 @@ namespace RINGMesh
             std::string result;
             if( SUCCEEDED( hr ) )
             {
-                result = path;
+                std::wstringstream ss;
+                ss << path;
+                result = ss.str();
             }
             CoTaskMemFree(path);
             return result;
@@ -190,7 +193,13 @@ namespace RINGMesh
             std::string homedir{ getenv( "HOME" ) };
             if( homedir.empty() )
             {
-                homedir = getpwuid( getuid() )->pw_dir;
+                struct passwd pd;
+                struct passwd* pwdptr = &pd;
+                struct passwd* tempPwdPtr;
+                char pwdbuffer[200];
+                auto pwdlinelen = sizeof( pwdbuffer );
+                getpwuid_r( 22, pwdptr, pwdbuffer, pwdlinelen, &tempPwdPtr );
+                homedir = pd.pw_dir;
             }
             return homedir;
         }
