@@ -138,7 +138,7 @@ namespace RINGMesh
             std::string result;
             if( SUCCEEDED( hr ) )
             {
-                std::wstringstream ss;
+                std::stringstream ss;
                 ss << path;
                 result = ss.str();
             }
