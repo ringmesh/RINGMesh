@@ -54,7 +54,6 @@ namespace
 
     bool read_plugins_configuration_file( const std::string& configuration_file )
     {
-        GEO::LineInput file( configuration_file );
         try
         {
             GEO::LineInput file( configuration_file );
@@ -63,7 +62,11 @@ namespace
             {
                 file.get_fields();
                 ringmesh_assert( file.nb_fields() == 1 );
-                RINGMesh::PluginManager::load_module( file.field( 0 ) );
+                if( !RINGMesh::PluginManager::load_module( file.field( 0 ) ) )
+                {
+                    RINGMesh::Logger::err( "Plugin", "Failed to load ", file.field( 0 ) );
+                    return false;
+                }
             }
         }
         catch( const std::logic_error& ex )

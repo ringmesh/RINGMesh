@@ -62,7 +62,7 @@ void load_plugin_from_file()
     std::ofstream config( PluginManager::configuration_file );
     config << "RINGMesh_io";
     config.close();
-    if( PluginManager::load_plugins() )
+    if( !PluginManager::load_plugins() )
     {
         throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
     }
