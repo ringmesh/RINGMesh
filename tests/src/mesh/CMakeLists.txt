@@ -34,3 +34,4 @@
 
 add_ringmesh_test(test-mesh-aabb.cpp geogram_extension mesh)
 add_ringmesh_test(test-connected-components.cpp geogram_extension mesh)
+add_ringmesh_test(test-cartesian-grid.cpp mesh)

@@ -103,8 +103,6 @@ int main()
 
     try
     {
-        default_configure();
-
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
         test_frames_and_cartesian_grid();
