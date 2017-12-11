@@ -42,9 +42,8 @@
 #include <ringmesh/basic/pimpl_impl.h>
 
 /*!
- * @file PluginManger class declaration
+ * @file PluginManager class declaration
  * @author Arnaud Botella
- *
  */
 
 namespace
