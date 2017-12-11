@@ -44,9 +44,8 @@
 #include <ringmesh/basic/pimpl_impl.h>
 
 /*!
- * @file PluginManger class declaration
+ * @file PluginManager class declaration
  * @author Arnaud Botella
- *
  */
 
 namespace
@@ -64,7 +63,7 @@ namespace
             {
                 file.get_fields();
                 ringmesh_assert( file.nb_fields() == 1 );
-                RINGMesh::PluginManger::load_module( file.field( 0 ) );
+                RINGMesh::PluginManager::load_module( file.field( 0 ) );
             }
         }
         catch( const std::logic_error& ex )
@@ -78,7 +77,7 @@ namespace
     bool load_plugins_configuration( const std::string& configuration_directory )
     {
         auto config_file = configuration_directory + "/"
-            + RINGMesh::PluginManger::configuration_file;
+            + RINGMesh::PluginManager::configuration_file;
         if( GEO::FileSystem::is_file( config_file ) )
         {
             return read_plugins_configuration_file( config_file );
@@ -93,7 +92,7 @@ namespace
 
 namespace RINGMesh
 {
-    class PluginManger::Impl
+    class PluginManager::Impl
     {
     public:
         /*!
@@ -104,18 +103,28 @@ namespace RINGMesh
             void* plugin_handle = LoadLibrary( plugin_path.c_str() );
             if( plugin_handle == nullptr )
             {
-                LPTSTR message;
+                std::string message;
+                LPTSTR errorText{ nullptr };
                 FormatMessage(
-                    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                    FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                    nullptr,
+                    // use system message tables to retrieve error text
+                    FORMAT_MESSAGE_FROM_SYSTEM
+                    // allocate buffer on local heap for error text
+                    |FORMAT_MESSAGE_ALLOCATE_BUFFER
+                    // Important! will fail otherwise, since we're not
+                    // (and CANNOT) pass insertion parameters
+                    |FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,// unused with FORMAT_MESSAGE_FROM_SYSTEM
                     GetLastError(),
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-                    message,
-                    0,
-                    nullptr
-                );
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                    (LPTSTR) &errorText,// output
+                    0,// minimum size for output buffer
+                    NULL);// arguments - see note
+
+                if( errorText != nullptr )
+                {
+                    message = errorText;
+                    LocalFree(errorText);
+                }
                 throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
                     ": ", message );
             }
@@ -154,7 +163,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    class PluginManger::Impl
+    class PluginManager::Impl
     {
     public:
         /*!
@@ -209,10 +218,10 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    PImpl< PluginManger::Impl > PluginManger::impl_;
-    const std::string PluginManger::configuration_file = std::string{ "RINGMesh.ini" };
+    PImpl< PluginManager::Impl > PluginManager::impl_;
+    const std::string PluginManager::configuration_file = std::string{ "RINGMesh.ini" };
 
-    bool PluginManger::load_module( const std::string& plugin_name )
+    bool PluginManager::load_module( const std::string& plugin_name )
     {
         try
         {
@@ -233,7 +242,7 @@ namespace RINGMesh
         return true;
     }
 
-    bool PluginManger::load_plugins()
+    bool PluginManager::load_plugins()
     {
         auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
         if( !all_plugin_names.empty() )

@@ -40,13 +40,13 @@
 #include <ringmesh/basic/pimpl.h>
 
 /*!
- * @file PluginManger class declaration
+ * @file PluginManager class declaration
  * @author Arnaud Botella
  */
 
 namespace RINGMesh
 {
-    class basic_api PluginManger
+    class basic_api PluginManager
     {
     public:
         static const std::string configuration_file;
