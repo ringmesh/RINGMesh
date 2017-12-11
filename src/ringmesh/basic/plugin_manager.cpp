@@ -68,18 +68,28 @@ namespace RINGMesh
             void* plugin_handle = LoadLibrary( plugin_path.c_str() );
             if( plugin_handle == nullptr )
             {
-                LPTSTR message;
+                std::string message;
+                LPTSTR errorText{ nullptr };
                 FormatMessage(
-                    FORMAT_MESSAGE_ALLOCATE_BUFFER |
-                    FORMAT_MESSAGE_FROM_SYSTEM |
-                    FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,
-                    GetLastError(),
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), // Default language
-                    message,
-                    0,
-                    NULL
-                );
+                    // use system message tables to retrieve error text
+                    FORMAT_MESSAGE_FROM_SYSTEM
+                    // allocate buffer on local heap for error text
+                    |FORMAT_MESSAGE_ALLOCATE_BUFFER
+                    // Important! will fail otherwise, since we're not
+                    // (and CANNOT) pass insertion parameters
+                    |FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL,// unused with FORMAT_MESSAGE_FROM_SYSTEM
+                    hresult,
+                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
+                    (LPTSTR) &errorText,// output
+                    0,// minimum size for output buffer
+                    NULL);// arguments - see note
+
+                if( errorText != nullptr )
+                {
+                    message = errorText;
+                    LocalFree(errorText);
+                }
                 throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
                     ": ", message );
             }
