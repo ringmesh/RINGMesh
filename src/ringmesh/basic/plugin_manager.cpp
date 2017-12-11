@@ -134,7 +134,7 @@ namespace RINGMesh
         std::string home_directory() const
         {
             PWSTR path{ nullptr };
-            HRESULT hr = SHGetKnownFolderPath(&FOLDERID_Documents, 0, nullptr, &path);
+            HRESULT hr = SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &path);
             std::string result;
             if( SUCCEEDED( hr ) )
             {
