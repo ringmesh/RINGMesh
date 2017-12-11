@@ -58,6 +58,5 @@ ExternalProject_Add(tinyxml2_ext
 
 ExternalProject_Add_Step(tinyxml2_ext forcebuild
     DEPENDERS build
-    ALWAYS 1
 )
 
