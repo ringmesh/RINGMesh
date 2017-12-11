@@ -79,7 +79,7 @@ namespace RINGMesh
                     // (and CANNOT) pass insertion parameters
                     |FORMAT_MESSAGE_IGNORE_INSERTS,
                     NULL,// unused with FORMAT_MESSAGE_FROM_SYSTEM
-                    hresult,
+                    GetLastError(),
                     MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
                     (LPTSTR) &errorText,// output
                     0,// minimum size for output buffer
