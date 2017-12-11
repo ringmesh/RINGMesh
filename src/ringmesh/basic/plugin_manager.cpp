@@ -241,7 +241,6 @@ namespace RINGMesh
         }
         return true;
     }
-
     bool PluginManager::load_plugins()
     {
         auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
@@ -261,6 +260,4 @@ namespace RINGMesh
         return load_plugins_configuration( impl_->executable_directory() )
             || load_plugins_configuration( impl_->home_directory() );
     }
-
-
 } // namespace RINGMesh
