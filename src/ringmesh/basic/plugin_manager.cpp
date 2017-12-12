@@ -160,7 +160,7 @@ namespace RINGMesh
             return result;
         }
 
-        std::string executable_directory() const
+        std::string running_directory() const
         {
             TCHAR buff[MAX_PATH];
             GetModuleFileName( NULL, buff, MAX_PATH);
@@ -218,10 +218,12 @@ namespace RINGMesh
             return homedir;
         }
 
-        std::string executable_directory() const
+        std::string running_directory() const
         {
+            char szTmp[32];
+            sprintf( szTmp, "/proc/%d/exe", getpid() );
             char buff[PATH_MAX];
-            ssize_t len = ::readlink( "/proc/self/exe", buff, sizeof( buff ) - 1 );
+            ssize_t len = ::readlink( szTmp, buff, sizeof( buff ) - 1 );
             buff[len] = '\0';
             return GEO::FileSystem::dir_name( std::string{ buff } );
         }
@@ -284,7 +286,7 @@ namespace RINGMesh
             DEBUG( "PLUGINS CMDLINE OK" );
             return true;
         }
-        bool status_exe = load_plugins_configuration( impl_->executable_directory() );
+        bool status_exe = load_plugins_configuration( impl_->running_directory() );
         DEBUG( status_exe );
         if( status_exe ) return true;
         bool status_home = load_plugins_configuration( impl_->home_directory() );
