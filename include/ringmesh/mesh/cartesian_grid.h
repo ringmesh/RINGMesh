@@ -261,7 +261,7 @@ namespace RINGMesh
             //					"Error: You are trying to remove a section in
             // direction",
             //					axis_id, ", but it would reduce the number of
-            //cells
+            // cells
             // in
             // this directions below 1." );
             //			}
