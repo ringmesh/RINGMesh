@@ -90,20 +90,6 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-        //        void resize( ivecn< DIMENSION >& new_size,
-        //            ReferenceFrame< DIMENSION > vec_cartesian_axis )
-        //        {
-        //            Logger::warn(
-        //                "You are currently changing the "
-        //                "size of the Cartesian grid, this will affect the
-        //                values of "
-        //                "the attributes in the grid." );
-        //            check_and_update_number_of_cells( new_size );
-        //            check_and_update_frame( vec_cartesian_axis );
-        //            nb_cells_in_each_direction_ = std::move( new_size );
-        //            attributes_manager_.resize( nb_total_cells_ );
-        //        }
-
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
             check_and_update_frame( vec_cartesian_axis );
@@ -262,6 +248,20 @@ namespace RINGMesh
             : cartesian_grid_( dynamic_cast< CartesianGrid< DIMENSION >& >(
                   cartesian_grid ) )
         {
+        }
+
+        void remove_section_from_cartesian_grid( index_t axis_id, index_t section_position )
+        {
+        	// TODO
+//        	if( cartesian_grid_.nb_cells_in_each_direction[axis_id] < 2 )
+//			{
+//				throw RINGMeshException( "RINGMesh Test",
+//					"Error: You are trying to remove a section in direction",
+//					axis_id, ", but it would reduce the number of cells in this directions below 1." );
+//			}
+//        	cartesian_grid_.nb_total_cells_ -= cartesian_grid_.nb_total_cells_ / cartesian_grid_.nb_cells_in_each_direction_[ axis_id ];
+//        	cartesian_grid_.nb_cells_in_each_direction_[ axis_id ] -= 1;
+//        	cartesian_grid_.attributes_manager_.resize( cartesian_grid_.nb_total_cells_ );
         }
 
     protected:
