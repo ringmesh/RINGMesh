@@ -259,9 +259,10 @@ namespace RINGMesh
             //			{
             //				throw RINGMeshException( "RINGMesh Test",
             //					"Error: You are trying to remove a section in
-            //direction",
-            //					axis_id, ", but it would reduce the number of cells in
-            //this directions below 1." );
+            // direction",
+            //					axis_id, ", but it would reduce the number of cells
+            //in
+            // this directions below 1." );
             //			}
             //        	cartesian_grid_.nb_total_cells_ -=
             //        cartesian_grid_.nb_total_cells_ /
