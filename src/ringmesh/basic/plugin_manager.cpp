@@ -68,14 +68,12 @@ namespace
                     return false;
                 }
             }
-            DEBUG( "END TRY" );
         }
         catch( const std::logic_error& ex )
         {
             RINGMesh::Logger::err( "Plugin", "Got an error: ", ex.what() );
             return false;
         }
-        DEBUG( "OK???" );
         return true;
     }
 
@@ -83,17 +81,8 @@ namespace
     {
         auto config_file = configuration_directory + "/"
             + RINGMesh::PluginManager::configuration_file;
-        std::vector<std::string> results;
-        GEO::FileSystem::get_directory_entries( configuration_directory, results );
-        for( const auto& tt : results )
+        if( std::ifstream{ config_file.c_str() }.good() )
         {
-            DEBUG( tt );
-        }
-        DEBUG( config_file );
-        std::ifstream file( config_file.c_str() );
-        if( file.good() )
-        {
-            DEBUG( "FOUND FILE" );
             return read_plugins_configuration_file( config_file );
         }
         return false;
@@ -162,9 +151,9 @@ namespace RINGMesh
 
         std::string running_directory() const
         {
-            TCHAR buff[MAX_PATH];
-            GetModuleFileName( NULL, buff, MAX_PATH);
-            return GEO::FileSystem::dir_name( std::string{ buff } );
+            TCHAR path[MAX_PATH];
+            GetCurrentDirectory( MAX_PATH, path );
+            return path;
         }
 
     private:
@@ -220,12 +209,8 @@ namespace RINGMesh
 
         std::string running_directory() const
         {
-            char szTmp[32];
-            sprintf( szTmp, "/proc/%d/exe", getpid() );
-            char buff[PATH_MAX];
-            ssize_t len = ::readlink( szTmp, buff, sizeof( buff ) - 1 );
-            buff[len] = '\0';
-            return GEO::FileSystem::dir_name( std::string{ buff } );
+            char path[PATH_MAX];
+            return ::getcwd( path, PATH_MAX );
         }
 
     private:
@@ -264,7 +249,6 @@ namespace RINGMesh
             Logger::err( e.category(), e.what() );
             return false;
         }
-        DEBUG( "PLUGIN LOAD OK" );
         return true;
     }
 
@@ -273,7 +257,6 @@ namespace RINGMesh
         auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
         if( !all_plugin_names.empty() )
         {
-            DEBUG( "PLUGINS CMDLINE" );
             std::vector< std::string > plugin_names;
             GEO::String::split_string( all_plugin_names, ';', plugin_names );
             for( const auto& plugin_name : plugin_names )
@@ -283,15 +266,9 @@ namespace RINGMesh
                     return false;
                 }
             }
-            DEBUG( "PLUGINS CMDLINE OK" );
             return true;
         }
-        bool status_exe = load_plugins_configuration( impl_->running_directory() );
-        DEBUG( status_exe );
-        if( status_exe ) return true;
-        bool status_home = load_plugins_configuration( impl_->home_directory() );
-        DEBUG( status_home );
-        if( status_home ) return true;
-        return false ;
+        return load_plugins_configuration( impl_->running_directory() )
+            || load_plugins_configuration( impl_->home_directory() );
     }
 } // namespace RINGMesh
