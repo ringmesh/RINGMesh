@@ -74,7 +74,8 @@ void load_plugin_from_code()
     auto status = PluginManager::load_plugin( "RINGMesh_geomodel_builder" );
     if( !status )
     {
-        throw RINGMeshException( "TEST", "Failed to load RINGMesh_geomodel_builder" );
+        throw RINGMeshException(
+            "TEST", "Failed to load RINGMesh_geomodel_builder" );
     }
 
     status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
