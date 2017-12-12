@@ -83,6 +83,12 @@ namespace
     {
         auto config_file = configuration_directory + "/"
             + RINGMesh::PluginManager::configuration_file;
+        std::vector<std::string> results;
+        GEO::FileSystem::get_directory_entries( configuration_directory, results );
+        for( const auto& tt : results )
+        {
+            DEBUG( tt );
+        }
         DEBUG( config_file );
         std::ifstream file( config_file.c_str() );
         if( file.good() )

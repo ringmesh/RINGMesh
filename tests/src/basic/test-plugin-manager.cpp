@@ -59,9 +59,21 @@ void load_plugin_from_command_line()
 
 void load_plugin_from_file()
 {
+    std::vector< std::string > results;
+    GEO::FileSystem::get_directory_entries( ".", results );
+    for( const auto& tt1 : results )
+    {
+        DEBUG( tt1 );
+    }
     std::ofstream config( PluginManager::configuration_file );
     config << "RINGMesh_io";
     config.close();
+    std::vector< std::string > results2;
+    GEO::FileSystem::get_directory_entries( ".", results2 );
+    for( const auto& tt2 : results2 )
+    {
+        DEBUG( tt2 );
+    }
     if( !PluginManager::load_plugins() )
     {
         throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
