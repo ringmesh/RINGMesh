@@ -84,7 +84,8 @@ namespace
         auto config_file = configuration_directory + "/"
             + RINGMesh::PluginManager::configuration_file;
         DEBUG( config_file );
-        if( GEO::FileSystem::is_file( config_file ) )
+        std::ifstream file( config_file.c_str() );
+        if( file.good() )
         {
             DEBUG( "FOUND FILE" );
             return read_plugins_configuration_file( config_file );
