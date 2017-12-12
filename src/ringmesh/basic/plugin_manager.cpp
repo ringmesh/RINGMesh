@@ -62,7 +62,7 @@ namespace
             {
                 file.get_fields();
                 ringmesh_assert( file.nb_fields() == 1 );
-                if( !RINGMesh::PluginManager::load_module( file.field( 0 ) ) )
+                if( !RINGMesh::PluginManager::load_plugin( file.field( 0 ) ) )
                 {
                     RINGMesh::Logger::err( "Plugin", "Failed to load ", file.field( 0 ) );
                     return false;
@@ -233,7 +233,7 @@ namespace RINGMesh
     PImpl< PluginManager::Impl > PluginManager::impl_;
     const std::string PluginManager::configuration_file = std::string{ "RINGMesh.ini" };
 
-    bool PluginManager::load_module( const std::string& plugin_name )
+    bool PluginManager::load_plugin( const std::string& plugin_name )
     {
         try
         {
@@ -251,25 +251,34 @@ namespace RINGMesh
             Logger::err( e.category(), e.what() );
             return false;
         }
+        DEBUG( "PLUGIN LOAD OK" );
         return true;
     }
+
     bool PluginManager::load_plugins()
     {
         auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
         if( !all_plugin_names.empty() )
         {
+            DEBUG( "PLUGINS CMDLINE" );
             std::vector< std::string > plugin_names;
             GEO::String::split_string( all_plugin_names, ';', plugin_names );
             for( const auto& plugin_name : plugin_names )
             {
-                if( !load_module( plugin_name ) )
+                if( !load_plugin( plugin_name ) )
                 {
                     return false;
                 }
             }
+            DEBUG( "PLUGINS CMDLINE OK" );
             return true;
         }
-        return load_plugins_configuration( impl_->executable_directory() )
-            || load_plugins_configuration( impl_->home_directory() );
+        bool status_exe = load_plugins_configuration( impl_->executable_directory() );
+        DEBUG( status_exe );
+        if( status_exe ) return true;
+        bool status_home = load_plugins_configuration( impl_->home_directory() );
+        DEBUG( status_home );
+        if( status_home ) return true;
+        return false ;
     }
 } // namespace RINGMesh

@@ -71,27 +71,27 @@ void load_plugin_from_file()
 
 void load_plugin_from_code()
 {
-    auto status = PluginManager::load_module( "RINGMesh_geomodel_builder" );
+    auto status = PluginManager::load_plugin( "RINGMesh_geomodel_builder" );
     if( !status )
     {
         throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
     }
 
-    status = PluginManager::load_module( "RINGMesh_geomodel_core" );
+    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
     if( !status )
     {
         throw RINGMeshException(
             "TEST", "Failed to load RINGMesh_geomodel_core" );
     }
 
-    status = PluginManager::load_module( "RINGMesh_geomodel_core" );
+    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
     if( status )
     {
         throw RINGMeshException(
             "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
     }
 
-    status = PluginManager::load_module( "Foo" );
+    status = PluginManager::load_plugin( "Foo" );
     if( status )
     {
         throw RINGMeshException( "TEST", "Not supposed to be able load Foo" );
