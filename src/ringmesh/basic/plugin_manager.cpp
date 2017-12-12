@@ -68,12 +68,14 @@ namespace
                     return false;
                 }
             }
+            DEBUG( "END TRY" );
         }
         catch( const std::logic_error& ex )
         {
             RINGMesh::Logger::err( "Plugin", "Got an error: ", ex.what() );
             return false;
         }
+        DEBUG( "OK???" );
         return true;
     }
 
@@ -81,8 +83,10 @@ namespace
     {
         auto config_file = configuration_directory + "/"
             + RINGMesh::PluginManager::configuration_file;
+        DEBUG( config_file );
         if( GEO::FileSystem::is_file( config_file ) )
         {
+            DEBUG( "FOUND FILE" );
             return read_plugins_configuration_file( config_file );
         }
         return false;
