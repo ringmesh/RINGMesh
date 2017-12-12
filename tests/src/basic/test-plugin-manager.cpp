@@ -35,6 +35,9 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <geogram/basic/command_line.h>
+#include <geogram/basic/file_system.h>
+
 #include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/plugin_manager.h>
 
@@ -44,6 +47,58 @@
 
 using namespace RINGMesh;
 
+void load_plugin_from_command_line()
+{
+    GEO::CmdLine::set_arg( "sys:plugins", "RINGMesh_geomodel_tools;Bar" );
+    if( PluginManager::load_plugins() )
+    {
+        throw RINGMeshException( "TEST", "Not supposed to be able load Bar" );
+    }
+    GEO::CmdLine::set_arg( "sys:plugins", "" );
+}
+
+void load_plugin_from_file()
+{
+    std::ofstream config( PluginManager::configuration_file );
+    config << "RINGMesh_io";
+    config.close();
+    if( !PluginManager::load_plugins() )
+    {
+        throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
+    }
+    GEO::FileSystem::delete_file( PluginManager::configuration_file );
+}
+
+void load_plugin_from_code()
+{
+    auto status = PluginManager::load_plugin( "RINGMesh_geomodel_builder" );
+    if( !status )
+    {
+        throw RINGMeshException(
+            "TEST", "Failed to load RINGMesh_geomodel_builder" );
+    }
+
+    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
+    if( !status )
+    {
+        throw RINGMeshException(
+            "TEST", "Failed to load RINGMesh_geomodel_core" );
+    }
+
+    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
+    if( status )
+    {
+        throw RINGMeshException(
+            "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
+    }
+
+    status = PluginManager::load_plugin( "Foo" );
+    if( status )
+    {
+        throw RINGMeshException( "TEST", "Not supposed to be able load Foo" );
+    }
+}
+
 int main()
 {
     using namespace RINGMesh;
@@ -52,32 +107,9 @@ int main()
     {
         Logger::out( "TEST", "Test Plugin Manager" );
 
-        auto status = PluginManager::load_module( "RINGMesh_io" );
-        if( !status )
-        {
-            throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
-        }
-
-        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
-        if( !status )
-        {
-            throw RINGMeshException(
-                "TEST", "Failed to load RINGMesh_geomodel_core" );
-        }
-
-        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
-        if( status )
-        {
-            throw RINGMeshException(
-                "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
-        }
-
-        status = PluginManager::load_module( "Foo" );
-        if( status )
-        {
-            throw RINGMeshException(
-                "TEST", "Not supposed to be able load Foo" );
-        }
+        load_plugin_from_code();
+        load_plugin_from_command_line();
+        load_plugin_from_file();
     }
     catch( const RINGMeshException& e )
     {
