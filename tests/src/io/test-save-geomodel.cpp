@@ -39,7 +39,6 @@
 #include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 
 #include <ringmesh/io/io.h>
@@ -203,7 +202,7 @@ void process_extension( const std::string& extension )
     {
         return;
     }
-#ifdef WIN32
+#if defined( WIN32 ) || defined( __APPLE__ )
     if( extension == "adeli" )
     {
         // @todo Temporary switch off the test for saving GeoModel into
@@ -297,7 +296,6 @@ int main()
 
     try
     {
-        register_geogram_mesh();
         GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
         test_output_geomodel< 2 >();
         test_output_geomodel< 3 >();

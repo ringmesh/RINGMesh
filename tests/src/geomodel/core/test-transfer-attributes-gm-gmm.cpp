@@ -39,7 +39,6 @@
 
 #include <geogram/basic/attributes.h>
 
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
@@ -737,7 +736,6 @@ int main()
 
     try
     {
-        register_geogram_mesh();
         Logger::out( "TEST", "Tests of attribute transfer between the geomodel "
                              "and the geomodelmesh" );
         run_tests();

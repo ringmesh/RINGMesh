@@ -38,7 +38,6 @@
 #include <future>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
@@ -54,7 +53,6 @@ int main()
 
     try
     {
-        register_geogram_mesh();
         std::string input_geomodel3d_file_name =
             ringmesh_test_data_path + "seg_overthrust_afault.gm";
 

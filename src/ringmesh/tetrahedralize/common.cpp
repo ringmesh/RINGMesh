@@ -35,20 +35,15 @@
 
 #include <ringmesh/tetrahedralize/common.h>
 
+#include <ringmesh/basic/plugin_manager.h>
+
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 namespace
 {
-    class libRINGMesh_tetrahedralize
-    {
-    public:
-        libRINGMesh_tetrahedralize()
-        {
-            RINGMesh::TetraGen::initialize();
-            RINGMesh::Logger::out( "Library", "RINGMesh_tetrahedralize loaded" );
-        }
-    };
-
-    libRINGMesh_tetrahedralize libRINGMesh_tetrahedralize_instance;
-
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_tetrahedralize,
+        // Plugin initialization
+        RINGMesh::TetraGen::initialize();
+    );
 } // namespace

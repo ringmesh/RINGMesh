@@ -589,7 +589,7 @@ namespace RINGMesh
     index_t RelationshipManager::find_boundary_relationship(
         const gmme_id& incident_entity, const gmme_id& boundary )
     {
-        return find_boundary_relationship( incident_entity, boundary );
+        return impl_->find_boundary_relationship( incident_entity, boundary );
     }
 
     index_t RelationshipManager::find_parent_child_relationship(

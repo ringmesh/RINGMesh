@@ -36,17 +36,12 @@
 #include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/plugin_manager.h>
 
 namespace
 {
-    class libRINGMesh_geomodel_builder
-    {
-    public:
-        libRINGMesh_geomodel_builder()
-        {
-            RINGMesh::Logger::out( "Library", "RINGMesh_geomodel_builder loaded" );
-        }
-    };
-
-    libRINGMesh_geomodel_builder libRINGMesh_geomodel_builder_instance;
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geomodel_builder,
+        // Plugin initialization
+    );
 } // namespace

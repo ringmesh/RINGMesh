@@ -33,76 +33,51 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/ringmesh_tests_config.h>
 
-#include <geogram/basic/command_line.h>
-#include <geogram/basic/stopwatch.h>
-
-#include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/tools/geomodel_tools.h>
-#include <ringmesh/io/io.h>
+#include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/plugin_manager.h>
 
 /*!
- * @author Antoine Mazuyer
- * @author Pierre Anquez
+ * @author Arnaud Botella
  */
 
 using namespace RINGMesh;
 
-void import_arg_groups()
+int main()
 {
-    CmdLine::import_arg_group( "in" );
-    CmdLine::import_arg_group( "out" );
-}
+    using namespace RINGMesh;
 
-void show_usage_example()
-{
-    Logger::div( "Example" );
-    Logger::out( "",
-        "ringmesh-tetrahedralize in:geomodel=path/to/input/geomodel.ext ",
-        "out:geomodel=path/to/output/geomodel.ext algo:tet=TetGen" );
-}
-
-int main( int argc, char** argv )
-{
     try
     {
-        import_arg_groups();
+        Logger::out( "TEST", "Test Plugin Manager" );
 
-        if( argc == 1 )
+        auto status = PluginManager::load_module( "RINGMesh_io" );
+        if( !status )
         {
-            GEO::CmdLine::show_usage();
-            return 0;
+            throw RINGMeshException( "TEST", "Failed to load RINGMesh_io" );
         }
 
-        std::vector< std::string > filenames;
-        if( !GEO::CmdLine::parse( argc, argv, filenames ) )
-        {
-            GEO::CmdLine::show_usage();
-            show_usage_example();
-            return 1;
-        }
-        GEO::Stopwatch total( "Total time" );
-
-        GeoModel3D geomodel;
-        std::string input_file_name{ GEO::CmdLine::get_arg( "in:geomodel" ) };
-        if( input_file_name.empty() )
+        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
+        if( !status )
         {
             throw RINGMeshException(
-                "I/O", "Give at least a filename in in:geomodel" );
+                "TEST", "Failed to load RINGMesh_geomodel_core" );
         }
-        geomodel_load( geomodel, input_file_name );
 
-        tetrahedralize( geomodel );
-
-        std::string output_file_name{ GEO::CmdLine::get_arg( "out:geomodel" ) };
-        if( output_file_name.empty() )
+        status = PluginManager::load_module( "RINGMesh_geomodel_core" );
+        if( status )
         {
             throw RINGMeshException(
-                "I/O", "Give at least a filename in out:geomodel" );
+                "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
         }
-        geomodel_save( geomodel, output_file_name );
+
+        status = PluginManager::load_module( "Foo" );
+        if( status )
+        {
+            throw RINGMeshException(
+                "TEST", "Not supposed to be able load Foo" );
+        }
     }
     catch( const RINGMeshException& e )
     {
@@ -114,6 +89,6 @@ int main( int argc, char** argv )
         Logger::err( "Exception", e.what() );
         return 1;
     }
-
+    Logger::out( "TEST", "SUCCESS" );
     return 0;
 }
