@@ -90,18 +90,18 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-        void resize( ivecn< DIMENSION >& new_size,
-            ReferenceFrame< DIMENSION > vec_cartesian_axis )
-        {
-            Logger::warn(
-                "You are currently changing the "
-                "size of the Cartesian grid, this will affect the values of "
-                "the attributes in the grid." );
-            check_and_update_number_of_cells( new_size );
-            check_and_update_frame( vec_cartesian_axis );
-            nb_cells_in_each_direction_ = std::move( new_size );
-            attributes_manager_.resize( nb_total_cells_ );
-        }
+//        void resize( ivecn< DIMENSION >& new_size,
+//            ReferenceFrame< DIMENSION > vec_cartesian_axis )
+//        {
+//            Logger::warn(
+//                "You are currently changing the "
+//                "size of the Cartesian grid, this will affect the values of "
+//                "the attributes in the grid." );
+//            check_and_update_number_of_cells( new_size );
+//            check_and_update_frame( vec_cartesian_axis );
+//            nb_cells_in_each_direction_ = std::move( new_size );
+//            attributes_manager_.resize( nb_total_cells_ );
+//        }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
@@ -248,6 +248,22 @@ namespace RINGMesh
         GEO::AttributesManager attributes_manager_;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
+
+    template < index_t DIMENSION >
+    class CartesianGridBuilder
+	{
+	public:
+    	static std::unique_ptr< CartesianGridBuilder< DIMENSION > > create_builder(
+    			CartesianGrid< DIMENSION >& cartesian_grid );
+
+    	explicit CartesianGridBuilder( CartesianGrid< DIMENSION >& cartesian_grid )
+    		: cartesian_grid_( dynamic_cast< CartesianGrid< DIMENSION >& >(cartesian_grid ) )
+    	{
+    	}
+
+	protected:
+		CartesianGrid< DIMENSION >& cartesian_grid_;
+	};
 
     //    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh3D
     //    {
