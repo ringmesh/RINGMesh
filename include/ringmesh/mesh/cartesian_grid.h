@@ -250,18 +250,26 @@ namespace RINGMesh
         {
         }
 
-        void remove_section_from_cartesian_grid( index_t axis_id, index_t section_position )
+        void remove_section_from_cartesian_grid(
+            index_t axis_id, index_t section_position )
         {
-        	// TODO
-//        	if( cartesian_grid_.nb_cells_in_each_direction[axis_id] < 2 )
-//			{
-//				throw RINGMeshException( "RINGMesh Test",
-//					"Error: You are trying to remove a section in direction",
-//					axis_id, ", but it would reduce the number of cells in this directions below 1." );
-//			}
-//        	cartesian_grid_.nb_total_cells_ -= cartesian_grid_.nb_total_cells_ / cartesian_grid_.nb_cells_in_each_direction_[ axis_id ];
-//        	cartesian_grid_.nb_cells_in_each_direction_[ axis_id ] -= 1;
-//        	cartesian_grid_.attributes_manager_.resize( cartesian_grid_.nb_total_cells_ );
+            // TODO
+            //        	if( cartesian_grid_.nb_cells_in_each_direction[axis_id]
+            //        < 2 )
+            //			{
+            //				throw RINGMeshException( "RINGMesh Test",
+            //					"Error: You are trying to remove a section in
+            //direction",
+            //					axis_id, ", but it would reduce the number of cells in
+            //this directions below 1." );
+            //			}
+            //        	cartesian_grid_.nb_total_cells_ -=
+            //        cartesian_grid_.nb_total_cells_ /
+            //        cartesian_grid_.nb_cells_in_each_direction_[ axis_id ];
+            //        	cartesian_grid_.nb_cells_in_each_direction_[ axis_id ]
+            //        -= 1;
+            //        	cartesian_grid_.attributes_manager_.resize(
+            //        cartesian_grid_.nb_total_cells_ );
         }
 
     protected:
