@@ -109,7 +109,7 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
+    vecn< DIMENSION > basic_api initialize_vecn_coordinates( double value );
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );

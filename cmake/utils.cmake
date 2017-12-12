@@ -31,22 +31,39 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-macro(add_folder src_files include_files directory)
-    source_file_directory(${src_files} ${directory})
-    include_file_directory(${include_files} ${directory})
+macro(add_folder directory)
+    source_file_directory(${directory})
+    include_file_directory(${directory})
 endmacro()
 
-macro(source_file_directory var directory)
+macro(source_file_directory directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
-    source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources})
 endmacro()
 
-macro(include_file_directory var directory)
+macro(include_file_directory directory)
     file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
-    source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources})
 endmacro()
+
+function(add_ringmesh_library directory)
+    string(REPLACE "/" "_" target_name ${directory})
+    add_library(${target_name} SHARED "")
+    set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
+    add_folder(${target_name})
+    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
+    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    if(WIN32)
+        target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
+        add_dependencies(copy_dll ${target_name})
+    endif()
+    export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
+    generate_export_header(${target_name} 
+        EXPORT_MACRO_NAME ${target_name}_api 
+        EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+    )
+    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
+    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+endfunction()
 
 macro(copy_for_windows directory)
 
@@ -57,32 +74,32 @@ macro(copy_for_windows directory)
     # The dll and debug info of RINGMesh are in
     # build/ringmesh/Debug or build/ringmesh/Release.
 if(WIN32)
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_INSTALL_PREFIX}/lib"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy geogram visualization libraries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_ROOT}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-#    add_custom_command(TARGET RINGMesh POST_BUILD
+#    add_custom_command(TARGET copy_dll POST_BUILD
 #        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
 #            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
 #            "${directory}/$<CONFIGURATION>"
@@ -94,10 +111,11 @@ macro(add_ringmesh_executable exe_path folder_name)
     get_filename_component(exe_name ${exe_path} NAME_WE)
 
     # Set the target as an executable
-    add_executable(${exe_name} ${exe_path})
-    target_link_libraries(${exe_name} PRIVATE RINGMesh)
-    add_dependencies(${exe_name} RINGMesh)
-
+    add_executable(${exe_name} ${exe_path})    
+    foreach(dependency ${ARGN})
+        target_link_libraries(${exe_name} PRIVATE ${dependency})
+    endforeach()
+    
     # Add the project to a folder of projects for the tests
     set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
     
@@ -107,19 +125,19 @@ macro(add_ringmesh_executable exe_path folder_name)
 endmacro()
 
 function(add_ringmesh_binary bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities")
+    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
 function(add_ringmesh_utility bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities")
+    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)
-    add_ringmesh_executable(${cpp_file_path} "Tests")
+    add_ringmesh_executable(${cpp_file_path} "Tests" ${ARGN})
     # Add the test to CTest
     add_test(NAME ${exe_name} COMMAND ${exe_name})
     set_target_properties(${exe_name} PROPERTIES 
@@ -128,7 +146,9 @@ endfunction()
 
 
 function(add_ringmesh_tutorial cpp_file_path)
-    add_ringmesh_test(${cpp_file_path} "Tutorials")
+    add_ringmesh_executable(${cpp_file_path} "Tutorials" ${ARGN})
+    # Add the test to CTest
+    add_test(NAME ${exe_name} COMMAND ${exe_name})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
 endfunction()

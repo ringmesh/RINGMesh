@@ -78,7 +78,7 @@ namespace
                     else
                     {
                         index_t adj = mesh.cells.adjacent( c, f );
-                        if( adj != GEO::NO_CELL && adj < c )
+                        if( adj != NO_ID && adj < c )
                         {
                             pipes.emplace_back( c, adj );
                         }
@@ -112,7 +112,7 @@ namespace
                 for( index_t e : range( polygons.nb_vertices( p ) ) )
                 {
                     index_t adj = polygons.adjacent( PolygonLocalEdge( p, e ) );
-                    if( adj != GEO::NO_CELL && adj < p )
+                    if( adj != NO_ID && adj < p )
                     {
                         pipes.emplace_back(
                             p + cell_offset, adj + cell_offset );

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/tetrahedralize/common.h>
 
 #ifdef RINGMESH_WITH_TETGEN
 
@@ -118,7 +118,7 @@ namespace RINGMesh
      * @details Does not require this mesh to be a closed manifold
      * as the equivalent in Geogram function does.
      */
-    void RINGMESH_API tetrahedralize_mesh_tetgen(
+    void tetrahedralize_api tetrahedralize_mesh_tetgen(
         VolumeMeshBuilder< 3 >& out_mesh_builder,
         const GEO::Mesh& in_mesh,
         bool refine,

@@ -458,7 +458,7 @@ namespace
                         {
                             index_t csmp_f = descriptor.polygon[p];
                             index_t adj = mesh.cells.adjacent( cell, csmp_f );
-                            if( adj == GEO::NO_CELL )
+                            if( adj == NO_ID )
                             {
                                 data << " " << std::setw( 7 ) << -28;
                             }
@@ -486,7 +486,7 @@ namespace
                         {
                             index_t adj =
                                 polygons.adjacent( PolygonLocalEdge( tri, e ) );
-                            if( adj == GEO::NO_FACET )
+                            if( adj == NO_ID )
                             {
                                 data << " " << std::setw( 7 ) << -28;
                             }
@@ -504,7 +504,7 @@ namespace
                         {
                             index_t adj = polygons.adjacent(
                                 PolygonLocalEdge( quad, e ) );
-                            if( adj == GEO::NO_FACET )
+                            if( adj == NO_ID )
                             {
                                 data << " " << std::setw( 7 ) << -28;
                             }

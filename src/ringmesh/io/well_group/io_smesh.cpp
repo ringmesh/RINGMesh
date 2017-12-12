@@ -77,8 +77,7 @@ namespace
                 throw RINGMeshException( "I/O", "Could not open file" );
             }
 
-            std::unique_ptr< LineMesh3D > mesh = LineMesh3D::create_mesh(
-                GeogramLineMesh3D::type_name_static() );
+            auto mesh = LineMesh3D::create_mesh();
             std::unique_ptr< LineMeshBuilder3D > builder =
                 LineMeshBuilder3D::create_builder( *mesh );
             std::string name = GEO::FileSystem::base_name( filename );

@@ -112,7 +112,7 @@ namespace
             for( auto r : range( geomodel.nb_regions() ) )
             {
                 // -1 Because connectors doesn't exist in aster
-                for( auto ct : range( GEO::MESH_NB_CELL_TYPES - 1 ) )
+                for( auto ct : range( CellType::UNCLASSIFIED ) )
                 {
                     if( geomodel_mesh.cells.nb_cells( r, CellType( ct ) ) > 0 )
                     {
