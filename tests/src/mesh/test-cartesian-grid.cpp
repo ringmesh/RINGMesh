@@ -77,13 +77,6 @@ void test_frames_and_cartesian_grid()
     ReferenceFrame3D inverse_frame =
         ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
             reference_frame );
-//    if( inverse_frame.origin() != vec3{ -2, -0.5, -0.25 }
-//        || inverse_frame[0] != vec3{ 2, 0, 0 }
-//        || inverse_frame[1] != vec3{ 0, 0.5, 0 }
-//        || inverse_frame[2] != vec3{ 0, 0, 0.25 } )
-//    {
-//        throw RINGMeshException( "TEST", "Error in reference frame change" );
-//    }
     if( inexact_equal( inverse_frame, ReferenceFrameManipulator3D::orthogonal_reference_frame_from_global_to_local( reference_frame ), 0.0000001 ) )
     {
         throw RINGMeshException( "TEST", "Error in orthogonal reference frame change" );
