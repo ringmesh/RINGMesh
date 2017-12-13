@@ -74,7 +74,8 @@ namespace RINGMesh
             check_and_update_number_of_cells( nb_cells_in_each_direction );
             check_and_update_frame( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
-            		orthogonal_reference_frame_from_global_to_local( cartesian_frame_ );
+                orthogonal_reference_frame_from_global_to_local(
+                    cartesian_frame_ );
             attributes_manager_.resize( nb_total_cells_ );
         }
 
@@ -116,9 +117,9 @@ namespace RINGMesh
                 cartesian_double_coords[i] =
                     static_cast< double >( cartesian_coords[i] );
             }
-            return ReferenceFrameManipulator< DIMENSION >::
-                coords_from_frame_to_global(
-                    cartesian_frame_, cartesian_double_coords );
+            return ReferenceFrameManipulator<
+                DIMENSION >::coords_from_frame_to_global( cartesian_frame_,
+                cartesian_double_coords );
         }
 
         ivecn< DIMENSION >& containing_cell_from_global_vertex(
@@ -200,8 +201,9 @@ namespace RINGMesh
                     throw RINGMeshException( "RINGMesh Test",
                         "Error: You are trying to create a Cartesian Grid "
                         "with no cell in direction ",
-                        i, ", and Cartesian Grids must have at least one cell "
-                           "in each direction." );
+                        i,
+                        ", and Cartesian Grids must have at least one cell "
+                        "in each direction." );
                 }
                 nb_total_cells_ *= nb_cells_in_each_direction[i];
             }

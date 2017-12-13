@@ -63,7 +63,8 @@ void test_frames_and_cartesian_grid()
     vec3 operation_test_coordinates =
         ReferenceFrameManipulator3D::coords_from_frame_to_global(
             reference_frame, frame_test_coordinates );
-    if( !inexact_equal( test_coordinates, operation_test_coordinates, 0.0000001 ) )
+    if( !inexact_equal(
+            test_coordinates, operation_test_coordinates, 0.0000001 ) )
     {
         throw RINGMeshException(
             "TEST", "Error in coordinate reference change" );
@@ -77,16 +78,21 @@ void test_frames_and_cartesian_grid()
     ReferenceFrame3D inverse_frame =
         ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
             reference_frame );
-    if( inexact_equal( inverse_frame, ReferenceFrameManipulator3D::orthogonal_reference_frame_from_global_to_local( reference_frame ), 0.0000001 ) )
+    if( inexact_equal( inverse_frame,
+            ReferenceFrameManipulator3D::
+                orthogonal_reference_frame_from_global_to_local(
+                    reference_frame ),
+            0.0000001 ) )
     {
-        throw RINGMeshException( "TEST", "Error in orthogonal reference frame change" );
+        throw RINGMeshException(
+            "TEST", "Error in orthogonal reference frame change" );
     }
 
     ivec3 grid_dimensions{ 10, 8, 9 };
     CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
-    if ( cartesiangrid.cell_volume() != 42. )
+    if( cartesiangrid.cell_volume() != 42. )
     {
-    	throw RINGMeshException( "TEST", "Error in cell volume" );
+        throw RINGMeshException( "TEST", "Error in cell volume" );
     }
 }
 
