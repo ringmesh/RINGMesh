@@ -91,23 +91,6 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-        void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
-        {
-            check_and_update_frame( vec_cartesian_axis );
-            Logger::warn( "You are currently changing the frame of "
-                          "the Cartesian grid, this will affect where the "
-                          "values of the attributes in the grid are stored in "
-                          "space." );
-            inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
-                reference_frame_from_global_to_local( cartesian_frame_ );
-        }
-
-        void change_attribute_manager(
-            GEO::AttributesManager attributes_manager )
-        {
-            attributes_manager_ = std::move( attributes_manager );
-        }
-
         vecn< DIMENSION >& cell_center_global_coords(
             const ivecn< DIMENSION >& cartesian_coords ) const
         {
@@ -227,6 +210,24 @@ namespace RINGMesh
     protected:
         CartesianGrid() = default;
 
+        void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
+        {
+            check_and_update_frame( vec_cartesian_axis );
+            Logger::warn( "You are currently changing the frame of "
+                          "the Cartesian grid, this will affect where the "
+                          "values of the attributes in the grid are stored in "
+                          "space." );
+            inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
+                reference_frame_from_global_to_local( cartesian_frame_ );
+        }
+
+        void change_attribute_manager(
+            GEO::AttributesManager attributes_manager )
+        {
+            attributes_manager_ = std::move( attributes_manager );
+        }
+
+    protected:
         ivecn< DIMENSION > nb_cells_in_each_direction_;
         index_t nb_total_cells_;
 
@@ -249,6 +250,17 @@ namespace RINGMesh
             : cartesian_grid_( dynamic_cast< CartesianGrid< DIMENSION >& >(
                   cartesian_grid ) )
         {
+        }
+
+        void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
+        {
+            cartesian_grid_.change_frame(vec_cartesian_axis);
+        }
+
+        void change_attribute_manager(
+            GEO::AttributesManager attributes_manager )
+        {
+        	cartesian_grid_.change_attribute_manager(attributes_manager);
         }
 
         void remove_section_from_cartesian_grid(
