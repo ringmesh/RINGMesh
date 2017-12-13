@@ -40,7 +40,7 @@ if(UNIX)
     endif(APPLE)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-       include(cmake/Coverage.cmake)
+       include(tools/Coverage.cmake)
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
