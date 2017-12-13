@@ -254,13 +254,13 @@ namespace RINGMesh
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
-            cartesian_grid_.change_frame(vec_cartesian_axis);
+            cartesian_grid_.change_frame( vec_cartesian_axis );
         }
 
         void change_attribute_manager(
             GEO::AttributesManager attributes_manager )
         {
-        	cartesian_grid_.change_attribute_manager(attributes_manager);
+            cartesian_grid_.change_attribute_manager( attributes_manager );
         }
 
         void remove_section_from_cartesian_grid(
