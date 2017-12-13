@@ -53,8 +53,8 @@ namespace
 {
     using namespace RINGMesh;
 
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
+#include "well_group/io_smesh.hpp"
+#include "well_group/io_wl.hpp"
 }
 
 namespace RINGMesh
