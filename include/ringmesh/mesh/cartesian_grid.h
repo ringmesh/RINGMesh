@@ -74,7 +74,7 @@ namespace RINGMesh
             check_and_update_number_of_cells( nb_cells_in_each_direction );
             check_and_update_frame( vec_cartesian_axis );
             inverse_cartesian_frame_ = ReferenceFrameManipulator< DIMENSION >::
-                reference_frame_from_global_to_local( cartesian_frame_ );
+            		orthogonal_reference_frame_from_global_to_local( cartesian_frame_ );
             attributes_manager_.resize( nb_total_cells_ );
         }
 
@@ -181,12 +181,11 @@ namespace RINGMesh
         double cell_volume() const
         {
             double cell_volume{ 1. };
-            double vector_squared_norm;
             for( auto i : range( DIMENSION ) )
             {
-                cell_volume *= cartesian_frame_[i].length();
+                cell_volume *= cartesian_frame_[i].length2();
             }
-            return cell_volume;
+            return sqrt( cell_volume );
         }
 
     private:

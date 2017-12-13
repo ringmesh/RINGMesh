@@ -147,10 +147,50 @@ namespace RINGMesh
             return origin_;
         }
 
+        bool operator==( const ReferenceFrame< DIMENSION >& other_reference_frame ) const
+	    {
+        	if ( other_reference_frame.origin() != origin_ )
+        	{
+        		return false;
+        	}
+	        for( index_t i = 0; i < DIMENSION; i++ )
+	        {
+	            if( other_reference_frame[i] != ( *this )[i] )
+	            {
+	                return false;
+	            }
+	        }
+	        return true;
+	    }
+
+		bool operator!=( const ReferenceFrame< DIMENSION >& other_reference_frame ) const
+		{
+			return !( other_reference_frame == *this );
+		}
+
     private:
         vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
+
+    template < index_t DIMENSION >
+    bool inexact_equal( const ReferenceFrame< DIMENSION >& v1,
+    	const ReferenceFrame< DIMENSION >& v2,
+        double epsilon )
+    {
+    	if ( !inexact_equal( v1.origin(), v2.origin(), epsilon ) )
+		{
+			return false;
+		}
+		for( index_t i = 0; i < DIMENSION; i++ )
+		{
+			if( !inexact_equal( v1[i], v2[i], epsilon ) )
+			{
+				return false;
+			}
+		}
+		return true;
+    }
 
     template < index_t DIMENSION >
     class basic_api ReferenceFrameManipulator
@@ -165,11 +205,11 @@ namespace RINGMesh
             vecn< DIMENSION > local_coords;
             for( auto i : range( DIMENSION ) )
             {
-                for( auto j : range( DIMENSION ) )
+                for( auto x : range( DIMENSION ) )
                 {
                     local_coords[i] +=
-                        base_change_matrix( i, j )
-                        * ( global_coords[j] - reference_frame.origin()[j] );
+                        base_change_matrix( i, x )
+                        * ( global_coords[x] - reference_frame.origin()[x] );
                 }
             }
             return local_coords;
@@ -180,12 +220,12 @@ namespace RINGMesh
             const vecn< DIMENSION >& local_coords )
         {
             vecn< DIMENSION > global_coords = reference_frame.origin();
-            for( auto coord : range( DIMENSION ) )
+            for( auto x : range( DIMENSION ) )
             {
-                for( auto coor : range( DIMENSION ) )
+                for( auto i : range( DIMENSION ) )
                 {
-                    global_coords[coord] +=
-                        local_coords[coor] * reference_frame[coor][coord];
+                    global_coords[x] +=
+                        local_coords[i] * reference_frame[i][x];
                 }
             }
             return global_coords;
@@ -205,6 +245,23 @@ namespace RINGMesh
                         base_change_matrix( i, j )
                         * reference_frame.origin()[j];
                     inverse_reference_frame[i][j] = base_change_matrix( j, i );
+                }
+            }
+            return inverse_reference_frame;
+        }
+
+        static ReferenceFrame< DIMENSION > orthogonal_reference_frame_from_global_to_local(
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            ReferenceFrame< DIMENSION > inverse_reference_frame;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    inverse_reference_frame.origin()[i] -=
+                        reference_frame.origin()[j] * reference_frame[i][j]
+						/ (reference_frame[i].length() * reference_frame[i].length() );
+                    inverse_reference_frame[i][j] = reference_frame[i][j] / reference_frame[i].length();
                 }
             }
             return inverse_reference_frame;
@@ -231,11 +288,11 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame )
         {
             GEO::Matrix< DIMENSION, double > matrix;
-            for( auto i : range( DIMENSION ) )
+            for( auto x : range( DIMENSION ) )
             {
-                for( auto j : range( DIMENSION ) )
+                for( auto i : range( DIMENSION ) )
                 {
-                    matrix( i, j ) = reference_frame[j][i];
+                    matrix( x, i ) = reference_frame[i][x];
                 }
             }
             return matrix.inverse();
