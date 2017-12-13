@@ -1,10 +1,9 @@
-How to compile RINGMesh             {#ringmesh_compiling}
-=======================
-
 [![Travis build](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
 [![Appveyor build](https://travis-ci.org/ringmesh/RINGMesh.svg?branch=master)](https://travis-ci.org/ringmesh/RINGMesh)
 [![Sonar quality](https://sonarcloud.io/api/badges/gate?key=ringmesh)](https://sonarcloud.io/dashboard/index/ringmesh)
 [![Coverage](https://sonarcloud.io/api/badges/measure?key=ringmesh&metric=coverage)](https://sonarcloud.io/dashboard/index/ringmesh)
+
+# Configuration and compilation
 
 RINGMesh is tested under Linux (64 bits) and Windows (64 bits).
 You will need CMake (version >= 3.1). There is no other dependency (everything
@@ -16,168 +15,153 @@ Under Windows, after installing Git you should have in your path environment var
 C:\Program Files\Git\cmd.
 Warning: TortoiseGit (https://tortoisegit.org/) does not install Git.
 
-Linux
-===========================
+You can clone RINGMesh using:
 
-Configuring RINGMesh
---------------------
+```
+git clone https://github.com/ringmesh/RINGMesh/
+```
+
+## Linux
+
+
+### Configuring RINGMesh
 
 Execute cmake command in a RINGMesh/build directory.
 
-* mkdir build
-* cd build
-
+```bash
+mkdir build
+cd build
+```
 To configure using default options:
+```bash
+cmake ..
+```
+To define the options, use the cmake interface
 
-* cmake ..
+```bash
+cmake-gui .. or ccmake ..
+```
+ Note: Configuration options can also be edited by creating a `UserConfig.cmake` file from a `DefaultConfig.cmake` file
+ in the cmake folder.
 
-To define the options, use the cmake interface:
+### Compiling RINGMesh
 
-* cmake-gui .. or ccmake ..
+To compile RINGMesh, go to RINGMesh root directory and:
 
-
-Compiling RINGMesh
-------------------
-
-To compile you need the following packages (on Debian-based linux):
-* build-essential
-* libx11-dev
-* libxrandr-dev
-* libxinerama-dev
-* libxcursor-dev
-* freeglut3-dev
-* libxi-dev
-
-Note: you need gcc/g++ version higher or equal to 4.8 to compile RINGMesh.
-
-Then, to compile RINGMesh, go to RINGMesh root directory and:
-
-* cd build/Release
-* make [-j4]
-
+```bash
+cd build/Release
+make
+```
 To build in debug, go to build/Debug instead.
 
-Note: if you get this error during geogram gfx compilation
-"No rule to make target '/usr/lib/x86_64-linux-gnu/libGL.so'"
-(occured for Ubuntu 17.04), do:
-* sudo rm /usr/lib/x86_64-linux-gnu/libGL.so
-* sudo ln -s /usr/lib/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
+Note: RINGMesh uses C++ 11 features. You need gcc/g++ version higher or equal to 4.8 to compile it.
 
-Eclipse-cdt project is provided (.project and .cproject). You can import RINGMesh into
-Eclipse: File>Import...>General>Existing Projects into Workspace. Click on next, then
-select the root directory (RINGMesh directory) then click on Finish. There are two
-build configurations: release and debug. There is a target to clean and compile. There are
-also targets to build/rebuild geogram.
+### Generating the documentation
 
-Compiling the documentation
----------------------------
+If Doxygen is installed on your computer, a target ```doc-devkit``` is built during RINGMesh configuration. You can generate the documentation using the following command:
 
-* Check the BUILD_DOCUMENTATION option when using cmake
- * cd build
- * ccmake ..
- * set BUILD_DOCUMENTATION option to ON
- * configure and generate
-* cd build/Release
-* make doc-devkit OR make doc-devkit-lite
+```bash
+make doc-devkit
+```
 
-You can also build the documentation through eclipse (see available targets).
-See the documentation section for more details.
+### Troubleshooting
 
-Windows
-=======
+If you get this error during geogram gfx compilation (occured for Ubuntu 17.04):
+```
+No rule to make target '/usr/lib/x86_64-linux-gnu/libGL.so'
+```
+you can try under root:
+```bash
+rm /usr/lib/x86_64-linux-gnu/libGL.so
+ln -s /usr/lib/libGL.so.1 /usr/lib/x86_64-linux-gnu/libGL.so
+```
+### Additionnal information
 
-Configuring RINGMesh
---------------------
+#### Eclipse-cdt project
+[Eclipse-cdt](http://www.eclipse.org/cdt/)
+project is provided (.project and .cproject). You can import RINGMesh into
+Eclipse: File>Import...>General>Existing Projects into Workspace.
 
-Launch CMake GUI, indicate where is the source code as the path to RINGMesh root and
-where to put the binaries as this_root/build.
-Configuration options can be set in using the interface.
+## Windows
 
-RINGMesh has previously been compiled with:
+### Configuring RINGMesh
 
-* Visual Studio 10 2010 Win64
-* Visual Studio 11 2012 Win64
+ * Launch CMake GUI interface. 
+ * Indicate where is the source code as the path to RINGMesh root and where to put the binaries as 
+ `RINGMesh_root/build`.
+ * Set the Configuration options using the CMake GUI interface.
+ * Launch the `configure`and `generate` option.
+
+ Note: Configuration options can also be edited by creating a `UserConfig.cmake` file from a `DefaultConfig.cmake` file
+ in the cmake folder.
+
+RINGMesh compils with the following visual studio version:
+
 * Visual Studio 12 2013 Win64
 * Visual Studio 14 2015 Win64
 * Visual Studio 15 2017 Win64
 
-Compiling RINGMesh
-------------------
+Note: RINGMesh uses C++11 features. Make sure that you have installed C++ package for VisualStudio through the 
+VisualStudio installer.
 
-Make sure that you have installed C++ package for VisualStudio through the VisualStudio installer.
-You can either launch building in VisualStudio or calling cmake in command line
-in the build directory created at the configuration step:
 
-* cmake --build . --config Release
-* cmake --build . --config Debug
-* cmake --build . --config RelWithDebInfo
+### Compiling RINGMesh
+
+RINGMesh need several third parties that are automatically compiled and installed by compiling 
+the project `SUPERBUILD.sln`.
+
+ * Open the project `SUPERBUILD.sln` with the visual studio version that you choose during the configuration step.
+ * Build the solution.
+ 
+All the RINGMesh third parties have now been compiled, installed and the `RINGMesh.sln` project have been created.
+
+ * Open the project `RINGMesh.sln`.
+ * Build the solution. 
 
 The available compilation modes are:
 
 * Release
 * Debug
-* RelWithDebInfo (mandatory to debug a Gocad plugin in Debug mode with a Gocad
-  in Release, there are issues between libraries in Debug linked to a Gocad plugin)
+* RelWithDebInfo 
 
-Compiling the documentation
----------------------------
+Note: The compilation mode `RelWithDebInfo` is mandatory to run a Gocad plugin in Debug mode with Gocad
+  in Release, there are issues between libraries in Debug linked to a Gocad plugin.
 
-* Check the BUILD_DOCUMENTATION option when using cmake
-* Open the solution which is in build/RINGmesh.sln in VisualStudio
-* Build the doc-devkit or the doc-devkit-lite project
+### Compiling the documentation
+
+* Check the BUILD_DOCUMENTATION option during the configuration of RINGMesh with cmake
+* Open the solution which is in build/RINGMesh.sln in VisualStudio
+* Build the doc-devkit
 
 See the documentation section for more details.
 
-Mac OS
-======
+## Mac OS
 
-Configuring RINGMesh
---------------------
-### Using clang (without Xcode)
+### Configuring RINGMesh
+
+#### Using clang (without Xcode)
 As in Linux.
 
-### Using Xcode IDE
+#### Using Xcode IDE
 As in Windows but with the Xcode generator
 (use "-G Xcode" if you use cmake in command lines).
 
-Compiling RINGMesh
-------------------
+### Compiling RINGMesh
 You need to install the Mac OS "Command Line Developer Tools".
 
 Note: you need gcc/g++ version higher or equal to 4.2 to compile RINGMesh.
 In Mac OS, clang is used.
 
-### Using clang (without Xcode)
+#### Using clang (without Xcode)
 As in Linux except for the packages.
 
-### Using Xcode IDE
+#### Using Xcode IDE
 You need to install Xcode IDE.
-Open the build/RINGMesh.xcodeproj with Xcode IDE,
+Open the build/ringmesh/RINGMesh.xcodeproj with Xcode IDE,
 and then compile (as in Windows with VisualStudio).
 Or use these command lines:
-* cd build
-* xcodebuild -project RINGMesh.xcodeproj -alltargets -configuration Release
-
+```
+cd build/ringmesh
+xcodebuild -project RINGMesh.xcodeproj -alltargets -configuration Release
+```
 To build in Debug, replace "Release" by "Debug" after "-configuration".
-
-Compiling the documentation
----------------------------
-
-See the documentation section for more details.
-
-### Using clang (without Xcode)
-As in Linux.
-
-### Using Xcode IDE
-As in Windows with VisualStudio but with Xcode.
-
-About documentation
-===================
-
-The documentation can be generated using [Doxygen](http://www.stack.nl/~dimitri/doxygen/).
-Two targets are available:
-* doc-devkit include full documentation of RINGMesh and Geogram
-* doc-devkit-lite include only the RINGMesh documentation
-
-Then you can go in doc/devkit[-lite]/html and open the index.html with your web browser.
-A ringmesh.qch file is generated in doc/devkit[-lite]/html (to load in Qt Assistant).
