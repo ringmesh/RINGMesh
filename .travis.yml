@@ -25,6 +25,7 @@ stages:
 jobs:
   include:
     - stage: format
+      if: branch != master
       os: linux
       env:
         - TEST="Clang format"
@@ -77,6 +78,7 @@ jobs:
         - ctest --output-on-failure -j2
 
     - stage: compile and test
+      if: branch != master
       os: osx
       env:
         - TEST="Xcode Check"
@@ -91,6 +93,7 @@ jobs:
           fi
 
     - stage: compile and test
+      if: branch != master
       os: osx
       env:
         - TEST="Unix Makefile Check"
