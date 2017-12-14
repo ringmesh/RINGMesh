@@ -49,8 +49,8 @@ namespace RINGMesh
     using GEO::Numeric::float64;
 
     using GEO::Numeric::max_float32;
-    using GEO::Numeric::min_float32;
     using GEO::Numeric::max_float64;
+    using GEO::Numeric::min_float32;
     using GEO::Numeric::min_float64;
 
     static const double global_epsilon = 1E-8;
@@ -126,11 +126,11 @@ namespace RINGMesh
     };
 
     /*! enum defining the type of polygon in surface.
-    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
-    * that is not specified.
-    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
-    * used.
-    */
+     *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
+     * that is not specified.
+     *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
+     * used.
+     */
     enum struct PolygonType : index_t
     {
         TRIANGLE = 0,
