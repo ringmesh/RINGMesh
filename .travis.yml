@@ -25,20 +25,19 @@ stages:
 jobs:
   include:
     - stage: format
+      if: branch != master
       os: linux
       env:
         - TEST="Clang format"
       script:
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make format
         - |
-          if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-            mkdir build
-            cd build
-            cmake ..
-            make format
-            if [[ -n $(git diff) ]]; then
-              echo "Format requirement is not satisfied"
-              return 1
-            fi
+          if [[ -n $(git diff) ]]; then
+            echo "Format requirement is not satisfied"
+            return 1
           fi
       after_failure:
         - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
@@ -77,6 +76,7 @@ jobs:
         - ctest --output-on-failure -j2
 
     - stage: compile and test
+      if: branch = master
       os: osx
       env:
         - TEST="Xcode Check"
@@ -88,6 +88,7 @@ jobs:
         - ctest -C Debug --output-on-failure -j2
 
     - stage: compile and test
+      if: branch = master
       os: osx
       env:
         - TEST="Unix Makefile Check"

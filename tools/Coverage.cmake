@@ -46,7 +46,7 @@ else()
     set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} --coverage")
 endif()
 
-set(SCRIPT_PATH ${PROJECT_SOURCE_DIR}/cmake)
+set(SCRIPT_PATH ${PROJECT_SOURCE_DIR}/tools)
 add_custom_target(coverage
 
 	# Zero the coverage counters.

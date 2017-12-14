@@ -105,4 +105,4 @@ else(USE_SUPERBUILD)
     include(cmake/RINGMesh.cmake)
 endif(USE_SUPERBUILD)
 
-include(cmake/external_tools.cmake)
+include(tools/external_tools.cmake)

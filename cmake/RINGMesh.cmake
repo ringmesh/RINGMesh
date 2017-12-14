@@ -40,7 +40,7 @@ if(UNIX)
     endif(APPLE)
 
     if(CMAKE_BUILD_TYPE STREQUAL "Coverage")
-       include(cmake/Coverage.cmake)
+       include(tools/Coverage.cmake)
     endif()
 else(UNIX)
     if(NOT "${CMAKE_CXX_COMPILER_ID}" STREQUAL "MSVC")
@@ -71,16 +71,25 @@ configure_file(
     ${PROJECT_SOURCE_DIR}/cmake/ringmesh_config.h.in 
     ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h
 )
+install(
+    FILES ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_config.h 
+    DESTINATION include/ringmesh
+)
 
 # Exports RINGMesh target
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
 configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
-    ${CMAKE_BINARY_DIR}/RINGMeshConfig.cmake
-    INSTALL_DESTINATION ${CMAKE_INSTALL_PREFIX}
+    ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake
+    INSTALL_DESTINATION cmake
     PATH_VARS GEOGRAM_INSTALL_PREFIX
 )
+install(
+    FILES ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake 
+    DESTINATION cmake
+)
+install(DIRECTORY include/ringmesh DESTINATION include)
 
 #------------------------------------------------------------------------------------------------
 # Configure the ringmesh libraries
@@ -139,9 +148,16 @@ set(CPACK_PACKAGE_VERSION_MAJOR ${RINGMesh_VERSION_MAJOR})
 set(CPACK_PACKAGE_VERSION_MINOR ${RINGMesh_VERSION_MINOR})
 set(CPACK_PACKAGE_VERSION_PATCH ${RINGMesh_VERSION_PATCH})
 set(CPACK_PACKAGE_VENDOR "RING-TEAM (www.ring-team.org)")
-set(CPACK_SOURCE_GENERATOR "ZIP")
 
+set(CPACK_SOURCE_GENERATOR "ZIP")
 set(CPACK_SOURCE_IGNORE_FILES "/build/;/.git/;/_CPack_Packages/")
+
+if(WIN32)
+    set(CPACK_GENERATOR "ZIP")
+else()
+    set(CPACK_GENERATOR "TGZ")
+endif()
+
 
 # This must always be last!
 include(CPack)

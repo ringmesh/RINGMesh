@@ -49,20 +49,35 @@ function(add_ringmesh_library directory)
     add_library(${target_name} SHARED "")
     set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
     add_folder(${target_name})
-    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
+    target_include_directories(${target_name} 
+        PUBLIC   
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+            $<INSTALL_INTERFACE:include>
+    )
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
         target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
         add_dependencies(copy_dll ${target_name})
     endif()
-    export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
+    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
+    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+    
+    export(TARGETS ${target_name} NAMESPACE RINGMesh:: FILE cmake/RINGMesh_${target_name}_target.cmake)
     generate_export_header(${target_name} 
         EXPORT_MACRO_NAME ${target_name}_api 
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
     )
-    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
-    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
-    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+    install(TARGETS ${target_name} EXPORT ${target_name}
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+    install(EXPORT ${target_name}
+        FILE RINGMesh_${target_name}_target.cmake
+        NAMESPACE RINGMesh::
+        DESTINATION cmake
+    )
 endfunction()
 
 macro(copy_for_windows directory)
@@ -126,12 +141,14 @@ endmacro()
 
 function(add_ringmesh_binary bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
 function(add_ringmesh_utility bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
 endfunction()
