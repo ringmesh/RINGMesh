@@ -113,6 +113,7 @@ jobs:
         - cd Release
         - cmake --build . -- -j2
         - cmake --build . --target package
+        - rename 's/(\w+)-(\w+)-(\w+)/$1-master-$3//' RINGMesh-*.tar.gz
         - ls
 
 
