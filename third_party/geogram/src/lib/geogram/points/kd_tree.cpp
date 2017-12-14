@@ -169,8 +169,9 @@ namespace GEO {
         // Compute distance between query point and global bounding box
         // and copy global bounding box to local variables (bbox_min, bbox_max),
         // allocated on the stack. bbox_min and bbox_max are updated during the
-        // traversal of the BalancedKdTree (see get_nearest_neighbors_recursive()). They
-        // are necessary to compute the distance between the query point and the
+        // traversal of the BalancedKdTree (see
+	// get_nearest_neighbors_recursive()). They are necessary to
+	// compute the distance between the query point and the
         // bbox of the current node.
         double box_dist = 0.0;
         double* bbox_min = (double*) (alloca(dimension() * sizeof(double)));
@@ -212,7 +213,8 @@ namespace GEO {
         // Compute distance between query point and global bounding box
         // and copy global bounding box to local variables (bbox_min, bbox_max),
         // allocated on the stack. bbox_min and bbox_max are updated during the
-        // traversal of the BalancedKdTree (see get_nearest_neighbors_recursive()). They
+        // traversal of the BalancedKdTree
+	// (see get_nearest_neighbors_recursive()). They
         // are necessary to compute the distance between the query point and the
         // bbox of the current node.
         double box_dist = 0.0;
@@ -273,12 +275,21 @@ namespace GEO {
             return;
         }
 
-        coord_index_t coord = splitting_coord(node_index);
-        double val = splitting_val(node_index);
+	// Get node attributes (virtual function call).
+
+	index_t left_node_index;
+	index_t right_node_index;
+	coord_index_t coord;
+	index_t m;	
+	double val;
+	
+	get_node(
+	    node_index, b, e,
+	    left_node_index, right_node_index,
+	    coord, m, val
+	);
+	
         double cut_diff = query_point[coord] - val;
-        index_t m = splitting_index(node_index, b, e);
-	index_t left_node_index = left_child(node_index);
-	index_t right_node_index = right_child(node_index);
 
         // If the query point is on the left side
         if(cut_diff < 0.0) {
@@ -561,28 +572,21 @@ namespace GEO {
         return result;
     }
 
-    index_t BalancedKdTree::left_child(index_t n) const {
-	return 2*n;
+    void BalancedKdTree::get_node(
+	index_t n, index_t b, index_t e,
+	index_t& left_child, index_t& right_child,
+	coord_index_t&  splitting_coord,
+	index_t& m,
+	double& splitting_val
+    ) const {
+	left_child = 2*n;
+	right_child = 2*n+1;
+	splitting_coord = splitting_coord_[n];
+	m = b + (e - b) / 2;
+	splitting_val = splitting_val_[n];
     }
 
-    index_t BalancedKdTree::right_child(index_t n) const {
-	return 2*n+1;
-    }
-
-    index_t BalancedKdTree::splitting_index(index_t n, index_t b, index_t e) const {
-	geo_argused(n);
-	return b + (e - b) / 2;
-    }
-
-    coord_index_t BalancedKdTree::splitting_coord(index_t n) const {
-	return splitting_coord_[n];
-    }
-
-    double BalancedKdTree::splitting_val(index_t n) const {
-	return splitting_val_[n];
-    }
-
-    /************************************************************************************/
+    /**************************************************************************/
 
     AdaptiveKdTree::AdaptiveKdTree(coord_index_t dim) : KdTree(dim) {
     }
@@ -764,35 +768,25 @@ namespace GEO {
 	br1_out = index_t(br1);
 	br2_out = index_t(br2);
     }
-    
-    index_t AdaptiveKdTree::left_child(index_t n) const {
+
+    void AdaptiveKdTree::get_node(
+	index_t n, index_t b, index_t e,
+	index_t& left_child, index_t& right_child,
+	coord_index_t&  splitting_coord,
+	index_t& m,
+	double& splitting_val
+    ) const {
 	geo_debug_assert(n < nb_nodes());
-	return n+1;
-    }
-
-    index_t AdaptiveKdTree::right_child(index_t n) const {
-	geo_debug_assert(n < nb_nodes());	
-	return node_right_child_[n];
-    }
-
-    index_t AdaptiveKdTree::splitting_index(index_t n, index_t b, index_t e) const {
 	geo_argused(b);
 	geo_argused(e);
-	geo_debug_assert(n < nb_nodes());
-	return node_m_[n];
+	left_child = n+1;
+	right_child = node_right_child_[n];
+	splitting_coord = splitting_coord_[n];
+	m = node_m_[n];
+	splitting_val = splitting_val_[n];
     }
-
-    coord_index_t AdaptiveKdTree::splitting_coord(index_t n) const {
-	geo_debug_assert(n < nb_nodes());
-	return splitting_coord_[n];
-    }
-
-    double AdaptiveKdTree::splitting_val(index_t n) const {
-	geo_debug_assert(n < nb_nodes());
-	return splitting_val_[n];
-    }
-
-    /************************************************************************************/    
+    
+    /*************************************************************************/
     
 }
 

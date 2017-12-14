@@ -115,55 +115,34 @@ namespace GEO {
 	 * \return the index of the root node.
 	 */
 	virtual index_t build_tree() = 0 ;
-	
+
 	/**
-	 * \brief Gets the left child of a node.
+	 * \brief Gets all the attributes of a node.
 	 * \details This function is virtual, because indices can
 	 *  be either computed on the fly (as in BalancedKdTree) or
 	 *  stored (as in AdaptiveKdTree).
 	 * \param[in] n a node index
-	 * \return the node index of the left child of node \p n.
-	 */
-	virtual index_t left_child(index_t n) const = 0;
-
-	/**
-	 * \brief Gets the left child of a node.
-	 * \details This function is virtual, because indices can
-	 *  be either computed on the fly (as in BalancedKdTree) or
-	 *  stored (as in AdaptiveKdTree).
-	 * \param[in] n a node index
-	 * \return the node index of the right child of node \p n.
-	 */
-	virtual index_t right_child(index_t n) const = 0;
-
-	/**
-	 * \brief Gets the index of the splitting point in a point sequence 
-	 *  that corresponds to a node.
-	 * \details This function is virtual, because indices can
-	 *  be either computed on the fly (as in BalancedKdTree) or
-	 *  stored (as in AdaptiveKdTree).
-	 * \param[in] n the node index
 	 * \param[in] b the first point in the node
 	 * \param[in] e one position past the last point in the node
-	 * \return the point m such that [b,m-1] corresponds to the points in
-	 *  the left child of \p n and [m,e-1] corresponds to the points in
-	 *  the right child of \p n.
+	 * \param[out] left_child the node index of the 
+	 *   left child of node \p n.
+	 * \param[out] right_child the node index of the 
+	 *   right child of node \p n.
+	 * \param[out] splitting_coord The coordinate along which \p n is split.
+	 * \param[out] m the point m such that [b,m-1] corresponds 
+	 *  to the points in the left child of \p n and [m,e-1] 
+	 *  corresponds to the points in the right child of \p n.
+	 * \param[out] splitting_val The coordinate value that separates points
+	 *  in the left and right childs.
 	 */
-	virtual index_t splitting_index(index_t n, index_t b, index_t e) const = 0;
-
-	/**
-	 * \brief Gets the coordinate along which a node is split.
-	 * \param[in] n the node index.
-	 * \return The coordinate along which \p n is split.
-	 */
-	virtual coord_index_t splitting_coord(index_t n) const = 0;
+	virtual void get_node(
+	    index_t n, index_t b, index_t e,
+	    index_t& left_child, index_t& right_child,
+	    coord_index_t&  splitting_coord,
+	    index_t& m,
+	    double& splitting_val
+	) const = 0;
 	
-	/**
-	 * \brief Gets the value at which a node is split.
-	 * \param[in] n the node index.
-	 * \return The coordinate along which \p n is split.
-	 */
-	virtual double splitting_val(index_t n) const = 0;
 
         /**
          * \brief The context for traversing a KdTree.
@@ -181,14 +160,15 @@ namespace GEO {
              * \param[in] nb_neighbors_in number of neighbors to retreive
              * \param[in] user_neighbors_in storage for the neighbors, allocated
              *  and managed by caller, with space for nb_neighbors_in integers
-             * \param[in] user_neighbors_sq_dist_in storage for neighbors squared
-             *  distance, allocated and managed by caller, with space for
-	     *  nb_neighbors_in doubles
+             * \param[in] user_neighbors_sq_dist_in storage for neighbors 
+	     *  squared distance, allocated and managed by caller, 
+	     *  with space for nb_neighbors_in doubles
              * \param[in] work_neighbors_in storage for the neighbors, allocated
-             *  and managed by caller, with space for nb_neighbors_in + 1 integers
-             * \param[in] work_neighbors_sq_dist_in storage for neighbors squared
-             *  distance, allocated and managed by caller, with space for
-	     *  nb_neighbors_in + 1 doubles
+             *  and managed by caller, with space 
+	     *  for nb_neighbors_in + 1 integers
+             * \param[in] work_neighbors_sq_dist_in storage 
+	     *  for neighbors squared distance, allocated and managed 
+	     *  by caller, with space for nb_neighbors_in + 1 doubles
              */
             NearestNeighbors(
                 index_t nb_neighbors_in,
@@ -259,11 +239,11 @@ namespace GEO {
             }
 
 	    /**
-	     * \brief Copies the user neighbors and distances into the work zone.
-	     *  and initializes nb_neighbors to max_nb_neighbors.
+	     * \brief Copies the user neighbors and distances into 
+	     *  the work zone and initializes nb_neighbors to max_nb_neighbors.
 	     * \details This function is called by nearest neighbors search when
-	     *  KeepInitialValues is specified, to initialize search from user-provided
-	     *  initial guess.
+	     *  KeepInitialValues is specified, to initialize search 
+	     *  from user-provided initial guess.
 	     */
 	    void copy_from_user() {
 		for(index_t i=0; i<nb_neighbors_max; ++i) {
@@ -276,10 +256,10 @@ namespace GEO {
 	    }
 
 	    /**
-	     * \brief Copies the found nearest neighbors from the work zone to the
-	     *  user neighbors and squared distance arrays.
-	     * \details This function is called by find_nearest_neighbors() after
-	     *  traversal of the tree.
+	     * \brief Copies the found nearest neighbors from the work zone 
+	     *  to the user neighbors and squared distance arrays.
+	     * \details This function is called by find_nearest_neighbors() 
+	     *  after traversal of the tree.
 	     */
 	    void copy_to_user() {
 		for(index_t i=0; i<nb_neighbors_max; ++i) {
@@ -524,20 +504,14 @@ namespace GEO {
 	/** \copydoc KdTree::build_tree() */
 	virtual index_t build_tree();
 
-	/** \copydoc KdTree::left_child() */	
-	virtual index_t left_child(index_t n) const;
-
-	/** \copydoc KdTree::right_child() */		
-	virtual index_t right_child(index_t n) const;
-
-	/** \copydoc KdTree::splitting_index() */			
-	virtual index_t splitting_index(index_t n, index_t b, index_t e) const;
-
-	/** \copydoc KdTree::splitting_coord() */				
-	virtual coord_index_t splitting_coord(index_t n) const;
-
-	/** \copydoc KdTree::splitting_val() */					
-	virtual double splitting_val(index_t n) const;
+	/** \copydoc KdTree::get_node() */
+	virtual void get_node(
+	    index_t n, index_t b, index_t e,
+	    index_t& left_child, index_t& right_child,
+	    coord_index_t&  splitting_coord,
+	    index_t& m,
+	    double& splitting_val
+	) const;
 	
     protected:
 	
@@ -587,21 +561,14 @@ namespace GEO {
 	/** \copydoc KdTree::build_tree() */
 	virtual index_t build_tree();
 
-	/** \copydoc KdTree::left_child() */	
-	virtual index_t left_child(index_t n) const;
-
-	/** \copydoc KdTree::right_child() */		
-	virtual index_t right_child(index_t n) const;
-
-	/** \copydoc KdTree::splitting_index() */			
-	virtual index_t splitting_index(index_t n, index_t b, index_t e) const;
-
-	/** \copydoc KdTree::splitting_coord() */				
-	virtual coord_index_t splitting_coord(index_t n) const;
-
-	/** \copydoc KdTree::splitting_val() */					
-	virtual double splitting_val(index_t n) const;
-
+	/** \copydoc KdTree::get_node() */
+	virtual void get_node(
+	    index_t n, index_t b, index_t e,
+	    index_t& left_child, index_t& right_child,
+	    coord_index_t&  splitting_coord,
+	    index_t& m,
+	    double& splitting_val
+	) const;
 
         /**
          * \brief Creates the subtree under a node.
