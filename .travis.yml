@@ -34,7 +34,8 @@ jobs:
         - cd build
         - cmake ..
         - make format
-        - if [[ -n $(git diff) ]]; then
+        - |
+          if [[ -n $(git diff) ]]; then
             echo "Format requirement is not satisfied"
             return 1
           fi
