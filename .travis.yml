@@ -21,6 +21,8 @@ addons:
 stages:
   - format
   - compile and test
+  - name: deploy
+    if: branch = master
 
 jobs:
   include:
