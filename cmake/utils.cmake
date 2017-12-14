@@ -132,7 +132,11 @@ macro(add_ringmesh_executable exe_path folder_name)
     endforeach()
     
     # Add the project to a folder of projects for the tests
-    set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
+    set_target_properties(${exe_name} 
+        PROPERTIES 
+            FOLDER ${folder_name}
+            INSTALL_RPATH "../lib"
+    )
     
     # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
     # This line is for clang utilities.
