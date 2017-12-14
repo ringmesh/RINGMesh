@@ -67,9 +67,7 @@ public:
     virtual ~Base() = default;
 
 protected:
-    Base( A& a, B& b ) : a_( a ), b_( b )
-    {
-    }
+    Base( A& a, B& b ) : a_( a ), b_( b ) {}
 
 protected:
     A& a_;
@@ -79,9 +77,7 @@ protected:
 class Derived : public Base
 {
 public:
-    Derived( A& a, B& b ) : Base( a, b )
-    {
-    }
+    Derived( A& a, B& b ) : Base( a, b ) {}
 };
 
 void verdict( bool is_instantiated, std::string name )
