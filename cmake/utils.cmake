@@ -72,8 +72,6 @@ function(add_ringmesh_library directory)
     install(TARGETS ${target_name} EXPORT ${target_name}
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
-        RUNTIME DESTINATION bin
-        INCLUDES DESTINATION include
     )
     install(EXPORT ${target_name}
         FILE RINGMesh_${target_name}_target.cmake
@@ -143,12 +141,14 @@ endmacro()
 
 function(add_ringmesh_binary bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
 function(add_ringmesh_utility bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
 endfunction()
