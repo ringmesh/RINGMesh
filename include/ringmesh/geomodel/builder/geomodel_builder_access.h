@@ -275,8 +275,8 @@ namespace RINGMesh
         GeoModelMeshEntity< DIMENSION >& modifiable_mesh_entity(
             const gmme_id& id );
 
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
+        std::vector< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
             modifiable_geological_entities();
 
         std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
