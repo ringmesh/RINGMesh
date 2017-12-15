@@ -49,7 +49,6 @@ function(add_ringmesh_library directory)
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
     include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
-
 endfunction()
 
 macro(copy_for_windows directory)
