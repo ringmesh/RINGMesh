@@ -70,10 +70,11 @@ namespace RINGMesh
     public:
         /*!
          * Constructor for the cartesian grid
-         * \param[in] nb_cells_in_each_direction number of cells in each direction of the grid
-         * \param[in] vec_cartesian_axis used to define the cartesian grid cells :
-         * the origin of the frame is the position of the cell (0,0,0) in the cartesian grid,
-         * the vectors are the directions and length of the grid cells.
+         * \param[in] nb_cells_in_each_direction number of cells in each
+         * direction of the grid \param[in] vec_cartesian_axis used to define
+         * the cartesian grid cells : the origin of the frame is the position of
+         * the cell (0,0,0) in the cartesian grid, the vectors are the
+         * directions and length of the grid cells.
          */
         CartesianGrid( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
@@ -115,8 +116,8 @@ namespace RINGMesh
         ivecn< DIMENSION > containing_cell_from_global_point(
             const vecn< DIMENSION >& reference_vertex ) const
         {
-        	// Since coords_from_frame_to_global is faster than coords_from_global_to_frame,
-        	// we use it with the inverse matrix
+            // Since coords_from_frame_to_global is faster than
+            // coords_from_global_to_frame, we use it with the inverse matrix
             return this->containing_cell_from_local_point(
                 ReferenceFrameManipulator< DIMENSION >::
                     coords_from_frame_to_global(
@@ -129,16 +130,17 @@ namespace RINGMesh
             ivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-            	if ( vertex[i] >= 0 && vertex[i] < nb_cells_in_each_direction_[i] )
-            	{
-            		coord[i] = std::floor( vertex[i] + 0.5 );
-            	}
-            	else
-            	{
-            		coord[i] = -1;
-            		Logger::warn( "Point ", vertex,
-            			" has its ", i, "th coordinate outside of the cartesian grid limits." );
-            	}
+                if( vertex[i] >= 0
+                    && vertex[i] < nb_cells_in_each_direction_[i] )
+                {
+                    coord[i] = std::floor( vertex[i] + 0.5 );
+                }
+                else
+                {
+                    coord[i] = -1;
+                    Logger::warn( "Point ", vertex, " has its ", i,
+                        "th coordinate outside of the cartesian grid limits." );
+                }
             }
             return coord;
         }
@@ -149,24 +151,26 @@ namespace RINGMesh
             index_t mult{ 1 };
             for( auto i : range( DIMENSION ) )
             {
-            	if ( coords[i] >= 0 && coords[i] < nb_cells_in_each_direction_[i] )
-            	{
-            		offset += coords[i] * mult;
-            		mult *= nb_cells_in_each_direction_[i];
-            	}
-            	else
-            	{
-            		Logger::warn( "Point ", coords,
-            			" has indexes outside of the cartesian grid limits." );
-            		return -1;
-            	}
+                if( coords[i] >= 0
+                    && coords[i] < nb_cells_in_each_direction_[i] )
+                {
+                    offset += coords[i] * mult;
+                    mult *= nb_cells_in_each_direction_[i];
+                }
+                else
+                {
+                    Logger::warn( "Point ", coords,
+                        " has indexes outside of the cartesian grid limits." );
+                    return -1;
+                }
             }
             return offset;
         }
 
-        index_t cell_offset_from_global_point( const vecn< DIMENSION > coords ) const
+        index_t cell_offset_from_global_point(
+            const vecn< DIMENSION > coords ) const
         {
-        	return cell_offset( containing_cell_from_global_point( coords ) );
+            return cell_offset( containing_cell_from_global_point( coords ) );
         }
 
         ivecn< DIMENSION > local_from_offset( const index_t offset ) const
@@ -191,7 +195,7 @@ namespace RINGMesh
 
         index_t nb_cells_axis( index_t i ) const
         {
-        	return nb_cells_in_each_direction_[i];
+            return nb_cells_in_each_direction_[i];
         }
 
         GEO::AttributesManager& attributes_manager() const
