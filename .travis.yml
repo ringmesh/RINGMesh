@@ -21,24 +21,25 @@ addons:
 stages:
   - format
   - compile and test
+  - name: deploy
+    if: branch = master AND type = push
 
 jobs:
   include:
     - stage: format
+      if: branch != master
       os: linux
       env:
         - TEST="Clang format"
       script:
+        - mkdir build
+        - cd build
+        - cmake ..
+        - make format
         - |
-          if [ "$TRAVIS_PULL_REQUEST" = "false" ]; then
-            mkdir build
-            cd build
-            cmake ..
-            make format
-            if [[ -n $(git diff) ]]; then
-              echo "Format requirement is not satisfied"
-              return 1
-            fi
+          if [[ -n $(git diff) ]]; then
+            echo "Format requirement is not satisfied"
+            return 1
           fi
       after_failure:
         - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
@@ -77,6 +78,7 @@ jobs:
         - ctest --output-on-failure -j2
 
     - stage: compile and test
+      if: branch = master
       os: osx
       env:
         - TEST="Xcode Check"
@@ -88,6 +90,7 @@ jobs:
         - ctest -C Debug --output-on-failure -j2
 
     - stage: compile and test
+      if: branch = master
       os: osx
       env:
         - TEST="Unix Makefile Check"
@@ -98,4 +101,44 @@ jobs:
         - cd Debug
         - cmake --build . -- -j2
         - ctest --output-on-failure -j2
+
+    - stage: deploy
+      os: linux
+      env:
+        - TEST="Linux release"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+        - cd Release
+        - cmake --build . -- -j2
+        - cmake --build . --target package
+        - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
+      after_success:
+        - git clone -b gh-pages https://github.com/ringmesh/web
+        - cd web
+        - cp -f ../RINGMesh-master-Linux.tar.gz download/
+        - git add download/RINGMesh-master-Linux.tar.gz
+        - git commit -m "Update Linux master release"
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
+
+    - stage: deploy
+      os: osx
+      env:
+        - TEST="MacOS release"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+        - cd Release
+        - cmake --build . -- -j2
+        - cmake --build . --target package
+        - mv `ls RINGMesh-*-Darwin.tar.gz` RINGMesh-master-Darwin.tar.gz
+      after_success:
+        - git clone -b gh-pages https://github.com/ringmesh/web
+        - cd web
+        - cp -f ../RINGMesh-master-Darwin.tar.gz download/
+        - git add download/RINGMesh-master-Darwin.tar.gz
+        - git commit -m "Update Darwin master release"
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
 
