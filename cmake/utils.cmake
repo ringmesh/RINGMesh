@@ -115,7 +115,7 @@ endfunction()
 function(add_ringmesh_utility bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
     set_target_properties(${exe_name} PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)
