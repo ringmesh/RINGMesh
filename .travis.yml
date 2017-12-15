@@ -114,12 +114,12 @@ jobs:
         - cmake --build . -- -j2
         - cmake --build . --target package
         - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
-        - ls
       after_success:
-        - ls
         - git clone -b gh-pages https://github.com/ringmesh/web
         - cd web
         - mkdir -p docs/download
         - cp -f ../RINGMesh-master-Linux.tar.gz docs/download/
-
+        - git add docs/download/RINGMesh-master-Linux.tar.gz
+        - git commit -m "Update master download release"
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
 
