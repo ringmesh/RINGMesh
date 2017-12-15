@@ -115,5 +115,11 @@ jobs:
         - cmake --build . --target package
         - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
         - ls
+      after_success:
+        - ls
+        - git clone -b gh-pages https://github.com/ringmesh/web
+        - cd web
+        - mkdir -p docs/download
+        - cp -f ../RINGMesh-master-Linux.tar.gz docs/download/
 
 
