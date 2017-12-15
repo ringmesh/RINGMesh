@@ -117,9 +117,30 @@ jobs:
       after_success:
         - git clone -b gh-pages https://github.com/ringmesh/web
         - cd web
-        - mkdir -p docs/download
-        - cp -f ../RINGMesh-master-Linux.tar.gz docs/download/
-        - git add docs/download/RINGMesh-master-Linux.tar.gz
+        - cp -f ../RINGMesh-master-Linux.tar.gz download/
+        - git add download/RINGMesh-master-Linux.tar.gz
+        - git commit -m "Update master download release"
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
+
+    - stage: deploy
+      os: osx
+      env:
+        - TEST="MacOS release"
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+        - cd Release
+        - cmake --build . -- -j2
+        - cmake --build . --target package
+        - ls
+        - return 1
+        - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
+      after_success:
+        - git clone -b gh-pages https://github.com/ringmesh/web
+        - cd web
+        - cp -f ../RINGMesh-master-Linux.tar.gz download/
+        - git add download/RINGMesh-master-Linux.tar.gz
         - git commit -m "Update master download release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
 
