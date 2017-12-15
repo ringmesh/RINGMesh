@@ -117,6 +117,7 @@ jobs:
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
+        - mkdir -p download
         - cp -f ../RINGMesh-master-Linux.tar.gz download/
         - git add download/RINGMesh-master-Linux.tar.gz
         - git commit -m "Update Linux master release"
@@ -137,6 +138,7 @@ jobs:
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
+        - mkdir -p download
         - cp -f ../RINGMesh-master-Darwin.tar.gz download/
         - git add download/RINGMesh-master-Darwin.tar.gz
         - git commit -m "Update Darwin master release"
