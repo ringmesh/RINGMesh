@@ -100,7 +100,7 @@ namespace RINGMesh
         //        }
 
         vecn< DIMENSION > cell_center_global_coords(
-            const ivecn< DIMENSION >& cartesian_coords ) const
+            const sivecn< DIMENSION >& cartesian_coords ) const
         {
             vecn< DIMENSION > cartesian_double_coords;
             for( auto i : range( DIMENSION ) )
@@ -113,7 +113,7 @@ namespace RINGMesh
                 cartesian_double_coords );
         }
 
-        ivecn< DIMENSION > containing_cell_from_global_point(
+        sivecn< DIMENSION > containing_cell_from_global_point(
             const vecn< DIMENSION >& reference_vertex ) const
         {
             // Since coords_from_frame_to_global is faster than
@@ -124,28 +124,18 @@ namespace RINGMesh
                         inverse_cartesian_frame_, reference_vertex ) );
         }
 
-        ivecn< DIMENSION > containing_cell_from_local_point(
+        sivecn< DIMENSION > containing_cell_from_local_point(
             const vecn< DIMENSION >& vertex ) const
         {
-            ivecn< DIMENSION > coord;
+            sivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-                if( vertex[i] >= 0
-                    && vertex[i] < nb_cells_in_each_direction_[i] )
-                {
-                    coord[i] = std::floor( vertex[i] + 0.5 );
-                }
-                else
-                {
-                    coord[i] = -1;
-                    Logger::warn( "Point ", vertex, " has its ", i,
-                        "th coordinate outside of the cartesian grid limits." );
-                }
+            	coord[i] = std::floor( vertex[i] + 0.5 );
             }
             return coord;
         }
 
-        index_t cell_offset( const ivecn< DIMENSION >& coords ) const
+        index_t cell_offset( const sivecn< DIMENSION >& coords ) const
         {
             index_t offset{ 0 };
             index_t mult{ 1 };
@@ -173,9 +163,9 @@ namespace RINGMesh
             return cell_offset( containing_cell_from_global_point( coords ) );
         }
 
-        ivecn< DIMENSION > local_from_offset( const index_t offset ) const
+        sivecn< DIMENSION > local_from_offset( const index_t offset ) const
         {
-            ivecn< DIMENSION > coords;
+            sivecn< DIMENSION > coords;
             index_t off{ 0 };
             index_t div{ nb_total_cells_
                          / nb_cells_in_each_direction_[DIMENSION - 1] };

@@ -75,6 +75,13 @@ namespace RINGMesh
     using ivec3 = ivecn< 3 >;
     // This is an array of 2 unsigned integers
     using ivec2 = ivecn< 2 >;
+    // This is an array template of signed integers
+    template < index_t DIMENSION >
+    using sivecn = GEO::vecng< DIMENSION, signed_index_t >;
+    // This is an array of 3 signed integers
+    using sivec3 = sivecn< 3 >;
+    // This is an array of 2 signed integers
+    using sivec2 = sivecn< 2 >;
 
     template < index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
