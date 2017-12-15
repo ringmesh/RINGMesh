@@ -68,6 +68,13 @@ namespace RINGMesh
         friend class CartesianGridBuilder< DIMENSION >;
 
     public:
+        /*!
+         * Constructor for the cartesian grid
+         * \param[in] nb_cells_in_each_direction number of cells in each direction of the grid
+         * \param[in] vec_cartesian_axis used to define the cartesian grid cells :
+         * the origin of the frame is the position of the cell (0,0,0) in the cartesian grid,
+         * the vectors are the directions and length of the grid cells.
+         */
         CartesianGrid( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
@@ -91,7 +98,7 @@ namespace RINGMesh
         //        output_location );
         //        }
 
-        vecn< DIMENSION >& cell_center_global_coords(
+        vecn< DIMENSION > cell_center_global_coords(
             const ivecn< DIMENSION >& cartesian_coords ) const
         {
             vecn< DIMENSION > cartesian_double_coords;
@@ -105,22 +112,33 @@ namespace RINGMesh
                 cartesian_double_coords );
         }
 
-        ivecn< DIMENSION >& containing_cell_from_global_vertex(
+        ivecn< DIMENSION > containing_cell_from_global_point(
             const vecn< DIMENSION >& reference_vertex ) const
         {
-            return this->containing_cell_from_local_vertex(
+        	// Since coords_from_frame_to_global is faster than coords_from_global_to_frame,
+        	// we use it with the inverse matrix
+            return this->containing_cell_from_local_point(
                 ReferenceFrameManipulator< DIMENSION >::
                     coords_from_frame_to_global(
                         inverse_cartesian_frame_, reference_vertex ) );
         }
 
-        ivecn< DIMENSION > containing_cell_from_local_vertex(
+        ivecn< DIMENSION > containing_cell_from_local_point(
             const vecn< DIMENSION >& vertex ) const
         {
             ivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-                coord[i] = std::floor( vertex[i] + 0.5 );
+            	if ( vertex[i] >= 0 && vertex[i] < nb_cells_in_each_direction_[i] )
+            	{
+            		coord[i] = std::floor( vertex[i] + 0.5 );
+            	}
+            	else
+            	{
+            		coord[i] = -1;
+            		Logger::warn( "Point ", vertex,
+            			" has its ", i, "th coordinate outside of the cartesian grid limits." );
+            	}
             }
             return coord;
         }
@@ -131,7 +149,7 @@ namespace RINGMesh
             index_t mult{ 1 };
             for( auto i : range( DIMENSION ) )
             {
-            	if ( i >= 0 && i < nb_cells_in_each_direction_[i] )
+            	if ( coords[i] >= 0 && coords[i] < nb_cells_in_each_direction_[i] )
             	{
             		offset += coords[i] * mult;
             		mult *= nb_cells_in_each_direction_[i];
@@ -140,6 +158,7 @@ namespace RINGMesh
             	{
             		Logger::warn( "Point ", coords,
             			" has indexes outside of the cartesian grid limits." );
+            		return -1;
             	}
             }
             return offset;
@@ -147,7 +166,7 @@ namespace RINGMesh
 
         index_t cell_offset_from_global_point( const vecn< DIMENSION > coords ) const
         {
-        	return cell_offset( containing_cell_from_global_vertex );
+        	return cell_offset( containing_cell_from_global_point( coords ) );
         }
 
         ivecn< DIMENSION > local_from_offset( const index_t offset ) const
@@ -170,7 +189,7 @@ namespace RINGMesh
             return nb_total_cells_;
         }
 
-        index_t nb_cells_in_direction( index_t i ) const
+        index_t nb_cells_axis( index_t i ) const
         {
         	return nb_cells_in_each_direction_[i];
         }
