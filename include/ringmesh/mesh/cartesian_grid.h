@@ -131,10 +131,23 @@ namespace RINGMesh
             index_t mult{ 1 };
             for( auto i : range( DIMENSION ) )
             {
-                offset += coords[i] * mult;
-                mult *= nb_cells_in_each_direction_[i];
+            	if ( i >= 0 && i < nb_cells_in_each_direction_[i] )
+            	{
+            		offset += coords[i] * mult;
+            		mult *= nb_cells_in_each_direction_[i];
+            	}
+            	else
+            	{
+            		Logger::warn( "Point ", coords,
+            			" has indexes outside of the cartesian grid limits." );
+            	}
             }
             return offset;
+        }
+
+        index_t cell_offset_from_global_point( const vecn< DIMENSION > coords ) const
+        {
+        	return cell_offset( containing_cell_from_global_vertex );
         }
 
         ivecn< DIMENSION > local_from_offset( const index_t offset ) const
@@ -155,6 +168,11 @@ namespace RINGMesh
         index_t nb_cells() const
         {
             return nb_total_cells_;
+        }
+
+        index_t nb_cells_in_direction( index_t i ) const
+        {
+        	return nb_cells_in_each_direction_[i];
         }
 
         GEO::AttributesManager& attributes_manager() const
