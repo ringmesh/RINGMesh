@@ -289,6 +289,19 @@ namespace RINGMesh
         {
         }
 
+        void resize_vec_axis( index_t axis_id, double new_size )
+        {
+        	if( new_size == 0 )
+        	{
+        		throw RINGMeshException("RINGMesh Test",
+        				"Error : you are trying to resize a cell to length 0 in direction ", axis_id);
+        	}
+        	else
+        	{
+        		cartesian_grid_.cartesian_frame_[axis_id] *= ( new_size / cartesian_grid_.cartesian_frame_[axis_id].length() );
+        	}
+        }
+
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
             cartesian_grid_.change_frame( vec_cartesian_axis );
