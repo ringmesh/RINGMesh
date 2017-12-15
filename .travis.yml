@@ -22,7 +22,7 @@ stages:
   - format
   - compile and test
   - name: deploy
-    if: branch = master
+    if: branch = master AND type = push
 
 jobs:
   include:
@@ -119,7 +119,7 @@ jobs:
         - cd web
         - cp -f ../RINGMesh-master-Linux.tar.gz download/
         - git add download/RINGMesh-master-Linux.tar.gz
-        - git commit -m "Update master download release"
+        - git commit -m "Update Linux master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
 
     - stage: deploy
@@ -133,14 +133,12 @@ jobs:
         - cd Release
         - cmake --build . -- -j2
         - cmake --build . --target package
-        - ls
-        - return 1
-        - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
+        - mv `ls RINGMesh-*-Darwin.tar.gz` RINGMesh-master-Darwin.tar.gz
       after_success:
         - git clone -b gh-pages https://github.com/ringmesh/web
         - cd web
-        - cp -f ../RINGMesh-master-Linux.tar.gz download/
-        - git add download/RINGMesh-master-Linux.tar.gz
-        - git commit -m "Update master download release"
+        - cp -f ../RINGMesh-master-Darwin.tar.gz download/
+        - git add download/RINGMesh-master-Darwin.tar.gz
+        - git commit -m "Update Darwin master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
 
