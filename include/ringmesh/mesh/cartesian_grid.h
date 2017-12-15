@@ -130,7 +130,7 @@ namespace RINGMesh
             sivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-            	coord[i] = std::floor( vertex[i] + 0.5 );
+                coord[i] = std::floor( vertex[i] + 0.5 );
             }
             return coord;
         }
