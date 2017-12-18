@@ -37,6 +37,7 @@
 
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/frame.h>
+#include <ringmesh/basic/geometry.h>
 
 #include <ringmesh/mesh/mesh.h>
 
@@ -60,6 +61,8 @@ namespace RINGMesh
 {
     /**
      * Template class for Cartesian grids of different dimensions
+     * Each value of the grid represents the cell for which the point
+     * is the corner with the smallest coordinates.
      */
     template < index_t DIMENSION >
     class CartesianGrid
@@ -70,9 +73,9 @@ namespace RINGMesh
     public:
         /*!
          * Constructor for the cartesian grid
-         *
          * \param[in] nb_cells_in_each_direction number of cells in each
-         * direction of the grid \param[in] vec_cartesian_axis used to define
+         * direction of the grid.
+         * \param[in] vec_cartesian_axis used to define
          * the cartesian grid cells : the origin of the frame is the position of
          * the cell (0,0,0) in the cartesian grid, the vectors are the
          * directions and length of the grid cells.
@@ -131,7 +134,7 @@ namespace RINGMesh
             sivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-                coord[i] = std::floor( vertex[i] + 0.5 );
+                coord[i] = std::floor( vertex[i] );
             }
             return coord;
         }
@@ -339,6 +342,7 @@ namespace RINGMesh
     protected:
         CartesianGrid< DIMENSION >& cartesian_grid_;
     };
+    ALIAS_2D_AND_3D( CartesianGridBuilder );
 
     //    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh3D
     //    {
