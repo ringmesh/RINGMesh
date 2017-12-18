@@ -154,7 +154,7 @@ namespace RINGMesh
             {
                 return false;
             }
-            for( index_t i = 0; i < DIMENSION; i++ )
+            for( auto i : range( DIMENSION ) )
             {
                 if( other_reference_frame[i] != ( *this )[i] )
                 {
@@ -184,7 +184,7 @@ namespace RINGMesh
         {
             return false;
         }
-        for( index_t i = 0; i < DIMENSION; i++ )
+        for( auto i : range( DIMENSION ) )
         {
             if( !inexact_equal( v1[i], v2[i], epsilon ) )
             {

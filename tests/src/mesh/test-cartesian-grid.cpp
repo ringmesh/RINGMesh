@@ -64,7 +64,7 @@ void test_frames_and_cartesian_grid()
         ReferenceFrameManipulator3D::coords_from_frame_to_global(
             reference_frame, frame_test_coordinates );
     if( !inexact_equal(
-            test_coordinates, operation_test_coordinates, 0.0000001 ) )
+            test_coordinates, operation_test_coordinates, 1e-7 ) )
     {
         throw RINGMeshException(
             "TEST", "Error in coordinate reference change" );
@@ -81,8 +81,7 @@ void test_frames_and_cartesian_grid()
     if( inexact_equal( inverse_frame,
             ReferenceFrameManipulator3D::
                 orthogonal_reference_frame_from_global_to_local(
-                    reference_frame ),
-            0.0000001 ) )
+                    reference_frame ), 1e-7 ) )
     {
         throw RINGMeshException(
             "TEST", "Error in orthogonal reference frame change" );

@@ -70,6 +70,7 @@ namespace RINGMesh
     public:
         /*!
          * Constructor for the cartesian grid
+         *
          * \param[in] nb_cells_in_each_direction number of cells in each
          * direction of the grid \param[in] vec_cartesian_axis used to define
          * the cartesian grid cells : the origin of the frame is the position of
