@@ -115,12 +115,13 @@ jobs:
         - cmake --build . --target package
         - mv `ls RINGMesh-*-Linux.tar.gz` RINGMesh-master-Linux.tar.gz
       after_success:
-        - git clone -b gh-pages https://github.com/ringmesh/web
+        - git clone -b master https://github.com/ringmesh/web
         - cd web
+        - mkdir -p download
         - cp -f ../RINGMesh-master-Linux.tar.gz download/
         - git add download/RINGMesh-master-Linux.tar.gz
         - git commit -m "Update Linux master release"
-        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
 
     - stage: deploy
       os: osx
@@ -135,10 +136,11 @@ jobs:
         - cmake --build . --target package
         - mv `ls RINGMesh-*-Darwin.tar.gz` RINGMesh-master-Darwin.tar.gz
       after_success:
-        - git clone -b gh-pages https://github.com/ringmesh/web
+        - git clone -b master https://github.com/ringmesh/web
         - cd web
+        - mkdir -p download
         - cp -f ../RINGMesh-master-Darwin.tar.gz download/
         - git add download/RINGMesh-master-Darwin.tar.gz
         - git commit -m "Update Darwin master release"
-        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web gh-pages
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
 
