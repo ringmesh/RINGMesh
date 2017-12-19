@@ -247,15 +247,9 @@ namespace
         for( auto f : range( 4 ) )
         {
             signs[f] = sign( GEO::PCK::orient_3d( p.data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]]
-                    .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]]
-                    .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]]
-                    .data() ) );
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]].data(),
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]].data(),
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]].data() ) );
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0
                    && signs[3] >= 0 )
@@ -270,12 +264,9 @@ namespace
         for( const index_t f : range( 4 ) )
         {
             double volume{ GEO::Geom::tetra_signed_volume( p,
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]] ) };
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] ) };
             if( is_almost_zero( volume ) )
             {
                 return point_inside_tetra_exact( p, vertices );
@@ -365,7 +356,7 @@ namespace RINGMesh
                 point.data(), p0.data(), p1.data(), p2.data() ) );
         }
 
-        double RINGMESH_API segment_angle( const Geometry::Segment2D& segment1,
+        double basic_api segment_angle( const Geometry::Segment2D& segment1,
             const Geometry::Segment2D& segment2 )
         {
             vec2 seg1{ segment1.direction() };
@@ -380,16 +371,16 @@ namespace RINGMesh
             return angle_between_pi_and_minus_pi;
         }
 
-        template bool RINGMESH_API point_inside_triangle(
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
-        template bool RINGMESH_API point_inside_segment(
+        template bool basic_api point_inside_segment(
             const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
 
-        template bool RINGMESH_API point_inside_triangle(
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
 
-        template bool RINGMESH_API point_inside_segment(
+        template bool basic_api point_inside_segment(
             const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
     } // namespace Position
 } // namespace RINGMesh

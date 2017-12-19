@@ -193,7 +193,7 @@ namespace RINGMesh
         {
             if( index_map[p] == p )
             {
-                unique_points.push_back( point( p ) );
+                unique_points.emplace_back( point( p ) );
                 index_map[p] = p - offset;
             }
             else
@@ -224,6 +224,6 @@ namespace RINGMesh
         return impl_->get_neighbors( v, nb_neighbors );
     }
 
-    template class RINGMESH_API NNSearch< 2 >;
-    template class RINGMESH_API NNSearch< 3 >;
+    template class basic_api NNSearch< 2 >;
+    template class basic_api NNSearch< 3 >;
 } // namespace RINGMesh

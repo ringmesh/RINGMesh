@@ -35,13 +35,10 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/common.h>
 
 #include <geogram/basic/command_line.h>
 
-#include <geogram/mesh/mesh_preprocessing.h>
-
-#include <geogram/voronoi/CVT.h>
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
@@ -68,11 +65,6 @@ public:                                                                        \
     void do_clear( bool keep_attributes, bool keep_memory ) override           \
     {                                                                          \
         mesh_.mesh_->clear( keep_attributes, keep_memory );                    \
-    }                                                                          \
-    void do_repair( GEO::MeshRepairMode mode, double colocate_epsilon )        \
-        override                                                               \
-    {                                                                          \
-        GEO::mesh_repair( *mesh_.mesh_, mode, colocate_epsilon );              \
     }                                                                          \
     void do_set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )        \
         override                                                               \
@@ -117,8 +109,7 @@ private:                                                                       \
     Class< DIMENSION >& mesh_
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramPointSetMeshBuilder
-        : public PointSetMeshBuilder< DIMENSION >
+    class GeogramPointSetMeshBuilder : public PointSetMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramPointSetMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -134,8 +125,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramPointSetMeshBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramLineMeshBuilder
-        : public LineMeshBuilder< DIMENSION >
+    class GeogramLineMeshBuilder : public LineMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramLineMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -188,8 +178,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramLineMeshBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramSurfaceMeshBuilder
-        : public SurfaceMeshBuilder< DIMENSION >
+    class GeogramSurfaceMeshBuilder : public SurfaceMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramSurfaceMesh );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -199,28 +188,6 @@ private:                                                                       \
             : SurfaceMeshBuilder< DIMENSION >( mesh ),
               mesh_( dynamic_cast< GeogramSurfaceMesh< DIMENSION >& >( mesh ) )
         {
-        }
-
-        void remove_small_connected_components(
-            double min_area, index_t min_polygons ) override
-        {
-            GEO::remove_small_connected_components(
-                *mesh_.mesh_, min_area, min_polygons );
-        }
-
-        void triangulate(
-            const SurfaceMeshBase< DIMENSION >& surface_in ) override
-        {
-            Logger::instance()->set_minimal( true );
-            const auto& geogram_surf_in =
-                dynamic_cast< const GeogramSurfaceMesh< DIMENSION >& >(
-                    surface_in );
-            GEO::CentroidalVoronoiTesselation CVT( geogram_surf_in.mesh_.get(),
-                3, GEO::CmdLine::get_arg( "algo:delaunay" ) );
-            CVT.set_points(
-                mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
-            CVT.compute_surface( mesh_.mesh_.get(), false );
-            Logger::instance()->set_minimal( false );
         }
 
         index_t do_create_polygon(
@@ -282,8 +249,7 @@ private:                                                                       \
     ALIAS_2D_AND_3D( GeogramSurfaceMeshBuilder );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeogramVolumeMeshBuilder
-        : public VolumeMeshBuilder< DIMENSION >
+    class GeogramVolumeMeshBuilder : public VolumeMeshBuilder< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_BUILDER_IMPLEMENTATION( GeogramVolumeMesh );
         ringmesh_template_assert_3d( DIMENSION );

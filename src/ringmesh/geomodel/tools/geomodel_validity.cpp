@@ -249,13 +249,11 @@ namespace
                 index_t v21{ polygons.vertex(
                     { p2, ( v2 + 1 ) % polygons.nb_vertices( p2 ) } ) };
 
-                if( ( v10 == v20 && v11 == v21 )
-                    || ( v10 == v21 && v11 == v20 ) )
+                if( ( ( v10 == v20 && v11 == v21 )
+                        || ( v10 == v21 && v11 == v20 ) )
+                    && ( is_edge_on_line( geomodel, v20, v21 ) ) )
                 {
-                    if( is_edge_on_line( geomodel, v20, v21 ) )
-                    {
-                        return true;
-                    }
+                    return true;
                 }
             }
         }
@@ -1027,7 +1025,7 @@ namespace
         {
             const auto& v0 = vertices.vertex( edge_indices[e] );
             const auto& v1 = vertices.vertex( edge_indices[e + 1] );
-            edge_barycenters.push_back( ( v0 + v1 ) * 0.5 );
+            edge_barycenters.emplace_back( ( v0 + v1 ) * 0.5 );
         }
         return edge_barycenters;
     }
@@ -1472,7 +1470,7 @@ namespace RINGMesh
         return GEO::CmdLine::get_arg( "validity:directory" );
     }
 
-    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg()
+    ValidityCheckMode geomodel_tools_api get_validity_mode_from_arg()
     {
         return interpret_validity_check_mode(
             GEO::CmdLine::get_arg( "validity:do_not_check" ) );
@@ -1625,7 +1623,7 @@ namespace RINGMesh
     bool has_geomodel_finite_extension( const GeoModel< DIMENSION >& geomodel );
 
     template <>
-    bool RINGMESH_API has_geomodel_finite_extension< 2 >(
+    bool geomodel_tools_api has_geomodel_finite_extension< 2 >(
         const GeoModel2D& geomodel )
     {
         const auto& geomodelmesh = geomodel.mesh;
@@ -1638,16 +1636,14 @@ namespace RINGMesh
             all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
         }
 
-        auto line = LineMesh2D::create_mesh();
-        ringmesh_assert( line != nullptr );
-        auto builder = LineMeshBuilder2D::create_builder( *line );
-        ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
+        GeogramLineMesh2D line;
+        GeogramLineMeshBuilder2D builder( line );
+        auto start = builder.create_vertices( geomodelmesh_vertices.nb() );
         ringmesh_unused( start );
         ringmesh_assert( start == 0 );
         for( auto v_i : range( geomodelmesh_vertices.nb() ) )
         {
-            builder->set_vertex( v_i, all_points[v_i] );
+            builder.set_vertex( v_i, all_points[v_i] );
         }
 
         const auto voi_lines = geomodel.voi_lines();
@@ -1659,19 +1655,19 @@ namespace RINGMesh
             {
                 auto v0 = geomodelmesh_edges.vertex( { edge_i, 0 } );
                 auto v1 = geomodelmesh_edges.vertex( { edge_i, 1 } );
-                builder->create_edge( v0, v1 );
+                builder.create_edge( v0, v1 );
             }
         }
 
         // As the geomodel lines are independent meshes, they have different
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
-        // The following repair merges such vertices and enables a homogeneous
         // line orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        GEO::mesh_repair(
+            line.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
-            line->connected_components();
+            line.connected_components();
 
         if( nb_connected_components != 1 )
         {
@@ -1682,7 +1678,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool RINGMESH_API has_geomodel_finite_extension< 3 >(
+    bool geomodel_tools_api has_geomodel_finite_extension< 3 >(
         const GeoModel3D& geomodel )
     {
         const auto& geomodelmesh = geomodel.mesh;
@@ -1695,16 +1691,14 @@ namespace RINGMesh
             all_points.push_back( geomodelmesh_vertices.vertex( v_i ) );
         }
 
-        auto surface = SurfaceMesh3D::create_mesh();
-        ringmesh_assert( surface != nullptr );
-        auto builder = SurfaceMeshBuilder3D::create_builder( *surface );
-        ringmesh_assert( builder != nullptr );
-        auto start = builder->create_vertices( geomodelmesh_vertices.nb() );
+        GeogramSurfaceMesh3D surface;
+        GeogramSurfaceMeshBuilder3D builder( surface );
+        auto start = builder.create_vertices( geomodelmesh_vertices.nb() );
         ringmesh_unused( start );
         ringmesh_assert( start == 0 );
         for( auto v_i : range( geomodelmesh_vertices.nb() ) )
         {
-            builder->set_vertex( v_i, all_points[v_i] );
+            builder.set_vertex( v_i, all_points[v_i] );
         }
 
         const auto voi_surfaces = geomodel.voi_surfaces();
@@ -1723,28 +1717,29 @@ namespace RINGMesh
                     polygon_vertices[v_i] =
                         geomodelmesh_polygons.vertex( { polygon_i, v_i } );
                 }
-                builder->create_polygon( polygon_vertices );
+                builder.create_polygon( polygon_vertices );
             }
         }
 
-        for( auto p : range( surface->nb_polygons() ) )
+        for( auto p : range( surface.nb_polygons() ) )
         {
-            for( auto v : range( surface->nb_polygon_vertices( p ) ) )
+            for( auto v : range( surface.nb_polygon_vertices( p ) ) )
             {
-                builder->set_polygon_adjacent( { p, v }, NO_ID );
+                builder.set_polygon_adjacent( { p, v }, NO_ID );
             }
         }
 
-        builder->connect_polygons();
+        builder.connect_polygons();
         // As the geomodel surfaces are independent meshes, they have different
         // orientations (normal directions). So, the merge of these surfaces may
         // produce several connected components with colocated vertices.
         // The following repair merges such vertices and enables a homogeneous
         // surface orientation [BC].
-        builder->repair( GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
+        GEO::mesh_repair(
+            surface.geogram_mesh(), GEO::MESH_REPAIR_TOPOLOGY, global_epsilon );
         index_t nb_connected_components;
         std::tie( nb_connected_components, std::ignore ) =
-            surface->connected_components();
+            surface.connected_components();
 
         if( nb_connected_components != 1 )
         {
@@ -1754,26 +1749,26 @@ namespace RINGMesh
         return true;
     }
 
-    template bool RINGMESH_API is_geomodel_valid< 2 >(
+    template bool geomodel_tools_api is_geomodel_valid< 2 >(
         const GeoModel2D&, ValidityCheckMode );
-    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel2D& );
-    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+    template bool geomodel_tools_api are_geomodel_geological_entities_valid(
         const GeoModel2D& );
 
-    template bool RINGMESH_API is_geomodel_valid< 3 >(
+    template bool geomodel_tools_api is_geomodel_valid< 3 >(
         const GeoModel3D&, ValidityCheckMode );
-    template bool RINGMESH_API are_geomodel_mesh_entities_mesh_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_connectivity_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_mesh_entities_parent_valid(
+    template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel3D& );
-    template bool RINGMESH_API are_geomodel_geological_entities_valid(
+    template bool geomodel_tools_api are_geomodel_geological_entities_valid(
         const GeoModel3D& );
 
 } // namespace RINGMesh

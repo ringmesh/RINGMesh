@@ -42,11 +42,26 @@
 #include <ringmesh/basic/geometry.h>
 #include <stack>
 
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 namespace RINGMesh
 {
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& MeshBase< DIMENSION >::vertex_nn_search() const
+    {
+        if( !vertex_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
+            for( auto v : range( nb_vertices() ) )
+            {
+                vec_vertices[v] = vertex( v );
+            }
+            vertex_nn_search_.reset(
+                new NNSearch< DIMENSION >( vec_vertices, true ) );
+        }
+        return *vertex_nn_search_.get();
+    }
+
     template < index_t DIMENSION >
     std::unique_ptr< PointSetMesh< DIMENSION > >
         PointSetMesh< DIMENSION >::create_mesh( const MeshType type )
@@ -54,7 +69,13 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
-            new_type = GeogramPointSetMesh< DIMENSION >::type_name_static();
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "PointSetMesh",
+                    "Default mesh data structure not registered" );
+            }
+            return create_mesh( "GeogramPointSetMesh" );
         }
         auto mesh = PointSetMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -64,7 +85,7 @@ namespace RINGMesh
             Logger::warn( "PointSetMesh",
                 "Falling back to GeogramPointSetMesh data structure" );
 
-            mesh.reset( new GeogramPointSetMesh< DIMENSION > );
+            return create_mesh();
         }
         return mesh;
     }
@@ -86,7 +107,13 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
-            new_type = GeogramLineMesh< DIMENSION >::type_name_static();
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "LineMesh",
+                    "Default mesh data structure not registered" );
+            }
+            return create_mesh( "GeogramLineMesh" );
         }
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -96,9 +123,35 @@ namespace RINGMesh
             Logger::warn(
                 "LineMesh", "Falling back to GeogramLineMesh data structure" );
 
-            mesh.reset( new GeogramLineMesh< DIMENSION > );
+            return create_mesh();
         }
         return mesh;
+    }
+
+    template < index_t DIMENSION >
+    const NNSearch< DIMENSION >& LineMesh< DIMENSION >::edge_nn_search() const
+    {
+        if( !edge_nn_search_ )
+        {
+            std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
+            for( auto e : range( nb_edges() ) )
+            {
+                edge_centers[e] = edge_barycenter( e );
+            }
+            edge_nn_search_.reset(
+                new NNSearch< DIMENSION >( edge_centers, true ) );
+        }
+        return *edge_nn_search_.get();
+    }
+
+    template < index_t DIMENSION >
+    const LineAABBTree< DIMENSION >& LineMesh< DIMENSION >::edge_aabb() const
+    {
+        if( !edge_aabb_ )
+        {
+            edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
+        }
+        return *edge_aabb_.get();
     }
 
     template < index_t DIMENSION >
@@ -283,7 +336,13 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
-            new_type = GeogramSurfaceMesh< DIMENSION >::type_name_static();
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "SurfaceMesh",
+                    "Default mesh data structure not registered" );
+            }
+            return create_mesh( "GeogramSurfaceMesh" );
         }
         auto mesh = SurfaceMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -293,7 +352,7 @@ namespace RINGMesh
             Logger::warn( "SurfaceMesh",
                 "Falling back to GeogramSurfaceMesh data structure" );
 
-            mesh.reset( new GeogramSurfaceMesh< DIMENSION > );
+            return create_mesh();
         }
         return mesh;
     }
@@ -611,23 +670,17 @@ namespace RINGMesh
                     auto prev = prev_polygon_vertex( { p, v } ).local_vertex_id;
                     auto adj_prev = polygon_adjacent( { p, prev } );
 
-                    if( adj_P != NO_ID )
+                    if( adj_P != NO_ID && !contains( visited, adj_P ) )
                     {
                         // The edge starting at P is not on the boundary
-                        if( !contains( visited, adj_P ) )
-                        {
-                            S.push( adj_P );
-                            visited.push_back( adj_P );
-                        }
+                        S.push( adj_P );
+                        visited.push_back( adj_P );
                     }
-                    if( adj_prev != NO_ID )
+                    if( adj_prev != NO_ID && !contains( visited, adj_prev ) )
                     {
                         // The edge ending at P is not on the boundary
-                        if( !contains( visited, adj_prev ) )
-                        {
-                            S.push( adj_prev );
-                            visited.push_back( adj_prev );
-                        }
+                        S.push( adj_prev );
+                        visited.push_back( adj_prev );
                     }
 
                     if( border_only )
@@ -808,7 +861,13 @@ namespace RINGMesh
         auto new_type = type;
         if( new_type.empty() )
         {
-            new_type = GeogramVolumeMesh< DIMENSION >::type_name_static();
+            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+                "GeogramPointSetMesh" ) )
+            {
+                throw RINGMeshException( "VolumeMesh",
+                    "Default mesh data structure not registered" );
+            }
+            return create_mesh( "GeogramVolumeMesh" );
         }
         auto mesh = VolumeMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
@@ -818,7 +877,7 @@ namespace RINGMesh
             Logger::warn( "VolumeMesh",
                 "Falling back to GeogramVolumeMesh data structure" );
 
-            mesh.reset( new GeogramVolumeMesh< DIMENSION > );
+            return create_mesh();
         }
         return mesh;
     }
@@ -1054,14 +1113,10 @@ namespace RINGMesh
                     if( vertex == vertex_id )
                     {
                         auto adj_P = cell_adjacent( { c, f } );
-
-                        if( adj_P != NO_ID )
+                        if( adj_P != NO_ID && !contains( visited, adj_P ) )
                         {
-                            if( !contains( visited, adj_P ) )
-                            {
-                                S.push( adj_P );
-                                visited.push_back( adj_P );
-                            }
+                            S.push( adj_P );
+                            visited.push_back( adj_P );
                         }
                         break;
                     }
@@ -1143,15 +1198,17 @@ namespace RINGMesh
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
-    template class RINGMESH_API PointSetMesh< 2 >;
-    template class RINGMESH_API LineMesh< 2 >;
-    template class RINGMESH_API SurfaceMeshBase< 2 >;
-    template class RINGMESH_API MeshSetBase< 2 >;
-    template class RINGMESH_API MeshSet< 2 >;
+    template class mesh_api MeshBase< 2 >;
+    template class mesh_api PointSetMesh< 2 >;
+    template class mesh_api LineMesh< 2 >;
+    template class mesh_api SurfaceMeshBase< 2 >;
+    template class mesh_api MeshSetBase< 2 >;
+    template class mesh_api MeshSet< 2 >;
 
-    template class RINGMESH_API PointSetMesh< 3 >;
-    template class RINGMESH_API LineMesh< 3 >;
-    template class RINGMESH_API SurfaceMeshBase< 3 >;
-    template class RINGMESH_API VolumeMesh< 3 >;
-    template class RINGMESH_API MeshSetBase< 3 >;
+    template class mesh_api MeshBase< 3 >;
+    template class mesh_api PointSetMesh< 3 >;
+    template class mesh_api LineMesh< 3 >;
+    template class mesh_api SurfaceMeshBase< 3 >;
+    template class mesh_api VolumeMesh< 3 >;
+    template class mesh_api MeshSetBase< 3 >;
 } // namespace RINGMesh

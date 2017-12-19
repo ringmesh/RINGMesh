@@ -44,7 +44,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
@@ -1221,11 +1221,11 @@ namespace RINGMesh
                        } )
                    > 0 )
             {
-                std::vector< OrientedLine > cur_surface_boundaries =
-                    get_surface_boundaries(
-                        surface_counter, line_indicent_surfaces );
+                auto cur_surface_boundaries = get_surface_boundaries(
+                    surface_counter, line_indicent_surfaces );
 
-                surface_boundary_lines.push_back( cur_surface_boundaries );
+                surface_boundary_lines.emplace_back(
+                    std::move( cur_surface_boundaries ) );
                 ++surface_counter;
             }
         }
@@ -1505,10 +1505,10 @@ namespace RINGMesh
         remove.remove_mesh_entities( to_erase );
     }
 
-    template class RINGMESH_API GeoModelBuilderBase< 2 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 2 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderBase< 3 >;
-    template class RINGMESH_API GeoModelBuilderInfo< 3 >;
+    template class geomodel_builder_api GeoModelBuilderBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderInfo< 3 >;
 
 } // namespace RINGMesh

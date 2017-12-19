@@ -777,28 +777,28 @@ namespace RINGMesh
         incident_entity_access.modifiable_sides().push_back( side );
     }
 
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 2 >::create_mesh_entity< Corner >(
             const MeshType& );
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 2 >::create_mesh_entity< Line >(
             const MeshType& );
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 2 >::create_mesh_entity< Surface >(
             const MeshType& );
-    template class RINGMESH_API GeoModelBuilderTopologyBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderTopologyBase< 2 >;
 
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 3 >::create_mesh_entity< Corner >(
             const MeshType& );
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 3 >::create_mesh_entity< Line >(
             const MeshType& );
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 3 >::create_mesh_entity< Surface >(
             const MeshType& );
-    template gmme_id RINGMESH_API
+    template gmme_id geomodel_builder_api
         GeoModelBuilderTopologyBase< 3 >::create_mesh_entity< Region >(
             const MeshType& );
-    template class RINGMESH_API GeoModelBuilderTopologyBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderTopologyBase< 3 >;
 } // namespace RINGMesh

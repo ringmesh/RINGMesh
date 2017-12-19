@@ -37,11 +37,12 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/well.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * @file Implements the input - output of WellGroup
@@ -52,8 +53,8 @@ namespace
 {
     using namespace RINGMesh;
 
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
+#include "well_group/io_smesh.hpp"
+#include "well_group/io_wl.hpp"
 }
 
 namespace RINGMesh

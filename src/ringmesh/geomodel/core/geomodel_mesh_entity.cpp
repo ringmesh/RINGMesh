@@ -206,10 +206,6 @@ namespace RINGMesh
     template < index_t DIMENSION >
     GeoModelMeshEntity< DIMENSION >::~GeoModelMeshEntity()
     {
-#ifdef RINGMESH_DEBUG
-        ringmesh_assert( mesh_ != nullptr );
-        mesh_->print_mesh_bounded_attributes();
-#endif
     }
 
     template < index_t DIMENSION >
@@ -867,7 +863,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool Line< 2 >::is_on_voi() const
+    bool geomodel_core_api Line< 2 >::is_on_voi() const
     {
         ringmesh_assert( this->nb_incident_entities() == 1
                          || this->nb_incident_entities() == 2 );
@@ -875,7 +871,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool Line< 3 >::is_on_voi() const
+    bool geomodel_core_api Line< 3 >::is_on_voi() const
     {
         // True if one of the incident surfaces defines the universe
         for( auto i : range( this->nb_incident_entities() ) )
@@ -1491,14 +1487,14 @@ namespace RINGMesh
         return Region3D::type_name_static();
     }
 
-    template class RINGMESH_API GeoModelMeshEntity< 2 >;
-    template class RINGMESH_API Corner< 2 >;
-    template class RINGMESH_API Line< 2 >;
-    template class RINGMESH_API SurfaceBase< 2 >;
+    template class geomodel_core_api GeoModelMeshEntity< 2 >;
+    template class geomodel_core_api Corner< 2 >;
+    template class geomodel_core_api Line< 2 >;
+    template class geomodel_core_api SurfaceBase< 2 >;
 
-    template class RINGMESH_API GeoModelMeshEntity< 3 >;
-    template class RINGMESH_API Corner< 3 >;
-    template class RINGMESH_API Line< 3 >;
-    template class RINGMESH_API SurfaceBase< 3 >;
-    template class RINGMESH_API Region< 3 >;
+    template class geomodel_core_api GeoModelMeshEntity< 3 >;
+    template class geomodel_core_api Corner< 3 >;
+    template class geomodel_core_api Line< 3 >;
+    template class geomodel_core_api SurfaceBase< 3 >;
+    template class geomodel_core_api Region< 3 >;
 } // namespace RINGMesh

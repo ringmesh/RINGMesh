@@ -36,6 +36,7 @@
 #include <array>
 
 #include <geogram/basic/algorithm.h>
+
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_repair.h>
@@ -66,7 +67,6 @@ namespace
         }
 
         /*!
-         * @brief Repair a GeoModel according a repair mode.
          * @param[in] repair_mode repair mode to apply.
          */
         void repair( RepairMode repair_mode )
@@ -97,6 +97,7 @@ namespace
             default:
                 ringmesh_assert_not_reached;
             }
+            geomodel_.mesh.vertices.clear();
         }
 
         ~GeoModelRepair() = default;
@@ -245,7 +246,7 @@ namespace
             auto nb = static_cast< index_t >(
                 std::count( degenerate.begin(), degenerate.end(), 1 ) );
             /// We have a problem if some vertices are left isolated
-            /// If we remove them here we can kill all indices correspondances
+            /// If we remove them here we can kill all index correspondences
             builder_.geometry.delete_line_edges(
                 line.index(), degenerate, false );
             return nb;
@@ -362,8 +363,8 @@ namespace
                 auto nb = repair_line_mesh( line );
                 if( nb > 0 )
                 {
-                    Logger::out( "GeoModel", nb,
-                        " degenerated edges removed in LINE ", line.index() );
+                    Logger::out( "Repair", nb, " degenerated edges removed in ",
+                        line.gmme() );
                     // If the Line is set it to remove
                     if( line.nb_mesh_elements() == 0 )
                     {
@@ -371,8 +372,6 @@ namespace
                     }
                 }
             }
-            // The builder might be needed
-
             double epsilon_sq = geomodel_.epsilon() * geomodel_.epsilon();
             for( const auto& surface : geomodel_.surfaces() )
             {
@@ -380,27 +379,14 @@ namespace
                 /// @todo Check if that cannot be simplified
                 if( nb > 0 )
                 {
-                    // If there are some degenerated polygons
-                    // Using repair function of geogram
-                    // Warning - This triangulates the mesh
                     if( surface.nb_vertices() > 0 )
                     {
-                        // Colocated vertices must be processed before
-                        // MESH_REPAIR_DUP_F 2 ;
-                        auto mode = static_cast< GEO::MeshRepairMode >( 2 );
                         auto builder = builder_.geometry.create_surface_builder(
                             surface.index() );
-                        builder->repair( mode, 0.0 );
-
-                        // This might create some small components - remove them
-                        builder->remove_small_connected_components(
-                            epsilon_sq, 3 );
-
-                        // Alright, this is a bit of an overkill [JP]
-                        if( surface.nb_vertices() > 0 )
-                        {
-                            builder->repair( mode, 0.0 );
-                        }
+                        remove_duplicated_or_degenerated_polygons(
+                            surface.mesh(), *builder );
+                        remove_small_connected_components(
+                            surface.mesh(), *builder, epsilon_sq, 3 );
                     }
                     if( surface.nb_vertices() == 0
                         || surface.nb_mesh_elements() == 0 )
@@ -409,6 +395,133 @@ namespace
                     }
                 }
             }
+        }
+
+        bool polygon_is_degenerate(
+            const SurfaceMesh< DIMENSION >& surface, index_t polygon_id )
+        {
+            if( surface.polygon_area( polygon_id ) < geomodel_.epsilon2() )
+            {
+                return true;
+            }
+
+            auto min_length = geomodel_.epsilon();
+            for( auto c : range( surface.nb_polygon_vertices( polygon_id ) ) )
+            {
+                if( surface.polygon_edge_length( { polygon_id, c } )
+                    < min_length )
+                {
+                    return false;
+                }
+            }
+            return false;
+        }
+
+        void detect_bad_facets( const SurfaceMesh< DIMENSION >& surface,
+            std::vector< bool >& remove_polygon )
+        {
+            const auto& polygon_search = surface.polygon_nn_search();
+            index_t nb_duplicates;
+            std::vector< index_t > mapping;
+            std::tie( nb_duplicates, mapping ) =
+                polygon_search.get_colocated_index_mapping(
+                    geomodel_.epsilon() );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                if( mapping[p] != p )
+                {
+                    remove_polygon[p] = true;
+                    // Check if duplicated polygons are adjacent
+                    for( auto v : range( surface.nb_polygon_vertices( p ) ) )
+                    {
+                        if( surface.polygon_adjacent( { p, v } ) == mapping[p] )
+                        {
+                            // If the duplicated polygons are adjacent, the
+                            // shared
+                            // edges will become a non-manifold edge.
+                            // The two polygons should be removed.
+                            remove_polygon[mapping[p]] = true;
+                            break;
+                        }
+                    }
+                }
+            }
+
+            index_t nb_degenerate = 0;
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                if( !remove_polygon[p] && polygon_is_degenerate( surface, p ) )
+                {
+                    nb_degenerate++;
+                    remove_polygon[p] = true;
+                }
+            }
+            if( nb_duplicates != 0 || nb_degenerate != 0 )
+            {
+                Logger::out( "Repair", "Detected ", nb_duplicates,
+                    " duplicate and ", nb_degenerate, " degenerate facets." );
+            }
+        }
+
+        void remove_duplicated_or_degenerated_polygons(
+            const SurfaceMesh< DIMENSION >& surface,
+            SurfaceMeshBuilder< DIMENSION >& builder )
+        {
+            std::vector< bool > remove_polygon( surface.nb_polygons(), false );
+            detect_bad_facets( surface, remove_polygon );
+            builder.delete_polygons( remove_polygon, false );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                for( auto v : range( surface.nb_polygon_vertices( p ) ) )
+                {
+                    builder.set_polygon_adjacent( { p, v }, NO_ID );
+                }
+            }
+            builder.connect_polygons();
+        }
+
+        /*!
+         * \brief Removes the connected components that have an area
+         *  smaller than a given threshold.
+         * \param[in] min_area the connected components with an
+         *  area smaller than this threshold are removed
+         * \param[in] min_polygons the connected components with
+         *  less than \param min_polygons polygons are removed
+         */
+        void remove_small_connected_components(
+            const SurfaceMesh< DIMENSION >& surface,
+            SurfaceMeshBuilder< DIMENSION >& builder,
+            double min_area,
+            index_t min_polygons )
+        {
+            std::vector< index_t > components;
+            index_t nb_components;
+            std::tie( nb_components, components ) =
+                surface.connected_components();
+            if( nb_components == 0 )
+            {
+                return;
+            }
+            std::vector< double > comp_area( nb_components, 0.0 );
+            std::vector< index_t > comp_polygons( nb_components, 0 );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                comp_area[components[p]] += surface.polygon_area( p );
+                ++comp_polygons[components[p]];
+            }
+
+            std::vector< bool > polygon_to_delete(
+                surface.nb_polygons(), false );
+            for( auto p : range( surface.nb_polygons() ) )
+            {
+                auto component = components[p];
+                if( comp_area[component] < min_area
+                    || comp_polygons[component] < min_polygons )
+                {
+                    polygon_to_delete[p] = true;
+                }
+            }
+            builder.delete_polygons( polygon_to_delete, true );
         }
 
         /*!
@@ -648,7 +761,7 @@ namespace RINGMesh
         repairer.repair( repair_mode );
     }
 
-    template void RINGMESH_API repair_geomodel( GeoModel2D&, RepairMode );
+    template void geomodel_tools_api repair_geomodel( GeoModel2D&, RepairMode );
 
-    template void RINGMESH_API repair_geomodel( GeoModel3D&, RepairMode );
+    template void geomodel_tools_api repair_geomodel( GeoModel3D&, RepairMode );
 } // namespace RINGMesh

@@ -44,29 +44,17 @@
 #include <geogram/basic/command_line_args.h>
 #include <geogram/basic/common.h>
 
-#ifdef RINGMESH_WITH_GRAPHICS
-#include <geogram_gfx/basic/common.h>
-#endif
-
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geogram_extension/geogram_extension.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
-#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
-#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
-#include <ringmesh/io/io.h>
-#include <ringmesh/tetrahedralize/tetra_gen.h>
-#include <ringmesh/visualize/geogram_gfx.h>
+#include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/plugin_manager.h>
 
-namespace RINGMesh
+namespace
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
     void configure_geogram()
     {
-        Logger::instance()->unregister_all_clients();
-        Logger::instance()->register_client( new ThreadSafeConsoleLogger );
+        RINGMesh::Logger::instance()->unregister_all_clients();
+        RINGMesh::Logger::instance()->register_client(
+            new RINGMesh::ThreadSafeConsoleLogger );
         GEO::CmdLine::import_arg_group( "sys" );
 #ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" );
@@ -76,33 +64,30 @@ namespace RINGMesh
         GEO::CmdLine::set_arg( "algo:predicates", "exact" );
         GEO::CmdLine::import_arg_group( "log" );
         GEO::CmdLine::set_arg( "sys:use_doubles", true );
-#ifdef RINGMESH_WITH_GRAPHICS
-        GEO::CmdLine::import_arg_group( "gfx" );
-#endif
     }
 
     void configure_ringmesh()
     {
-        CmdLine::import_arg_group( "global" );
-        CmdLine::import_arg_group( "validity" );
-        mesh_initialize();
-        TetraGen::initialize();
-        GeoModelGeologicalEntity2D::initialize();
-        GeoModelGeologicalEntity3D::initialize();
-        ringmesh_mesh_io_initialize();
-        initialize_gocad_import_factories();
-        register_geogram_mesh();
-#ifdef RINGMESH_WITH_GRAPHICS
-        register_geogram_mesh_gfx();
-#endif
+        RINGMesh::CmdLine::import_arg_group( "global" );
+        RINGMesh::CmdLine::import_arg_group( "validity" );
     }
 
-    void default_configure()
-    {
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_basic,
+        // Plugin initialization
         GEO::initialize();
         configure_geogram();
         configure_ringmesh();
-    }
+    );
+
+} // namespace
+
+namespace RINGMesh
+{
+    /*!
+     * This function configures geogram by setting some geogram options.
+     * \pre This function should be call after GEO::initialize().
+     */
 
     void print_header_information()
     {
@@ -118,4 +103,19 @@ namespace RINGMesh
             "projects of the team: " );
         Logger::out( "", "http://www.ring-team.org" );
     }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > initialize_vecn_coordinates( double value )
+    {
+        index_t nb_coords = DIMENSION;
+        vecn< DIMENSION > vec;
+        for( auto coord : range( nb_coords ) )
+        {
+            vec[coord] = value;
+        }
+        return vec;
+    }
+
+    template vec2 basic_api initialize_vecn_coordinates( double );
+    template vec3 basic_api initialize_vecn_coordinates( double );
 } // namespace RINGMesh

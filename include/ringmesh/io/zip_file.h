@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/io/common.h>
 
 #include <ringmesh/basic/pimpl.h>
 
@@ -46,7 +46,7 @@
 
 namespace RINGMesh
 {
-    class RINGMESH_API ZipFile
+    class io_api ZipFile
     {
     public:
         explicit ZipFile( const std::string& filename );
@@ -58,7 +58,7 @@ namespace RINGMesh
         IMPLEMENTATION_MEMBER( impl_ );
     };
 
-    class RINGMESH_API UnZipFile
+    class io_api UnZipFile
     {
     public:
         explicit UnZipFile(

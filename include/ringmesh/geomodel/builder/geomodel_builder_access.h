@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 /*!
  * @brief Classes to access the GeoModel and its Entities
@@ -73,7 +73,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEntityConstAccess
+    class geomodel_builder_api GeoModelMeshEntityConstAccess
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntityConstAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -111,7 +111,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEntityAccess
+    class geomodel_builder_api GeoModelMeshEntityAccess
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -188,7 +188,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshEntityAccess );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelGeologicalEntityAccess
+    class geomodel_builder_api GeoModelGeologicalEntityAccess
     {
         ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION >;
@@ -240,7 +240,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelAccess
+    class geomodel_builder_api GeoModelAccess
     {
         ringmesh_disable_copy_and_move( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -275,8 +275,8 @@ namespace RINGMesh
         GeoModelMeshEntity< DIMENSION >& modifiable_mesh_entity(
             const gmme_id& id );
 
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
+        std::vector< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
             modifiable_geological_entities();
 
         std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&

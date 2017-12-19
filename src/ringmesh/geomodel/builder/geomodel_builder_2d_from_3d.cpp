@@ -37,8 +37,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_2d_from_3d.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
-#include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 namespace
@@ -72,8 +71,8 @@ namespace RINGMesh
           plane_( plane )
     {
         PlaneReferenceFrame3D plane_frame( plane );
-        u_axis_ = std::move( plane_frame.u );
-        v_axis_ = std::move( plane_frame.v );
+        u_axis_ = std::move( plane_frame[0] );
+        v_axis_ = std::move( plane_frame[1] );
     }
 
     vec2 GeoModelBuilder2DFrom3D::get_2d_coord( const vec3& coord3d )

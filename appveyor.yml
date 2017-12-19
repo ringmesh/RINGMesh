@@ -1,6 +1,8 @@
 version: 1.0.{build}
 
-image: Visual Studio 2013
+image:
+  - Visual Studio 2013
+  - Visual Studio 2015
 
 environment:
   password:
@@ -15,14 +17,10 @@ build_script:
     
     cd build
     
-    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DBUILD_RINGMESH_VIEW:BOOL=ON -DRINGMESH_TEST_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
     
     cmake --build . --config Debug
     
 test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Debug
+ - cmd: cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug
 
-on_success:
- - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
-     C:\projects\ringmesh\tools\launch_coverage.cmd
-   )
