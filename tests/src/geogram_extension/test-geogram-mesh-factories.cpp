@@ -51,67 +51,67 @@
 
 using namespace RINGMesh;
 
-void throw_error_key( const std::string& factory_name, const std::string& key_name )
+void throw_error_key(
+    const std::string& factory_name, const std::string& key_name )
 {
     throw RINGMeshException( "RINGMesh Test", "Factory ", factory_name,
         " has no register for the key: ", key_name );
 }
 
-#define test_key_in_factory( Factory, Key )                     \
-    if( !Factory::has_creator( Key ) )                          \
-    {                                                           \
-        throw_error_key( #Factory, Key );                       \
-    }                                                           \
-
+#define test_key_in_factory( Factory, Key )                                    \
+    if( !Factory::has_creator( Key ) )                                         \
+    {                                                                          \
+        throw_error_key( #Factory, Key );                                      \
+    }
 
 void test_geogram_factory_2D()
 {
-    test_key_in_factory( PointSetMeshFactory2D,
-        GeogramPointSetMesh2D::type_name_static() );
-    test_key_in_factory( LineMeshFactory2D, GeogramLineMesh2D::type_name_static() );
-    test_key_in_factory( SurfaceMeshFactory2D,
-        GeogramSurfaceMesh2D::type_name_static() );
+    test_key_in_factory(
+        PointSetMeshFactory2D, GeogramPointSetMesh2D::type_name_static() );
+    test_key_in_factory(
+        LineMeshFactory2D, GeogramLineMesh2D::type_name_static() );
+    test_key_in_factory(
+        SurfaceMeshFactory2D, GeogramSurfaceMesh2D::type_name_static() );
 
     test_key_in_factory( PointSetMeshBuilderFactory2D,
         GeogramPointSetMesh2D::type_name_static() );
-    test_key_in_factory( LineMeshBuilderFactory2D,
-        GeogramLineMesh2D::type_name_static() );
-    test_key_in_factory( SurfaceMeshBuilderFactory2D,
-        GeogramSurfaceMesh2D::type_name_static() );
+    test_key_in_factory(
+        LineMeshBuilderFactory2D, GeogramLineMesh2D::type_name_static() );
+    test_key_in_factory(
+        SurfaceMeshBuilderFactory2D, GeogramSurfaceMesh2D::type_name_static() );
 }
 
 void test_geogram_factory_3D()
 {
-    test_key_in_factory( PointSetMeshFactory3D,
-        GeogramPointSetMesh3D::type_name_static() );
-    test_key_in_factory( LineMeshFactory3D, GeogramLineMesh3D::type_name_static() );
-    test_key_in_factory( SurfaceMeshFactory3D,
-        GeogramSurfaceMesh3D::type_name_static() );
-    test_key_in_factory( VolumeMeshFactory3D,
-        GeogramVolumeMesh3D::type_name_static() );
+    test_key_in_factory(
+        PointSetMeshFactory3D, GeogramPointSetMesh3D::type_name_static() );
+    test_key_in_factory(
+        LineMeshFactory3D, GeogramLineMesh3D::type_name_static() );
+    test_key_in_factory(
+        SurfaceMeshFactory3D, GeogramSurfaceMesh3D::type_name_static() );
+    test_key_in_factory(
+        VolumeMeshFactory3D, GeogramVolumeMesh3D::type_name_static() );
 
     test_key_in_factory( PointSetMeshBuilderFactory3D,
         GeogramPointSetMesh3D::type_name_static() );
-    test_key_in_factory( LineMeshBuilderFactory3D,
-        GeogramLineMesh3D::type_name_static() );
-    test_key_in_factory( SurfaceMeshBuilderFactory3D,
-        GeogramSurfaceMesh3D::type_name_static() );
-    test_key_in_factory( VolumeMeshBuilderFactory3D,
-        GeogramVolumeMesh3D::type_name_static() );
+    test_key_in_factory(
+        LineMeshBuilderFactory3D, GeogramLineMesh3D::type_name_static() );
+    test_key_in_factory(
+        SurfaceMeshBuilderFactory3D, GeogramSurfaceMesh3D::type_name_static() );
+    test_key_in_factory(
+        VolumeMeshBuilderFactory3D, GeogramVolumeMesh3D::type_name_static() );
 }
-
 
 void test_geograph_mesh_io_initialize()
 {
-    test_key_in_factory( GEO::MeshIOHandlerFactory,
-        "ts" );
-    test_key_in_factory( GEO::MeshIOHandlerFactory,
-        "lin" );
+    test_key_in_factory( GEO::MeshIOHandlerFactory, "ts" );
+    test_key_in_factory( GEO::MeshIOHandlerFactory, "lin" );
 }
 
 int main()
 {
-    try {
+    try
+    {
         PluginManager::load_plugin( "RINGMesh_geogram_extension" );
 
         Logger::out( "TEST", "Is geogram plugin well loaded?" );
@@ -120,11 +120,14 @@ int main()
         test_geogram_factory_3D();
         // Test geogram mesh IO initialize (.ts and .lin)
         test_geograph_mesh_io_initialize();
-
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
