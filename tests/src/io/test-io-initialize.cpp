@@ -56,17 +56,17 @@ void throw_error_empty( const std::string& factory_name )
         "RINGMesh Test", "Factory ", factory_name, " has no register." );
 }
 
-#define test_factory_not_empty( Factory )                       \
-    if( Factory::list_creators().empty() )                      \
-    {                                                           \
-        throw_error_empty( #Factory );                          \
-    }                                                           \
+#define test_factory_not_empty( Factory )                                      \
+    if( Factory::list_creators().empty() )                                     \
+    {                                                                          \
+        throw_error_empty( #Factory );                                         \
+    }
 
 void test_mesh_initialize()
 {
     test_factory_not_empty( GeoModelInputHandlerFactory2D );
-    test_factory_not_empty(GeoModelInputHandlerFactory3D);
-    test_factory_not_empty(GeoModelOutputHandlerFactory2D);
+    test_factory_not_empty( GeoModelInputHandlerFactory3D );
+    test_factory_not_empty( GeoModelOutputHandlerFactory2D );
     test_factory_not_empty( GeoModelOutputHandlerFactory3D );
     test_factory_not_empty( WellGroupIOHandlerFactory );
 }
@@ -74,8 +74,8 @@ void test_mesh_initialize()
 void test_gocad_import_factories()
 {
     test_factory_not_empty( GocadLineFactory );
-    test_factory_not_empty(TSolidLineFactory);
-    test_factory_not_empty(MLLineFactory);
+    test_factory_not_empty( TSolidLineFactory );
+    test_factory_not_empty( MLLineFactory );
 }
 
 int main()

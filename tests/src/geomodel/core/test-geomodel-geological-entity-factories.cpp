@@ -56,12 +56,11 @@ void throw_error_empty( const std::string& factory_name )
         "RINGMesh Test", "Factory ", factory_name, " has no register." );
 }
 
-#define test_factory_not_empty( Factory )                       \
-    if( Factory::list_creators().empty() )                      \
-    {                                                           \
-        throw_error_empty( #Factory );                          \
-    }                                                           \
-
+#define test_factory_not_empty( Factory )                                      \
+    if( Factory::list_creators().empty() )                                     \
+    {                                                                          \
+        throw_error_empty( #Factory );                                         \
+    }
 
 void test_geomodel_geological_entity_factories()
 {
@@ -71,15 +70,20 @@ void test_geomodel_geological_entity_factories()
 
 int main()
 {
-    try {
+    try
+    {
         PluginManager::load_plugin( "RINGMesh_geomodel_core" );
 
         Logger::out( "TEST", "Are geological entity factories initialized?" );
         test_geomodel_geological_entity_factories();
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }

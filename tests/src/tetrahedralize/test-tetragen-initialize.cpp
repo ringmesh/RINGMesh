@@ -49,40 +49,46 @@
 
 using namespace RINGMesh;
 
-void throw_error_key( const std::string& factory_name, const std::string& key_name )
+void throw_error_key(
+    const std::string& factory_name, const std::string& key_name )
 {
     throw RINGMeshException( "RINGMesh Test", "Factory ", factory_name,
         " has no register for the key: ", key_name );
 }
 
-#define test_key_in_factory( Factory, Key )                     \
-    if( !Factory::has_creator( Key ) )                          \
-    {                                                           \
-        throw_error_key( #Factory, Key );                       \
-    }                                                           \
+#define test_key_in_factory( Factory, Key )                                    \
+    if( !Factory::has_creator( Key ) )                                         \
+    {                                                                          \
+        throw_error_key( #Factory, Key );                                      \
+    }
 
 void test_tetragen_initialize()
 {
 #ifdef RINGMESH_WITH_TETGEN
-    test_key_in_factory( TetraGenFactory, "TetGen"  );
+    test_key_in_factory( TetraGenFactory, "TetGen" );
 #endif
 
 #ifdef USE_MG_TETRA
-    test_key_in_factory( TetraGenFactory, "MG_Tetra"  );
+    test_key_in_factory( TetraGenFactory, "MG_Tetra" );
 #endif
 }
 
 int main()
 {
-    try {
+    try
+    {
         PluginManager::load_plugin( "RINGMesh_tetrahedralize" );
 
         Logger::out( "TEST", "Is tetragen initialized?" );
         test_tetragen_initialize();
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
