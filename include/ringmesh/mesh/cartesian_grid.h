@@ -126,10 +126,10 @@ namespace RINGMesh
                 ReferenceFrameManipulator< DIMENSION >::
                     coords_from_frame_to_global(
                         inverse_cartesian_frame_, reference_vertex ) );
-//        	return this->containing_cell_from_local_point(
-//        			ReferenceFrameManipulator< DIMENSION >::coords_from_global_to_frame(
-//        			cartesian_frame_, reference_vertex ) );
-
+            //        	return this->containing_cell_from_local_point(
+            //        			ReferenceFrameManipulator< DIMENSION
+            //        >::coords_from_global_to_frame(
+            //        			cartesian_frame_, reference_vertex ) );
         }
 
         sivecn< DIMENSION > containing_cell_from_local_point(
@@ -197,14 +197,14 @@ namespace RINGMesh
         }
 
         ReferenceFrame< DIMENSION > grid_vectors() const
-		{
-        	return cartesian_frame_;
-		}
+        {
+            return cartesian_frame_;
+        }
 
         ReferenceFrame< DIMENSION > inverse_grid_vectors() const
-		{
-        	return inverse_cartesian_frame_;
-		}
+        {
+            return inverse_cartesian_frame_;
+        }
 
         GEO::AttributesManager& attributes_manager() const
         {

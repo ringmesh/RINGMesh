@@ -93,11 +93,13 @@ void test_frames_and_cartesian_grid()
     {
         throw RINGMeshException( "TEST", "Error in cell volume" );
     }
-    if( cartesiangrid.cell_offset_from_global_point( vec3{ 103, 200.5, -3 } ) != 0 )
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 103, 200.5, -3 } )
+        != 0 )
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 1" );
     }
-    if( cartesiangrid.cell_offset_from_global_point( vec3{ 107, 201.5, -1 } ) != 91 )
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 107, 201.5, -1 } )
+        != 91 )
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 2" );
     }
