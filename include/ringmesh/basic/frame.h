@@ -258,14 +258,15 @@ namespace RINGMesh
             ReferenceFrame< DIMENSION > inverse_reference_frame;
             for( auto i : range( DIMENSION ) )
             {
+            	double square_length_i = ( reference_frame[i].length()
+                        * reference_frame[i].length() );
                 for( auto j : range( DIMENSION ) )
                 {
                     inverse_reference_frame.origin()[i] -=
                         reference_frame.origin()[j] * reference_frame[i][j]
-                        / ( reference_frame[i].length()
-                              * reference_frame[i].length() );
-                    inverse_reference_frame[i][j] =
-                        reference_frame[i][j] / reference_frame[i].length();
+                        / square_length_i;
+                    inverse_reference_frame[j][i] =
+                        reference_frame[i][j] / square_length_i;
                 }
             }
             return inverse_reference_frame;

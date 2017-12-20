@@ -77,7 +77,7 @@ void test_frames_and_cartesian_grid()
     ReferenceFrame3D inverse_frame =
         ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
             reference_frame );
-    if( inexact_equal( inverse_frame,
+    if( !inexact_equal( inverse_frame,
             ReferenceFrameManipulator3D::
                 orthogonal_reference_frame_from_global_to_local(
                     reference_frame ),
@@ -93,9 +93,17 @@ void test_frames_and_cartesian_grid()
     {
         throw RINGMeshException( "TEST", "Error in cell volume" );
     }
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 103, 200.5, -3 } ) != 0 )
+    {
+        throw RINGMeshException( "TEST", "Error in calculating the offset 1" );
+    }
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 107, 201.5, -1 } ) != 91 )
+    {
+        throw RINGMeshException( "TEST", "Error in calculating the offset 2" );
+    }
     if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } ) != -1 )
     {
-        throw RINGMeshException( "TEST", "Error in calculating the offset" );
+        throw RINGMeshException( "TEST", "Error in calculating the offset 3" );
     }
 }
 
