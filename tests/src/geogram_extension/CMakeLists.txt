@@ -32,4 +32,4 @@
 #     FRANCE
 
 
-
+add_ringmesh_test(test-geogram-mesh-factories.cpp mesh geogram_extension)
