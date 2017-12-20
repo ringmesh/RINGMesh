@@ -33,3 +33,4 @@
 
 add_ringmesh_test(test-load-geomodel.cpp io)
 add_ringmesh_test(test-save-geomodel.cpp io)
+add_ringmesh_test(test-io-initialize.cpp io)

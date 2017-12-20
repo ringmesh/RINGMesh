@@ -33,3 +33,4 @@
 
 add_ringmesh_test(test-geomodel-tetrahedralize-with-MGTetra.cpp tetrahedralize io)
 add_ringmesh_test(test-geomodel-tetrahedralize-with-TetGen.cpp tetrahedralize io)
+add_ringmesh_test(test-tetragen-initialize.cpp tetrahedralize)

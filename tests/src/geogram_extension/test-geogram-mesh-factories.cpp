@@ -36,6 +36,7 @@
 #include <ringmesh/ringmesh_tests_config.h>
 
 #include <ringmesh/basic/common.h>
+#include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/plugin_manager.h>
 
@@ -50,123 +51,80 @@
 
 using namespace RINGMesh;
 
-void throw_error_key(
-    const std::string& factory_name, const std::string& key_name )
+void throw_error_key( const std::string& factory_name, const std::string& key_name )
 {
     throw RINGMeshException( "RINGMesh Test", "Factory ", factory_name,
         " has no register for the key: ", key_name );
 }
 
+#define test_key_in_factory( Factory, Key )                     \
+    if( !Factory::has_creator( Key ) )                          \
+    {                                                           \
+        throw_error_key( #Factory, Key );                       \
+    }                                                           \
+
+
 void test_geogram_factory_2D()
 {
-    if( !PointSetMeshFactory2D::has_creator(
-            GeogramPointSetMesh2D::type_name_static() ) )
-    {
-        throw_error_key( "PointSetMeshFactory2D",
-            GeogramPointSetMesh2D::type_name_static() );
-    }
-    if( !LineMeshFactory2D::has_creator(
-            GeogramLineMesh2D::type_name_static() ) )
-    {
-        throw_error_key(
-            "LineMeshFactory2D", GeogramLineMesh2D::type_name_static() );
-    }
-    if( !SurfaceMeshFactory2D::has_creator(
-            GeogramSurfaceMesh2D::type_name_static() ) )
-    {
-        throw_error_key(
-            "SurfaceMeshFactory2D", GeogramSurfaceMesh2D::type_name_static() );
-    }
-    if( !PointSetMeshBuilderFactory2D::has_creator(
-            GeogramPointSetMesh2D::type_name_static() ) )
-    {
-        throw_error_key( "PointSetMeshBuilderFactory2D",
-            GeogramPointSetMesh2D::type_name_static() );
-    }
-    if( !LineMeshBuilderFactory2D::has_creator(
-            GeogramLineMesh2D::type_name_static() ) )
-    {
-        throw_error_key(
-            "LineMeshBuilderFactory2D", GeogramLineMesh2D::type_name_static() );
-    }
-    if( !SurfaceMeshBuilderFactory2D::has_creator(
-            GeogramSurfaceMesh2D::type_name_static() ) )
-    {
-        throw_error_key( "SurfaceMeshBuilderFactory2D",
-            GeogramSurfaceMesh2D::type_name_static() );
-    }
+    test_key_in_factory( PointSetMeshFactory2D,
+        GeogramPointSetMesh2D::type_name_static() );
+    test_key_in_factory( LineMeshFactory2D, GeogramLineMesh2D::type_name_static() );
+    test_key_in_factory( SurfaceMeshFactory2D,
+        GeogramSurfaceMesh2D::type_name_static() );
+
+    test_key_in_factory( PointSetMeshBuilderFactory2D,
+        GeogramPointSetMesh2D::type_name_static() );
+    test_key_in_factory( LineMeshBuilderFactory2D,
+        GeogramLineMesh2D::type_name_static() );
+    test_key_in_factory( SurfaceMeshBuilderFactory2D,
+        GeogramSurfaceMesh2D::type_name_static() );
 }
 
 void test_geogram_factory_3D()
 {
-    if( !PointSetMeshFactory3D::has_creator(
-            GeogramPointSetMesh3D::type_name_static() ) )
-    {
-        throw_error_key( "PointSetMeshFactory3D",
-            GeogramPointSetMesh3D::type_name_static() );
-    }
-    if( !LineMeshFactory3D::has_creator(
-            GeogramLineMesh3D::type_name_static() ) )
-    {
-        throw_error_key(
-            "LineMeshFactory3D", GeogramLineMesh3D::type_name_static() );
-    }
-    if( !SurfaceMeshFactory3D::has_creator(
-            GeogramSurfaceMesh3D::type_name_static() ) )
-    {
-        throw_error_key(
-            "SurfaceMeshFactory3D", GeogramSurfaceMesh3D::type_name_static() );
-    }
-    if( !VolumeMeshFactory3D::has_creator(
-            GeogramVolumeMesh3D::type_name_static() ) )
-    {
-        throw_error_key(
-            "VolumeMeshFactory3D", GeogramVolumeMesh3D::type_name_static() );
-    }
-    if( !PointSetMeshBuilderFactory3D::has_creator(
-            GeogramPointSetMesh3D::type_name_static() ) )
-    {
-        throw_error_key( "PointSetMeshBuilderFactory3D",
-            GeogramPointSetMesh3D::type_name_static() );
-    }
-    if( !LineMeshBuilderFactory3D::has_creator(
-            GeogramLineMesh3D::type_name_static() ) )
-    {
-        throw_error_key(
-            "LineMeshBuilderFactory3D", GeogramLineMesh3D::type_name_static() );
-    }
-    if( !SurfaceMeshBuilderFactory3D::has_creator(
-            GeogramSurfaceMesh3D::type_name_static() ) )
-    {
-        throw_error_key( "SurfaceMeshBuilderFactory3D",
-            GeogramSurfaceMesh3D::type_name_static() );
-    }
-    if( !VolumeMeshBuilderFactory3D::has_creator(
-            GeogramVolumeMesh3D::type_name_static() ) )
-    {
-        throw_error_key( "VolumeMeshBuilderFactory3D",
-            GeogramVolumeMesh3D::type_name_static() );
-    }
+    test_key_in_factory( PointSetMeshFactory3D,
+        GeogramPointSetMesh3D::type_name_static() );
+    test_key_in_factory( LineMeshFactory3D, GeogramLineMesh3D::type_name_static() );
+    test_key_in_factory( SurfaceMeshFactory3D,
+        GeogramSurfaceMesh3D::type_name_static() );
+    test_key_in_factory( VolumeMeshFactory3D,
+        GeogramVolumeMesh3D::type_name_static() );
+
+    test_key_in_factory( PointSetMeshBuilderFactory3D,
+        GeogramPointSetMesh3D::type_name_static() );
+    test_key_in_factory( LineMeshBuilderFactory3D,
+        GeogramLineMesh3D::type_name_static() );
+    test_key_in_factory( SurfaceMeshBuilderFactory3D,
+        GeogramSurfaceMesh3D::type_name_static() );
+    test_key_in_factory( VolumeMeshBuilderFactory3D,
+        GeogramVolumeMesh3D::type_name_static() );
+}
+
+
+void test_geograph_mesh_io_initialize()
+{
+    test_key_in_factory( GEO::MeshIOHandlerFactory,
+        "ts" );
+    test_key_in_factory( GEO::MeshIOHandlerFactory,
+        "lin" );
 }
 
 int main()
 {
-    try
-    {
+    try {
         PluginManager::load_plugin( "RINGMesh_geogram_extension" );
 
         Logger::out( "TEST", "Is geogram plugin well loaded?" );
         // Test geogram mesh register
         test_geogram_factory_2D();
         test_geogram_factory_3D();
-    }
-    catch( const RINGMeshException& e )
-    {
+        // Test geogram mesh IO initialize (.ts and .lin)
+        test_geograph_mesh_io_initialize();
+
+    } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
-    }
-    catch( const std::exception& e )
-    {
+    } catch( const std::exception& e ) {
         Logger::err( "Exception", e.what() );
         return 1;
     }
