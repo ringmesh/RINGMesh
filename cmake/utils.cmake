@@ -64,12 +64,17 @@ function(add_ringmesh_library directory)
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
     include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
     
-    export(TARGETS ${target_name} NAMESPACE RINGMesh:: FILE cmake/RINGMesh_${target_name}_target.cmake)
+    export(TARGETS ${target_name} 
+        NAMESPACE RINGMesh:: 
+        FILE cmake/RINGMesh_${target_name}_target.cmake
+    )
     generate_export_header(${target_name} 
         EXPORT_MACRO_NAME ${target_name}_api 
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
     )
-    install(TARGETS ${target_name} EXPORT ${target_name}
+    install(TARGETS ${target_name} 
+        EXPORT ${target_name}
+        RUNTIME DESTINATION bin
         LIBRARY DESTINATION lib
         ARCHIVE DESTINATION lib
     )
@@ -114,11 +119,6 @@ if(WIN32)
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-#    add_custom_command(TARGET copy_dll POST_BUILD
-#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-#            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-#            "${directory}/$<CONFIGURATION>"
-#            COMMENT "Copy minizip binaries")
 endif(WIN32)
 endmacro()
 
@@ -152,7 +152,7 @@ function(add_ringmesh_binary bin_path)
             message(STATUs "propval = ${propval}")
     install(CODE "
       include(BundleUtilities)
-      fixup_bundle(\"${PROJECT_BINARY_DIR}/bin/${exe_name}\" \"\" \"/users/j0479294/programming/RINGMesh/build/third_party/geogram/Debug/install/lib;/users/j0479294/programming/RINGMesh/build/third_party/tinyxml2/Release/install/lib64\")
+      fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/${exe_name}\" \"\" \"${PROJECT_BINARY_DIR}/lib;/users/j0479294/programming/RINGMesh/build/third_party/geogram/Debug/install/lib;/users/j0479294/programming/RINGMesh/build/third_party/tinyxml2/Release/install/lib64\")
       "
     )
 endfunction()
@@ -162,6 +162,11 @@ function(add_ringmesh_utility bin_path)
     install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
+            install(CODE "
+      include(BundleUtilities)
+      fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/${exe_name}\" \"\" \"${PROJECT_BINARY_DIR}/lib;/users/j0479294/programming/RINGMesh/build/third_party/geogram/Debug/install/lib;/users/j0479294/programming/RINGMesh/build/third_party/tinyxml2/Release/install/lib64\")
+      "
+    )
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)

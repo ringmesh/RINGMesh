@@ -92,6 +92,7 @@ endfunction(print_target_properties)
 
 print_target_properties( tinyxml2)
 print_target_properties( Geogram::geogram)
+print_target_properties( Geogram::geogram)
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
