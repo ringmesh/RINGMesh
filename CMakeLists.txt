@@ -36,17 +36,16 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-#------------------------------------------------------------------------------------------------
-# Options of the RINGMesh project
-# They can be set
-# 1 - using CMake GUI,
-# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
-
 # Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
 # RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
 # avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL FORCE)
 
+#------------------------------------------------------------------------------------------------
+# Options of the RINGMesh project
+# They can be set
+# 1 - using CMake GUI,
+# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 # Project options
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
