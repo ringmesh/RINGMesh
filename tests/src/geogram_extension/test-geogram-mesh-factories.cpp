@@ -57,7 +57,6 @@ void throw_error_key(
         " has no register for the key: ", key_name );
 }
 
-
 void test_geogram_factory_2D()
 {
     if( !PointSetMeshFactory2D::has_creator(
