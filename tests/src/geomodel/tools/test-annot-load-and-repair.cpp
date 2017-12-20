@@ -54,8 +54,8 @@ int main()
         std::string file_name( ringmesh_test_data_path );
         file_name += "annot.ml";
 
-        Logger::out( "RINGMesh Test", "Loading and fixing structural geomodel:",
-            file_name );
+        Logger::out( "RINGMesh Test",
+            "Loading and fixing structural geomodel:", file_name );
 
         // Check only model geometry
         GEO::CmdLine::set_arg( "validity:do_not_check", "tGI" );

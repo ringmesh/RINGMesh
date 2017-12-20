@@ -61,9 +61,7 @@ namespace RINGMesh
     friend class Class##Builder< DIMENSION >;                                  \
     \
 public:                                                                        \
-    Class() : mesh_( new GEO::Mesh( DIMENSION, false ) )                       \
-    {                                                                          \
-    }                                                                          \
+    Class() : mesh_( new GEO::Mesh( DIMENSION, false ) ) {}                    \
     static MeshType type_name_static()                                         \
     {                                                                          \
         return #Class;                                                         \

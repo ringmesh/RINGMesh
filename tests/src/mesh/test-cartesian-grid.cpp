@@ -35,57 +35,67 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <memory>
-
-#include <ringmesh/basic/factory.h>
+#include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/logger.h>
+#include <ringmesh/mesh/cartesian_grid.h>
 
 /*!
- * @author Arnaud Botella
+ * @file Tests for the frame structures and the cartesian grids
+ * @author Melchior Schuh-Senlis
  */
 
 using namespace RINGMesh;
 
-class A
+void test_frames_and_cartesian_grid()
 {
-    ringmesh_disable_copy( A );
+    vec3 origin{ 100, 200, -4 };
+    vec3 x{ 1, 2, -1 };
+    vec3 y{ 2, 1, 4 };
+    vec3 z{ 3, -2, -1 };
 
-public:
-    A() = default;
-};
+    Frame3D frame{ x, y, z };
+    ReferenceFrame3D reference_frame{ origin, frame };
 
-class B
-{
-    ringmesh_disable_copy( B );
-
-public:
-    B() = default;
-};
-
-class Base
-{
-public:
-    virtual ~Base() = default;
-
-protected:
-    Base( A& a, B& b ) : a_( a ), b_( b ) {}
-
-protected:
-    A& a_;
-    B& b_;
-};
-
-class Derived : public Base
-{
-public:
-    Derived( A& a, B& b ) : Base( a, b ) {}
-};
-
-void verdict( bool is_instantiated, std::string name )
-{
-    if( !is_instantiated )
+    vec3 test_coordinates{ 20, 10, 30 };
+    vec3 frame_test_coordinates =
+        ReferenceFrameManipulator3D::coords_from_global_to_frame(
+            reference_frame, test_coordinates );
+    vec3 operation_test_coordinates =
+        ReferenceFrameManipulator3D::coords_from_frame_to_global(
+            reference_frame, frame_test_coordinates );
+    if( !inexact_equal( test_coordinates, operation_test_coordinates, 1e-7 ) )
     {
         throw RINGMeshException(
-            "TEST", "Failed to instantiate the ", name, " class" );
+            "TEST", "Error in coordinate reference change" );
+    }
+    if( !ReferenceFrameManipulator3D::is_frame_orthogonal( reference_frame ) )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in checking the orthogonality of a frame" );
+    }
+
+    ReferenceFrame3D inverse_frame =
+        ReferenceFrameManipulator3D::reference_frame_from_global_to_local(
+            reference_frame );
+    if( inexact_equal( inverse_frame,
+            ReferenceFrameManipulator3D::
+                orthogonal_reference_frame_from_global_to_local(
+                    reference_frame ),
+            1e-7 ) )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in orthogonal reference frame change" );
+    }
+
+    ivec3 grid_dimensions{ 10, 8, 9 };
+    CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
+    if( cartesiangrid.cell_volume() != 42. )
+    {
+        throw RINGMeshException( "TEST", "Error in cell volume" );
+    }
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } ) != -1 )
+    {
+        throw RINGMeshException( "TEST", "Error in calculating the offset" );
     }
 }
 
@@ -95,15 +105,9 @@ int main()
 
     try
     {
-        Logger::out( "TEST", "Test Factory" );
+        Logger::out( "TEST", "Frames and Cartesian Grid" );
 
-        using factory = Factory< std::string, Base, A&, B& >;
-        factory::register_creator< Derived >( "Derived" );
-
-        A a;
-        B b;
-        auto d = factory::create( "Derived", a, b );
-        verdict( d != nullptr, "Derived" );
+        test_frames_and_cartesian_grid();
     }
     catch( const RINGMeshException& e )
     {

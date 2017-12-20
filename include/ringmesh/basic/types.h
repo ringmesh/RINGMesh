@@ -49,8 +49,8 @@ namespace RINGMesh
     using GEO::Numeric::float64;
 
     using GEO::Numeric::max_float32;
-    using GEO::Numeric::min_float32;
     using GEO::Numeric::max_float64;
+    using GEO::Numeric::min_float32;
     using GEO::Numeric::min_float64;
 
     static const double global_epsilon = 1E-8;
@@ -68,13 +68,20 @@ namespace RINGMesh
     using vec3 = vecn< 3 >;
     // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
+    // This is an array template of unsigned integers
+    template < index_t DIMENSION >
+    using ivecn = GEO::vecng< DIMENSION, index_t >;
+    // This is an array of 3 unsigned integers
+    using ivec3 = ivecn< 3 >;
+    // This is an array of 2 unsigned integers
+    using ivec2 = ivecn< 2 >;
     // This is an array template of signed integers
     template < index_t DIMENSION >
-    using ivecn = GEO::vecng< DIMENSION, signed_index_t >;
+    using sivecn = GEO::vecng< DIMENSION, signed_index_t >;
     // This is an array of 3 signed integers
-    using ivec3 = ivecn< 3 >;
+    using sivec3 = sivecn< 3 >;
     // This is an array of 2 signed integers
-    using ivec2 = ivecn< 2 >;
+    using sivec2 = sivecn< 2 >;
 
     template < index_t DIMENSION >
     bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
@@ -133,11 +140,11 @@ namespace RINGMesh
     };
 
     /*! enum defining the type of polygon in surface.
-    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
-    * that is not specified.
-    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
-    * used.
-    */
+     *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
+     * that is not specified.
+     *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
+     * used.
+     */
     enum struct PolygonType : index_t
     {
         TRIANGLE = 0,
