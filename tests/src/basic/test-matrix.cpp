@@ -35,9 +35,9 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
-#include <geogram/basic/string.h>
 #include <ringmesh/basic/logger.h>
 #include <ringmesh/basic/matrix.h>
+#include <ringmesh/basic/plugin_manager.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -146,6 +146,7 @@ int main()
 
     try
     {
+        PluginManager::load_plugin( "RINGMesh_basic" );
         Logger::out( "TEST", "Test Matrix" );
         run_tests();
     }
