@@ -92,7 +92,6 @@ int main()
 
     try
     {
-        default_configure();
         Logger::out( "TEST", "Test attributes" );
         test_attributes< double >();
         test_attributes< bool >();

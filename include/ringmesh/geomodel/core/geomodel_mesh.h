@@ -360,10 +360,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshPolygonsBase();
 
-        AttributesManager& attribute_manager() const
-        {
-            return mesh_->polygon_attribute_manager();
-        }
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh polygons are initialized
@@ -654,10 +651,7 @@ namespace RINGMesh
 
         virtual ~GeoModelMeshEdges();
 
-        AttributesManager& attribute_manager() const
-        {
-            return mesh_->edge_attribute_manager();
-        }
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Test if the mesh edges are initialized
@@ -787,10 +781,7 @@ namespace RINGMesh
             GeoModel< DIMENSION >& gm,
             std::unique_ptr< LineMesh< DIMENSION > >& mesh );
 
-        AttributesManager& attribute_manager() const
-        {
-            return mesh_->edge_attribute_manager();
-        }
+        AttributesManager& attribute_manager() const;
 
         /*!
          * Tests if the mesh edges needs to be initialized and initialize it
