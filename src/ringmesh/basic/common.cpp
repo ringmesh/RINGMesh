@@ -71,7 +71,7 @@ namespace
     {
         RINGMesh::CmdLine::import_arg_group( "global" );
         RINGMesh::CmdLine::import_arg_group( "validity" );
-        RINGMesh::register_read_only_scalar_attribute();
+//        RINGMesh::register_read_only_scalar_attribute();
     }
 
     RINGMESH_PLUGIN_INITIALIZE(
