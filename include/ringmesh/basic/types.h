@@ -47,10 +47,10 @@ namespace RINGMesh
     // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
     using GEO::Numeric::float64;
-    using GEO::Numeric::uint8;
+    using GEO::Numeric::int32;
     using GEO::Numeric::int8;
     using GEO::Numeric::uint32;
-    using GEO::Numeric::int32;
+    using GEO::Numeric::uint8;
 
     using GEO::Numeric::max_float32;
     using GEO::Numeric::max_float64;

@@ -658,7 +658,7 @@ namespace RINGMesh
         {
             return mesh_->edge_attribute_manager();
         }
-        
+
         /*!
          * Test if the mesh edges are initialized
          */

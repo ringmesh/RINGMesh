@@ -102,7 +102,8 @@ namespace RINGMesh
             return lock;
         }
     };
-    class basic_api ThreadSafeConsoleLogger: public GEO::ConsoleLogger {
+    class basic_api ThreadSafeConsoleLogger : public GEO::ConsoleLogger
+    {
         using base_class = GEO::ConsoleLogger;
 
     public:

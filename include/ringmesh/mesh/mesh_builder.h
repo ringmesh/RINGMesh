@@ -82,7 +82,7 @@ namespace RINGMesh
          * vertex.
          */
         void copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes );
-        
+
         void load_mesh( const std::string& filename )
         {
             clear( false, false );

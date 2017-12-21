@@ -40,7 +40,6 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/logger.h>
-#include <ringmesh/basic/logger.h>
 #include <set>
 #include <typeinfo>
 
@@ -60,26 +59,24 @@ namespace RINGMesh
     class basic_api Store
     {
     public:
-        Store( index_t elemsize ) : element_size_( elemsize )
-        {
-        }
+        Store( index_t elemsize ) : element_size_( elemsize ) {}
 
         virtual ~Store() = default;
         /**
-        * \brief Gets the size.
-        * \return the number of items
-        */
+         * \brief Gets the size.
+         * \return the number of items
+         */
         index_t size() const
         {
             return size_;
         }
 
         /**
-        * \brief Gets the total number of elements.
-        * \details This corresponds to one position past
-        *  the last valid index.
-        * \return the total number of elements.
-        */
+         * \brief Gets the total number of elements.
+         * \details This corresponds to one position past
+         *  the last valid index.
+         * \return the total number of elements.
+         */
         index_t nb_elements() const
         {
             return size_;
@@ -92,22 +89,22 @@ namespace RINGMesh
 
         virtual void compress( const std::vector< index_t >& old2new ) = 0;
         /**
-        * \brief Applies a permutation to the stored attributes.
-        * \details Applying a permutation to the data is equivalent
-        *  to:
-        * \code
-        * for(i=0; i<permutation.size(); i++) {
-        *    data2[i] = data[permutation[i]]
-        * }
-        * data = data2 ;
-        * \endcode
-        * But it is done in-place.
-        * \param[in] permutation the permutation.
-        *  It is temporarily changed during execution of the
-        *  function, but identical to the input on exit.
-        * \note This function uses memcpy(). If required, it
-        *  can be overloaded in derived classes.
-        */
+         * \brief Applies a permutation to the stored attributes.
+         * \details Applying a permutation to the data is equivalent
+         *  to:
+         * \code
+         * for(i=0; i<permutation.size(); i++) {
+         *    data2[i] = data[permutation[i]]
+         * }
+         * data = data2 ;
+         * \endcode
+         * But it is done in-place.
+         * \param[in] permutation the permutation.
+         *  It is temporarily changed during execution of the
+         *  function, but identical to the input on exit.
+         * \note This function uses memcpy(). If required, it
+         *  can be overloaded in derived classes.
+         */
         virtual void apply_permutation(
             const std::vector< index_t >& permutation ) = 0;
 
@@ -135,9 +132,7 @@ namespace RINGMesh
     class TypedStore : public Store
     {
     public:
-        TypedStore() : Store( index_t( sizeof( T ) ) )
-        {
-        }
+        TypedStore() : Store( index_t( sizeof( T ) ) ) {}
 
         bool elements_type_matches( const std::string& type_name ) const final
         {
@@ -200,22 +195,22 @@ namespace RINGMesh
             }
         }
         /**
-        * \brief Applies a permutation to the stored attributes.
-        * \details Applying a permutation to the data is equivalent
-        *  to:
-        * \code
-        * for(i=0; i<permutation.size(); i++) {
-        *    data2[i] = data[permutation[i]]
-        * }
-        * data = data2 ;
-        * \endcode
-        * But it is done in-place.
-        * \param[in] permutation the permutation.
-        *  It is temporarily changed during execution of the
-        *  function, but identical to the input on exit.
-        * \note This function uses memcpy(). If required, it
-        *  can be overloaded in derived classes.
-        */
+         * \brief Applies a permutation to the stored attributes.
+         * \details Applying a permutation to the data is equivalent
+         *  to:
+         * \code
+         * for(i=0; i<permutation.size(); i++) {
+         *    data2[i] = data[permutation[i]]
+         * }
+         * data = data2 ;
+         * \endcode
+         * But it is done in-place.
+         * \param[in] permutation the permutation.
+         *  It is temporarily changed during execution of the
+         *  function, but identical to the input on exit.
+         * \note This function uses memcpy(). If required, it
+         *  can be overloaded in derived classes.
+         */
         void apply_permutation(
             const std::vector< index_t >& permutation ) final
         {
@@ -252,8 +247,8 @@ namespace RINGMesh
     {
     public:
         /**
-        * \brief Creates a new empty attribute store.
-        */
+         * \brief Creates a new empty attribute store.
+         */
         VectorStore() = default;
 
         Store* clone() const final
@@ -274,8 +269,8 @@ namespace RINGMesh
     {
     public:
         /**
-        * \brief Creates a new empty attribute store.
-        */
+         * \brief Creates a new empty attribute store.
+         */
         ConstantStore()
         {
             this->size_ = 1;
@@ -304,9 +299,7 @@ namespace RINGMesh
             ringmesh_unused( element );
             return &this->constant_;
         }
-        void clear() final
-        {
-        }
+        void clear() final {}
 
         Store* clone() const final
         {
@@ -792,10 +785,10 @@ namespace RINGMesh
         }
 
         /**
-        * \brief Gets an element by index
-        * \param [in] i index of the element
-        * \return a const reference to the \p i%th element
-        */
+         * \brief Gets an element by index
+         * \param [in] i index of the element
+         * \return a const reference to the \p i%th element
+         */
         const T& value( index_t i ) const
         {
             ringmesh_assert( i < size() );
