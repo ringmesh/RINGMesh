@@ -57,6 +57,5 @@ ExternalProject_Add(zlib_ext
 
 ExternalProject_Add_Step(zlib_ext forcebuild
     DEPENDERS build
-    ALWAYS 1
 )
 

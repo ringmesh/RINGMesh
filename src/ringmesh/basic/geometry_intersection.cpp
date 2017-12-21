@@ -428,19 +428,19 @@ namespace RINGMesh
         }
 
         template std::tuple< bool, std::vector< vec2 > >
-            RINGMESH_API line_sphere( const Geometry::Line2D& segment,
+            basic_api line_sphere( const Geometry::Line2D& segment,
                 const Geometry::Sphere2D& sphere );
 
         template std::tuple< bool, std::vector< vec2 > >
-            RINGMESH_API segment_sphere( const Geometry::Segment2D& segment,
+            basic_api segment_sphere( const Geometry::Segment2D& segment,
                 const Geometry::Sphere2D& sphere );
 
         template std::tuple< bool, std::vector< vec3 > >
-            RINGMESH_API line_sphere( const Geometry::Line3D& segment,
+            basic_api line_sphere( const Geometry::Line3D& segment,
                 const Geometry::Sphere3D& sphere );
 
         template std::tuple< bool, std::vector< vec3 > >
-            RINGMESH_API segment_sphere( const Geometry::Segment3D& segment,
+            basic_api segment_sphere( const Geometry::Segment3D& segment,
                 const Geometry::Sphere3D& sphere );
     } // namespace Intersection
 } // namespace RINGMesh

@@ -40,8 +40,8 @@
  include/ringmesh/config_ringmesh.h.in file.
  File is in RINGMESH_BIN/ringmesh directory.
  */
+#include <ringmesh/basic/export.h>
 #include <ringmesh/ringmesh_config.h>
-#include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
 #ifndef WIN32
@@ -110,23 +110,13 @@ void ringmesh_unused( const T& /*unused*/ )
 #include <sstream>
 #include <stdexcept>
 
+#include <ringmesh/basic/range.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
 namespace RINGMesh
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void RINGMESH_API configure_geogram();
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
-    void RINGMESH_API configure_ringmesh();
-    void RINGMESH_API default_configure();
-
-    void RINGMESH_API print_header_information();
+    void basic_api print_header_information();
 
     /*!
      * RINGMesh exception class.
@@ -143,7 +133,7 @@ namespace RINGMesh
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException : public std::runtime_error
+    class basic_api RINGMeshException : public std::runtime_error
     {
     public:
         template < typename... Args >
@@ -153,9 +143,7 @@ namespace RINGMesh
               category_( std::move( category ) )
         {
         }
-        virtual ~RINGMeshException() throw()
-        {
-        }
+        virtual ~RINGMeshException() throw() {}
 
         const std::string& category() const
         {
@@ -181,61 +169,4 @@ namespace RINGMesh
     protected:
         std::string category_{};
     };
-
-    /*!
-     * This class can be used to iterate over integer loop.
-     * Example:
-     *              = C++98 loop =
-     *    for( index_t i = 0; i < n; i++ ) {
-     *      // do something
-     *    }
-     *
-     *            = C++11-like loop =
-     *    for( index_t i : range( n ) ) {
-     *      // do something
-     *    }
-     */
-    class RINGMESH_API range
-    {
-    public:
-        template < typename T1, typename T2 >
-        range( T1 begin, T2 end )
-            : iter_( static_cast< index_t >( begin ) ),
-              last_( static_cast< index_t >( end ) )
-        {
-        }
-        template < typename T >
-        explicit range( T end ) : last_( static_cast< index_t >( end ) )
-        {
-        }
-        // Iterable functions
-        const range& begin() const
-        {
-            return *this;
-        }
-        const range& end() const
-        {
-            return *this;
-        }
-        // Iterator functions
-        bool operator!=( const range& /*unused*/ ) const
-        {
-            return iter_ < last_;
-        }
-        void operator++()
-        {
-            ++iter_;
-        }
-        index_t operator*() const
-        {
-            return iter_;
-        }
-
-    protected:
-        index_t iter_{ 0 };
-        index_t last_{ 0 };
-    };
-
-    template < index_t DIMENSION >
-    vecn< DIMENSION > RINGMESH_API initialize_vecn_coordinates( double value );
 } // namespace RINGMesh

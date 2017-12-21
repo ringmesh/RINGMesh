@@ -46,18 +46,19 @@
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/task_handler.h>
-#include <ringmesh/geogram_extension/geogram_mesh.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
-#include <ringmesh/geomodel/builder/geomodel_builder_gocad.h>
+#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/io/zip_file.h>
 
+#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 /*!
  * @file Implementation of classes loading GeoModels
@@ -68,23 +69,23 @@ namespace
 {
     using namespace RINGMesh;
 
-#include "geomodel/io_abaqus.cpp"
-#include "geomodel/io_adeli.cpp"
-#include "geomodel/io_aster.cpp"
-#include "geomodel/io_csmp.cpp"
-#include "geomodel/io_feflow.cpp"
-#include "geomodel/io_gm.cpp"
-#include "geomodel/io_gprs.cpp"
-#include "geomodel/io_mfem.cpp"
-#include "geomodel/io_model3d.cpp"
-#include "geomodel/io_msh.cpp"
-#include "geomodel/io_smesh.cpp"
-#include "geomodel/io_stl.cpp"
-#include "geomodel/io_stradivarius.cpp"
-#include "geomodel/io_svg.cpp"
-#include "geomodel/io_tetgen.cpp"
-#include "geomodel/io_tsolid.cpp"
-#include "geomodel/io_vtk.cpp"
+#include "geomodel/io_abaqus.hpp"
+#include "geomodel/io_adeli.hpp"
+#include "geomodel/io_aster.hpp"
+#include "geomodel/io_csmp.hpp"
+#include "geomodel/io_feflow.hpp"
+#include "geomodel/io_gm.hpp"
+#include "geomodel/io_gprs.hpp"
+#include "geomodel/io_mfem.hpp"
+#include "geomodel/io_model3d.hpp"
+#include "geomodel/io_msh.hpp"
+#include "geomodel/io_smesh.hpp"
+#include "geomodel/io_stl.hpp"
+#include "geomodel/io_stradivarius.hpp"
+#include "geomodel/io_svg.hpp"
+#include "geomodel/io_tetgen.hpp"
+#include "geomodel/io_tsolid.hpp"
+#include "geomodel/io_vtk.hpp"
 
     template < typename Class, typename Factory >
     std::unique_ptr< Class > create_handler( const std::string& format )
@@ -217,9 +218,9 @@ namespace RINGMesh
         save( geomodel, filename );
     }
 
-    template class RINGMESH_API GeoModelInputHandler< 2 >;
-    template class RINGMESH_API GeoModelOutputHandler< 2 >;
-    template class RINGMESH_API GeoModelOutputHandler< 3 >;
-    template class RINGMESH_API GeoModelInputHandler< 3 >;
+    template class io_api GeoModelInputHandler< 2 >;
+    template class io_api GeoModelOutputHandler< 2 >;
+    template class io_api GeoModelOutputHandler< 3 >;
+    template class io_api GeoModelInputHandler< 3 >;
 
 } // namespace RINGMesh

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/tools/common.h>
 
 /*!
  * @file ringmesh/geomodel_validity.h
@@ -66,9 +66,7 @@ namespace RINGMesh
         GEOLOGY = GEOLOGICAL_ENTITIES,
         TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY,
         GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY
-                   | MESH_ENTITIES
-                   | NON_MANIFOLD_EDGES
-                   | POLYGON_INTERSECTIONS,
+                   | MESH_ENTITIES | NON_MANIFOLD_EDGES | POLYGON_INTERSECTIONS,
         ALL = TOPOLOGY | GEOMETRY | GEOLOGY
     };
     ENABLE_BITMASK_OPERATORS( ValidityCheckMode );
@@ -78,19 +76,19 @@ namespace RINGMesh
      * invalid entities shall be stored
      * @details If directory does not exist keep the previous value.
      */
-    void RINGMESH_API set_validity_errors_directory(
+    void geomodel_tools_api set_validity_errors_directory(
         const std::string& directory );
 
     /*!
      * @brief Get the directory where debugging information on
      * invalid entities shall be stored
      */
-    std::string RINGMESH_API get_validity_errors_directory();
+    std::string geomodel_tools_api get_validity_errors_directory();
 
     /*!
      * @brief Get validity mode from command line argument validity:do_not_check
      */
-    ValidityCheckMode RINGMESH_API get_validity_mode_from_arg();
+    ValidityCheckMode geomodel_tools_api get_validity_mode_from_arg();
 
     /*!
      * @brief Check global geomodel validity

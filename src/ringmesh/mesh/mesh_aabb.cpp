@@ -242,10 +242,10 @@ namespace RINGMesh
         return result;
     }
 
-    template class RINGMESH_API LineAABBTree< 2 >;
-    template class RINGMESH_API SurfaceAABBTree< 2 >;
+    template class mesh_api LineAABBTree< 2 >;
+    template class mesh_api SurfaceAABBTree< 2 >;
 
-    template class RINGMESH_API LineAABBTree< 3 >;
-    template class RINGMESH_API SurfaceAABBTree< 3 >;
-    template class RINGMESH_API VolumeAABBTree< 3 >;
+    template class mesh_api LineAABBTree< 3 >;
+    template class mesh_api SurfaceAABBTree< 3 >;
+    template class mesh_api VolumeAABBTree< 3 >;
 } // namespace RINGMesh

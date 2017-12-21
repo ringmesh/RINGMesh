@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/io/common.h>
 
 #include <memory>
 
@@ -74,8 +74,7 @@ namespace RINGMesh
      * @param[in] f2 the second filename
      * @return return True if the files are identical
      */
-    bool RINGMESH_API compare_files(
-        const std::string& f1, const std::string& f2 );
+    bool io_api compare_files( const std::string& f1, const std::string& f2 );
     /*!
      * Loads a GeoModel from a file
      * @param[out] geomodel the geomodel to fill
@@ -97,16 +96,15 @@ namespace RINGMesh
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
-    void RINGMESH_API well_load(
-        const std::string& filename, WellGroup3D& wells );
+    void io_api well_load( const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename
      */
-    index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
+    index_t io_api find_geomodel_dimension( const std::string& filename );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelInputHandler
+    class io_api GeoModelInputHandler
     {
         ringmesh_disable_copy_and_move( GeoModelInputHandler );
 
@@ -142,7 +140,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelInputHandlerFactory );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelOutputHandler
+    class io_api GeoModelOutputHandler
     {
         ringmesh_disable_copy_and_move( GeoModelOutputHandler );
 
@@ -172,7 +170,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelOutputHandlerFactory );
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler
+    class io_api WellGroupIOHandler
     {
         ringmesh_disable_copy_and_move( WellGroupIOHandler );
 
@@ -201,10 +199,10 @@ namespace RINGMesh
 
     /***************************************************************************/
 
-    void RINGMESH_API mesh_initialize();
+    void io_api mesh_initialize();
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler
+    class io_api StratigraphicColumnIOHandler
     {
         ringmesh_disable_copy_and_move( StratigraphicColumnIOHandler );
 

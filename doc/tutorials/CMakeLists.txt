@@ -56,7 +56,7 @@ set(ringmesh_files ${ringmesh_files} ${TUTORIALS} PARENT_SCOPE)
 
 # For all the test files found
 foreach(tutorialsourcefile ${TUTORIALS})
-    add_ringmesh_tutorial(${tutorialsourcefile} "Tutorials")
+    add_ringmesh_tutorial(${tutorialsourcefile} geomodel_tools io)
 endforeach(tutorialsourcefile ${TUTORIALS})
 
 

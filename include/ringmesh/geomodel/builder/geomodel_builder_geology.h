@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_access.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 
@@ -53,7 +53,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderGeology final
+    class geomodel_builder_api GeoModelBuilderGeology final
     {
         ringmesh_disable_copy_and_move( GeoModelBuilderGeology );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/visualize/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
@@ -53,7 +53,7 @@
 
 namespace RINGMesh
 {
-    class RINGMESH_API RINGMeshApplication : public GEO::Application
+    class visualize_api RINGMeshApplication : public GEO::Application
     {
         ringmesh_disable_copy_and_move( RINGMeshApplication );
 
@@ -197,7 +197,7 @@ namespace RINGMesh
         ALIAS_2D_AND_3D( GeoModelViewerBase );
 
         template < index_t DIMENSION >
-        class RINGMESH_API GeoModelViewer final
+        class visualize_api GeoModelViewer final
             : public GeoModelViewerBase< DIMENSION >
         {
         };

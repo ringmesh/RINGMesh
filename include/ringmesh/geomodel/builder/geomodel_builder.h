@@ -35,8 +35,8 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
 #include <ringmesh/basic/pimpl.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/builder/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
@@ -57,7 +57,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderInfo
+    class geomodel_builder_api GeoModelBuilderInfo
     {
         ringmesh_disable_copy_and_move( GeoModelBuilderInfo );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -114,7 +114,7 @@ namespace RINGMesh
      * info)
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderBase
+    class geomodel_builder_api GeoModelBuilderBase
     {
         ringmesh_disable_copy_and_move( GeoModelBuilderBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -150,12 +150,14 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilder : public GeoModelBuilderBase< DIMENSION >
+    class geomodel_builder_api GeoModelBuilder
+        : public GeoModelBuilderBase< DIMENSION >
     {
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilder< 2 > : public GeoModelBuilderBase< 2 >
+    class geomodel_builder_api GeoModelBuilder< 2 >
+        : public GeoModelBuilderBase< 2 >
     {
     public:
         explicit GeoModelBuilder( GeoModel2D& geomodel );
@@ -169,7 +171,8 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilder< 3 > : public GeoModelBuilderBase< 3 >
+    class geomodel_builder_api GeoModelBuilder< 3 >
+        : public GeoModelBuilderBase< 3 >
     {
     public:
         explicit GeoModelBuilder( GeoModel3D& geomodel );

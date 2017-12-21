@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 namespace RINGMesh
 {
@@ -52,7 +52,7 @@ namespace RINGMesh
      * It contains useful operator to compare and display the type
      * It is possible to do cast of an EntityType -> string
      */
-    class RINGMESH_API EntityType
+    class geomodel_core_api EntityType
     {
     public:
         bool operator==( const EntityType& type2 ) const
@@ -83,12 +83,8 @@ namespace RINGMesh
         std::string type_{};
 
     protected:
-        explicit EntityType( std::string type ) : type_( std::move( type ) )
-        {
-        }
-        EntityType() : EntityType( default_entity_type_string() )
-        {
-        }
+        explicit EntityType( std::string type ) : type_( std::move( type ) ) {}
+        EntityType() : EntityType( default_entity_type_string() ) {}
 
         void set_type( std::string type )
         {
@@ -110,7 +106,7 @@ namespace RINGMesh
      * Surface,
      * Region
      */
-    class RINGMESH_API MeshEntityType : public EntityType
+    class geomodel_core_api MeshEntityType : public EntityType
     {
     public:
         explicit MeshEntityType( std::string type )
@@ -130,7 +126,7 @@ namespace RINGMesh
      * Interface,
      * Layer
      */
-    class RINGMESH_API GeologicalEntityType : public EntityType
+    class geomodel_core_api GeologicalEntityType : public EntityType
     {
     public:
         explicit GeologicalEntityType( std::string type )
@@ -144,7 +140,7 @@ namespace RINGMesh
      * @brief this is the MeshEntityType defined by default.
      * It is mainly used to test the validity of a created MeshEntityType
      */
-    class RINGMESH_API ForbiddenMeshEntityType : public MeshEntityType
+    class geomodel_core_api ForbiddenMeshEntityType : public MeshEntityType
     {
     public:
         static ForbiddenMeshEntityType& type_name_static()
@@ -161,7 +157,7 @@ namespace RINGMesh
      * @brief this is the GeologicalEntityType defined by default.
      * It is mainly used to test the validity of a created GeologicalEntityType
      */
-    class RINGMESH_API ForbiddenGeologicalEntityType
+    class geomodel_core_api ForbiddenGeologicalEntityType
         : public GeologicalEntityType
     {
     public:

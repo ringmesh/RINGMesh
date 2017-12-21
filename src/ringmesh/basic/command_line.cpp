@@ -55,6 +55,8 @@ namespace RINGMesh
                 GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg( "algo:tet", "TetGen",
                 "Toggles the tetrahedral mesher (TetGen, MG_Tetra)" );
+            GEO::CmdLine::declare_arg( "sys:plugins", "",
+                "List of the plugins to load, separated by ;" );
         }
 
         void import_arg_group_in()

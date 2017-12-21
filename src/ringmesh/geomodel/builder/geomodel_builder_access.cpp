@@ -148,12 +148,12 @@ namespace RINGMesh
         return geomodel_.epsilon_;
     }
 
-    template class RINGMESH_API GeoModelMeshEntityAccess< 2 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 2 >;
-    template class RINGMESH_API GeoModelAccess< 2 >;
+    template class geomodel_builder_api GeoModelMeshEntityAccess< 2 >;
+    template class geomodel_builder_api GeoModelGeologicalEntityAccess< 2 >;
+    template class geomodel_builder_api GeoModelAccess< 2 >;
 
-    template class RINGMESH_API GeoModelMeshEntityAccess< 3 >;
-    template class RINGMESH_API GeoModelGeologicalEntityAccess< 3 >;
-    template class RINGMESH_API GeoModelAccess< 3 >;
+    template class geomodel_builder_api GeoModelMeshEntityAccess< 3 >;
+    template class geomodel_builder_api GeoModelGeologicalEntityAccess< 3 >;
+    template class geomodel_builder_api GeoModelAccess< 3 >;
 
 } // namespace RINGMesh

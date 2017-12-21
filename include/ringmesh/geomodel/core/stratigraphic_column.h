@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <string>
 #include <vector>
@@ -70,7 +70,7 @@ namespace RINGMesh
      * @brief Manages the RockFeature, which contains a RockType and more
      * informations
      */
-    class RINGMESH_API RockFeature
+    class geomodel_core_api RockFeature
     {
     public:
         /*!
@@ -136,7 +136,7 @@ namespace RINGMesh
      * a minimum thickness and a maximum thickness. A StratigraphicColumn can be
      * a StratigraphicUnit.
      */
-    class RINGMESH_API StratigraphicUnit
+    class geomodel_core_api StratigraphicUnit
     {
         ringmesh_disable_copy_and_move( StratigraphicUnit );
 
@@ -201,7 +201,8 @@ namespace RINGMesh
         RockFeature rock_;
     };
 
-    class RINGMESH_API UnsubdividedStratigraphicUnit : public StratigraphicUnit
+    class geomodel_core_api UnsubdividedStratigraphicUnit
+        : public StratigraphicUnit
     {
     public:
         UnsubdividedStratigraphicUnit( std::string name,
@@ -264,7 +265,8 @@ namespace RINGMesh
         double max_thick_;
     };
 
-    class RINGMESH_API SubdividedStratigraphicUnit : public StratigraphicUnit
+    class geomodel_core_api SubdividedStratigraphicUnit
+        : public StratigraphicUnit
     {
     public:
         SubdividedStratigraphicUnit( std::string name,
@@ -340,7 +342,7 @@ namespace RINGMesh
     /*!
      * @brief A stratigraphic column is composed of several stratigraphic units
      */
-    class RINGMESH_API StratigraphicColumn
+    class geomodel_core_api StratigraphicColumn
     {
     public:
         /*!

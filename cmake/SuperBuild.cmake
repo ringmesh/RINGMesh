@@ -33,7 +33,7 @@
 
 #------------------------------------------------------------------------------------------------
 set(RINGMESH_EXTRA_ARGS
-    -DPROJECT_BINARY_DIR:PATH=${project_binary_dir_config}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     -DMG_TETRA:STRING=${MG_TETRA}
     -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
     -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}

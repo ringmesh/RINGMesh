@@ -57,7 +57,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API FrameBase
+    class basic_api FrameBase
     {
     public:
         virtual ~FrameBase() = default;
@@ -90,7 +90,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( FrameBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API Frame : public FrameBase< DIMENSION >
+    class basic_api Frame : public FrameBase< DIMENSION >
     {
     public:
         Frame() = default;
@@ -98,7 +98,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( Frame );
 
     template <>
-    class RINGMESH_API Frame< 2 > : public FrameBase< 2 >
+    class basic_api Frame< 2 > : public FrameBase< 2 >
     {
     public:
         Frame() = default;
@@ -111,7 +111,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API Frame< 3 > : public FrameBase< 3 >
+    class basic_api Frame< 3 > : public FrameBase< 3 >
     {
     public:
         Frame() = default;
@@ -125,7 +125,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API ReferenceFrame : public Frame< DIMENSION >
+    class basic_api ReferenceFrame : public Frame< DIMENSION >
     {
     public:
         ReferenceFrame() = default;
@@ -156,7 +156,7 @@ namespace RINGMesh
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    class RINGMESH_API PlaneReferenceFrame3D : public ReferenceFrame< 3 >
+    class basic_api PlaneReferenceFrame3D : public ReferenceFrame< 3 >
     {
     public:
         PlaneReferenceFrame3D() = default;
@@ -173,7 +173,7 @@ namespace RINGMesh
      * @brief Reference frame aligned along the plane normal and whose u axis is
      * upward
      */
-    class RINGMESH_API LineReferenceFrame2D : public ReferenceFrame< 2 >
+    class basic_api LineReferenceFrame2D : public ReferenceFrame< 2 >
     {
     public:
         LineReferenceFrame2D() = default;

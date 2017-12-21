@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 /*!
  * @brief Structures and classes used to index elements in a GeoModel,
@@ -55,7 +55,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class RINGMESH_API entity_range : public range
+    class entity_range : public range
     {
     protected:
         entity_range( const GeoModel< DIMENSION >& geomodel, index_t last )
@@ -68,7 +68,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API corner_range : public entity_range< DIMENSION >
+    class corner_range : public entity_range< DIMENSION >
     {
     public:
         explicit corner_range( const GeoModel< DIMENSION >& geomodel )
@@ -90,7 +90,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API line_range : public entity_range< DIMENSION >
+    class line_range : public entity_range< DIMENSION >
     {
     public:
         explicit line_range( const GeoModel< DIMENSION >& geomodel )
@@ -112,7 +112,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API surface_range : public entity_range< DIMENSION >
+    class surface_range : public entity_range< DIMENSION >
     {
     public:
         explicit surface_range( const GeoModel< DIMENSION >& geomodel )
@@ -134,7 +134,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API region_range : public entity_range< DIMENSION >
+    class region_range : public entity_range< DIMENSION >
     {
     public:
         explicit region_range( const GeoModel< DIMENSION >& geomodel )
@@ -156,7 +156,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API geol_entity_range : public entity_range< DIMENSION >
+    class geol_entity_range : public entity_range< DIMENSION >
     {
     public:
         geol_entity_range( const GeoModel< DIMENSION >& geomodel,

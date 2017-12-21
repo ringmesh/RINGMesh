@@ -35,8 +35,9 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/geogram_extension/geogram_mesh_builder.h>
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 namespace
 {
@@ -101,7 +102,7 @@ namespace RINGMesh
 {
     template <>
     std::unique_ptr< MeshBaseBuilder< 2 > >
-        RINGMESH_API MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
+        mesh_api MeshBaseBuilder< 2 >::create_builder( MeshBase< 2 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -115,7 +116,7 @@ namespace RINGMesh
 
     template <>
     std::unique_ptr< MeshBaseBuilder< 3 > >
-        RINGMESH_API MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
+        mesh_api MeshBaseBuilder< 3 >::create_builder( MeshBase< 3 >& mesh )
     {
         auto builder = create_pointset_builder( mesh );
         if( !builder )
@@ -209,6 +210,103 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::copy( const MeshBase< DIMENSION >& rhs, bool copy_attributes )
+    {
+        do_copy( rhs, copy_attributes );
+        if( copy_attributes ) {
+            mesh_base_.vertex_attributes_manager_.copy(
+                rhs.vertex_attributes_manager_ );
+        }
+        clear_vertex_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::clear( bool keep_attributes, bool keep_memory )
+    {
+        do_clear( keep_attributes, keep_memory );
+        mesh_base_.vertex_attributes_manager_.clear( keep_attributes );
+        clear_vertex_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::set_vertex( index_t v_id, const vecn< DIMENSION >& vertex )
+    {
+        do_set_vertex( v_id, vertex );
+        clear_vertex_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    index_t MeshBaseBuilder< DIMENSION >::create_vertex()
+    {
+        index_t index = do_create_vertex();
+        clear_vertex_linked_objects();
+        update_vertex_attributes_size();
+        return index;
+    }
+
+    template < index_t DIMENSION >
+    index_t MeshBaseBuilder< DIMENSION >::create_vertex( const vecn< DIMENSION >& vertex )
+    {
+        index_t index = create_vertex();
+        set_vertex( index, vertex );
+        return index;
+    }
+
+    template < index_t DIMENSION >
+    index_t MeshBaseBuilder< DIMENSION >::create_vertices( index_t nb )
+    {
+        index_t index = do_create_vertices( nb );
+        clear_vertex_linked_objects();
+        update_vertex_attributes_size();
+        return index;
+    }
+
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::assign_vertices( const std::vector< double >& point_coordinates )
+    {
+        do_assign_vertices( point_coordinates );
+        clear_vertex_linked_objects();
+        update_vertex_attributes_size();
+    }
+
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::delete_vertices( const std::vector< bool >& to_delete )
+    {
+        do_delete_vertices( to_delete );
+        index_t new_size = mesh_base_.nb_vertices();
+        std::vector< index_t > permutation;
+        permutation.resize( new_size );
+        index_t i = 0;
+        for( auto d : range( to_delete.size() ) ) {
+            if( !to_delete[d] ) {
+                permutation[i] = d;
+                i++;
+            }
+        }
+        mesh_base_.vertex_attributes_manager_.apply_permutation(
+            permutation );
+        clear_vertex_linked_objects();
+        update_vertex_attributes_size();
+    }
+    
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::clear_vertices( bool keep_attributes, bool keep_memory )
+    {
+        do_clear_vertices( keep_attributes, keep_memory );
+        mesh_base_.vertex_attributes_manager_.clear( keep_attributes );
+        clear_vertex_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    void MeshBaseBuilder< DIMENSION >::permute_vertices( const std::vector< index_t >& permutation )
+    {
+        do_permute_vertices( permutation );
+        mesh_base_.vertex_attributes_manager_.apply_permutation(
+            permutation );
+        clear_vertex_linked_objects();
+    }
+
+    template < index_t DIMENSION >
     void LineMeshBuilder< DIMENSION >::remove_isolated_vertices()
     {
         std::vector< bool > to_delete( line_mesh_.nb_vertices(), true );
@@ -221,6 +319,61 @@ namespace RINGMesh
             }
         }
         this->delete_vertices( to_delete );
+    }
+
+    template < index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::create_edge( index_t v1_id, index_t v2_id )
+    {
+        do_create_edge( v1_id, v2_id );
+        clear_edge_linked_objects();
+        update_edge_attributes_size();
+    }
+
+    template < index_t DIMENSION >
+    index_t LineMeshBuilder< DIMENSION >::create_edges( index_t nb_edges )
+    {
+        index_t index = do_create_edges( nb_edges );
+        clear_edge_linked_objects();
+        update_edge_attributes_size();
+        return index;
+    }
+
+    template < index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::set_edge_vertex(
+        const EdgeLocalVertex& edge_local_vertex, index_t vertex_id )
+    {
+        do_set_edge_vertex( edge_local_vertex, vertex_id );
+        clear_edge_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::delete_edges( const std::vector< bool >& to_delete,
+        bool remove_isolated_vertices )
+    {
+        do_delete_edges( to_delete );
+        if( remove_isolated_vertices )
+        {
+            this->remove_isolated_vertices();
+        }
+        clear_edge_linked_objects();
+        update_edge_attributes_size();
+    }
+
+    template < index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::clear_edges( bool keep_attributes, bool keep_memory )
+    {
+        do_clear_edges( keep_attributes, keep_memory );
+        line_mesh_.edge_attributes_manager_.clear( keep_attributes );
+        clear_edge_linked_objects();
+    }
+
+    template < index_t DIMENSION >
+    void LineMeshBuilder< DIMENSION >::permute_edges( const std::vector< index_t >& permutation )
+    {
+        do_permute_edges( permutation );
+        line_mesh_.edge_attributes_manager_.apply_permutation(
+            permutation );
+        clear_edge_linked_objects();
     }
 
     template < index_t DIMENSION >
@@ -272,18 +425,14 @@ namespace RINGMesh
         volume_mesh_.cell_aabb_.reset();
     }
 
-    template std::unique_ptr< PointSetMeshBuilder< 2 > > RINGMESH_API
-        PointSetMeshBuilder< 2 >::create_builder( PointSetMesh< 2 >& );
+    template class mesh_api MeshBaseBuilder< 2 >;
+    template class mesh_api PointSetMeshBuilder< 2 >;
+    template class mesh_api LineMeshBuilder< 2 >;
+    template class mesh_api SurfaceMeshBuilder< 2 >;
 
-    template std::unique_ptr< PointSetMeshBuilder< 3 > > RINGMESH_API
-        PointSetMeshBuilder< 3 >::create_builder( PointSetMesh< 3 >& );
-
-    template class RINGMESH_API MeshBaseBuilder< 2 >;
-    template class RINGMESH_API LineMeshBuilder< 2 >;
-    template class RINGMESH_API SurfaceMeshBuilder< 2 >;
-
-    template class RINGMESH_API MeshBaseBuilder< 3 >;
-    template class RINGMESH_API LineMeshBuilder< 3 >;
-    template class RINGMESH_API SurfaceMeshBuilder< 3 >;
-    template class RINGMESH_API VolumeMeshBuilder< 3 >;
+    template class mesh_api MeshBaseBuilder< 3 >;
+    template class mesh_api PointSetMeshBuilder< 3 >;
+    template class mesh_api LineMeshBuilder< 3 >;
+    template class mesh_api SurfaceMeshBuilder< 3 >;
+    template class mesh_api VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

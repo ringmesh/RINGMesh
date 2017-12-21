@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <vector>
 
@@ -88,7 +88,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBase
+    class geomodel_core_api GeoModelBase
     {
         ringmesh_disable_copy_and_move( GeoModelBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -250,24 +250,24 @@ namespace RINGMesh
          * @brief Generic accessor to the storage of mesh entities of the given
          * type
          */
-        virtual const std::
-            vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
+        virtual const std::vector<
+            std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
             mesh_entities( const MeshEntityType& type ) const;
 
         /*!
          * @brief Generic accessor to the storage of geological entities of the
          * given type
          */
-        const std::
-            vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
+        const std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
             geological_entities( const GeologicalEntityType& type ) const
         {
             index_t entity_index = geological_entity_type_index( type );
             return geological_entities( entity_index );
         }
 
-        const std::
-            vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
+        const std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
             geological_entities( index_t geological_entity_type_index ) const
         {
             ringmesh_assert( geological_entity_type_index != NO_ID );
@@ -295,8 +295,8 @@ namespace RINGMesh
          * @brief Geological entities. They are optional.
          * The EntityTypes are managed by the EntityTypeManager of the class.
          */
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
+        std::vector< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
             geological_entities_;
 
         /*!
@@ -311,7 +311,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModel final : public GeoModelBase< DIMENSION >
+    class geomodel_core_api GeoModel final : public GeoModelBase< DIMENSION >
     {
         friend class GeoModelAccess< DIMENSION >;
 
@@ -338,7 +338,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModel< 3 > final : public GeoModelBase< 3 >
+    class geomodel_core_api GeoModel< 3 > final : public GeoModelBase< 3 >
     {
         friend class GeoModelAccess< 3 >;
 

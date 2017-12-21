@@ -52,5 +52,4 @@ ExternalProject_Add(minizip_ext
 
 ExternalProject_Add_Step(minizip_ext forcebuild
     DEPENDERS build
-    ALWAYS 1
 )

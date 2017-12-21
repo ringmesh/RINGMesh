@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/tetrahedralize/common.h>
 
 #include <memory>
 
@@ -70,7 +70,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    class RINGMESH_API TetraGen
+    class tetrahedralize_api TetraGen
     {
         ringmesh_disable_copy_and_move( TetraGen );
 

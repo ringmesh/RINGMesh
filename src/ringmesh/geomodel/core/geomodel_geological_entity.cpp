@@ -209,6 +209,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelGeologicalEntity< DIMENSION >::copy_geological_entity(
+        const GeoModelGeologicalEntity< DIMENSION >& from )
+    {
+        this->copy_name( from );
+        geol_feature_ = from.geol_feature_;
+        children_ = from.children_;
+    }
+
+    template < index_t DIMENSION >
     bool GeoModelGeologicalEntity< DIMENSION >::is_connectivity_valid() const
     {
         bool valid = true;
@@ -361,14 +370,14 @@ namespace RINGMesh
         return Region3D::type_name_static();
     }
 
-    template class RINGMESH_API GeoModelGeologicalEntity< 2 >;
-    template class RINGMESH_API Contact< 2 >;
-    template class RINGMESH_API Interface< 2 >;
-    template class RINGMESH_API Layer< 2 >;
+    template class geomodel_core_api GeoModelGeologicalEntity< 2 >;
+    template class geomodel_core_api Contact< 2 >;
+    template class geomodel_core_api Interface< 2 >;
+    template class geomodel_core_api Layer< 2 >;
 
-    template class RINGMESH_API GeoModelGeologicalEntity< 3 >;
-    template class RINGMESH_API Contact< 3 >;
-    template class RINGMESH_API Interface< 3 >;
-    template class RINGMESH_API Layer< 3 >;
+    template class geomodel_core_api GeoModelGeologicalEntity< 3 >;
+    template class geomodel_core_api Contact< 3 >;
+    template class geomodel_core_api Interface< 3 >;
+    template class geomodel_core_api Layer< 3 >;
 
 } // namespace RINGMesh

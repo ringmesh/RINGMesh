@@ -356,9 +356,9 @@ namespace RINGMesh
         return line_side;
     }
 
-    template class RINGMESH_API GeoModel< 2 >;
-    template class RINGMESH_API GeoModelBase< 2 >;
+    template class geomodel_core_api GeoModel< 2 >;
+    template class geomodel_core_api GeoModelBase< 2 >;
 
-    template class RINGMESH_API GeoModelBase< 3 >;
+    template class geomodel_core_api GeoModelBase< 3 >;
 
 } // namespace RINGMesh

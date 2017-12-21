@@ -589,7 +589,7 @@ namespace RINGMesh
     index_t RelationshipManager::find_boundary_relationship(
         const gmme_id& incident_entity, const gmme_id& boundary )
     {
-        return find_boundary_relationship( incident_entity, boundary );
+        return impl_->find_boundary_relationship( incident_entity, boundary );
     }
 
     index_t RelationshipManager::find_parent_child_relationship(
@@ -626,14 +626,14 @@ namespace RINGMesh
             parent_type_name, child_type_name );
     }
 
-    template class RINGMESH_API MeshEntityTypes< 2 >;
-    template class RINGMESH_API MeshEntityTypeManagerBase< 2 >;
-    template class RINGMESH_API MeshEntityTypeManager< 2 >;
-    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 2 >;
-    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 2 >;
+    template class geomodel_core_api MeshEntityTypes< 2 >;
+    template class geomodel_core_api MeshEntityTypeManagerBase< 2 >;
+    template class geomodel_core_api MeshEntityTypeManager< 2 >;
+    template struct geomodel_core_api MeshEntityTypeIncidentEntityMap< 2 >;
+    template struct geomodel_core_api MeshEntityTypeBoundaryMap< 2 >;
 
-    template class RINGMESH_API MeshEntityTypes< 3 >;
-    template class RINGMESH_API MeshEntityTypeManagerBase< 3 >;
-    template struct RINGMESH_API MeshEntityTypeIncidentEntityMap< 3 >;
-    template struct RINGMESH_API MeshEntityTypeBoundaryMap< 3 >;
+    template class geomodel_core_api MeshEntityTypes< 3 >;
+    template class geomodel_core_api MeshEntityTypeManagerBase< 3 >;
+    template struct geomodel_core_api MeshEntityTypeIncidentEntityMap< 3 >;
+    template struct geomodel_core_api MeshEntityTypeBoundaryMap< 3 >;
 } // namespace RINGMesh

@@ -1,6 +1,8 @@
 version: 1.0.{build}
 
-image: Visual Studio 2013
+image:
+  - Visual Studio 2013
+  - Visual Studio 2015
 
 environment:
   password:
@@ -20,5 +22,5 @@ build_script:
     cmake --build . --config Debug
     
 test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Debug
+ - cmd: cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug
 

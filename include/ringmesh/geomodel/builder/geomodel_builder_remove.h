@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_access.h>
 #include <set>
 
@@ -64,7 +64,7 @@ namespace RINGMesh
      * @brief Builder tools to remove entities from a GeoModel
      */
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderRemoveBase
+    class geomodel_builder_api GeoModelBuilderRemoveBase
     {
         ringmesh_disable_copy_and_move( GeoModelBuilderRemoveBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -284,7 +284,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelBuilderRemoveBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelBuilderRemove
+    class geomodel_builder_api GeoModelBuilderRemove
         : public GeoModelBuilderRemoveBase< DIMENSION >
     {
         friend class GeoModelBuilderBase< DIMENSION >;
@@ -296,7 +296,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelBuilderRemove< 3 >
+    class geomodel_builder_api GeoModelBuilderRemove< 3 >
         : public GeoModelBuilderRemoveBase< 3 >
     {
         friend class GeoModelBuilderBase< 3 >;

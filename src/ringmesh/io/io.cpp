@@ -137,12 +137,12 @@ namespace RINGMesh
         handler->save_geomodel( geomodel, filename );
     }
 
-    template bool RINGMESH_API geomodel_load( GeoModel2D&, const std::string& );
-    template void RINGMESH_API geomodel_save(
+    template bool io_api geomodel_load( GeoModel2D&, const std::string& );
+    template void io_api geomodel_save(
         const GeoModel2D&, const std::string& );
 
-    template bool RINGMESH_API geomodel_load( GeoModel3D&, const std::string& );
-    template void RINGMESH_API geomodel_save(
+    template bool io_api geomodel_load( GeoModel3D&, const std::string& );
+    template void io_api geomodel_save(
         const GeoModel3D&, const std::string& );
 
 } // namespace RINGMesh

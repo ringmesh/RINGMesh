@@ -40,14 +40,14 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace RINGMesh
 {
-    class RINGMESH_API StratigraphicColumnBuilder
+    class geomodel_builder_api StratigraphicColumnBuilder
     {
         ringmesh_disable_copy_and_move( StratigraphicColumnBuilder );
 
@@ -61,7 +61,7 @@ namespace RINGMesh
         GeoModel3D& model_;
     };
 
-    class RINGMESH_API StratigraphicColumnBuilderFile
+    class geomodel_builder_api StratigraphicColumnBuilderFile
         : public StratigraphicColumnBuilder
     {
     public:
@@ -80,7 +80,7 @@ namespace RINGMesh
         std::string filename_;
     };
 
-    class RINGMESH_API StratigraphicColumnBuilderXML
+    class geomodel_builder_api StratigraphicColumnBuilderXML
         : public StratigraphicColumnBuilderFile
     {
     public:

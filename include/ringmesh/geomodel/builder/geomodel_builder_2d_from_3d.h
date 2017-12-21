@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/builder/common.h>
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
@@ -51,7 +51,8 @@ namespace RINGMesh
     /*!
      * @brief Base class for GeoModel2D building from GeoModel3D.
      */
-    class RINGMESH_API GeoModelBuilder2DFrom3D : public GeoModelBuilder< 2 >
+    class geomodel_builder_api GeoModelBuilder2DFrom3D
+        : public GeoModelBuilder< 2 >
     {
     public:
         GeoModelBuilder2DFrom3D( GeoModel2D& geomodel2d,
@@ -76,7 +77,7 @@ namespace RINGMesh
      * @warning The result GeoModel2D is not guaranteed to be valid.
      * It depends of the projection.
      */
-    class RINGMESH_API GeoModelBuilder2DProjection
+    class geomodel_builder_api GeoModelBuilder2DProjection
         : public GeoModelBuilder2DFrom3D
     {
     public:

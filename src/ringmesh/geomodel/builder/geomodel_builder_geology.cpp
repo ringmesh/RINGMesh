@@ -42,7 +42,7 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_geology.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 
 /*!
  * @file ringmesh/geomodel/builder/geomodel_builder_geology.cpp
@@ -464,7 +464,7 @@ namespace RINGMesh
         gmge_access.modifiable_geol_feature() = geol_feature;
     }
 
-    template class RINGMESH_API GeoModelBuilderGeology< 2 >;
-    template class RINGMESH_API GeoModelBuilderGeology< 3 >;
+    template class geomodel_builder_api GeoModelBuilderGeology< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeology< 3 >;
 
 } // namespace RINGMesh

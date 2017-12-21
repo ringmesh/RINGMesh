@@ -57,7 +57,7 @@ namespace RINGMesh
 {
     class AttributeStore;
 
-    class RINGMESH_API Store
+    class basic_api Store
     {
     public:
         Store( index_t elemsize ) : element_size_( elemsize )
@@ -333,7 +333,7 @@ namespace RINGMesh
      * \brief Internal class for creating an AttributeStore
      *  from the type name of its elements.
      */
-    class RINGMESH_API AttributeStoreCreator
+    class basic_api AttributeStoreCreator
     {
     public:
         /**
@@ -352,7 +352,7 @@ namespace RINGMesh
         std::string element_typeid_name_;
     };
 
-    class RINGMESH_API AttributeStore
+    class basic_api AttributeStore
     {
     public:
         /**
@@ -469,7 +469,7 @@ namespace RINGMesh
         std::unique_ptr< Store > store_{ nullptr };
     };
 
-    class RINGMESH_API AttributeStoreManager
+    class basic_api AttributeStoreManager
     {
     public:
         /**
@@ -541,7 +541,7 @@ namespace RINGMesh
      * \brief Managers a set of attributes attached to
      *  an object.
      */
-    class RINGMESH_API AttributesManager
+    class basic_api AttributesManager
     {
         ringmesh_disable_copy_and_move( AttributesManager );
 
@@ -825,7 +825,7 @@ namespace RINGMesh
      * \brief Access to an attribute as a double regardless its type.
      * \details The attribute can be an element of a vector attribute.
      */
-    class RINGMESH_API ReadOnlyScalarAttributeAdapter
+    class basic_api ReadOnlyScalarAttributeAdapter
     {
     public:
         /**

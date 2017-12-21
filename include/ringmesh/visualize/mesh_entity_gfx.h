@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/visualize/common.h>
 
 #ifdef RINGMESH_WITH_GRAPHICS
 
@@ -383,7 +383,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API AttributeGfxManager< 3 > final
+    class visualize_api AttributeGfxManager< 3 > final
         : public AttributeGfxManagerBase< 3 >
     {
     public:

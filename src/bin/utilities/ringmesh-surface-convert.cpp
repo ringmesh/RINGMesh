@@ -56,8 +56,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
-
         // welcome
         print_header_information();
         Logger::div( "RINGMesh-Surface-Convert" );

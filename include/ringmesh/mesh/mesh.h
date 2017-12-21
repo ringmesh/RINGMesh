@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <ringmesh/mesh/common.h>
+
 #include <algorithm>
 #include <memory>
 #include <ringmesh/basic/attributes.h>
@@ -71,7 +73,7 @@ namespace RINGMesh
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template < index_t DIMENSION >
-    class RINGMESH_API MeshBase
+    class MeshBase
     {
         ringmesh_disable_copy_and_move( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -85,6 +87,10 @@ namespace RINGMesh
         virtual std::tuple< index_t, std::vector< index_t > >
             connected_components() const = 0;
 
+        /*!
+         * \name Vertex methods
+         * @{
+         */
         /*!
          * @brief Gets a point.
          * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
@@ -107,20 +113,7 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& vertex_nn_search() const
-        {
-            if( !vertex_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > vec_vertices( nb_vertices() );
-                for( auto v : range( nb_vertices() ) )
-                {
-                    vec_vertices[v] = vertex( v );
-                }
-                vertex_nn_search_.reset(
-                    new NNSearch< DIMENSION >( vec_vertices, true ) );
-            }
-            return *vertex_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& vertex_nn_search() const;
 
         virtual MeshType type_name() const = 0;
 
@@ -144,7 +137,7 @@ namespace RINGMesh
      * class for encapsulating mesh composed of points
      */
     template < index_t DIMENSION >
-    class RINGMESH_API PointSetMesh : public MeshBase< DIMENSION >
+    class PointSetMesh : public MeshBase< DIMENSION >
     {
         friend class PointSetMeshBuilder< DIMENSION >;
 
@@ -171,7 +164,7 @@ namespace RINGMesh
      * class for encapsulating line mesh (composed of edges)
      */
     template < index_t DIMENSION >
-    class RINGMESH_API LineMesh : public MeshBase< DIMENSION >
+    class LineMesh : public MeshBase< DIMENSION >
     {
         friend class LineMeshBuilder< DIMENSION >;
 
@@ -206,31 +199,12 @@ namespace RINGMesh
          * Mesh::polygons_aabb()
          * and Mesh::cells_aabb()
          */
-        const NNSearch< DIMENSION >& edge_nn_search() const
-        {
-            if( !edge_nn_search_ )
-            {
-                std::vector< vecn< DIMENSION > > edge_centers( nb_edges() );
-                for( auto e : range( nb_edges() ) )
-                {
-                    edge_centers[e] = edge_barycenter( e );
-                }
-                edge_nn_search_.reset(
-                    new NNSearch< DIMENSION >( edge_centers, true ) );
-            }
-            return *edge_nn_search_.get();
-        }
+        const NNSearch< DIMENSION >& edge_nn_search() const;
+
         /*!
          * @brief Creates an AABB tree for a Mesh edges
          */
-        const LineAABBTree< DIMENSION >& edge_aabb() const
-        {
-            if( !edge_aabb_ )
-            {
-                edge_aabb_.reset( new LineAABBTree< DIMENSION >( *this ) );
-            }
-            return *edge_aabb_.get();
-        }
+        const LineAABBTree< DIMENSION >& edge_aabb() const;
 
         AttributesManager& edge_attribute_manager() const
         {
@@ -260,7 +234,7 @@ namespace RINGMesh
      * class for encapsulating surface mesh component
      */
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMeshBase : public MeshBase< DIMENSION >
+    class SurfaceMeshBase : public MeshBase< DIMENSION >
     {
         friend class SurfaceMeshBuilder< DIMENSION >;
 
@@ -546,7 +520,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API SurfaceMesh : public SurfaceMeshBase< DIMENSION >
+    class SurfaceMesh : public SurfaceMeshBase< DIMENSION >
     {
     };
 
@@ -555,7 +529,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshFactory );
 
     template <>
-    class RINGMESH_API SurfaceMesh< 3 > : public SurfaceMeshBase< 3 >
+    class mesh_api SurfaceMesh< 3 > : public SurfaceMeshBase< 3 >
     {
     public:
         /*!
@@ -584,7 +558,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API SurfaceMesh< 2 > : public SurfaceMeshBase< 2 >
+    class mesh_api SurfaceMesh< 2 > : public SurfaceMeshBase< 2 >
     {
     public:
         /*!
@@ -601,7 +575,7 @@ namespace RINGMesh
      * class for encapsulating volume mesh component
      */
     template < index_t DIMENSION >
-    class RINGMESH_API VolumeMesh : public MeshBase< DIMENSION >
+    class VolumeMesh : public MeshBase< DIMENSION >
     {
         ringmesh_template_assert_3d( DIMENSION );
         friend class VolumeMeshBuilder< DIMENSION >;
@@ -843,7 +817,7 @@ namespace RINGMesh
      * class composed of meshes from all the dimensions
      */
     template < index_t DIMENSION >
-    class RINGMESH_API MeshSetBase
+    class MeshSetBase
     {
         ringmesh_disable_copy_and_move( MeshSetBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -866,14 +840,14 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API MeshSet : public MeshSetBase< DIMENSION >
+    class mesh_api MeshSet : public MeshSetBase< DIMENSION >
     {
     public:
         MeshSet() = default;
     };
 
     template <>
-    class RINGMESH_API MeshSet< 3 > : public MeshSetBase< 3 >
+    class mesh_api MeshSet< 3 > : public MeshSetBase< 3 >
     {
     public:
         MeshSet();

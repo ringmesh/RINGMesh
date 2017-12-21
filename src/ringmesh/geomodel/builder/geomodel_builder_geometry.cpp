@@ -326,11 +326,11 @@ namespace RINGMesh
         bool update )
     {
         auto& E = geomodel_access_.modifiable_mesh_entity( entity_id );
-        auto& geomodel_vertices = geomodel_.mesh.vertices;
         ringmesh_assert( v < E.nb_vertices() );
         if( update )
         {
-            geomodel_vertices.update_point(
+            auto& geomodel_vertices = geomodel_.mesh.vertices;
+            set_mesh_entity_vertex(
                 geomodel_vertices.geomodel_vertex_id( E.gmme(), v ), point );
         }
         else
@@ -339,6 +339,21 @@ namespace RINGMesh
             auto builder = MeshBaseBuilder< DIMENSION >::create_builder(
                 *gmme_access.modifiable_mesh() );
             builder->set_vertex( v, point );
+        }
+    }
+
+    template< index_t DIMENSION >
+    void GeoModelBuilderGeometryBase< DIMENSION >::set_mesh_entity_vertex(
+        index_t geomodel_vertex_id,
+        const vecn< DIMENSION >& point )
+    {
+        auto& geomodel_vertices = geomodel_.mesh.vertices;
+        geomodel_vertices.set_point( geomodel_vertex_id, point );
+
+        const auto& gme_v = geomodel_vertices.gme_vertices( geomodel_vertex_id );
+        for( const auto& info : gme_v )
+        {
+            set_mesh_entity_vertex( info.gmme, info.v_index, point, false );
         }
     }
 
@@ -1064,8 +1079,8 @@ namespace RINGMesh
             geomodel, region_type_name_static() );
     }
 
-    template class RINGMESH_API GeoModelBuilderGeometry< 2 >;
-    template class RINGMESH_API GeoModelBuilderGeometryBase< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeometry< 2 >;
+    template class geomodel_builder_api GeoModelBuilderGeometryBase< 2 >;
 
-    template class RINGMESH_API GeoModelBuilderGeometryBase< 3 >;
+    template class geomodel_builder_api GeoModelBuilderGeometryBase< 3 >;
 } // namespace RINGMesh

@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/tools/common.h>
 
 #include <set>
 
@@ -52,7 +52,7 @@ namespace RINGMesh
     /*!
      * Enumeration of the different repair modes.
      */
-    enum struct RINGMESH_API RepairMode
+    enum struct geomodel_tools_api RepairMode
     {
         ALL,
         BASIC,
@@ -68,7 +68,7 @@ namespace RINGMesh
      * @param[in] repair_mode repair mode to apply.
      */
     template < index_t DIMENSION >
-    void RINGMESH_API repair_geomodel(
+    void geomodel_tools_api repair_geomodel(
         GeoModel< DIMENSION >& geomodel, RepairMode repair_mode );
 
 } // namespace RINGMesh

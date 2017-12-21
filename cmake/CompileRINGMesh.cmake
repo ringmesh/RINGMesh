@@ -50,6 +50,5 @@ ExternalProject_Add(ringmesh_ext
 
 ExternalProject_Add_Step(ringmesh_ext forcebuild
     DEPENDERS build
-    ALWAYS 1
   )
 

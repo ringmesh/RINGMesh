@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geomodel/core/common.h>
 
 #include <ringmesh/basic/attributes.h>
 #include <ringmesh/basic/pimpl.h>
@@ -86,7 +86,7 @@ namespace RINGMesh
     /*! @todo Move this global variables in a function */
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshCommon
+    class geomodel_core_api GeoModelMeshCommon
     {
         ringmesh_disable_copy_and_move( GeoModelMeshCommon );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -152,7 +152,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshVerticesBase
+    class geomodel_core_api GeoModelMeshVerticesBase
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshVerticesBase );
@@ -242,12 +242,11 @@ namespace RINGMesh
             const MeshEntityType& entity_type, index_t vertex ) const;
 
         /*!
-         * @brief Set the point coordinates of all the vertices that
-         *        share this unique vertex, including the unique vertex itself.
+         * @brief Set the point coordinates of a vertex
          * @param[in] vertex Index of the vertex
          * @param[in] point New coordinates
          */
-        void update_point( index_t v, const vecn< DIMENSION >& point );
+        void set_point( index_t v, const vecn< DIMENSION >& point );
 
         void update_vertex_mapping( const gmme_id& entity_id,
             index_t entity_vertex_index,
@@ -264,11 +263,7 @@ namespace RINGMesh
 
         void bind_geomodel_vertex_map( const gmme_id& mesh_entity_id );
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->vertex_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief Remove colocated vertices
@@ -326,7 +321,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshVerticesBase );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshVertices final
+    class geomodel_core_api GeoModelMeshVertices final
         : public GeoModelMeshVerticesBase< DIMENSION >
     {
     public:
@@ -336,7 +331,7 @@ namespace RINGMesh
     };
 
     template <>
-    class RINGMESH_API GeoModelMeshVertices< 3 > final
+    class geomodel_core_api GeoModelMeshVertices< 3 > final
         : public GeoModelMeshVerticesBase< 3 >
     {
     public:
@@ -352,7 +347,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshVertices );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshPolygonsBase
+    class geomodel_core_api GeoModelMeshPolygonsBase
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshPolygonsBase );
@@ -547,11 +542,7 @@ namespace RINGMesh
          */
         double area( index_t polygon ) const;
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->polygon_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief return the AABB tree for the polygons of the mesh
@@ -622,7 +613,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshPolygons final
+    class geomodel_core_api GeoModelMeshPolygons final
         : public GeoModelMeshPolygonsBase< DIMENSION >
     {
     public:
@@ -632,7 +623,8 @@ namespace RINGMesh
     };
 
     template <>
-    class GeoModelMeshPolygons< 3 > final : public GeoModelMeshPolygonsBase< 3 >
+    class geomodel_core_api GeoModelMeshPolygons< 3 > final
+        : public GeoModelMeshPolygonsBase< 3 >
     {
     public:
         GeoModelMeshPolygons( GeoModelMesh3D& gmm,
@@ -649,7 +641,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshPolygons );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshEdges final
+    class geomodel_core_api GeoModelMeshEdges final
         : public GeoModelMeshCommon< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEdges );
@@ -666,7 +658,7 @@ namespace RINGMesh
         {
             return mesh_->edge_attribute_manager();
         }
-
+        
         /*!
          * Test if the mesh edges are initialized
          */
@@ -732,11 +724,7 @@ namespace RINGMesh
          */
         double length( index_t edge ) const;
 
-        const NNSearch< DIMENSION >& nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->edge_nn_search();
-        }
+        const NNSearch< DIMENSION >& nn_search() const;
 
         /*!
          * @brief return the AABB tree for the edges of the mesh
@@ -791,7 +779,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshEdges );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshWells final
+    class geomodel_core_api GeoModelMeshWells final
         : public GeoModelMeshCommon< DIMENSION >
     {
     public:
@@ -863,7 +851,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshWells );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshCells final
+    class geomodel_core_api GeoModelMeshCells final
         : public GeoModelMeshCommon< DIMENSION >
     {
         static const std::string region_att_name;
@@ -1194,16 +1182,9 @@ namespace RINGMesh
          */
         double volume( index_t cell ) const;
 
-        const NNSearch< DIMENSION >& cell_nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->cell_nn_search();
-        }
-        const NNSearch< DIMENSION >& cell_facet_nn_search() const
-        {
-            test_and_initialize();
-            return mesh_->cell_facet_nn_search();
-        }
+        const NNSearch< DIMENSION >& cell_nn_search() const;
+
+        const NNSearch< DIMENSION >& cell_facet_nn_search() const;
 
         /*!
          * @brief return the AABB tree for the cells of the mesh
@@ -1334,7 +1315,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshCells );
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMeshBase
+    class geomodel_core_api GeoModelMeshBase
     {
         ringmesh_disable_copy_and_move( GeoModelMeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -1395,14 +1376,16 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class RINGMESH_API GeoModelMesh final : public GeoModelMeshBase< DIMENSION >
+    class geomodel_core_api GeoModelMesh final
+        : public GeoModelMeshBase< DIMENSION >
     {
     public:
         explicit GeoModelMesh( GeoModel< DIMENSION >& geomodel );
     };
 
     template <>
-    class RINGMESH_API GeoModelMesh< 3 > final : public GeoModelMeshBase< 3 >
+    class geomodel_core_api GeoModelMesh< 3 > final
+        : public GeoModelMeshBase< 3 >
     {
         ringmesh_disable_copy_and_move( GeoModelMesh );
 

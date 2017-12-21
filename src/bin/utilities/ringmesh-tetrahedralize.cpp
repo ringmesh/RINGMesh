@@ -40,7 +40,7 @@
 
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -68,7 +68,6 @@ int main( int argc, char** argv )
 {
     try
     {
-        default_configure();
         import_arg_groups();
 
         if( argc == 1 )

@@ -43,6 +43,6 @@
 
 namespace RINGMesh
 {
-    template class RINGMESH_API GeoModelEntity< 2 >;
-    template class RINGMESH_API GeoModelEntity< 3 >;
+    template class geomodel_core_api GeoModelEntity< 2 >;
+    template class geomodel_core_api GeoModelEntity< 3 >;
 } // namespace RINGMesh

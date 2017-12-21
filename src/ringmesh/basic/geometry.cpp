@@ -49,8 +49,8 @@
 namespace RINGMesh
 {
     const std::array< std::array< index_t, 3 >, 4 >
-        Geometry::Tetra::tetra_facet_vertex = { { { 1, 3, 2 }, { 0, 2, 3 },
-            { 3, 1, 0 }, { 0, 1, 2 } } };
+        Geometry::Tetra::tetra_facet_vertex = { { { { 1, 3, 2 } }, { { 0, 2, 3 } },
+            { { 3, 1, 0 } }, { { 0, 1, 2 } } } };
 
     double dot_perp( const vec2& v0, const vec2& v1 )
     {
@@ -427,10 +427,10 @@ namespace RINGMesh
     }
 
     template std::tuple< bool, vecn< 2 > >
-        RINGMESH_API point_segment_projection(
+        basic_api point_segment_projection(
             const vecn< 2 >&, const vecn< 2 >&, const vecn< 2 >& );
 
     template std::tuple< bool, vecn< 3 > >
-        RINGMESH_API point_segment_projection(
+        basic_api point_segment_projection(
             const vecn< 3 >&, const vecn< 3 >&, const vecn< 3 >& );
 } // namespace RINGMesh

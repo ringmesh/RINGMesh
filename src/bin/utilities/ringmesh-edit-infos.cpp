@@ -42,7 +42,7 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/tools/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -85,8 +85,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
-
         print_header_information();
         Logger::div( "RINGMesh" );
         Logger::out( "", "Welcome to RINGMesh-edit-infos !" );
