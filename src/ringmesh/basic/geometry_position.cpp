@@ -35,7 +35,6 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/basic/logger.h>
 #include <geogram/mesh/mesh.h>
 
 #include <geogram/numerics/predicates.h>
@@ -63,8 +62,6 @@ namespace
             point, { segment.direction(), segment.p0 } ) };
         Sign s2{ Position::point_side_to_plane(
             point, { segment.direction(), segment.p1 } ) };
-        DEBUG( s1 );
-        DEBUG( s2 );
         return s1 == ZERO || s2 == ZERO || s1 != s2;
     }
 
@@ -82,7 +79,6 @@ namespace
         double distance;
         std::tie( distance, std::ignore ) =
             Distance::point_to_segment( point, segment );
-        DEBUG( distance );
         if( distance > global_epsilon )
         {
             return false;
