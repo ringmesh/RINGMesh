@@ -35,7 +35,6 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/basic/logger.h>
 /*!
  * @file Basic geometrical requests
  * @author Arnaud Botella
@@ -233,7 +232,6 @@ namespace RINGMesh
             const Geometry::Line3D& line, const Geometry::Plane& plane )
         {
             double dot_directions{ dot( line.direction, plane.normal ) };
-            DEBUG( dot_directions );
             if( std::fabs( dot_directions ) > global_epsilon )
             {
                 double signed_distance{ dot( plane.normal, line.origin )
@@ -254,7 +252,6 @@ namespace RINGMesh
             vec3 line_plane_result;
             std::tie( does_line_intersect_plane, line_plane_result ) =
                 line_plane( Geometry::Line3D{ segment }, plane );
-            DEBUG( does_line_intersect_plane );
             if( does_line_intersect_plane )
             {
                 if( Position::point_inside_segment(
