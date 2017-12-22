@@ -137,7 +137,7 @@ if(RINGMESH_WITH_UTILITIES)
     foreach(utility_src ${utility_sources})
         add_ringmesh_utility(${utility_src} geomodel_tools io)
     endforeach()
-    copy_for_windows(${PROJECT_BINARY_DIR}/bin/utilities)
+    copy_for_windows(${PROJECT_BINARY_DIR}/bin)
 endif()
 
 if(RINGMESH_WITH_TUTORIALS)
