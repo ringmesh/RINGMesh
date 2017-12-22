@@ -118,10 +118,15 @@ macro(add_ringmesh_executable exe_path folder_name)
     endforeach()
     
     # Add the project to a folder of projects for the tests
+    set(EXE_INSTALL_RPATH
+        "../lib"
+        "../third_party/lib"
+        "../third_party/lib64"
+    )
     set_target_properties(${exe_name} 
         PROPERTIES 
             FOLDER ${folder_name}
-            INSTALL_RPATH "../lib"
+            INSTALL_RPATH "${EXE_INSTALL_RPATH}"
     )
 endmacro()
 
@@ -130,13 +135,6 @@ function(add_ringmesh_binary bin_path)
     install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-            get_target_property(propval Geogram::geogram IMPORTED_LOCATION)
-            message(STATUs "propval = ${propval}")
-    install(CODE "
-      include(BundleUtilities)
-      fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/${exe_name}\" \"\" \"${PROJECT_BINARY_DIR}/lib;/users/j0479294/programming/RINGMesh/build/third_party/geogram/Debug/install/lib;/users/j0479294/programming/RINGMesh/build/third_party/tinyxml2/Release/install/lib64\")
-      "
-    )
 endfunction()
 
 function(add_ringmesh_utility bin_path)
@@ -144,11 +142,6 @@ function(add_ringmesh_utility bin_path)
     install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-            install(CODE "
-      include(BundleUtilities)
-      fixup_bundle(\"${CMAKE_INSTALL_PREFIX}/bin/${exe_name}\" \"\" \"${PROJECT_BINARY_DIR}/lib;/users/j0479294/programming/RINGMesh/build/third_party/geogram/Debug/install/lib;/users/j0479294/programming/RINGMesh/build/third_party/tinyxml2/Release/install/lib64\")
-      "
-    )
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)
