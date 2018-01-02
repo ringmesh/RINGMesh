@@ -135,7 +135,7 @@ if(RINGMESH_WITH_UTILITIES)
     # Get the paths of the utility files
     file(GLOB utility_sources "${binary_source_dir}/utilities/*.cpp")
     foreach(utility_src ${utility_sources})
-        add_ringmesh_utility(${utility_src} geomodel_tools io)
+        add_ringmesh_binary(${utility_src} geomodel_tools io)
     endforeach()
     copy_for_windows(${PROJECT_BINARY_DIR}/bin)
 endif()

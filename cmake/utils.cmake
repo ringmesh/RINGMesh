@@ -145,13 +145,6 @@ function(add_ringmesh_binary bin_path)
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
-function(add_ringmesh_utility bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
-    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
-    set_target_properties(${exe_name} PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-endfunction()
-
 function(add_ringmesh_test cpp_file_path)
     add_ringmesh_executable(${cpp_file_path} "Tests" ${ARGN})
     # Add the test to CTest
