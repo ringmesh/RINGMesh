@@ -52,6 +52,6 @@ ExternalProject_Add(ringmesh_ext
 ExternalProject_Add_Step(ringmesh_ext GetData
     COMMAND git submodule update --init
     WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDEES build
+    DEPENDEES configure
 )
 

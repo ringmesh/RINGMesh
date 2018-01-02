@@ -1,3 +1,0 @@
-modelA6_tetra.gm
-geomodel3d.asc
-geomodel3d.dat

@@ -1,0 +1,10 @@
+Corner 70
+Line 132
+Surface 79
+Region 14
+Vertex 25827
+Polygon 55426
+Cell 0
+Interface 12
+Contact 44
+Layer 4
