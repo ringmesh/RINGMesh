@@ -34,22 +34,24 @@
 set(RINGMesh_PATH ${PROJECT_SOURCE_DIR}/third_party/ringmesh)
 
 ExternalProject_Add(ringmesh_ext
-  PREFIX ${PROJECT_BINARY_DIR}
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          ${RINGMESH_EXTRA_ARGS} 
-          -DGLOBAL_BINARY_DIR:PATH=${PROJECT_BINARY_DIR}/..
-          -DUSE_SUPERBUILD:BOOL=OFF
-  BINARY_DIR ${PROJECT_BINARY_DIR}  
-  INSTALL_COMMAND ""
-  DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
-  GIT_SUBMODULES data
+    PREFIX ${PROJECT_BINARY_DIR}
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}
+    CMAKE_ARGS 
+            -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+            -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    CMAKE_CACHE_ARGS
+            ${RINGMESH_EXTRA_ARGS} 
+            -DGLOBAL_BINARY_DIR:PATH=${PROJECT_BINARY_DIR}/..
+            -DUSE_SUPERBUILD:BOOL=OFF
+    BINARY_DIR ${PROJECT_BINARY_DIR}  
+    INSTALL_COMMAND ""
+    DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+    GIT_SUBMODULES data
 )
 
-ExternalProject_Add_Step(ringmesh_ext forcebuild
-    DEPENDERS build
-  )
+ExternalProject_Add_Step(ringmesh_ext GetData
+    COMMAND git submodule update --init
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    DEPENDEES build
+)
 

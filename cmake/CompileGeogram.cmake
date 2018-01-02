@@ -68,7 +68,3 @@ ExternalProject_Add(geogram_ext
     BINARY_DIR ${GEOGRAM_PATH_BIN}
     INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
 )
-
-ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
-)
