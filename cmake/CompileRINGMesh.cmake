@@ -46,6 +46,7 @@ ExternalProject_Add(ringmesh_ext
   BINARY_DIR ${PROJECT_BINARY_DIR}  
   INSTALL_COMMAND ""
   DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+  GIT_SUBMODULES data
 )
 
 ExternalProject_Add_Step(ringmesh_ext forcebuild
