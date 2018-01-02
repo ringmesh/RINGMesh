@@ -61,7 +61,7 @@ install(
          ${ZLIB_ROOT}/
          ${GEOGRAM_INSTALL_PREFIX}/
     DESTINATION
-         ${CMAKE_INSTALL_PREFIX}/third_party
+         third_party
 )
 
 #------------------------------------------------------------------------------------------------
