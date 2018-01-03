@@ -122,13 +122,11 @@ macro(add_ringmesh_executable exe_path folder_name)
         set(EXE_INSTALL_RPATH
             "@executable_path/../lib"
             "@executable_path/../third_party/lib"
-            "@executable_path/../third_party/lib64"
         )
     else()
         set(EXE_INSTALL_RPATH
             "$ORIGIN/../lib"
             "$ORIGIN/../third_party/lib"
-            "$ORIGIN/../third_party/lib64"
         )
     endif()
     set_target_properties(${exe_name} 
