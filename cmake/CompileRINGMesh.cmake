@@ -47,10 +47,3 @@ ExternalProject_Add(ringmesh_ext
     INSTALL_COMMAND ""
     DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
 )
-
-ExternalProject_Add_Step(ringmesh_ext GetData
-    COMMAND git submodule update --init -- ${PROJECT_SOURCE_DIR}/data
-    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
-    DEPENDEES configure
-)
-

@@ -32,6 +32,12 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
+# Get all the submodules
+execute_process(
+   COMMAND git submodule update --init --recursive
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 set(RINGMESH_EXTRA_ARGS
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     -DMG_TETRA:STRING=${MG_TETRA}
