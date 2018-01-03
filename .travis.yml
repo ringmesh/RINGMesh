@@ -74,6 +74,7 @@ jobs:
           packages:
             - libxrandr-dev
             - libxinerama-dev
+            - libxcursor-dev
       script:
         - mkdir build
         - cd build
