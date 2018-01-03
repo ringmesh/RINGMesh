@@ -1,0 +1,9 @@
+Corner 52
+Line 98
+Surface 55
+Region 8
+Vertex 6691
+Polygon 10049
+Cell 34540
+Interface 11
+Contact 38

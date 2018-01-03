@@ -1,2 +1,0 @@
-sketch_conform.svg
-geomodel2d.gm
