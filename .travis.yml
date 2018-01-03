@@ -69,6 +69,10 @@ jobs:
       os: linux
       env:
         - TEST="Clang Check"
+      addons:
+        apt:
+          packages:
+            - libxrandr-dev
       script:
         - mkdir build
         - cd build
