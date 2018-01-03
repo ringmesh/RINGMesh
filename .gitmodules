@@ -4,3 +4,6 @@
 [submodule "third_party/tinyxml2"]
 	path = third_party/tinyxml2
 	url = https://github.com/leethomason/tinyxml2
+[submodule "third_party/zlib"]
+	path = third_party/zlib
+	url = https://github.com/madler/zlib
