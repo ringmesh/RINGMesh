@@ -82,6 +82,7 @@ jobs:
             - libxrandr-dev
             - libxinerama-dev
             - libxcursor-dev
+            - libxi-dev
       script:
         - mkdir build
         - cd build
@@ -119,6 +120,13 @@ jobs:
       os: linux
       env:
         - TEST="Linux release"
+      addons:
+        apt:
+          packages:
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxcursor-dev
+            - libxi-dev
       script:
         - mkdir build
         - cd build
