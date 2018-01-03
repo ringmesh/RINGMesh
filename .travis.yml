@@ -73,6 +73,7 @@ jobs:
         apt:
           packages:
             - libxrandr-dev
+            - libxinerama-dev
       script:
         - mkdir build
         - cd build
