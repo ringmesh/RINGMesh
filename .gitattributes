@@ -1,2 +1,3 @@
 third_party/* linguist-vendored
-tests/data/* linguist-vendored
+data/* linguist-vendored
+tests/* linguist-vendored
