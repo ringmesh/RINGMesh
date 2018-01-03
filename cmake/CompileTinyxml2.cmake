@@ -56,3 +56,9 @@ ExternalProject_Add(tinyxml2_ext
     BINARY_DIR ${TINYXML2_PATH_BIN}
     INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
 )
+
+ExternalProject_Add_Step(ringmesh_ext GetTinyxml2
+    COMMAND git submodule update --init -- ${TINYXML2_PATH}
+    WORKING_DIRECTORY ${PROJECT_SOURCE_DIR}
+    DEPENDERS configure
+)

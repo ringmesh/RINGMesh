@@ -1,3 +1,6 @@
 [submodule "data"]
 	path = data
 	url = https://github.com/ringmesh/RINGMeshData
+[submodule "third_party/tinyxml2"]
+	path = third_party/tinyxml2
+	url = https://github.com/leethomason/tinyxml2
