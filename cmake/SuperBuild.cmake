@@ -34,7 +34,7 @@
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
 execute_process(
-   COMMAND git submodule update -j --init --recursive
+   COMMAND git submodule update --init --recursive
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
