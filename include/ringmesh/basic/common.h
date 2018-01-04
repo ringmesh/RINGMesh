@@ -61,6 +61,7 @@
 #pragma warning( disable : 4250 ) // warning about diamond inheritance
 #pragma warning( disable : 4251 ) // dll interface warnings
 #pragma warning( disable : 4275 ) // let's pray we have no issues
+#pragma warning( disable : 4661 ) // template alias before implementation
 #endif
 
 #define ringmesh_disable_copy( Class )                                         \
