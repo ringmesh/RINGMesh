@@ -2,12 +2,17 @@ image:
   - Visual Studio 2013
   - Visual Studio 2015
  
+environment:
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
+
+matrix:
+  fast_finish: true
+
 build_script:
  - mkdir build
  - cd build
  - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
- - cmake --build . --config Debug -- /verbosity:minimal
-    
+ - cmake --build . --config Debug -- %MSBUILD_FLAGS%
+
 test_script:
- - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug -- /verbosity:minimal
- 
+ - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug -- %MSBUILD_FLAGS%
