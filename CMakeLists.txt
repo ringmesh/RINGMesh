@@ -85,7 +85,7 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
-# Check that RINGMesh has be cloned and not downloaded
+# Check that RINGMesh has been cloned and not downloaded
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
     message(FATAL_ERROR 
         "This directory is not a complete git project." 
