@@ -7,10 +7,6 @@ image:
 environment:
   password:
     secure: 61164urZVvsMrnw+6P+GBQ==
-
-build:
-  parallel: true
-  verbosity: minimal
  
 build_script:
  - mkdir build
