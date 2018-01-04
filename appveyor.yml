@@ -16,7 +16,7 @@ build_script:
  - mkdir build
  - cd build
  - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
- - cmake --build . --config Debug
+ - cmake --build . --config Debug -- /verbosity:minimal
     
 test_script:
  - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug
