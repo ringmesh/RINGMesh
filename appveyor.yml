@@ -3,10 +3,6 @@ version: 1.0.{build}
 image:
   - Visual Studio 2013
   - Visual Studio 2015
-
-environment:
-  password:
-    secure: 61164urZVvsMrnw+6P+GBQ==
  
 build_script:
  - mkdir build
@@ -15,5 +11,5 @@ build_script:
  - cmake --build . --config Debug -- /verbosity:minimal /maxcpucount
     
 test_script:
- - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug -- /verbosity:minimal /maxcpucoun
+ - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug -- /verbosity:minimal /maxcpucount
  
