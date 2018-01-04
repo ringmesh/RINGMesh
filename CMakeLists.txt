@@ -85,6 +85,15 @@ CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
 
 set(CMAKE_INSTALL_MESSAGE LAZY)
 
+# Check that RINGMesh has been cloned and not downloaded
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    message(FATAL_ERROR 
+        "This directory is not a complete git project." 
+        "To configure RINGMesh, first clone it from its repository."
+    )
+endif()
+
+
 # CMake is called, a main project (super build project) is generated first.
 # This main project is responsible to create third party cmake projects including
 # the one of RINGMesh. This is done during compilation, i.e., RINGMesh.cmake is

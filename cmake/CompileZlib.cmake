@@ -55,3 +55,9 @@ ExternalProject_Add(zlib_ext
     BINARY_DIR ${ZLIB_PATH_BIN}
     INSTALL_DIR ${ZLIB_ROOT}
 )
+
+ExternalProject_Add_Step(zlib_ext RevertZconf
+    COMMAND ${CMAKE_COMMAND} -E rename
+        ${ZLIB_PATH}/zconf.h.included ${ZLIB_PATH}/zconf.h
+    DEPENDEES configure
+)
