@@ -8,6 +8,9 @@ environment:
 matrix:
   fast_finish: true
 
+build:
+  parallel: true
+
 build_script:
  - mkdir build
  - cd build
