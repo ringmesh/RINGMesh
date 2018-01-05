@@ -48,6 +48,8 @@ for:
      && git clone -b master https://github.com/ringmesh/web
      && cd web
      && copy ..\RINGMesh-master-Win64-%VS_VERSION%.zip download\
+     && git config --global user.email "appveyor@fake.email"
+     && git config --global user.name "AppVeyor"
      && git add download\RINGMesh-master-Win64-%VS_VERSION%.zip
      && git commit -m "Update Windows master release"
      && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
