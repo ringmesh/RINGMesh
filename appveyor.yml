@@ -1,10 +1,14 @@
-environment:
+environment:  
+  GITHUB_TOKEN:
+    secure: 5JPgkWrjzetioB0LX9ZmMUV+5gk2/4vtkhgvaMVmkoOCNwxaraKuHGYjr6CkD8hR
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     GENERATOR: "Visual Studio 12 2013 Win64"
+    VS_VERSION: vs2013
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     GENERATOR: "Visual Studio 14 2015 Win64"
+    VS_VERSION: vs2015
 
 platform: x64
 
@@ -39,8 +43,16 @@ for:
   deploy_script:
    - if %configuration% == Release (
      cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
-     && ren RINGMesh-*-Win64.zip RINGMesh-master-Win64.zip
-     && dir)
+     && ren RINGMesh-*-Win64.zip RINGMesh-master-Win64-%VS_VERSION%.zip
+     && dir
+     && git clone -b master https://github.com/ringmesh/web
+     && cd web
+     && mkdir -p download
+     && copy ../RINGMesh-master-Win64-%VS_VERSION%.zip download/
+     && git add download/RINGMesh-master-Win64-%VS_VERSION%.zip
+     && git commit -m "Update Windows master release"
+     && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
+     )
 -
   configuration: Debug
 
