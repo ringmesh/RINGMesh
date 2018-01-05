@@ -24,7 +24,7 @@
   test_script:
    - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
 
-  deployr:
+  deploy:
   - provider: Script
     script:
     - cmake --build . --target INSTALL --config %configuration% -- %MSBUILD_FLAGS%
