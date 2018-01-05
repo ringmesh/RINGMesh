@@ -2,9 +2,9 @@ environment:
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
-    SRC_FOLDER: src/VS2013
+    GENERATOR: "Visual Studio 12 2013 Win64"
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
-    SRC_FOLDER: src/VS2015
+    GENERATOR: "Visual Studio 14 2015 Win64"
 
 platform: x64
 
@@ -24,13 +24,10 @@ for:
   build_script:
    - mkdir build
    - cd build
-   - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   deploy_script:
-   - if %configuration% == "Release" (
-     cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
-     && dir)
    - if %configuration% == Release (
      cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && dir)
@@ -40,7 +37,7 @@ for:
   build_script:
    - mkdir build
    - cd build
-   - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   test_script:
