@@ -1,19 +1,35 @@
+environment:
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    SRC_FOLDER: src/VS2013
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    SRC_FOLDER: src/VS2015
+
+matrix:
+  fast_finish: true
+
+for:
 -
   branches:
     only:
-      - master
+      - appveyor-install
+      
+  configuration: 
+    - Release
+    - Debug
+
+  build_script:
+   - mkdir build
+   - cd build
+   - cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+   - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  deploy_script:
+   - cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+   - dir   
 -
-  image:
-    - Visual Studio 2013
-    - Visual Studio 2015
-
-  environment:
-    MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
-
   configuration: Debug
-
-  matrix:
-    fast_finish: true
 
   build_script:
    - mkdir build
@@ -23,7 +39,3 @@
 
   test_script:
    - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
-
-  deploy_script:
-   - cmake --build . --target INSTALL --config %configuration% -- %MSBUILD_FLAGS%
-   - dir   
