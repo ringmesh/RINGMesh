@@ -47,7 +47,7 @@ for:
      && dir
      && git clone -b master https://github.com/ringmesh/web
      && cd web
-     if not exist download (mkdir download)
+     && if not exist download (mkdir download)
      && copy ../RINGMesh-master-Win64-%VS_VERSION%.zip download/
      && git add download/RINGMesh-master-Win64-%VS_VERSION%.zip
      && git commit -m "Update Windows master release"
