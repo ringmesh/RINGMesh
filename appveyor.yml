@@ -19,11 +19,11 @@ for:
 -
   branches:
     only:
-      - appveyor-install
+      - master
       
   configuration:
-    - Release
     - Debug
+    - Release
 
   build_script:
    - mkdir build
