@@ -24,12 +24,22 @@ for:
   build_script:
    - mkdir build
    - cd build
-   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+   - if %configuration% == Release (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+     ) else (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+     )
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  test_script:
+   - if %configuration% == Debug (
+     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+     )
 
   deploy_script:
    - if %configuration% == Release (
      cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+     && ren RINGMesh-*-Win64.zip RINGMesh-master-Win64.zip
      && dir)
 -
   configuration: Debug
