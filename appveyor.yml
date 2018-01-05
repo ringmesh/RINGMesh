@@ -6,6 +6,8 @@ environment:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     SRC_FOLDER: src/VS2015
 
+platform: x64
+
 matrix:
   fast_finish: true
 
@@ -15,7 +17,7 @@ for:
     only:
       - appveyor-install
       
-  configuration: 
+  configuration:
     - Release
     - Debug
 
@@ -26,8 +28,9 @@ for:
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   deploy_script:
-   - cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
-   - dir   
+   - if( %configuration% == Release ) (
+     cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+     && dir)
 -
   configuration: Debug
 
