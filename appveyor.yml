@@ -28,7 +28,7 @@ for:
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   deploy_script:
-   - if( %configuration% == Release ) (
+   - if( %configuration% == "Release" ) (
      cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && dir)
 -
