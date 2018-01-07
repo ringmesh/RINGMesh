@@ -410,16 +410,16 @@ namespace RINGMesh
             size_t lighttsolid_region_nb = nb_regions();
 
             // For every region ...
-            for( auto rgion_id : range( lighttsolid_region_nb ) )
+            for( auto region_id : range( lighttsolid_region_nb ) )
             {
                 // we want to record the local ids of the LightTSolid vertices
                 // ...
-                const auto& local_ids = local_ids_[rgion_id];
+                const auto& local_ids = local_ids_[region_id];
                 for( auto lighttsolid_vertices_id :
                     range( lighttsolid_vertices_nb ) )
                 {
                     // that are in this region.
-                    if( region_id( lighttsolid_vertices_id ) == rgion_id )
+                    if( region_id( lighttsolid_vertices_id ) == region_id )
                     {
                         index_t gocad_vertex_i{ gocad_vertex_id(
                             lighttsolid_vertices_id ) };
