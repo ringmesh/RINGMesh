@@ -1,0 +1,10 @@
+/* XPM */
+static const char *bgyr_xpm[] = {
+    /* columns rows colors chars-per-pixel */
+    "18 1 18 1 ", "a c #D1D3D4", "b c #B7C6E6", "c c #96B0DB", "d c #8190C8",
+    "e c #616CB2", "f c #4067B1", "g c #019696", "h c #3EB54A", "i c #84C441",
+    "j c #A2CD3A", "k c #C6D92D", "l c #F6EB14", "m c #FFC709", "n c #F99F1B",
+    "o c #F47C20", "p c #EE2A24", "q c #BC2025", "r c #801517",
+    /* pixels */
+    "abcdefghijklmnopqr"
+};
