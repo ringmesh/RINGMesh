@@ -41,6 +41,7 @@ jobs:
             echo "HEAD ref ($head_ref) does not match $TRAVIS_BRANCH ref ($branch_ref)"
             return 1
           fi
+        - git checkout "$TRAVIS_BRANCH"
         - git add --all "$TRAVIS_BUILD_DIR"
         - git commit -m "Travis CI format update"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG "$TRAVIS_BRANCH"
