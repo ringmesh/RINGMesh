@@ -63,13 +63,10 @@ jobs:
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
-      before_script:
-        - mkdir $TRAVIS_BUILD_DIR/3rdparty
-        - cd $TRAVIS_BUILD_DIR/3rdparty
+      install:
         - wget https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip
         - unzip build-wrapper-linux-x86.zip
         - export PATH=$PWD/build-wrapper-linux-x86:$PATH
-        - cd $TRAVIS_BUILD_DIR
       script:
         - mkdir build
         - cd build
