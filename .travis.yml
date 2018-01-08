@@ -34,7 +34,17 @@ jobs:
             return 1
           fi
       after_failure:
-        - "$TRAVIS_BUILD_DIR/tools/travis-ci-git-commit.bash"
+        - export head_ref=$(git rev-parse HEAD)
+        - export branch_ref=$(git rev-parse "$TRAVIS_BRANCH")
+        - |
+          if [[ $head_ref != $branch_ref ]]; then
+            echo "HEAD ref ($head_ref) does not match $TRAVIS_BRANCH ref ($branch_ref)"
+            return 1
+          fi
+        - git checkout "$TRAVIS_BRANCH"
+        - git add --all "$TRAVIS_BUILD_DIR"
+        - git commit -m "Travis CI format update"
+        - git push https://BotellaA:$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG "$TRAVIS_BRANCH"
 
     - stage: compile and test
       os: linux
