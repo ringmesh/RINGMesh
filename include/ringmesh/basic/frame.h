@@ -64,7 +64,8 @@ namespace RINGMesh
 
         const vecn< DIMENSION >& operator[]( index_t coord ) const
         {
-            ringmesh_assert( coord < DIMENSION );            return axis_[coord];
+            ringmesh_assert( coord < DIMENSION );
+            return axis_[coord];
         }
 
         vecn< DIMENSION >& operator[]( index_t coord )
