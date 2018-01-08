@@ -1,7 +1,7 @@
 /* ioapi.h -- IO base function header for compress/uncompress .zip
    part of the MiniZip project
 
-   Copyright (C) 2012-2018 Nathan Moinvaziri
+   Copyright (C) 2012-2017 Nathan Moinvaziri
      https://github.com/nmoinvaz/minizip
    Copyright (C) 2009-2010 Mathias Svensson
      Modifications for Zip64 support

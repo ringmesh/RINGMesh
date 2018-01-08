@@ -4,7 +4,7 @@
    This version of ioapi is designed to access memory rather than files.
    We do use a region of memory to put data in to and take it out of.
 
-   Copyright (C) 2012-2018 Nathan Moinvaziri (https://github.com/nmoinvaz/minizip)
+   Copyright (C) 2012-2017 Nathan Moinvaziri (https://github.com/nmoinvaz/minizip)
              (C) 2003 Justin Fletcher
              (C) 1998-2003 Gilles Vollant
 
