@@ -15,6 +15,8 @@ stages:
   - compile and test
   - name: deploy
     if: branch = master AND type = push
+  - name: trigger
+    if: branch = travis-trigger AND type = push
 
 jobs:
   include:
@@ -170,3 +172,9 @@ jobs:
         - git commit -m "Update Darwin master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
 
+    - stage: trigger
+      os: linux
+      script:
+        - git clone -b master https://github.com/ringmesh/TriggerCI
+        - python travis-trigger.py RINGMesh
+    
