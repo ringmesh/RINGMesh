@@ -57,11 +57,11 @@ include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 
 install(
     DIRECTORY
-         ${TINYXML2_INSTALL_PREFIX}/
-         ${ZLIB_ROOT}/
-         ${GEOGRAM_INSTALL_PREFIX}/
+        ${TINYXML2_INSTALL_PREFIX}/
+        ${ZLIB_ROOT}/
+        ${GEOGRAM_INSTALL_PREFIX}/
     DESTINATION
-         third_party
+        .
 )
 
 #------------------------------------------------------------------------------------------------
