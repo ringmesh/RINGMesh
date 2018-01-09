@@ -31,30 +31,30 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(GEOGRAM_PATH ${CMAKE_SOURCE_DIR}/third_party/geogram)
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
+set(GEOGRAM_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/geogram)
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install
+    CACHE INTERNAL "Geogram install directory")
 
 if(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram)
     set(geoplatform Win-vs-dynamic-generic)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-else(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
+else()
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         if(APPLE)
             set(geoplatform Darwin-clang-dynamic)
-        else(APPLE)
+        else()
             set(geoplatform Linux64-clang-dynamic)
-        endif(APPLE)
+        endif()
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(geoplatform Linux64-gcc-dynamic)
     endif()
-endif(WIN32)
-set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
+endif()
 
 ExternalProject_Add(geogram_ext
     PREFIX ${GEOGRAM_PATH_BIN}
     SOURCE_DIR ${GEOGRAM_PATH}
-    CMAKE_ARGS 
+    CMAKE_ARGS
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
     CMAKE_CACHE_ARGS
