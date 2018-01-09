@@ -65,9 +65,9 @@ namespace RINGMesh
      * is the corner with the smallest coordinates.
      */
     template < index_t DIMENSION >
-    class CartesianGrid
+    class CartesianGridBase
     {
-        ringmesh_disable_copy_and_move( CartesianGrid );
+        ringmesh_disable_copy_and_move( CartesianGridBase );
         friend class CartesianGridBuilder< DIMENSION >;
 
     public:
@@ -80,7 +80,7 @@ namespace RINGMesh
          * the cell (0,0,0) in the cartesian grid, the vectors are the
          * directions and length of the grid cells.
          */
-        CartesianGrid( ivecn< DIMENSION > nb_cells_in_each_direction,
+        CartesianGridBase( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
             check_and_update_number_of_cells( nb_cells_in_each_direction );
@@ -126,10 +126,6 @@ namespace RINGMesh
                 ReferenceFrameManipulator< DIMENSION >::
                     coords_from_frame_to_global(
                         inverse_cartesian_frame_, reference_vertex ) );
-            //        	return this->containing_cell_from_local_point(
-            //        			ReferenceFrameManipulator< DIMENSION
-            //        >::coords_from_global_to_frame(
-            //        			cartesian_frame_, reference_vertex ) );
         }
 
         sivecn< DIMENSION > containing_cell_from_local_point(
@@ -196,12 +192,12 @@ namespace RINGMesh
             return nb_cells_in_each_direction_[i];
         }
 
-        ReferenceFrame< DIMENSION > grid_vectors() const
+        const ReferenceFrame< DIMENSION >& grid_vectors()
         {
             return cartesian_frame_;
         }
 
-        ReferenceFrame< DIMENSION > inverse_grid_vectors() const
+        const ReferenceFrame< DIMENSION >& inverse_grid_vectors()
         {
             return inverse_cartesian_frame_;
         }
@@ -257,7 +253,7 @@ namespace RINGMesh
         }
 
     protected:
-        CartesianGrid() = default;
+        CartesianGridBase() = default;
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
@@ -285,7 +281,46 @@ namespace RINGMesh
 
         GEO::AttributesManager attributes_manager_;
     };
+    ALIAS_2D_AND_3D( CartesianGridBase );
+
+    template < index_t DIMENSION >
+    class CartesianGrid final : public CartesianGridBase< DIMENSION >
+    {
+    	friend class CartesianGridBuilder< DIMENSION >;
+    };
     ALIAS_2D_AND_3D( CartesianGrid );
+
+    template <>
+    class CartesianGrid< 3 > final : public CartesianGridBase< 3 >
+    {
+    	friend class CartesianGridBuilder< 3 >;
+    public:
+    	CartesianGrid( ivec3 nb_cells_in_each_direction,
+    	            ReferenceFrame3D vec_cartesian_axis ) :
+    	            	CartesianGridBase( nb_cells_in_each_direction, vec_cartesian_axis ),
+						grid_cage_()
+		{
+    		for( auto i : range( 3 ) )
+    		{
+    			vec3 origin1 = cartesian_frame_.origin(), vector1 = cartesian_frame_[i];
+    			grid_cage_.push_back( Geometry::Plane{ vector1, origin1 } );
+    			vec3 origin2 = cartesian_frame_.origin()
+    					+ cartesian_frame_[0] * nb_cells_axis(0)
+						+ cartesian_frame_[1] * nb_cells_axis(1)
+						+ cartesian_frame_[2] * nb_cells_axis(2),
+					 vector2 = cartesian_frame_[i];
+    			grid_cage_.push_back( Geometry::Plane{ vector2, origin2 } );
+    		}
+		}
+
+    	const std::vector< Geometry::Plane >& grid_cage() const
+		{
+    		return grid_cage_;
+		}
+    private:
+    	std::vector< Geometry::Plane > grid_cage_;
+    };
+
 
     template < index_t DIMENSION >
     class CartesianGridBuilder
