@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -863,7 +863,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool Line< 2 >::is_on_voi() const
+    bool geomodel_core_api Line< 2 >::is_on_voi() const
     {
         ringmesh_assert( this->nb_incident_entities() == 1
                          || this->nb_incident_entities() == 2 );
@@ -871,7 +871,7 @@ namespace RINGMesh
     }
 
     template <>
-    bool Line< 3 >::is_on_voi() const
+    bool geomodel_core_api Line< 3 >::is_on_voi() const
     {
         // True if one of the incident surfaces defines the universe
         for( auto i : range( this->nb_incident_entities() ) )

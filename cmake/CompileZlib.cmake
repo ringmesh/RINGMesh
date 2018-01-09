@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -43,19 +43,21 @@ if(APPLE)
 endif(APPLE)
 
 ExternalProject_Add(zlib_ext
-  PREFIX ${ZLIB_PATH_BIN}
-  SOURCE_DIR ${ZLIB_PATH}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
-          ${APPLE_EXTRA_ARGS}
-  BINARY_DIR ${ZLIB_PATH_BIN}
-  INSTALL_DIR ${ZLIB_ROOT}
+    PREFIX ${ZLIB_PATH_BIN}
+    SOURCE_DIR ${ZLIB_PATH}
+    CMAKE_ARGS 
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+    CMAKE_CACHE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
+        -DSKIP_INSTALL_FILES:BOOL=ON
+        ${APPLE_EXTRA_ARGS}
+    BINARY_DIR ${ZLIB_PATH_BIN}
+    INSTALL_DIR ${ZLIB_ROOT}
 )
 
-ExternalProject_Add_Step(zlib_ext forcebuild
-    DEPENDERS build
+ExternalProject_Add_Step(zlib_ext RevertZconf
+    COMMAND ${CMAKE_COMMAND} -E rename
+        ${ZLIB_PATH}/zconf.h.included ${ZLIB_PATH}/zconf.h
+    DEPENDEES configure
 )
-

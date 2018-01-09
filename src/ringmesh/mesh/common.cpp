@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,6 +44,6 @@ namespace
     RINGMESH_PLUGIN_INITIALIZE(
         RINGMesh_mesh,
         // Plugin initialization
-        RINGMesh::PluginManager::load_module( "RINGMesh_geogram_extension" );
+        RINGMesh::PluginManager::load_plugin( "RINGMesh_geogram_extension" );
     );
 } // namespace

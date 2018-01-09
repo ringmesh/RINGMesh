@@ -1,24 +1,67 @@
-version: 1.0.{build}
+environment:  
+  GITHUB_TOKEN:
+    secure: 5JPgkWrjzetioB0LX9ZmMUV+5gk2/4vtkhgvaMVmkoOCNwxaraKuHGYjr6CkD8hR
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    GENERATOR: "Visual Studio 12 2013 Win64"
+    VS_VERSION: vs2013
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    GENERATOR: "Visual Studio 14 2015 Win64"
+    VS_VERSION: vs2015
 
-image: Visual Studio 2013
+platform: x64
 
-environment:
-  password:
-    secure: 61164urZVvsMrnw+6P+GBQ==
-    
-build:
-  parallel: true
- 
-build_script:
- - cmd: >-
-    mkdir build
-    
-    cd build
-    
-    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-    
-    cmake --build . --config Debug
-    
-test_script:
- - cmd: cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug
+matrix:
+  fast_finish: true
 
+for:
+-
+  branches:
+    only:
+      - master
+      
+  configuration:
+    - Debug
+    - Release
+
+  build_script:
+   - mkdir build
+   - cd build
+   - if %configuration% == Release (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+     ) else (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+     )
+   - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  test_script:
+   - if %configuration% == Debug (
+     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+     )
+
+  deploy_script:
+   - if %configuration% == Release (
+     cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+     && ren RINGMesh-*-Win64.zip RINGMesh-master-Win64-%VS_VERSION%.zip
+     && dir
+     && git clone -b master https://github.com/ringmesh/web
+     && cd web
+     && copy ..\RINGMesh-master-Win64-%VS_VERSION%.zip download\
+     && git config --global user.email "appveyor@fake.email"
+     && git config --global user.name "AppVeyor"
+     && git add download\RINGMesh-master-Win64-%VS_VERSION%.zip
+     && git commit -m "Update Windows master release"
+     && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
+     )
+-
+  configuration: Debug
+
+  build_script:
+   - mkdir build
+   - cd build
+   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+   - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  test_script:
+   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%

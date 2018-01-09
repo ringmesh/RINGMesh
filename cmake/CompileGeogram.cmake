@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -67,8 +67,4 @@ ExternalProject_Add(geogram_ext
         -DCMAKE_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
     BINARY_DIR ${GEOGRAM_PATH_BIN}
     INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
-)
-
-ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
 )

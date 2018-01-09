@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,9 @@
 
 #include <ringmesh/basic/plugin_manager.h>
 
+#include <geogram/basic/command_line.h>
 #include <geogram/basic/file_system.h>
+#include <geogram/basic/line_stream.h>
 
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/logger.h>
@@ -49,9 +51,47 @@
 namespace
 {
     std::vector< std::string > plugins;
+
+    bool read_plugins_configuration_file( const std::string& configuration_file )
+    {
+        try
+        {
+            GEO::LineInput file( configuration_file );
+            ringmesh_assert( file.OK() );
+            while( !file.eof() && file.get_line() )
+            {
+                file.get_fields();
+                ringmesh_assert( file.nb_fields() == 1 );
+                if( !RINGMesh::PluginManager::load_plugin( file.field( 0 ) ) )
+                {
+                    RINGMesh::Logger::err( "Plugin", "Failed to load ", file.field( 0 ) );
+                    return false;
+                }
+            }
+        }
+        catch( const std::logic_error& ex )
+        {
+            RINGMesh::Logger::err( "Plugin", "Got an error: ", ex.what() );
+            return false;
+        }
+        return true;
+    }
+
+    bool load_plugins_configuration( const std::string& configuration_directory )
+    {
+        auto config_file = configuration_directory + "/"
+            + RINGMesh::PluginManager::configuration_file;
+        if( std::ifstream{ config_file.c_str() }.good() )
+        {
+            return read_plugins_configuration_file( config_file );
+        }
+        return false;
+    }
 } //namespace
 
 #if _WIN32
+#include <KnownFolders.h>
+#include <Shlobj.h>
 #include <Windows.h>
 
 namespace RINGMesh
@@ -94,6 +134,28 @@ namespace RINGMesh
             }
         }
 
+        std::string home_directory() const
+        {
+            PWSTR path{ nullptr };
+            HRESULT hr = SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &path);
+            std::string result;
+            if( SUCCEEDED( hr ) )
+            {
+                std::stringstream ss;
+                ss << path;
+                result = ss.str();
+            }
+            CoTaskMemFree(path);
+            return result;
+        }
+
+        std::string running_directory() const
+        {
+            TCHAR path[MAX_PATH];
+            GetCurrentDirectory( MAX_PATH, path );
+            return path;
+        }
+
     private:
         std::string library_name( const std::string& plugin_name ) const
         {
@@ -103,6 +165,7 @@ namespace RINGMesh
 } // namespace RINGMesh
 #else
 #include <dlfcn.h>
+#include <pwd.h>
 
 namespace RINGMesh
 {
@@ -128,6 +191,28 @@ namespace RINGMesh
             }
         }
 
+        std::string home_directory() const
+        {
+            std::string homedir{ getenv( "HOME" ) };
+            if( homedir.empty() )
+            {
+                struct passwd pd;
+                struct passwd* pwdptr = &pd;
+                struct passwd* tempPwdPtr;
+                char pwdbuffer[200];
+                auto pwdlinelen = sizeof( pwdbuffer );
+                getpwuid_r( 22, pwdptr, pwdbuffer, pwdlinelen, &tempPwdPtr );
+                homedir = pd.pw_dir;
+            }
+            return homedir;
+        }
+
+        std::string running_directory() const
+        {
+            char path[PATH_MAX];
+            return ::getcwd( path, PATH_MAX );
+        }
+
     private:
         std::string library_name( const std::string& plugin_name ) const
         {
@@ -144,8 +229,9 @@ namespace RINGMesh
 namespace RINGMesh
 {
     PImpl< PluginManager::Impl > PluginManager::impl_;
+    const std::string PluginManager::configuration_file = std::string{ "RINGMesh.ini" };
 
-    bool PluginManager::load_module( const std::string& plugin_name )
+    bool PluginManager::load_plugin( const std::string& plugin_name )
     {
         try
         {
@@ -166,4 +252,23 @@ namespace RINGMesh
         return true;
     }
 
+    bool PluginManager::load_plugins()
+    {
+        auto all_plugin_names = GEO::CmdLine::get_arg( "sys:plugins" );
+        if( !all_plugin_names.empty() )
+        {
+            std::vector< std::string > plugin_names;
+            GEO::String::split_string( all_plugin_names, ';', plugin_names );
+            for( const auto& plugin_name : plugin_names )
+            {
+                if( !load_plugin( plugin_name ) )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+        return load_plugins_configuration( impl_->running_directory() )
+            || load_plugins_configuration( impl_->home_directory() );
+    }
 } // namespace RINGMesh

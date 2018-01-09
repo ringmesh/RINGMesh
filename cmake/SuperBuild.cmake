@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,14 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
+# Get all the submodules
+execute_process(
+   COMMAND git submodule update --init --recursive
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 set(RINGMESH_EXTRA_ARGS
-    -DPROJECT_BINARY_DIR:PATH=${project_binary_dir_config}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     -DMG_TETRA:STRING=${MG_TETRA}
     -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
     -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}

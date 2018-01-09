@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -69,23 +69,23 @@ namespace
 {
     using namespace RINGMesh;
 
-#include "geomodel/io_abaqus.cpp"
-#include "geomodel/io_adeli.cpp"
-#include "geomodel/io_aster.cpp"
-#include "geomodel/io_csmp.cpp"
-#include "geomodel/io_feflow.cpp"
-#include "geomodel/io_gm.cpp"
-#include "geomodel/io_gprs.cpp"
-#include "geomodel/io_mfem.cpp"
-#include "geomodel/io_model3d.cpp"
-#include "geomodel/io_msh.cpp"
-#include "geomodel/io_smesh.cpp"
-#include "geomodel/io_stl.cpp"
-#include "geomodel/io_stradivarius.cpp"
-#include "geomodel/io_svg.cpp"
-#include "geomodel/io_tetgen.cpp"
-#include "geomodel/io_tsolid.cpp"
-#include "geomodel/io_vtk.cpp"
+#include "geomodel/io_abaqus.hpp"
+#include "geomodel/io_adeli.hpp"
+#include "geomodel/io_aster.hpp"
+#include "geomodel/io_csmp.hpp"
+#include "geomodel/io_feflow.hpp"
+#include "geomodel/io_gm.hpp"
+#include "geomodel/io_gprs.hpp"
+#include "geomodel/io_mfem.hpp"
+#include "geomodel/io_model3d.hpp"
+#include "geomodel/io_msh.hpp"
+#include "geomodel/io_smesh.hpp"
+#include "geomodel/io_stl.hpp"
+#include "geomodel/io_stradivarius.hpp"
+#include "geomodel/io_svg.hpp"
+#include "geomodel/io_tetgen.hpp"
+#include "geomodel/io_tsolid.hpp"
+#include "geomodel/io_vtk.hpp"
 
     template < typename Class, typename Factory >
     std::unique_ptr< Class > create_handler( const std::string& format )
