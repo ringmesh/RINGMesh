@@ -119,20 +119,14 @@ macro(add_ringmesh_executable exe_path folder_name)
     
     # Add the project to a folder of projects for the tests
     if(APPLE)
-        set(EXE_INSTALL_RPATH
-            "@executable_path/../lib"
-            "@executable_path/../third_party/lib"
-        )
+        set(OS_RPATH "@executable_path")
     else()
-        set(EXE_INSTALL_RPATH
-            "$ORIGIN/../lib"
-            "$ORIGIN/../third_party/lib"
-        )
+        set(OS_RPATH "$ORIGIN")
     endif()
     set_target_properties(${exe_name} 
         PROPERTIES 
             FOLDER ${folder_name}
-            INSTALL_RPATH "${EXE_INSTALL_RPATH}"
+            INSTALL_RPATH "${OS_RPATH}/../lib"
     )
 endmacro()
 
