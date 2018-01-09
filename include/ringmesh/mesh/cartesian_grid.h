@@ -286,41 +286,44 @@ namespace RINGMesh
     template < index_t DIMENSION >
     class CartesianGrid final : public CartesianGridBase< DIMENSION >
     {
-    	friend class CartesianGridBuilder< DIMENSION >;
+        friend class CartesianGridBuilder< DIMENSION >;
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 
     template <>
     class CartesianGrid< 3 > final : public CartesianGridBase< 3 >
     {
-    	friend class CartesianGridBuilder< 3 >;
+        friend class CartesianGridBuilder< 3 >;
+
     public:
-    	CartesianGrid( ivec3 nb_cells_in_each_direction,
-    	            ReferenceFrame3D vec_cartesian_axis ) :
-    	            	CartesianGridBase( nb_cells_in_each_direction, vec_cartesian_axis ),
-						grid_cage_()
-		{
-    		for( auto i : range( 3 ) )
-    		{
-    			vec3 origin1 = cartesian_frame_.origin(), vector1 = cartesian_frame_[i];
-    			grid_cage_.push_back( Geometry::Plane{ vector1, origin1 } );
-    			vec3 origin2 = cartesian_frame_.origin()
-    					+ cartesian_frame_[0] * nb_cells_axis(0)
-						+ cartesian_frame_[1] * nb_cells_axis(1)
-						+ cartesian_frame_[2] * nb_cells_axis(2),
-					 vector2 = cartesian_frame_[i];
-    			grid_cage_.push_back( Geometry::Plane{ vector2, origin2 } );
-    		}
-		}
+        CartesianGrid( ivec3 nb_cells_in_each_direction,
+            ReferenceFrame3D vec_cartesian_axis )
+            : CartesianGridBase(
+                  nb_cells_in_each_direction, vec_cartesian_axis ),
+              grid_cage_()
+        {
+            for( auto i : range( 3 ) )
+            {
+                vec3 origin1 = cartesian_frame_.origin(),
+                     vector1 = cartesian_frame_[i];
+                grid_cage_.push_back( Geometry::Plane{ vector1, origin1 } );
+                vec3 origin2 = cartesian_frame_.origin()
+                               + cartesian_frame_[0] * nb_cells_axis( 0 )
+                               + cartesian_frame_[1] * nb_cells_axis( 1 )
+                               + cartesian_frame_[2] * nb_cells_axis( 2 ),
+                     vector2 = cartesian_frame_[i];
+                grid_cage_.push_back( Geometry::Plane{ vector2, origin2 } );
+            }
+        }
 
-    	const std::vector< Geometry::Plane >& grid_cage() const
-		{
-    		return grid_cage_;
-		}
+        const std::vector< Geometry::Plane >& grid_cage() const
+        {
+            return grid_cage_;
+        }
+
     private:
-    	std::vector< Geometry::Plane > grid_cage_;
+        std::vector< Geometry::Plane > grid_cage_;
     };
-
 
     template < index_t DIMENSION >
     class CartesianGridBuilder
