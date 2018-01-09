@@ -11,12 +11,12 @@ env:
     secure: Fo3r89wp9lKA2IoNAweBji9su5qmKhYrnkJ49Ci0VK1p6l4kM2CL5IF3aQvwweybtIacpxLZQN+XSrGZe21Mtc+tuG5OgJDg7R462sD9PHt+6bpJOcCx3c7Cw6U4ObKnbaF/2ybqoXk4uFfAISXHgJ9Og2+T+ouXgfou03sQHz/yY7bFjUFqX0VPRDNNvV9CZuP5CMoLUf/Lp6qhuS2V1q6qTMziQ+ga5Bv6/sMmetvSglrXH1wXG4cTF9ceBWknV6ql0cYnQGFp+uOQq4a8E3LA8zF75kkFim1BGlzhgZfWvCmdk20HgJRVfd8iqFmHwhV+Zm+9koqNo5C4T513LA1IxapCJ2H7kNWb77hJ/7JGfZO6Nk9yIp2YHQLtGn90NXisHhlSvZzNvtrewqjdS5NAsz3qxXYjKqdROYTSVD8QiGJZOTuZU8XnEivnj+MMSlFgsJ5ff0cZmMsbEJ9KPeaCW4r8wpVraEI9cCKaTC1jqyV6MSAV0THqdRzV7tI86ZyWYopCPntFbdd8+89yX7qNOBpwimJVfEbsUaPAo356o0Mjic//gbHbCd5JoOpCt7uBoOSpSX1tj8E63mc0EyLn9N/4z0YkfOKHoIrbN3Q1vDqX49M51vNjgo8sYiGelqQTbGl8lrnHGh3Vsub1MrvW+idpINAeZp8SN/REy28=
 
 stages:
+  - name: trigger
+    if: branch = travis-trigger AND type = push
   - format
   - compile and test
   - name: deploy
     if: branch = master AND type = push
-  - name: trigger
-    if: branch = travis-trigger AND type = push
 
 jobs:
   include:
@@ -176,5 +176,6 @@ jobs:
       os: linux
       script:
         - git clone -b master https://github.com/ringmesh/TriggerCI
+        - cd TriggerCI
         - python travis-trigger.py RINGMesh
     
