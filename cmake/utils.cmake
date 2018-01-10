@@ -47,8 +47,7 @@ function(add_ringmesh_library directory)
             PUBLIC 
                 -DGEO_DYNAMIC_LIBS 
                 # Following are meant for geogram
-                -D_CRT_SECURE_NO_WARNINGS 
-                /wd4275
+                -D_CRT_SECURE_NO_WARNINGS
         )
         add_dependencies(copy_dll ${target_name})
     endif()
