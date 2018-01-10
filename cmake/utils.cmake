@@ -52,7 +52,7 @@ function(add_ringmesh_library directory)
     
     export(TARGETS ${target_name} 
         NAMESPACE RINGMesh:: 
-        FILE cmake/RINGMesh_${target_name}_target.cmake
+        FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
     )
     generate_export_header(${target_name} 
         EXPORT_MACRO_NAME ${target_name}_api 
@@ -67,7 +67,7 @@ function(add_ringmesh_library directory)
     install(EXPORT ${target_name}
         FILE RINGMesh_${target_name}_target.cmake
         NAMESPACE RINGMesh::
-        DESTINATION cmake
+        DESTINATION lib/cmake/RINGMesh
     )
 endfunction()
 
