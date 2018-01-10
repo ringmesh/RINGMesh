@@ -123,8 +123,8 @@ namespace RINGMesh
             // Since coords_from_frame_to_global is faster than
             // coords_from_global_to_frame, we use it with the inverse matrix
             return ReferenceFrameManipulator< DIMENSION >::
-                    coords_from_frame_to_global(
-                        inverse_cartesian_frame_, reference_vertex );
+                coords_from_frame_to_global(
+                    inverse_cartesian_frame_, reference_vertex );
         }
 
         sivecn< DIMENSION > containing_cell_from_global_point(
