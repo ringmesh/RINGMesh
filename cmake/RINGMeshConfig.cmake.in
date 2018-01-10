@@ -34,7 +34,13 @@
 
 @PACKAGE_INIT@ 
 
-set_and_check(GEOGRAM_INSTALL_PREFIX @GEOGRAM_INSTALL_PREFIX@)
+if(EXISTS ${PACKAGE_PREFIX_DIR}/lib/cmake/modules/FindGeogram.cmake)
+    # Install/Package configuration
+    set_and_check(GEOGRAM_INSTALL_PREFIX ${PACKAGE_PREFIX_DIR})
+else()
+    # Build tree configuration
+    set_and_check(GEOGRAM_INSTALL_PREFIX @GEOGRAM_INSTALL_PREFIX@)
+endif()
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
