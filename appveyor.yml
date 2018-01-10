@@ -5,10 +5,10 @@ environment:
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     GENERATOR: "Visual Studio 12 2013 Win64"
-    VS_VERSION: vs2013
+    RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2013
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     GENERATOR: "Visual Studio 14 2015 Win64"
-    VS_VERSION: vs2015
+    RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2015
 
 platform: x64
 
@@ -29,7 +29,7 @@ for:
    - mkdir build
    - cd build
    - if %configuration% == Release (
-     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON ..
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=%RINGMESH_PACKAGE% ..
      ) else (
      cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
      )
@@ -37,20 +37,18 @@ for:
 
   test_script:
    - if %configuration% == Debug (
-     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
      )
 
   deploy_script:
    - if %configuration% == Release (
-     cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
-     && ren RINGMesh-*-Win64.zip RINGMesh-master-Win64-%VS_VERSION%.zip
-     && dir
+     cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
-     && copy ..\RINGMesh-master-Win64-%VS_VERSION%.zip download\
+     && copy ..\ringmesh\%RINGMESH_PACKAGE%.zip download\
      && git config --global user.email "appveyor@fake.email"
      && git config --global user.name "AppVeyor"
-     && git add download\RINGMesh-master-Win64-%VS_VERSION%.zip
+     && git add download\%RINGMESH_PACKAGE%.zip
      && git commit -m "Update Windows master release"
      && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
      )
@@ -64,4 +62,4 @@ for:
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   test_script:
-   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%

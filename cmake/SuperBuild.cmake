@@ -47,7 +47,15 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
     -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
-    -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE})
+    -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
+)
+
+if(CPACK_PACKAGE_FILE_NAME)
+    set(RINGMESH_EXTRA_ARGS 
+        ${RINGMESH_EXTRA_ARGS}
+        -DCPACK_PACKAGE_FILE_NAME:STRING=${CPACK_PACKAGE_FILE_NAME}
+    )
+endif()
 
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
@@ -73,7 +81,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -G ${CMAKE_GENERATOR}
                 ${RINGMESH_EXTRA_ARGS} 
                 -DCMAKE_BUILD_TYPE=${config}
-                -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -83,12 +90,9 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     endif()
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
-# execute the superbuild
+# Execute the superbuild
 project(SUPERBUILD)
-if(NOT GLOBAL_BINARY_DIR)
-    set(GLOBAL_BINARY_DIR ${PROJECT_BINARY_DIR})
-endif()
-	
+
 # Additional cmake modules
 include(ExternalProject)
 
