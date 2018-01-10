@@ -106,7 +106,7 @@ jobs:
         - cd build
         - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cmake --build . --config Debug
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test --config Debug -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test --config Debug
 
     - stage: compile and test
       if: branch = master
