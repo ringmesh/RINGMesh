@@ -73,7 +73,7 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target coverage -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
 
@@ -94,7 +94,7 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Debug
         - cmake --build . -- -j2
-        - ctest --output-on-failure -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
 
     - stage: compile and test
       if: branch = master
@@ -106,7 +106,7 @@ jobs:
         - cd build
         - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cmake --build . --config Debug
-        - ctest -C Debug --output-on-failure -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
 
     - stage: compile and test
       if: branch = master
@@ -119,7 +119,7 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Debug
         - cmake --build . -- -j2
-        - ctest --output-on-failure -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
 
     - stage: deploy
       os: linux
@@ -139,12 +139,12 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
-        - cmake --build . --target package
+        - cmake --build ringmesh --target package
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
         - mkdir -p download
-        - cp -f ../$RINGMESH_PACKAGE.tar.gz download/
+        - cp -f ../ringmesh/$RINGMESH_PACKAGE.tar.gz download/
         - git add download/$RINGMESH_PACKAGE.tar.gz
         - git commit -m "Update Linux master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
@@ -160,12 +160,12 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
-        - cmake --build . --target package
+        - cmake --build ringmesh --target package
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
         - mkdir -p download
-        - cp -f ../$RINGMESH_PACKAGE.tar.gz download/
+        - cp -f ../ringmesh/$RINGMESH_PACKAGE.tar.gz download/
         - git add download/$RINGMESH_PACKAGE.tar.gz
         - git commit -m "Update Darwin master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
