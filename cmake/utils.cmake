@@ -44,7 +44,12 @@ function(add_ringmesh_library directory)
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
         target_compile_definitions(${target_name} 
-            PUBLIC -DGEO_DYNAMIC_LIBS -D_CRT_SECURE_NO_WARNINGS)
+            PUBLIC 
+                -DGEO_DYNAMIC_LIBS 
+                # Following are meant for geogram
+                -D_CRT_SECURE_NO_WARNINGS 
+                /wd4275
+        )
         add_dependencies(copy_dll ${target_name})
     endif()
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
