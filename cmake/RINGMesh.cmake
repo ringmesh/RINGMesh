@@ -104,7 +104,7 @@ include(GenerateExportHeader)
 include(InstallRequiredSystemLibraries)
 configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
-    ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake
+    ${CMAKE_BINARY_DIR}/lib/cmake/RINGMesh/RINGMeshConfig.cmake
     INSTALL_DESTINATION lib/cmake/RINGMesh
     PATH_VARS GEOGRAM_INSTALL_PREFIX
 )
