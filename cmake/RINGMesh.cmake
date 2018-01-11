@@ -109,7 +109,7 @@ configure_package_config_file(
     PATH_VARS GEOGRAM_INSTALL_PREFIX
 )
 install(
-    FILES ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake 
+    FILES ${CMAKE_BINARY_DIR}/lib/cmake/RINGMesh/RINGMeshConfig.cmake 
     DESTINATION lib/cmake/RINGMesh
 )
 install(DIRECTORY include/ringmesh DESTINATION include)

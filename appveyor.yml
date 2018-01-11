@@ -63,3 +63,5 @@ for:
 
   test_script:
    - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+   - cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+   
