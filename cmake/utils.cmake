@@ -34,7 +34,11 @@
 function(add_ringmesh_library directory)
     string(REPLACE "/" "_" target_name ${directory})
     add_library(${target_name} SHARED "")
-    set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
+    set_target_properties(${target_name} 
+        PROPERTIES 
+            OUTPUT_NAME RINGMesh_${target_name}
+            FOLDER "Libraries"
+    )
     target_include_directories(${target_name} 
         PUBLIC   
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -77,6 +81,30 @@ function(add_ringmesh_library directory)
         NAMESPACE RINGMesh::
         DESTINATION lib/cmake/RINGMesh
     )
+endfunction()
+
+include(node_modules/node-cmake/NodeJS.cmake)
+nodejs_init()
+
+function(add_js_target target src)
+    file(GLOB NBIND_SOURCE_FILES ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/*.cc ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/*.cc)
+    set(js_target ${target}_js)
+    add_nodejs_module(${js_target} ${src} ${NBIND_SOURCE_FILES})
+    set_target_properties(${js_target} 
+        PROPERTIES 
+            OUTPUT_NAME RINGMesh_${target_name}
+    )
+    target_compile_definitions(${js_target}
+        PUBLIC
+            -DBUILDING_NODE_EXTENSION
+            -DUSING_V8_SHARED
+            -DUSING_UV_SHARED
+    )
+    target_include_directories(${js_target} SYSTEM
+        PRIVATE node_modules/nbind/include
+    )
+    target_link_libraries(${js_target}
+        PRIVATE ${target})
 endfunction()
 
 macro(copy_for_windows directory)
