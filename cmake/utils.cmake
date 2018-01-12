@@ -63,6 +63,9 @@ function(add_ringmesh_library directory)
         EXPORT_MACRO_NAME ${target_name}_api 
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
     )
+    install(FILES ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+        DESTINATION include/ringmesh/${directory}
+    )
     install(TARGETS ${target_name} 
         EXPORT ${target_name}
         RUNTIME DESTINATION bin
