@@ -48,6 +48,7 @@ ExternalProject_Add(ringmesh_ext
         -DTINYXML2_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}
         -DMINIZIP_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
     BINARY_DIR ${RINGMesh_PATH_BIN}
+    BUILD_ALWAYS 1
     INSTALL_COMMAND ""
     DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
 )
