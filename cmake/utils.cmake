@@ -83,16 +83,24 @@ function(add_ringmesh_library directory)
     )
 endfunction()
 
-include(node_modules/node-cmake/NodeJS.cmake)
-nodejs_init()
-
 function(add_js_target target src)
-    file(GLOB NBIND_SOURCE_FILES ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/*.cc ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/*.cc)
+    if(NOT RINGMESH_WITH_GUI)
+        return()
+    endif()
     set(js_target ${target}_js)
+    set(NBIND_SOURCE_FILES
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
+    )
     add_nodejs_module(${js_target} ${src} ${NBIND_SOURCE_FILES})
-    set_target_properties(${js_target} 
+    set(target_node_name RINGMesh_${target_name})
+    configure_file(${PROJECT_SOURCE_DIR}/cmake/nbind.js.in
+        ${PROJECT_BINARY_DIR}/lib/${target_node_name}.js)
+    set_target_properties(${js_target}
         PROPERTIES 
-            OUTPUT_NAME RINGMesh_${target_name}
+            OUTPUT_NAME ${target_node_name}
     )
     target_compile_definitions(${js_target}
         PUBLIC

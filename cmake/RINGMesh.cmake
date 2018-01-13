@@ -72,6 +72,17 @@ if(WIN32)
     )
 endif()
 
+if(RINGMESH_WITH_GUI)
+    message(STATUS "Configure RINGMesh with GUI")
+    find_program(NPM npm)
+    if(NOT NPM)
+        message(FATAL_ERROR "npm is needed to create the GUI")
+    endif()
+    execute_process(COMMAND ${NPM} install)
+    include(node_modules/node-cmake/NodeJS.cmake)
+    nodejs_init()
+endif()
+
 #------------------------------------------------------------------------------------------------
 # Build configuration
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
