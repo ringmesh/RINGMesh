@@ -33,19 +33,20 @@
  *     FRANCE
  */
 
-#include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/io/io.h>
 
+#include <ringmesh/geomodel/core/geomodel.h>
 #include <nbind/nbind.h>
 
 namespace RINGMesh
 {
-    NBIND_CLASS( GeoModel3D )
-    {
-        construct<>();
-    }
+//    NBIND_CLASS( GeoModel3D )
+//    {
+//        construct<>();
+//    }
 
     NBIND_GLOBAL() {
-        function(print_geomodel< 3 >, "print_geomodel3D");
+        function(geomodel_load< 3 >, "geomodel_load3D");
+        function(geomodel_save< 3 >, "geomodel_save3D");
     }
 } // namespace RINGMesh

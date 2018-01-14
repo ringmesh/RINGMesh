@@ -15,8 +15,5 @@
   "devDependencies": {
     "nbind": "^0.3.14",
     "node-cmake": "^2.3.2"
-  },
-  "dependencies": {
-    "electron": "^1.7.10"
   }
 }

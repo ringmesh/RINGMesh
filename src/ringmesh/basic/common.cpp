@@ -59,7 +59,7 @@ namespace
 #ifdef RINGMESH_DEBUG
         GEO::CmdLine::set_arg( "sys:assert", "abort" );
 #endif
-        GEO::CmdLine::set_arg( "sys:FPE", true );
+        GEO::CmdLine::set_arg( "sys:FPE", false );
         GEO::CmdLine::import_arg_group( "algo" );
         GEO::CmdLine::set_arg( "algo:predicates", "exact" );
         GEO::CmdLine::import_arg_group( "log" );
