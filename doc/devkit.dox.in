@@ -1,12 +1,86 @@
 # Doxygen configuration file for generating
 # the standard developer RINGMesh documentation
 
+PROJECT_NAME           = "RINGMesh"
+PROJECT_BRIEF          = "A programming library for geological model meshes"
+
 OUTPUT_DIRECTORY       = @doc_output_dir@/devkit
 PROJECT_NUMBER         = "Version @RINGMesh_VERSION@"
-@INCLUDE               = @CMAKE_SOURCE_DIR@/doc/common.dox
 WARN_LOGFILE           = @doc_output_dir@/devkit.log
 IMAGE_PATH             = @CMAKE_SOURCE_DIR@/doc
+
+HTML_HEADER            = @CMAKE_SOURCE_DIR@/doc/header.html
+HTML_FOOTER            = @CMAKE_SOURCE_DIR@/doc/footer.html
+
 GENERATE_TODOLIST   = NO
+
+FILE_PATTERNS          = *.cpp *.h *.hpp *.dox
+
+RECURSIVE              = YES
+TAB_SIZE               = 8
+
+EXCLUDE_PATTERNS       =  */CMake/* */build/* */.hg/* */glfw/*
+
+FULL_PATH_NAMES        = YES
+
+
+# Symbols to extract
+
+INTERNAL_DOCS          = NO
+ENABLED_SECTIONS       =
+EXTRACT_ALL            = YES
+EXTRACT_PRIVATE        = YES
+EXTRACT_STATIC         = NO
+EXTRACT_LOCAL_CLASSES  = YES
+EXTRACT_ANON_NSPACES   = NO
+
+
+# Generation options
+
+HAVE_DOT               = NO
+
+SOURCE_BROWSER         = YES
+HTML_TIMESTAMP         = YES
+GENERATE_TREEVIEW      = YES
+HIDE_UNDOC_RELATIONS   = NO
+COLLABORATION_GRAPH    = YES
+TEMPLATE_RELATIONS     = NO
+REFERENCES_RELATION    = NO
+CALL_GRAPH             = YES
+CALLER_GRAPH           = YES
+INCLUDE_GRAPH          = YES
+INCLUDED_BY_GRAPH      = YES
+INTERACTIVE_SVG        = YES
+DOT_MULTI_TARGETS      = NO
+QUIET                  = NO
+WARNINGS               = YES
+
+BUILTIN_STL_SUPPORT    = NO
+
+# Output formats
+
+GENERATE_HTML          = YES
+GENERATE_QHP           = YES
+QCH_FILE               = ringmesh.qch
+QHP_NAMESPACE          = RINGMesh
+QHG_LOCATION           = qhelpgenerator
+GENERATE_LATEX         = NO
+GENERATE_MAN           = NO
+GENERATE_RTF           = NO
+
+# Preprocessing options
+
+ENABLE_PREPROCESSING   = YES
+MACRO_EXPANSION        = YES
+EXPAND_ONLY_PREDEF     = YES
+
+# DOXYGEN_IGNORE is predefined to allow developers to hide portions
+# of code to doxygen as follows:
+#
+# #ifndef DOXYGEN_IGNORE
+#   internal classes and other private declarations that should not
+#   be documented...
+# #endif // DOXYGEN_IGNORE
 
 # Input files
 # README.md is put to be used as doxygen page
