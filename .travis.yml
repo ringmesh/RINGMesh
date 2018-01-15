@@ -140,6 +140,10 @@ jobs:
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
+      notifications:
+        slack: ringmesh:5cOVjJEAHsS8HkmRQxoTWl0f
+        on_success: change
+        on_failure: always
       script:
         - mkdir build
         - cd build
@@ -161,6 +165,10 @@ jobs:
       env:
         - TEST="MacOS release"
         - RINGMESH_PACKAGE=RINGMesh-master-Darwin
+      notifications:
+        slack: ringmesh:5cOVjJEAHsS8HkmRQxoTWl0f
+        on_success: change
+        on_failure: always
       script:
         - mkdir build
         - cd build
