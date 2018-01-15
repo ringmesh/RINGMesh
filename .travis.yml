@@ -7,7 +7,9 @@ env:
 
 stages:
   - format
-  - compile and test
+  - name: compile and test on master
+    if: branch = master
+  - name: compile and test not on master
   - name: deploy
     if: branch = master AND type = push
 
@@ -41,7 +43,67 @@ jobs:
         - git commit -m "Travis CI format update"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/$TRAVIS_REPO_SLUG "$TRAVIS_BRANCH"
 
-    - stage: compile and test
+    - stage: compile and test on master
+      os: linux
+      env:
+        - TEST="Gcc and Sonar Check"
+      notifications:
+        slack: ringmesh:5cOVjJEAHsS8HkmRQxoTWl0f
+        on_success: change
+        on_failure: always
+      addons:
+        sonarcloud:
+          organization: "ringmesh"
+          token:
+            secure: "iBY+oKod3+StQmrdPMT4uPrDmQpm/PeOwFor5XJPDmJsZlWmrqU7wD178JFozQ3jfYsz/gLjM5VDq6mBveoPQxqBnFPnUpaj/IPvF3Fk3EKOY9qgOfil2w+WOrgvt51cMBxGwpc2VUsXs4noQWT5axbFCF2vFmGOOwP7+7yixY7UedXiyC92t6TL9VQ7zvy+RpvVbOyfRVvp43w6Frnn9R1ff2ni4ZrqOP4EtoliyUecofENtuOjtVABB9rV6Kj9t8/VIzqNtDjGSJvQWu8+2qYHwfE5ZbzuRUmqWHUyxPPJyoOKaONSi08hSMX+hRf5gqPOoU/3II5MVyeHT00ND5lUJKTxMUeFwpR6L4AAngDuoQeJu4/2jbCp9Q4J8gbkbxQFWSHWNIBi9cgIAvxddiKuitYaVeUseVuS68AwLY4N4dbccxIMidUxJ82X60JNmuY6xsOvx8XIGsZP8RQyvAxwblWA/DzgGuAvJS3KqIyqoBJNyCbdaLVLWwmek+YC3UBAi9QAMVnkNMBkRxhMuJd10AVUuR2bueq9B7u7Bo6zuOvbR/Pf2H8ScYl6v3qM7AcZmN8kKxNB0rzcSR15Z7565f3FKJaSjeDTXA/4s4ZOcxBKPhEG9QGDdcDVJADb0iKOPBPkXBEqC7rOy0e+7xp3Ih9qtstiSQbJUWxVIbU="
+          github_token:
+            secure: "daSx13oBTpZmYC/X3GGb1Sd8uk1Qn5x3s3g0YgvzhFGrzia2u7vLnG2RyLB2/BEJlscDb49E3evsiIcZWEotXTwZnGggI2PcYJu3dOHV2H0pEjuHuQrEBg9SsSn6O9KkvJyHbpNGJQuvPLWQkTPRD85B7G7Usd27ejiiKpQlvMjCP3t6GFNZWm6htgwrgrSBmeSx1O6FVnrUGWm1V6JaTfyh33TauG6p738G6XiHtHLnmMPygK1kkzi4AtE1Wibd0wRf8+GUFsoIwIplpOXTqBqKEX/rHI0rE4CaKOPLb5zGx12B/lRRYK7LA0Lz1htVJ08MuZ1xUm8fv3ThKP/XkuJ06XPh53wfRfBa6u8yydDO9t10DPtdOwAoMv+N0BsKuztJmkzNTYnVLoqLWVdpOQv6uAa+LS0nLvFsMPY0ECwrwRWZwvQkAM2Xm9gmUhGvbqHeBxQmjObwMqnvAfXxvbfh5DnAKpcFZTed/W4c/qr2+2NQj3ctOpYGa3ieYqrU9j+Ga3QZ+3gjvZD4m4KGDvOEJNat5XrcmUU7LYFrjGZEq3cTlQpxrIqG5vBt2ZDj9Pca5ORuOvQnrRBONpIAtm/huqQG6yY3jwbfUOt/9afKYm3gFiv/toloGTec5Z8rZ8XOEj8924BOPxz7IITyY5CFgS/AyjLU1Jn6Rhd7t3w="
+        apt:
+          packages:
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxcursor-dev
+            - libxi-dev
+      install:
+        - wget https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip
+        - unzip build-wrapper-linux-x86.zip
+        - export PATH=$PWD/build-wrapper-linux-x86:$PATH
+      script:
+        - mkdir build
+        - cd build
+        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd Coverage
+        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
+        - cmake --build ringmesh --target package
+        - cd $TRAVIS_BUILD_DIR
+        - sonar-scanner
+
+    - stage: compile and test on master
+      os: linux
+      env:
+        - TEST="Clang Check"
+      notifications:
+        slack: ringmesh:5cOVjJEAHsS8HkmRQxoTWl0f
+        on_success: change
+        on_failure: always
+      addons:
+        apt:
+          packages:
+            - libxrandr-dev
+            - libxinerama-dev
+            - libxcursor-dev
+            - libxi-dev
+      script:
+        - mkdir build
+        - cd build
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - cd Debug
+        - cmake --build . -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
+        - cmake --build ringmesh --target package
+        
+    - stage: compile and test not on master
       os: linux
       env:
         - TEST="Gcc and Sonar Check"
@@ -73,7 +135,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
 
-    - stage: compile and test
+    - stage: compile and test not on master
       os: linux
       env:
         - TEST="Clang Check"
@@ -93,8 +155,7 @@ jobs:
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
 
-    - stage: compile and test
-      if: branch = master
+    - stage: compile and test on master
       os: osx
       env:
         - TEST="Xcode Check"
@@ -110,8 +171,7 @@ jobs:
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
         - cmake --build ringmesh --target package
 
-    - stage: compile and test
-      if: branch = master
+    - stage: compile and test on master
       os: osx
       env:
         - TEST="Unix Makefile Check"
