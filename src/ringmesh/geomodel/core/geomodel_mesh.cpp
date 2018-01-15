@@ -78,6 +78,7 @@ namespace
             {
                 return surface_id_[i] < surface_id_[j];
             }
+            dummy_error;
             return mesh_.nb_polygon_vertices( i )
                    < mesh_.nb_polygon_vertices( j );
         }
