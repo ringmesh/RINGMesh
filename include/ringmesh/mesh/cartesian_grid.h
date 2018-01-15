@@ -202,9 +202,9 @@ namespace RINGMesh
         }
 
         const ivecn< DIMENSION >& nb_cells_vector() const
-		{
-        	return nb_cells_in_each_direction_;
-		}
+        {
+            return nb_cells_in_each_direction_;
+        }
 
         const ReferenceFrame< DIMENSION >& grid_vectors() const
         {
@@ -213,7 +213,7 @@ namespace RINGMesh
 
         float grid_vector_size( index_t i ) const
         {
-        	return cartesian_frame_[i].length();
+            return cartesian_frame_[i].length();
         }
 
         const ReferenceFrame< DIMENSION >& inverse_grid_vectors() const

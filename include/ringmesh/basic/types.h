@@ -97,7 +97,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool operator==( const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
+    bool operator==(
+        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
     {
         for( index_t i = 0; i < DIMENSION; i++ )
         {
@@ -116,7 +117,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    bool operator!=( const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
+    bool operator!=(
+        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
     {
         return !( u == v );
     }
