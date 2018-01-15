@@ -181,13 +181,12 @@ namespace RINGMesh
         {
             sivecn< DIMENSION > coords;
             index_t off{ 0 };
-            index_t div{ nb_total_cells_
-                         / nb_cells_in_each_direction_[DIMENSION - 1] };
+            index_t div{ nb_total_cells_ };
             for( auto i : range( DIMENSION ) )
             {
+                div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
                 coords[DIMENSION - 1 - i] = ( offset - off ) / div;
                 off += coords[DIMENSION - 1 - i] * div;
-                div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
             }
             return coords;
         }
@@ -202,12 +201,22 @@ namespace RINGMesh
             return nb_cells_in_each_direction_[i];
         }
 
-        const ReferenceFrame< DIMENSION >& grid_vectors()
+        const ivecn< DIMENSION >& nb_cells_vector() const
+		{
+        	return nb_cells_in_each_direction_;
+		}
+
+        const ReferenceFrame< DIMENSION >& grid_vectors() const
         {
             return cartesian_frame_;
         }
 
-        const ReferenceFrame< DIMENSION >& inverse_grid_vectors()
+        float grid_vector_size( index_t i ) const
+        {
+        	return cartesian_frame_[i].length();
+        }
+
+        const ReferenceFrame< DIMENSION >& inverse_grid_vectors() const
         {
             return inverse_cartesian_frame_;
         }

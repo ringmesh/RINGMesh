@@ -107,6 +107,16 @@ void test_frames_and_cartesian_grid()
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 3" );
     }
+    if( cartesiangrid.cell_offset( cartesiangrid.local_from_offset( 51 ) )
+        != 51 )
+    {
+        throw RINGMeshException( "TEST", "Error in calculating the inverse offset 1" );
+    }
+    if( cartesiangrid.local_from_offset( cartesiangrid.cell_offset( sivec3{ 5, 2, 8 } ) )
+        != sivec3{ 5, 2, 8 } )
+    {
+        throw RINGMeshException( "TEST", "Error in calculating the inverse offset 2" );
+    }
 }
 
 int main()
