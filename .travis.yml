@@ -75,7 +75,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       os: linux
@@ -99,7 +99,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       if: branch = master
@@ -116,7 +116,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       if: branch = master
@@ -134,7 +134,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: deploy
       os: linux
@@ -166,7 +166,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: deploy
       os: osx
@@ -191,5 +191,5 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
