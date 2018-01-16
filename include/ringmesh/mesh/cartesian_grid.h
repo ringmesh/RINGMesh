@@ -323,15 +323,15 @@ namespace RINGMesh
         {
             for( auto i : range( 3 ) )
             {
-                vec3 origin1 = cartesian_frame_.origin(),
-                     vector1 = cartesian_frame_[i];
-                grid_cage_.push_back( Geometry::Plane{ vector1, origin1 } );
+                vec3 origin1 = cartesian_frame_.origin();
+                vec3 vector1 = cartesian_frame_[i];
+                grid_cage_.emplace_back( Geometry::Plane{ vector1, origin1 } );
                 vec3 origin2 = cartesian_frame_.origin()
                                + cartesian_frame_[0] * nb_cells_axis( 0 )
                                + cartesian_frame_[1] * nb_cells_axis( 1 )
-                               + cartesian_frame_[2] * nb_cells_axis( 2 ),
-                     vector2 = cartesian_frame_[i];
-                grid_cage_.push_back( Geometry::Plane{ vector2, origin2 } );
+                               + cartesian_frame_[2] * nb_cells_axis( 2 );
+                vec3 vector2 = cartesian_frame_[i];
+                grid_cage_.emplace_back( Geometry::Plane{ vector2, origin2 } );
             }
         }
 
@@ -342,6 +342,20 @@ namespace RINGMesh
 
     private:
         std::vector< Geometry::Plane > grid_cage_;
+    };
+
+    template <>
+    class CartesianGrid< 2 > final : public CartesianGridBase< 2 >
+    {
+        friend class CartesianGridBuilder< 2 >;
+
+    public:
+        CartesianGrid( ivec2 nb_cells_in_each_direction,
+            ReferenceFrame2D vec_cartesian_axis )
+            : CartesianGridBase(
+                  nb_cells_in_each_direction, vec_cartesian_axis )
+        {
+        }
     };
 
     template < index_t DIMENSION >
