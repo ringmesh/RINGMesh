@@ -5,6 +5,9 @@ body='{
 
 travis_job_id=$1
 travis_job_number=$2
+
+echo $travis_job_id
+echo $travis_job_number
   
 curl -X POST \
   --data-urlencode "payload={ \
