@@ -74,7 +74,7 @@ endif()
 
 if(RINGMESH_WITH_GUI)
     message(STATUS "Configure RINGMesh with GUI")
-    find_program(NPM npm)
+    find_program(NPM NAMES npm.cmd npm)
     if(NOT NPM)
         message(FATAL_ERROR "npm is needed to create the GUI")
     endif()
