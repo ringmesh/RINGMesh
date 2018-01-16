@@ -83,8 +83,8 @@ jobs:
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_JOB_NUMBER"; fi
       after_success:
         - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
-          chmod 777 ./travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_COMMIT_MESSAGE" "$TRAVIS_OS_NAME"; fi
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_JOB_NUMBER"; fi
 
 
     - stage: compile and test
