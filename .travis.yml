@@ -74,6 +74,7 @@ jobs:
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
+        - cmake --build ringmesh --target package
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
 
@@ -95,6 +96,7 @@ jobs:
         - cd Debug
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
+        - cmake --build ringmesh --target package
 
     - stage: compile and test
       if: branch = master
@@ -107,6 +109,7 @@ jobs:
         - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cmake --build . --config Debug
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
+        - cmake --build ringmesh --target package
 
     - stage: compile and test
       if: branch = master
@@ -120,6 +123,7 @@ jobs:
         - cd Debug
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
+        - cmake --build ringmesh --target package
 
     - stage: deploy
       os: linux

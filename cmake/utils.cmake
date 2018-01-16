@@ -43,7 +43,12 @@ function(add_ringmesh_library directory)
     )
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
-        target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
+        target_compile_definitions(${target_name} 
+            PUBLIC 
+                -DGEO_DYNAMIC_LIBS 
+                # Following are meant for geogram
+                -D_CRT_SECURE_NO_WARNINGS
+        )
         add_dependencies(copy_dll ${target_name})
     endif()
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
@@ -52,11 +57,14 @@ function(add_ringmesh_library directory)
     
     export(TARGETS ${target_name} 
         NAMESPACE RINGMesh:: 
-        FILE cmake/RINGMesh_${target_name}_target.cmake
+        FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
     )
     generate_export_header(${target_name} 
         EXPORT_MACRO_NAME ${target_name}_api 
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+    )
+    install(FILES ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+        DESTINATION include/ringmesh/${directory}
     )
     install(TARGETS ${target_name} 
         EXPORT ${target_name}
@@ -67,7 +75,7 @@ function(add_ringmesh_library directory)
     install(EXPORT ${target_name}
         FILE RINGMesh_${target_name}_target.cmake
         NAMESPACE RINGMesh::
-        DESTINATION cmake
+        DESTINATION lib/cmake/RINGMesh
     )
 endfunction()
 

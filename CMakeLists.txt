@@ -83,8 +83,6 @@ include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
 
-set(CMAKE_INSTALL_MESSAGE LAZY)
-
 # Check that RINGMesh has been cloned and not downloaded
 if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
     message(FATAL_ERROR 

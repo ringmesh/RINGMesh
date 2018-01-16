@@ -63,6 +63,14 @@ install(
     DESTINATION
         .
 )
+if(WIN32)
+    install(
+        FILES
+            ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
+        DESTINATION
+            bin
+    )
+endif()
 
 #------------------------------------------------------------------------------------------------
 # Build configuration
@@ -93,15 +101,16 @@ install(
 # Exports RINGMesh target
 include(CMakePackageConfigHelpers)
 include(GenerateExportHeader)
+include(InstallRequiredSystemLibraries)
 configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
-    ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake
-    INSTALL_DESTINATION cmake
+    ${CMAKE_BINARY_DIR}/lib/cmake/RINGMesh/RINGMeshConfig.cmake
+    INSTALL_DESTINATION lib/cmake/RINGMesh
     PATH_VARS GEOGRAM_INSTALL_PREFIX
 )
 install(
-    FILES ${CMAKE_BINARY_DIR}/cmake/RINGMeshConfig.cmake 
-    DESTINATION cmake
+    FILES ${CMAKE_BINARY_DIR}/lib/cmake/RINGMesh/RINGMeshConfig.cmake 
+    DESTINATION lib/cmake/RINGMesh
 )
 install(DIRECTORY include/ringmesh DESTINATION include)
 
