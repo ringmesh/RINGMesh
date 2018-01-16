@@ -85,6 +85,9 @@ jobs:
         - cmake --build ringmesh --target package
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
+          ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_JOB_NUMBER"; fi
 
 
     - stage: compile and test
