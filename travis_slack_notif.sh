@@ -3,13 +3,15 @@ body='{
   "branch":"master"
 }}'
 
+travis_job_id=$1
+travis_job_number=$2
   
 curl -X POST \
   --data-urlencode "payload={ \
   \"channel\": \"#travis\", \
   \"username\": \"Travis CI\", \
-  \"on_success\": \"never\", \
+  \"on_success\": \"change\", \
   \"on_failure\": \"always\", \
-  \"text\": \"This is posted to #travis channel and comes from a bot named Travis CI.\", \
+  \"text\": \"Problem with $travis_job_id and $travis_job_number.\", \
   \"icon_emoji\": \":x:\"}" \
   https://hooks.slack.com/services/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
