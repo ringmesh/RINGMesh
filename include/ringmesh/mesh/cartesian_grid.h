@@ -200,7 +200,7 @@ namespace RINGMesh
         {
             return nb_cells_in_each_direction_[i];
         }
-      
+
         const ivecn< DIMENSION >& nb_cells_vector() const
         {
             return nb_cells_in_each_direction_;
