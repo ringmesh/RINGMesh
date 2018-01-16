@@ -1,7 +1,4 @@
 travis_job_id=$1
-
-echo "Test"
-echo "$travis_job_id"
   
 curl -X POST \
   --data-urlencode "payload={ \
