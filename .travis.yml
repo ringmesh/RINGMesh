@@ -126,7 +126,6 @@ jobs:
     - stage: deploy
       os: linux
       env:
-        - TEST="Linux release"
         - RINGMESH_PACKAGE=RINGMesh-master-Linux
       addons:
         apt:
@@ -154,7 +153,6 @@ jobs:
     - stage: deploy
       os: osx
       env:
-        - TEST="MacOS release"
         - RINGMESH_PACKAGE=RINGMesh-master-Darwin
       script:
         - mkdir build
