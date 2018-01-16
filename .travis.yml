@@ -71,21 +71,16 @@ jobs:
         - mkdir build
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
-        #- cd Coverage
-        #- build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        #- cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
-        #- cmake --build ringmesh --target package
-        #- cd $TRAVIS_BUILD_DIR
-        #- sonar-scanner
+        - cd Coverage
+        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
+        - cmake --build ringmesh --target package
+        - cd $TRAVIS_BUILD_DIR
+        - sonar-scanner
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_JOB_NUMBER"; fi
-      after_success:
-        - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
-          chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_JOB_NUMBER"; fi
-
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
     - stage: compile and test
       os: linux
@@ -106,6 +101,10 @@ jobs:
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
     - stage: compile and test
       if: branch = master
@@ -119,6 +118,10 @@ jobs:
         - cmake --build . --config Debug
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
         - cmake --build ringmesh --target package
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
     - stage: compile and test
       if: branch = master
@@ -133,6 +136,10 @@ jobs:
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
     - stage: deploy
       os: linux
@@ -161,6 +168,10 @@ jobs:
         - git add download/$RINGMESH_PACKAGE.tar.gz
         - git commit -m "Update Linux master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
     - stage: deploy
       os: osx
@@ -182,4 +193,8 @@ jobs:
         - git add download/$RINGMESH_PACKAGE.tar.gz
         - git commit -m "Update Darwin master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
+      after_failure:
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          chmod 777 ./../travis_slack_notif.sh;
+          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID"; fi
 
