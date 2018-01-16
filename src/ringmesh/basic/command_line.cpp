@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -55,6 +55,8 @@ namespace RINGMesh
                 GEO::CmdLine::ARG_ADVANCED );
             GEO::CmdLine::declare_arg( "algo:tet", "TetGen",
                 "Toggles the tetrahedral mesher (TetGen, MG_Tetra)" );
+            GEO::CmdLine::declare_arg( "sys:plugins", "",
+                "List of the plugins to load, separated by ;" );
         }
 
         void import_arg_group_in()

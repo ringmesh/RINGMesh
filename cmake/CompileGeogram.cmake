@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,32 +31,34 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(GEOGRAM_PATH ${CMAKE_SOURCE_DIR}/third_party/geogram)
+set(GEOGRAM_PATH ${PROJECT_SOURCE_DIR}/third_party/geogram)
+set(GEOGRAM_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/geogram)
+set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install
+    CACHE INTERNAL "Geogram install directory")
 
 if(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram)
     set(geoplatform Win-vs-dynamic-generic)
     add_definitions(-D_CRT_SECURE_NO_WARNINGS)
-else(WIN32)
-    set(GEOGRAM_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/geogram/${CMAKE_BUILD_TYPE})
+else()
     if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
         if(APPLE)
             set(geoplatform Darwin-clang-dynamic)
-        else(APPLE)
+        else()
             set(geoplatform Linux64-clang-dynamic)
-        endif(APPLE)
+        endif()
     elseif("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
         set(geoplatform Linux64-gcc-dynamic)
     endif()
-endif(WIN32)
-set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_PATH_BIN}/install CACHE INTERNAL "Geogram install directory")  
+endif()
 
 ExternalProject_Add(geogram_ext
     PREFIX ${GEOGRAM_PATH_BIN}
     SOURCE_DIR ${GEOGRAM_PATH}
-    CMAKE_ARGS 
+    CMAKE_ARGS
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_MESSAGE=LAZY
     CMAKE_CACHE_ARGS
         -DVORPALINE_PLATFORM:STRING=${geoplatform}
         -DGEOGRAM_WITH_LUA:BOOL=OFF
@@ -66,9 +68,6 @@ ExternalProject_Add(geogram_ext
         -DGEOGRAM_LIB_ONLY:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
         -DCMAKE_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
     BINARY_DIR ${GEOGRAM_PATH_BIN}
+    BUILD_ALWAYS 1
     INSTALL_DIR ${GEOGRAM_INSTALL_PREFIX}
-)
-
-ExternalProject_Add_Step(geogram_ext forcebuild
-    DEPENDERS build
 )

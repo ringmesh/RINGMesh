@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -41,6 +41,27 @@ target_sources(${target_name}
         "${lib_source_dir}/io_well_group.cpp"
         "${lib_source_dir}/io.cpp"
         "${lib_source_dir}/zip_file.cpp"
+        "${lib_source_dir}/geomodel/io_abaqus.hpp"
+        "${lib_source_dir}/geomodel/io_adeli.hpp"
+        "${lib_source_dir}/geomodel/io_aster.hpp"
+        "${lib_source_dir}/geomodel/io_csmp.hpp"
+        "${lib_source_dir}/geomodel/io_feflow.hpp"
+        "${lib_source_dir}/geomodel/io_gm.hpp"
+        "${lib_source_dir}/geomodel/io_gprs.hpp"
+        "${lib_source_dir}/geomodel/io_mfem.hpp"
+        "${lib_source_dir}/geomodel/io_model3d.hpp"
+        "${lib_source_dir}/geomodel/io_msh.hpp"
+        "${lib_source_dir}/geomodel/io_smesh.hpp"
+        "${lib_source_dir}/geomodel/io_stl.hpp"
+        "${lib_source_dir}/geomodel/io_stradivarius.hpp"
+        "${lib_source_dir}/geomodel/io_svg.hpp"
+        "${lib_source_dir}/geomodel/io_tetgen.hpp"
+        "${lib_source_dir}/geomodel/io_tsolid.hpp"
+        "${lib_source_dir}/geomodel/io_vtk.hpp"
+        "${lib_source_dir}/stratigraphic_column/io_xml.hpp"
+        "${lib_source_dir}/well_group/io_smesh.hpp"
+        "${lib_source_dir}/well_group/io_wl.hpp"
+
     PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_builder_file.h"

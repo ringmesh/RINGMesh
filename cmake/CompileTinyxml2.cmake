@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,31 +32,25 @@
 #     FRANCE
 
 set(TINYXML2_PATH ${PROJECT_SOURCE_DIR}/third_party/tinyxml2)
-set(TINYXML2_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/tinyxml2/${CMAKE_BUILD_TYPE})
-set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install CACHE INTERNAL "Tinyxml2 install directory")
-
-if(APPLE)
-    set(APPLE_EXTRA_ARGS
-        -DCMAKE_MACOSX_RPATH:BOOL=ON
-        -DCMAKE_INSTALL_RPATH:PATH=${TINYXML2_INSTALL_PREFIX}/lib
-    )
-endif(APPLE)
+set(TINYXML2_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/tinyxml2)
+set(TINYXML2_INSTALL_PREFIX ${TINYXML2_PATH_BIN}/install
+    CACHE INTERNAL "Tinyxml2 install directory")
 
 ExternalProject_Add(tinyxml2_ext
-  PREFIX ${TINYXML2_PATH_BIN}
-  SOURCE_DIR ${TINYXML2_PATH}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          -DBUILD_TESTING:BOOL=OFF
-          -DCMAKE_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}
-          ${APPLE_EXTRA_ARGS}
-  BINARY_DIR ${TINYXML2_PATH_BIN}
-  INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
+    PREFIX ${TINYXML2_PATH_BIN}
+    SOURCE_DIR ${TINYXML2_PATH}
+    CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_MESSAGE=LAZY
+    CMAKE_CACHE_ARGS
+        -DBUILD_TESTING:BOOL=OFF
+        -DCMAKE_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}
+        -DCMAKE_INSTALL_LIBDIR:PATH=lib
+        -DCMAKE_MACOSX_RPATH:BOOL=ON
+        -DCMAKE_INSTALL_RPATH:PATH=${TINYXML2_INSTALL_PREFIX}/lib
+    BINARY_DIR ${TINYXML2_PATH_BIN}
+    BUILD_ALWAYS 1
+    INSTALL_DIR ${TINYXML2_INSTALL_PREFIX}
 )
-
-ExternalProject_Add_Step(tinyxml2_ext forcebuild
-    DEPENDERS build
-)
-

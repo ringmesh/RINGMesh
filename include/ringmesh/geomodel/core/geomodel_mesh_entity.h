@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -96,8 +96,7 @@ namespace RINGMesh
      * the RINGMesh::Mesh geometry.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api GeoModelMeshEntity
-        : public GeoModelEntity< DIMENSION >
+    class GeoModelMeshEntity : public GeoModelEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntity );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -379,8 +378,7 @@ namespace RINGMesh
      * @details It is a unique point.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api Corner final
-        : public GeoModelMeshEntity< DIMENSION >
+    class Corner final : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( Corner );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -492,7 +490,7 @@ namespace RINGMesh
      * a 1-manifold (Line with no T intersections).
      */
     template < index_t DIMENSION >
-    class geomodel_core_api Line final : public GeoModelMeshEntity< DIMENSION >
+    class Line final : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( Line );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -622,7 +620,7 @@ namespace RINGMesh
      * (all edges of the polygons are in at most 2 polygons)
      */
     template < index_t DIMENSION >
-    class geomodel_core_api SurfaceBase : public GeoModelMeshEntity< DIMENSION >
+    class SurfaceBase : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( SurfaceBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -815,8 +813,7 @@ namespace RINGMesh
      * Its volumetric mesh is optional.
      */
     template < index_t DIMENSION >
-    class geomodel_core_api Region final
-        : public GeoModelMeshEntity< DIMENSION >
+    class Region final : public GeoModelMeshEntity< DIMENSION >
     {
         ringmesh_disable_copy_and_move( Region );
         ringmesh_template_assert_3d( DIMENSION );

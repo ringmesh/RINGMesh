@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,9 +66,7 @@ namespace RINGMesh
         GEOLOGY = GEOLOGICAL_ENTITIES,
         TOPOLOGY = FINITE_EXTENSION | GEOMODEL_CONNECTIVITY,
         GEOMETRY = SURFACE_LINE_MESH_CONFORMITY | REGION_SURFACE_MESH_CONFORMITY
-                   | MESH_ENTITIES
-                   | NON_MANIFOLD_EDGES
-                   | POLYGON_INTERSECTIONS,
+                   | MESH_ENTITIES | NON_MANIFOLD_EDGES | POLYGON_INTERSECTIONS,
         ALL = TOPOLOGY | GEOMETRY | GEOLOGY
     };
     ENABLE_BITMASK_OPERATORS( ValidityCheckMode );

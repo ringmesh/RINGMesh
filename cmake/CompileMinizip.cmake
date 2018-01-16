@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,24 +32,24 @@
 #     FRANCE
 
 set(MINIZIP_PATH ${PROJECT_SOURCE_DIR}/third_party/minizip)
-set(MINIZIP_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/minizip/${CMAKE_BUILD_TYPE})
-set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install CACHE INTERNAL "Minizip install directory")
+set(MINIZIP_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/minizip)
+set(MINIZIP_INSTALL_PREFIX ${MINIZIP_PATH_BIN}/install
+    CACHE INTERNAL "Minizip install directory")
 
 ExternalProject_Add(minizip_ext
-  PREFIX ${MINIZIP_PATH_BIN}
-  SOURCE_DIR ${MINIZIP_PATH}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          -DUSE_AES:BOOL=OFF
-          -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-          -DCMAKE_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
-  BINARY_DIR ${MINIZIP_PATH_BIN}
-  INSTALL_DIR ${MINIZIP_INSTALL_PREFIX}
-  DEPENDS zlib_ext
-)
-
-ExternalProject_Add_Step(minizip_ext forcebuild
-    DEPENDERS build
+    PREFIX ${MINIZIP_PATH_BIN}
+    SOURCE_DIR ${MINIZIP_PATH}
+    CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_MESSAGE=LAZY
+    CMAKE_CACHE_ARGS
+        -DUSE_AES:BOOL=OFF
+        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+        -DCMAKE_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
+    BINARY_DIR ${MINIZIP_PATH_BIN}
+    BUILD_ALWAYS 1
+    INSTALL_DIR ${MINIZIP_INSTALL_PREFIX}
+    DEPENDS zlib_ext
 )

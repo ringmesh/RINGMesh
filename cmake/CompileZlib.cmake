@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,30 +32,29 @@
 #     FRANCE
 
 set(ZLIB_PATH ${PROJECT_SOURCE_DIR}/third_party/zlib)
-set(ZLIB_PATH_BIN ${GLOBAL_BINARY_DIR}/third_party/zlib/${CMAKE_BUILD_TYPE})
-set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install CACHE INTERNAL "Zlib install directory")
-
-if(APPLE)
-    set(APPLE_EXTRA_ARGS
-        -DCMAKE_MACOSX_RPATH:BOOL=ON
-        -DCMAKE_INSTALL_RPATH:PATH=${ZLIB_ROOT}/lib
-    )
-endif(APPLE)
+set(ZLIB_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/zlib)
+set(ZLIB_ROOT ${ZLIB_PATH_BIN}/install
+    CACHE INTERNAL "Zlib install directory")
 
 ExternalProject_Add(zlib_ext
-  PREFIX ${ZLIB_PATH_BIN}
-  SOURCE_DIR ${ZLIB_PATH}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
-          ${APPLE_EXTRA_ARGS}
-  BINARY_DIR ${ZLIB_PATH_BIN}
-  INSTALL_DIR ${ZLIB_ROOT}
+    PREFIX ${ZLIB_PATH_BIN}
+    SOURCE_DIR ${ZLIB_PATH}
+    CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_MESSAGE=LAZY
+    CMAKE_CACHE_ARGS
+        -DCMAKE_INSTALL_PREFIX:PATH=${ZLIB_ROOT}
+        -DSKIP_INSTALL_FILES:BOOL=ON
+        -DCMAKE_MACOSX_RPATH:BOOL=ON
+        -DCMAKE_INSTALL_RPATH:PATH=${ZLIB_ROOT}/lib
+    BINARY_DIR ${ZLIB_PATH_BIN}
+    BUILD_ALWAYS 1
+    INSTALL_DIR ${ZLIB_ROOT}
 )
 
-ExternalProject_Add_Step(zlib_ext forcebuild
-    DEPENDERS build
+ExternalProject_Add_Step(zlib_ext RevertZconf
+    COMMAND ${CMAKE_COMMAND} -E rename
+        ${ZLIB_PATH}/zconf.h.included ${ZLIB_PATH}/zconf.h
+    DEPENDEES configure
 )
-

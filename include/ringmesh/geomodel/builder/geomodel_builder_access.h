@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -275,8 +275,8 @@ namespace RINGMesh
         GeoModelMeshEntity< DIMENSION >& modifiable_mesh_entity(
             const gmme_id& id );
 
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
+        std::vector< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
             modifiable_geological_entities();
 
         std::vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&

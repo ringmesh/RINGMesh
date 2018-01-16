@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,12 +83,8 @@ namespace RINGMesh
         std::string type_{};
 
     protected:
-        explicit EntityType( std::string type ) : type_( std::move( type ) )
-        {
-        }
-        EntityType() : EntityType( default_entity_type_string() )
-        {
-        }
+        explicit EntityType( std::string type ) : type_( std::move( type ) ) {}
+        EntityType() : EntityType( default_entity_type_string() ) {}
 
         void set_type( std::string type )
         {

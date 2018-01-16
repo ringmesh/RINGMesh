@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,38 +31,52 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-macro(add_folder directory)
-    source_file_directory(${directory})
-    include_file_directory(${directory})
-endmacro()
-
-macro(source_file_directory directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
-endmacro()
-
-macro(include_file_directory directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
-endmacro()
-
 function(add_ringmesh_library directory)
     string(REPLACE "/" "_" target_name ${directory})
     add_library(${target_name} SHARED "")
     set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
-    add_folder(${target_name})
-    target_include_directories(${target_name} PUBLIC ${PROJECT_BINARY_DIR} ${PROJECT_SOURCE_DIR}/include)
+    target_include_directories(${target_name} 
+        PUBLIC   
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+            $<INSTALL_INTERFACE:include>
+    )
     target_link_libraries(${target_name} PUBLIC Geogram::geogram)
     if(WIN32)
-        target_compile_definitions(${target_name} PUBLIC -DGEO_DYNAMIC_LIBS)
+        target_compile_definitions(${target_name} 
+            PUBLIC 
+                -DGEO_DYNAMIC_LIBS 
+                # Following are meant for geogram
+                -D_CRT_SECURE_NO_WARNINGS
+        )
         add_dependencies(copy_dll ${target_name})
     endif()
-    export(TARGETS ${target_name} NAMESPACE RINGMesh:: APPEND FILE RINGMeshTargets.cmake)
+    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
+    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+    
+    export(TARGETS ${target_name} 
+        NAMESPACE RINGMesh:: 
+        FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
+    )
     generate_export_header(${target_name} 
         EXPORT_MACRO_NAME ${target_name}_api 
         EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
     )
-    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
-    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
-    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+    install(FILES ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+        DESTINATION include/ringmesh/${directory}
+    )
+    install(TARGETS ${target_name} 
+        EXPORT ${target_name}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+    install(EXPORT ${target_name}
+        FILE RINGMesh_${target_name}_target.cmake
+        NAMESPACE RINGMesh::
+        DESTINATION lib/cmake/RINGMesh
+    )
 endfunction()
 
 macro(copy_for_windows directory)
@@ -99,11 +113,6 @@ if(WIN32)
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
-#    add_custom_command(TARGET copy_dll POST_BUILD
-#        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-#            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-#            "${directory}/$<CONFIGURATION>"
-#            COMMENT "Copy minizip binaries")
 endif(WIN32)
 endmacro()
 
@@ -117,23 +126,23 @@ macro(add_ringmesh_executable exe_path folder_name)
     endforeach()
     
     # Add the project to a folder of projects for the tests
-    set_target_properties(${exe_name} PROPERTIES FOLDER ${folder_name})
-    
-    # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
-    # This line is for clang utilities.
-    set(ringmesh_files ${ringmesh_files} ${bin_path} PARENT_SCOPE)
+    if(APPLE)
+        set(OS_RPATH "@executable_path")
+    else()
+        set(OS_RPATH "$ORIGIN")
+    endif()
+    set_target_properties(${exe_name} 
+        PROPERTIES 
+            FOLDER ${folder_name}
+            INSTALL_RPATH "${OS_RPATH}/../lib"
+    )
 endmacro()
 
 function(add_ringmesh_binary bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
-endfunction()
-
-function(add_ringmesh_utility bin_path)
-    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
-    set_target_properties(${exe_name} PROPERTIES 
-        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/utilities)
 endfunction()
 
 function(add_ringmesh_test cpp_file_path)

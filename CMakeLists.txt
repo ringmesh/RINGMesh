@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -35,27 +35,17 @@
 #------------------------------------------------------------------------------------------------
 
 cmake_minimum_required(VERSION 3.1)
-set(USER_CONFIG cmake/UserConfig.cmake CACHE PATH
-  "Path to optional user configuration file.")
-
-#------------------------------------------------------------------------------------------------
-# Options of the RINGMesh project
-# They can be set
-# 1 - using CMake GUI,
-# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
-# 3 - by creating a UserConfig.cmake file in the cmake directory (see DefaultConfig.cmake)
-
-# Load user settings before the defaults - this way the defaults will not
-# overwrite the user set options. If the user has not set all options, we still
-# have the defaults.
-message(STATUS "(optional) USER_CONFIG = ${USER_CONFIG}")
-include("${USER_CONFIG}" OPTIONAL)
 
 # Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
 # RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
 # avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
 set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL FORCE)
 
+#------------------------------------------------------------------------------------------------
+# Options of the RINGMesh project
+# They can be set
+# 1 - using CMake GUI,
+# 2 - in command line: cmake -D<var>:<type>=<value> MyProjectFolder
 # Project options
 # Optional components of RINGMesh - creation of specific targets
 option(RINGMESH_WITH_GRAPHICS "Compile viewer" OFF)
@@ -93,7 +83,14 @@ include(CMakeDependentOption)
 CMAKE_DEPENDENT_OPTION(BUILD_RINGMESH_VIEW "Build ringmesh-view" ON
     "RINGMESH_WITH_GRAPHICS" OFF)
 
-set(CMAKE_INSTALL_MESSAGE LAZY)
+# Check that RINGMesh has been cloned and not downloaded
+if(NOT EXISTS ${CMAKE_SOURCE_DIR}/.git)
+    message(FATAL_ERROR 
+        "This directory is not a complete git project." 
+        "To configure RINGMesh, first clone it from its repository."
+    )
+endif()
+
 
 # CMake is called, a main project (super build project) is generated first.
 # This main project is responsible to create third party cmake projects including
@@ -105,4 +102,4 @@ else(USE_SUPERBUILD)
     include(cmake/RINGMesh.cmake)
 endif(USE_SUPERBUILD)
 
-include(cmake/external_tools.cmake)
+include(tools/external_tools.cmake)

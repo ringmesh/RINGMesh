@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -257,24 +257,24 @@ namespace RINGMesh
          * @brief Generic accessor to the storage of mesh entities of the given
          * type
          */
-        virtual const std::
-            vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
+        virtual const std::vector<
+            std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >&
             mesh_entities( const MeshEntityType& type ) const;
 
         /*!
          * @brief Generic accessor to the storage of geological entities of the
          * given type
          */
-        const std::
-            vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
+        const std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
             geological_entities( const GeologicalEntityType& type ) const
         {
             index_t entity_index = geological_entity_type_index( type );
             return geological_entities( entity_index );
         }
 
-        const std::
-            vector< std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
+        const std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >&
             geological_entities( index_t geological_entity_type_index ) const
         {
             ringmesh_assert( geological_entity_type_index != NO_ID );
@@ -302,8 +302,8 @@ namespace RINGMesh
          * @brief Geological entities. They are optional.
          * The EntityTypes are managed by the EntityTypeManager of the class.
          */
-        std::vector< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
+        std::vector< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
             geological_entities_;
 
         /*!

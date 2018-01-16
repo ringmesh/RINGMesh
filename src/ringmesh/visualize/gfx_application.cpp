@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,6 +65,7 @@
 #include <ringmesh/io/io.h>
 
 // RINGMesh colormaps
+#include <ringmesh/visualize/colormaps/bgyr.xpm>
 #include <ringmesh/visualize/colormaps/jet.xpm>
 #include <ringmesh/visualize/colormaps/lgbt.xpm>
 #include <ringmesh/visualize/colormaps/minmax_transparent.xpm>
@@ -1530,6 +1531,7 @@ namespace RINGMesh
     void RINGMeshApplication::init_ringmesh_colormaps()
     {
         init_colormaps();
+        init_colormap( "bgyr", bgyr_xpm );
         init_colormap( "jet", jet_xpm );
         init_colormap( "lgbt", lgbt_xpm );
         init_colormap( "minmax_transparent", minmax_transparent_xpm );

@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -32,8 +32,14 @@
 #     FRANCE
 
 #------------------------------------------------------------------------------------------------
+# Get all the submodules
+execute_process(
+   COMMAND git submodule update --init --recursive
+      WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
+)
+
 set(RINGMESH_EXTRA_ARGS
-    -DPROJECT_BINARY_DIR:PATH=${project_binary_dir_config}
+    -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
     -DMG_TETRA:STRING=${MG_TETRA}
     -DRINGMESH_WITH_TETGEN:BOOL=${RINGMESH_WITH_TETGEN}
     -DRINGMESH_WITH_GRAPHICS:BOOL=${RINGMESH_WITH_GRAPHICS}
@@ -41,7 +47,15 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_UTILITIES:BOOL=${RINGMESH_WITH_UTILITIES}
     -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
-    -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE})
+    -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
+)
+
+if(CPACK_PACKAGE_FILE_NAME)
+    set(RINGMESH_EXTRA_ARGS 
+        ${RINGMESH_EXTRA_ARGS}
+        -DCPACK_PACKAGE_FILE_NAME:STRING=${CPACK_PACKAGE_FILE_NAME}
+    )
+endif()
 
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
@@ -67,7 +81,6 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
                 -G ${CMAKE_GENERATOR}
                 ${RINGMESH_EXTRA_ARGS} 
                 -DCMAKE_BUILD_TYPE=${config}
-                -DGLOBAL_BINARY_DIR=${PROJECT_BINARY_DIR}
                 WORKING_DIRECTORY ${project_binary_dir_config})
       endforeach()
 
@@ -77,12 +90,9 @@ if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
     endif()
 endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
 
-# execute the superbuild
+# Execute the superbuild
 project(SUPERBUILD)
-if(NOT GLOBAL_BINARY_DIR)
-    set(GLOBAL_BINARY_DIR ${PROJECT_BINARY_DIR})
-endif()
-	
+
 # Additional cmake modules
 include(ExternalProject)
 

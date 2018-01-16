@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -61,6 +61,7 @@
 #pragma warning( disable : 4250 ) // warning about diamond inheritance
 #pragma warning( disable : 4251 ) // dll interface warnings
 #pragma warning( disable : 4275 ) // let's pray we have no issues
+#pragma warning( disable : 4661 ) // template alias before implementation
 #endif
 
 #define ringmesh_disable_copy( Class )                                         \
@@ -143,9 +144,7 @@ namespace RINGMesh
               category_( std::move( category ) )
         {
         }
-        virtual ~RINGMeshException() throw()
-        {
-        }
+        virtual ~RINGMeshException() throw() {}
 
         const std::string& category() const
         {

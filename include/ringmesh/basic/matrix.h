@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -66,9 +66,7 @@ namespace RINGMesh
     struct ElementImpl
     {
         const static index_t NOT_USED = index_t( -1 );
-        ElementImpl() : index( NOT_USED )
-        {
-        }
+        ElementImpl() : index( NOT_USED ) {}
 
         T value;
         index_t index;
@@ -83,9 +81,7 @@ namespace RINGMesh
     {
     public:
         using Element = ElementImpl< T >;
-        RowImpl() : elements_( new Element[4] )
-        {
-        }
+        RowImpl() : elements_( new Element[4] ) {}
 
         void set_element( index_t j, const T& value )
         {

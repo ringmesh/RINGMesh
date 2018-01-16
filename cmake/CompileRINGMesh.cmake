@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,24 +31,24 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(RINGMesh_PATH ${PROJECT_SOURCE_DIR}/third_party/ringmesh)
+set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
 
 ExternalProject_Add(ringmesh_ext
-  PREFIX ${PROJECT_BINARY_DIR}
-  SOURCE_DIR ${PROJECT_SOURCE_DIR}
-  CMAKE_ARGS 
-          -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
-          -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
-  CMAKE_CACHE_ARGS
-          ${RINGMESH_EXTRA_ARGS} 
-          -DGLOBAL_BINARY_DIR:PATH=${PROJECT_BINARY_DIR}/..
-          -DUSE_SUPERBUILD:BOOL=OFF
-  BINARY_DIR ${PROJECT_BINARY_DIR}  
-  INSTALL_COMMAND ""
-  DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+    PREFIX ${RINGMesh_PATH_BIN}
+    SOURCE_DIR ${PROJECT_SOURCE_DIR}
+    CMAKE_ARGS
+        -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
+        -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
+        -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+    CMAKE_CACHE_ARGS
+        ${RINGMESH_EXTRA_ARGS}
+        -DUSE_SUPERBUILD:BOOL=OFF
+        -DGEOGRAM_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
+        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+        -DTINYXML2_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}
+        -DMINIZIP_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
+    BINARY_DIR ${RINGMesh_PATH_BIN}
+    BUILD_ALWAYS 1
+    INSTALL_COMMAND ""
+    DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
 )
-
-ExternalProject_Add_Step(ringmesh_ext forcebuild
-    DEPENDERS build
-  )
-
