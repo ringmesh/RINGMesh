@@ -68,6 +68,8 @@ jobs:
         - unzip build-wrapper-linux-x86.zip
         - export PATH=$PWD/build-wrapper-linux-x86:$PATH
       script:
+        - chmod 777 ./travis_slack_notif.sh
+        - ./travis_slack_noif.sh
         - mkdir build
         - cd build
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
@@ -77,6 +79,7 @@ jobs:
         - cmake --build ringmesh --target package
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
+
 
     - stage: compile and test
       os: linux
