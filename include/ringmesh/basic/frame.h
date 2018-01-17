@@ -237,7 +237,8 @@ namespace RINGMesh
         {
             ReferenceFrame< DIMENSION > inverse_reference_frame;
             GEO::Matrix< DIMENSION, double > base_change_matrix{
-                inverse_reference_matrix( reference_frame ) };
+                inverse_reference_matrix( reference_frame )
+            };
             for( auto i : range( DIMENSION ) )
             {
                 for( auto j : range( DIMENSION ) )
@@ -259,7 +260,7 @@ namespace RINGMesh
             for( auto i : range( DIMENSION ) )
             {
                 double square_length_i{ reference_frame[i].length()
-                                           * reference_frame[i].length() };
+                                        * reference_frame[i].length() };
                 for( auto j : range( DIMENSION ) )
                 {
                     inverse_reference_frame.origin()[i] -=
