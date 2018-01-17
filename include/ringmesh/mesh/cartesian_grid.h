@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -211,7 +211,7 @@ namespace RINGMesh
             return cartesian_frame_;
         }
 
-        float grid_vector_size( index_t i ) const
+        double grid_vector_size( index_t i ) const
         {
             return cartesian_frame_[i].length();
         }
@@ -323,15 +323,15 @@ namespace RINGMesh
         {
             for( auto i : range( 3 ) )
             {
-                vec3 origin1 = cartesian_frame_.origin();
-                vec3 vector1 = cartesian_frame_[i];
-                grid_cage_.emplace_back( Geometry::Plane{ vector1, origin1 } );
-                vec3 origin2 = cartesian_frame_.origin()
+                vec3 plane_point{ cartesian_frame_.origin() };
+                vec3 plane_normal{ cartesian_frame_[i] };
+                grid_cage_.emplace_back( Geometry::Plane{ plane_normal, plane_point } );
+                vec3 plane_point2{ cartesian_frame_.origin()
                                + cartesian_frame_[0] * nb_cells_axis( 0 )
                                + cartesian_frame_[1] * nb_cells_axis( 1 )
-                               + cartesian_frame_[2] * nb_cells_axis( 2 );
-                vec3 vector2 = cartesian_frame_[i];
-                grid_cage_.emplace_back( Geometry::Plane{ vector2, origin2 } );
+                               + cartesian_frame_[2] * nb_cells_axis( 2 ) };
+                vec3 plane_normal2{ cartesian_frame_[i] };
+                grid_cage_.emplace_back( Geometry::Plane{ plane_normal2, plane_point2 } );
             }
         }
 
@@ -341,6 +341,13 @@ namespace RINGMesh
         }
 
     private:
+        /// The 6 planes of the grid cage are ordered in this way :
+        /// First the 2 with a normal to the first axis of the grid,
+        /// then the 2 with a normal to the second axis of the grid,
+        /// and finally the 2 with a normal to the third axis of the grid.
+        /// Each time, the first of the 2 planes in question is the one which
+        /// contains the origin of the grid, and the second is the one which
+        /// contains the point with the highest local coordinates in the grid.
         std::vector< Geometry::Plane > grid_cage_;
     };
 
@@ -374,7 +381,7 @@ namespace RINGMesh
 				vec2{cartesian_frame_.origin()+cartesian_frame_[0]+cartesian_frame_[1]} };
 			cage.emplace_back( seg4 );
 
-        	return cage;
+			return cage;
 		}
     };
 

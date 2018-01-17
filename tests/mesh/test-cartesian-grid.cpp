@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@
 
 using namespace RINGMesh;
 
-void test_frames_and_cartesian_grid()
+void test_frames()
 {
     vec3 origin{ 100, 200, -4 };
     vec3 x{ 1, 2, -1 };
@@ -86,7 +86,17 @@ void test_frames_and_cartesian_grid()
         throw RINGMeshException(
             "TEST", "Error in orthogonal reference frame change" );
     }
+}
 
+void test_cartesian_grids()
+{
+	vec3 origin{ 100, 200, -4 };
+	vec3 x{ 1, 2, -1 };
+	vec3 y{ 2, 1, 4 };
+	vec3 z{ 3, -2, -1 };
+
+	Frame3D frame{ x, y, z };
+	ReferenceFrame3D reference_frame{ origin, frame };
     ivec3 grid_dimensions{ 10, 8, 9 };
     CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
     if( cartesiangrid.cell_volume() != 42. )
@@ -127,7 +137,8 @@ int main()
     {
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
-        test_frames_and_cartesian_grid();
+        test_frames();
+        test_cartesian_grids();
     }
     catch( const RINGMeshException& e )
     {

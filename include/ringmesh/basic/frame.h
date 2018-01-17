@@ -221,7 +221,7 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& local_coords )
         {
-            vecn< DIMENSION > global_coords = reference_frame.origin();
+            vecn< DIMENSION > global_coords{ reference_frame.origin() };
             for( auto x : range( DIMENSION ) )
             {
                 for( auto i : range( DIMENSION ) )
@@ -236,8 +236,8 @@ namespace RINGMesh
             const ReferenceFrame< DIMENSION >& reference_frame )
         {
             ReferenceFrame< DIMENSION > inverse_reference_frame;
-            GEO::Matrix< DIMENSION, double > base_change_matrix =
-                inverse_reference_matrix( reference_frame );
+            GEO::Matrix< DIMENSION, double > base_change_matrix{
+                inverse_reference_matrix( reference_frame ) };
             for( auto i : range( DIMENSION ) )
             {
                 for( auto j : range( DIMENSION ) )
@@ -258,8 +258,8 @@ namespace RINGMesh
             ReferenceFrame< DIMENSION > inverse_reference_frame;
             for( auto i : range( DIMENSION ) )
             {
-                double square_length_i = ( reference_frame[i].length()
-                                           * reference_frame[i].length() );
+                double square_length_i{ reference_frame[i].length()
+                                           * reference_frame[i].length() };
                 for( auto j : range( DIMENSION ) )
                 {
                     inverse_reference_frame.origin()[i] -=
