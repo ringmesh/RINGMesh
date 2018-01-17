@@ -111,8 +111,7 @@ function(add_js_target target src)
     target_include_directories(${js_target} SYSTEM
         PRIVATE node_modules/nbind/include
     )
-    target_link_libraries(${js_target}
-        PRIVATE ${target})
+    target_link_libraries(${js_target} ${target})
 endfunction()
 
 macro(copy_for_windows directory)
