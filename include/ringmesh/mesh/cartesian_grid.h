@@ -144,7 +144,7 @@ namespace RINGMesh
             sivecn< DIMENSION > coord;
             for( auto i : range( DIMENSION ) )
             {
-                coord[i] = std::floor( vertex[i] );
+                coord[i] = static_cast< signed_index_t >( std::floor( vertex[i] ) );
             }
             return coord;
         }
@@ -156,9 +156,9 @@ namespace RINGMesh
             for( auto i : range( DIMENSION ) )
             {
                 if( coords[i] >= 0
-                    && coords[i] < nb_cells_in_each_direction_[i] )
+                    && coords[i] < static_cast< signed_index_t >( nb_cells_in_each_direction_[i] ) )
                 {
-                    offset += coords[i] * mult;
+                    offset += static_cast< index_t >( coords[i] ) * mult;
                     mult *= nb_cells_in_each_direction_[i];
                 }
                 else
@@ -185,8 +185,9 @@ namespace RINGMesh
             for( auto i : range( DIMENSION ) )
             {
                 div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
-                coords[DIMENSION - 1 - i] = ( offset - off ) / div;
-                off += coords[DIMENSION - 1 - i] * div;
+                index_t coordi = ( offset - off ) / div;
+                off += coordi * div;
+                coords[i] = static_cast< signed_index_t >( coordi );
             }
             return coords;
         }
@@ -321,17 +322,14 @@ namespace RINGMesh
                   nb_cells_in_each_direction, vec_cartesian_axis ),
               grid_cage_()
         {
+            vec3 highest_coordinates_point{ cartesian_frame_.origin()
+                               + cartesian_frame_[0] * nb_cells_axis( 0 )
+                               + cartesian_frame_[1] * nb_cells_axis( 1 )
+                               + cartesian_frame_[2] * nb_cells_axis( 2 ) };
             for( auto i : range( 3 ) )
             {
-                vec3 plane_point{ cartesian_frame_.origin() };
-                vec3 plane_normal{ cartesian_frame_[i] };
-                grid_cage_.emplace_back( plane_normal, plane_point );
-                vec3 plane_point2{ cartesian_frame_.origin()
-                                   + cartesian_frame_[0] * nb_cells_axis( 0 )
-                                   + cartesian_frame_[1] * nb_cells_axis( 1 )
-                                   + cartesian_frame_[2] * nb_cells_axis( 2 ) };
-                vec3 plane_normal2{ cartesian_frame_[i] };
-                grid_cage_.emplace_back( plane_normal2, plane_point2 );
+                grid_cage_.emplace_back( cartesian_frame_[i], cartesian_frame_.origin() );
+                grid_cage_.emplace_back( cartesian_frame_[i], highest_coordinates_point );
             }
         }
 
@@ -368,18 +366,18 @@ namespace RINGMesh
         {
             std::vector< Geometry::Segment2D > cage;
             cage.resize( 4 );
-            cage.emplace_back( vec2{ cartesian_frame_.origin() },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0] } );
-            cage.emplace_back( vec2{ cartesian_frame_.origin() },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[1] } );
+            cage.emplace_back( cartesian_frame_.origin(),
+                cartesian_frame_.origin() + cartesian_frame_[0] );
+            cage.emplace_back( cartesian_frame_.origin(),
+                cartesian_frame_.origin() + cartesian_frame_[1] );
             cage.emplace_back(
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0] },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
-                      + cartesian_frame_[1] } );
+                cartesian_frame_.origin() + cartesian_frame_[0],
+                cartesian_frame_.origin() + cartesian_frame_[0]
+                      + cartesian_frame_[1] );
             cage.emplace_back(
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[1] },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
-                      + cartesian_frame_[1] } );
+                cartesian_frame_.origin() + cartesian_frame_[1],
+                cartesian_frame_.origin() + cartesian_frame_[0]
+                      + cartesian_frame_[1] );
 
             return cage;
         }
