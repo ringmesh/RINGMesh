@@ -81,6 +81,22 @@ if(RINGMESH_WITH_GUI)
     execute_process(COMMAND ${NPM} install)
     include(node_modules/node-cmake/NodeJS.cmake)
     nodejs_init()
+    
+    set(NBIND_SOURCE_FILES
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
+    )
+    add_nodejs_module(nbind ${NBIND_SOURCE_FILES})
+    target_include_directories(nbind 
+        SYSTEM PUBLIC ${PROJECT_SOURCE_DIR}/node_modules/nbind/include)
+    target_compile_definitions(nbind
+        PUBLIC
+            -DBUILDING_NODE_EXTENSION
+            -DUSING_V8_SHARED
+            -DUSING_UV_SHARED
+    )
 endif()
 
 #------------------------------------------------------------------------------------------------

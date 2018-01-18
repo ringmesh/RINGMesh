@@ -34,6 +34,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.195942933" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -94,6 +95,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.689726032" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -154,6 +156,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.643766200" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -214,6 +217,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.2077211411" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -274,6 +278,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.127409019" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -334,6 +339,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.1126132665" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -394,6 +400,7 @@
 									<listOptionValue builtIn="false" value="GEOGRAM_WITH_TETGEN=true"/>
 									<listOptionValue builtIn="false" value="RINGMESH_WITH_GRAPHICS=TRUE"/>
 									<listOptionValue builtIn="false" value="__cplusplus=201103L"/>
+									<listOptionValue builtIn="false" value="BUILDING_NODE_EXTENSION=true"/>
 								</option>
 								<inputType id="cdt.managedbuild.tool.gnu.cpp.compiler.input.591903903" superClass="cdt.managedbuild.tool.gnu.cpp.compiler.input"/>
 							</tool>
@@ -505,10 +512,19 @@
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.2049701573;cdt.managedbuild.tool.gnu.cpp.compiler.input.195942933">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.1060670574;cdt.managedbuild.tool.gnu.c.compiler.input.1597643572">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.239877010;cdt.managedbuild.tool.gnu.c.compiler.input.589774101">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.toolchain.gnu.base.1470292274;cdt.managedbuild.toolchain.gnu.base.1470292274.1229640307;cdt.managedbuild.tool.gnu.cpp.compiler.base.1400166207;cdt.managedbuild.tool.gnu.cpp.compiler.input.820267118">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.890369453;cdt.managedbuild.tool.gnu.c.compiler.input.1908840995">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1808013430;cdt.managedbuild.tool.gnu.cpp.compiler.input.127409019">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.debug.435771928.1160816962.566037295.378361635;cdt.managedbuild.config.gnu.exe.debug.435771928.1160816962.566037295.378361635.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.debug.1191098096;cdt.managedbuild.tool.gnu.cpp.compiler.input.1520790543">
@@ -533,6 +549,15 @@
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.1134210749.621500990;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.1134210749.621500990.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.810763769;cdt.managedbuild.tool.gnu.cpp.compiler.input.2077211411">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.164283282;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.164283282.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1879416409;cdt.managedbuild.tool.gnu.cpp.compiler.input.591903903">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.;cdt.managedbuild.tool.gnu.cpp.compiler.exe.release.1071665106;cdt.managedbuild.tool.gnu.cpp.compiler.input.1126132665">
+			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
+		</scannerConfigBuildInfo>
+		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.164283282;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.123129212.338794672.538639350.164283282.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.2090187128;cdt.managedbuild.tool.gnu.c.compiler.input.1387532763">
 			<autodiscovery enabled="true" problemReportingEnabled="true" selectedProfileId=""/>
 		</scannerConfigBuildInfo>
 		<scannerConfigBuildInfo instanceId="cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.1134210749;cdt.managedbuild.config.gnu.exe.release.121847136.894436103.1724454585.1134210749.;cdt.managedbuild.tool.gnu.c.compiler.exe.release.137445222;cdt.managedbuild.tool.gnu.c.compiler.input.1472190989">
