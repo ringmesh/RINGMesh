@@ -369,13 +369,17 @@ namespace RINGMesh
             std::vector< Geometry::Segment2D > cage;
             cage.resize( 4 );
             cage.emplace_back( vec2{ cartesian_frame_.origin() },
-                    vec2{ cartesian_frame_.origin() + cartesian_frame_[0] } );
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[0] } );
             cage.emplace_back( vec2{ cartesian_frame_.origin() },
-                    vec2{ cartesian_frame_.origin() + cartesian_frame_[1] } );
-            cage.emplace_back( vec2{ cartesian_frame_.origin() + cartesian_frame_[0] },
-            		vec2{ cartesian_frame_.origin() + cartesian_frame_[0] + cartesian_frame_[1] } );
-            cage.emplace_back( vec2{ cartesian_frame_.origin() + cartesian_frame_[1] },
-            		vec2{ cartesian_frame_.origin() + cartesian_frame_[0] + cartesian_frame_[1] } );
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[1] } );
+            cage.emplace_back(
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[0] },
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
+                      + cartesian_frame_[1] } );
+            cage.emplace_back(
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[1] },
+                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
+                      + cartesian_frame_[1] } );
 
             return cage;
         }
