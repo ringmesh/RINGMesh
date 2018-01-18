@@ -325,15 +325,13 @@ namespace RINGMesh
             {
                 vec3 plane_point{ cartesian_frame_.origin() };
                 vec3 plane_normal{ cartesian_frame_[i] };
-                grid_cage_.emplace_back(
-                    Geometry::Plane{ plane_normal, plane_point } );
+                grid_cage_.emplace_back( plane_normal, plane_point );
                 vec3 plane_point2{ cartesian_frame_.origin()
                                    + cartesian_frame_[0] * nb_cells_axis( 0 )
                                    + cartesian_frame_[1] * nb_cells_axis( 1 )
                                    + cartesian_frame_[2] * nb_cells_axis( 2 ) };
                 vec3 plane_normal2{ cartesian_frame_[i] };
-                grid_cage_.emplace_back(
-                    Geometry::Plane{ plane_normal2, plane_point2 } );
+                grid_cage_.emplace_back( plane_normal2, plane_point2 );
             }
         }
 
@@ -370,22 +368,14 @@ namespace RINGMesh
         {
             std::vector< Geometry::Segment2D > cage;
             cage.resize( 4 );
-            Geometry::Segment2D seg1{ vec2{ cartesian_frame_.origin() },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0] } };
-            cage.emplace_back( seg1 );
-            Geometry::Segment2D seg2{ vec2{ cartesian_frame_.origin() },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[1] } };
-            cage.emplace_back( seg2 );
-            Geometry::Segment2D seg3{ vec2{ cartesian_frame_.origin()
-                                            + cartesian_frame_[0] },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
-                      + cartesian_frame_[1] } };
-            cage.emplace_back( seg3 );
-            Geometry::Segment2D seg4{ vec2{ cartesian_frame_.origin()
-                                            + cartesian_frame_[1] },
-                vec2{ cartesian_frame_.origin() + cartesian_frame_[0]
-                      + cartesian_frame_[1] } };
-            cage.emplace_back( seg4 );
+            cage.emplace_back( vec2{ cartesian_frame_.origin() },
+                    vec2{ cartesian_frame_.origin() + cartesian_frame_[0] } );
+            cage.emplace_back( vec2{ cartesian_frame_.origin() },
+                    vec2{ cartesian_frame_.origin() + cartesian_frame_[1] } );
+            cage.emplace_back( vec2{ cartesian_frame_.origin() + cartesian_frame_[0] },
+            		vec2{ cartesian_frame_.origin() + cartesian_frame_[0] + cartesian_frame_[1] } );
+            cage.emplace_back( vec2{ cartesian_frame_.origin() + cartesian_frame_[1] },
+            		vec2{ cartesian_frame_.origin() + cartesian_frame_[0] + cartesian_frame_[1] } );
 
             return cage;
         }
