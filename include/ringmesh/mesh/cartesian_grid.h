@@ -332,7 +332,7 @@ namespace RINGMesh
                 + cartesian_frame_[1] * nb_cells_axis( 1 )
                 + cartesian_frame_[2] * nb_cells_axis( 2 )
             };
-            grid_cage_.reserve(6);
+            grid_cage_.reserve( 6 );
             for( auto i : range( 3 ) )
             {
                 grid_cage_.emplace_back(
@@ -374,7 +374,7 @@ namespace RINGMesh
         const std::vector< Geometry::Segment2D > grid_cage() const
         {
             std::vector< Geometry::Segment2D > cage;
-            cage.reserve(4);
+            cage.reserve( 4 );
             cage.emplace_back( cartesian_frame_.origin(),
                 cartesian_frame_.origin() + cartesian_frame_[0] );
             cage.emplace_back( cartesian_frame_.origin(),
