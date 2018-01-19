@@ -21,7 +21,7 @@ include(cmake/utils.cmake)
 
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
-    
+
 #------------------------------------------------------------------------------------------------
 # Platform dependent settings
 if(UNIX)

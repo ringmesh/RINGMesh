@@ -230,7 +230,7 @@ namespace RINGMesh
          * - the closest point on the segment
          */
         template < index_t DIMENSION >
-        std::tuple< double, vecn< DIMENSION > > point_to_segment(
+        std::tuple< double, vecn< DIMENSION > > basic_api point_to_segment(
             const Geometry::Point< DIMENSION >& point,
             const Geometry::Segment< DIMENSION >& segment );
 
@@ -241,7 +241,7 @@ namespace RINGMesh
          * - the closest point on the triangle
          */
         template < index_t DIMENSION >
-        std::tuple< double, vecn< DIMENSION > > point_to_triangle(
+        std::tuple< double, vecn< DIMENSION > > basic_api point_to_triangle(
             const Geometry::Point< DIMENSION >& point,
             const Geometry::Triangle< DIMENSION >& triangle );
 
