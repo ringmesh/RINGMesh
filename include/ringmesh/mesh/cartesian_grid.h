@@ -165,9 +165,8 @@ namespace RINGMesh
                 }
                 else
                 {
-                    //                    Logger::warn( "Point ", coords,
-                    //                        " has indexes outside of the
-                    //                        cartesian grid limits." );
+                     Logger::warn( "Point ", coords,
+                    	" has indexes outside of the cartesian grid limits." );
                     return NO_ID;
                 }
             }
