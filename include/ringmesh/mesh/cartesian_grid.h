@@ -165,8 +165,9 @@ namespace RINGMesh
                 }
                 else
                 {
-//                    Logger::warn( "Point ", coords,
-//                        " has indexes outside of the cartesian grid limits." );
+                    //                    Logger::warn( "Point ", coords,
+                    //                        " has indexes outside of the
+                    //                        cartesian grid limits." );
                     return NO_ID;
                 }
             }
@@ -189,7 +190,8 @@ namespace RINGMesh
                 div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
                 index_t coordi = ( offset - off ) / div;
                 off += coordi * div;
-                coords[DIMENSION - 1 - i] = static_cast< signed_index_t >( coordi );
+                coords[DIMENSION - 1 - i] =
+                    static_cast< signed_index_t >( coordi );
             }
             return coords;
         }
