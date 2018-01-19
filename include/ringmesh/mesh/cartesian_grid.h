@@ -165,9 +165,9 @@ namespace RINGMesh
                 }
                 else
                 {
-                    Logger::warn( "Point ", coords,
-                        " has indexes outside of the cartesian grid limits." );
-                    return -1;
+//                    Logger::warn( "Point ", coords,
+//                        " has indexes outside of the cartesian grid limits." );
+                    return NO_ID;
                 }
             }
             return offset;
@@ -189,7 +189,7 @@ namespace RINGMesh
                 div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
                 index_t coordi = ( offset - off ) / div;
                 off += coordi * div;
-                coords[i] = static_cast< signed_index_t >( coordi );
+                coords[DIMENSION - 1 - i] = static_cast< signed_index_t >( coordi );
             }
             return coords;
         }
@@ -371,7 +371,6 @@ namespace RINGMesh
         const std::vector< Geometry::Segment2D > grid_cage() const
         {
             std::vector< Geometry::Segment2D > cage;
-            cage.resize( 4 );
             cage.emplace_back( cartesian_frame_.origin(),
                 cartesian_frame_.origin() + cartesian_frame_[0] );
             cage.emplace_back( cartesian_frame_.origin(),

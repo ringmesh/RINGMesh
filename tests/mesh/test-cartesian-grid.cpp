@@ -113,7 +113,7 @@ void test_cartesian_grids()
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 2" );
     }
-    if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } ) != -1 )
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } ) != NO_ID )
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 3" );
     }
