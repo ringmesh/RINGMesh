@@ -36,7 +36,28 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
 
+#include <dlfcn.h>
+#include <pwd.h>
+
+
 #include <nbind/nbind.h>
+class toto
+{
+public:
+    toto()
+    {
+        std::cout << "TRY loading nbind" << std::endl;
+        void* plugin_handle = dlopen( "../nbind.node",
+        RTLD_NOW | RTLD_GLOBAL );
+        if( plugin_handle == nullptr )
+        {
+            throw RINGMesh::RINGMeshException( "Plugin", "Could not load ", "NBIND",
+                ": ", dlerror() );
+        }
+    }
+};
+
+toto toto_instance;
 
 namespace RINGMesh
 {

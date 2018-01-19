@@ -85,6 +85,7 @@ if(RINGMESH_WITH_GUI)
     set(NBIND_SOURCE_FILES
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
+        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/singleton.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
     )
