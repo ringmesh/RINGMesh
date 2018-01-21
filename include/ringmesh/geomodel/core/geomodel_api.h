@@ -62,7 +62,8 @@ namespace RINGMesh
      * tests went well
      */
     template < index_t DIMENSION >
-    void geomodel_core_api print_geomodel( const GeoModel< DIMENSION >& geomodel );
+    void geomodel_core_api print_geomodel(
+        const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the number of vertices, edges, polygons and cells.
@@ -72,7 +73,8 @@ namespace RINGMesh
      * @param[in] geomodel the geomodel to compute the statistics on
      */
     template < index_t DIMENSION >
-    void geomodel_core_api print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
+    void geomodel_core_api print_geomodel_mesh_stats(
+        const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the volume of the geomodel and the volume per cell type.
