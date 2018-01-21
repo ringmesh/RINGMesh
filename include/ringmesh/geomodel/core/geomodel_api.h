@@ -62,7 +62,7 @@ namespace RINGMesh
      * tests went well
      */
     template < index_t DIMENSION >
-    void print_geomodel( const GeoModel< DIMENSION >& geomodel );
+    void geomodel_core_api print_geomodel( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the number of vertices, edges, polygons and cells.
@@ -72,7 +72,7 @@ namespace RINGMesh
      * @param[in] geomodel the geomodel to compute the statistics on
      */
     template < index_t DIMENSION >
-    void print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
+    void geomodel_core_api print_geomodel_mesh_stats( const GeoModel< DIMENSION >& geomodel );
 
     /*!
      * Output the volume of the geomodel and the volume per cell type.
@@ -89,7 +89,7 @@ namespace RINGMesh
      * have the same \param name
      */
     template < index_t DIMENSION >
-    index_t find_mesh_entity_id_from_name(
+    index_t geomodel_core_api find_mesh_entity_id_from_name(
         const GeoModel< DIMENSION >& geomodel,
         const MeshEntityType& gmme_type,
         const std::string& name );
@@ -103,7 +103,7 @@ namespace RINGMesh
      * have the same \param name
      */
     template < index_t DIMENSION >
-    index_t find_geological_entity_id_from_name(
+    index_t geomodel_core_api find_geological_entity_id_from_name(
         const GeoModel< DIMENSION >& geomodel,
         const GeologicalEntityType& gmge_type,
         const std::string& name );
