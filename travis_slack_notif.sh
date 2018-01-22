@@ -1,3 +1,5 @@
+#!/bin/bash
+
 travis_job_id=$1
 travis_branch=$2
   
