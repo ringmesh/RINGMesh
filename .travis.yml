@@ -73,7 +73,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
@@ -97,7 +97,7 @@ jobs:
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
@@ -114,7 +114,7 @@ jobs:
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
         - cmake --build ringmesh --target package
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
@@ -132,7 +132,7 @@ jobs:
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
@@ -164,7 +164,7 @@ jobs:
         - git commit -m "Update Linux master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
@@ -189,7 +189,7 @@ jobs:
         - git commit -m "Update Darwin master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" AND "$TRAVIS_EVENT_TYPE" != "pull-request" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
           ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
