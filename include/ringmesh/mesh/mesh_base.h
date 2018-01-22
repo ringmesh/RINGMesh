@@ -75,7 +75,7 @@ namespace RINGMesh
      * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-// BEGINING OF MESHBASE DEFINITION
+    // BEGINING OF MESHBASE DEFINITION
     template < index_t DIMENSION >
     class MeshBase
     {
@@ -132,5 +132,5 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
     };
     ALIAS_2D_AND_3D( MeshBase );
-// END OF MESHBASE DEFINITION
+    // END OF MESHBASE DEFINITION
 } // namespace RINGMesh
