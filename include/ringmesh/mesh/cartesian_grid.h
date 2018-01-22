@@ -187,7 +187,7 @@ namespace RINGMesh
             for( auto i : range( DIMENSION ) )
             {
                 div /= nb_cells_in_each_direction_[DIMENSION - 1 - i];
-                index_t coordi = ( offset - off ) / div;
+                index_t coordi{ ( offset - off ) / div };
                 off += coordi * div;
                 coords[DIMENSION - 1 - i] =
                     static_cast< signed_index_t >( coordi );
