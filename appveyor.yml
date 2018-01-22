@@ -15,6 +15,9 @@ platform: x64
 matrix:
   fast_finish: true
 
+cache:
+  - node_modules  
+  
 for:
 -
   branches:
