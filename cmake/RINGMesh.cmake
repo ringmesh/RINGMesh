@@ -91,21 +91,27 @@ if(RINGMESH_WITH_GUI)
         )
     endfunction()
     
+    set(NBIND_DIR ${PROJECT_SOURCE_DIR}/node_modules/nbind)
     set(NBIND_SOURCE_FILES
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
+        ${NBIND_DIR}/src/common.cc
+        ${NBIND_DIR}/src/reflect.cc
+        ${NBIND_DIR}/src/v8/Binding.cc
+        ${NBIND_DIR}/src/v8/Buffer.cc
     )
     add_nodejs_module(nbind ${NBIND_SOURCE_FILES})
     target_include_directories(nbind 
-        SYSTEM PUBLIC ${PROJECT_SOURCE_DIR}/node_modules/nbind/include)
+        SYSTEM PUBLIC ${NBIND_DIR}/include)
     target_compile_definitions(nbind
         PUBLIC
             -DBUILDING_NODE_EXTENSION
             -DUSING_V8_SHARED
             -DUSING_UV_SHARED
     )
+    
+    file(READ ${NBIND_DIR}/dist/nbind.js filedata)
+    string(REGEX REPLACE "nbind.node" "@target_node_name@.node" filedata "${filedata}")
+    string(REGEX REPLACE "nbind.js" "@target_node_name@.js" filedata "${filedata}")
+    file(WRITE ${PROJECT_SOURCE_DIR}/cmake/nbind.js.in "${filedata}")
 endif()
 
 #------------------------------------------------------------------------------------------------
