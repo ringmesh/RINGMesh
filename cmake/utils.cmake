@@ -84,7 +84,7 @@ function(add_ringmesh_library directory)
 endfunction()
 
 function(add_js_target target src)
-    if(NOT RINGMESH_WITH_GUI)
+    if(NOT ${RINGMESH_WITH_GUI})
         return()
     endif()
     set(js_target ${target}_js)
