@@ -97,7 +97,28 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    bool operator==(
+        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
+    {
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            if( u[i] != v[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION >
     bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    {
+        return !( u == v );
+    }
+
+    template < index_t DIMENSION >
+    bool operator!=(
+        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
     {
         return !( u == v );
     }
