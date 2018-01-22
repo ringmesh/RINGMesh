@@ -97,7 +97,7 @@ function(add_js_target target src)
         PROPERTIES 
             OUTPUT_NAME ${target_node_name}
     )
-    target_link_libraries(${js_target} LINK_PUBLIC ${target} nbind)
+    target_link_libraries(${js_target} ${target} nbind)
 endfunction()
 
 macro(copy_for_windows directory)
