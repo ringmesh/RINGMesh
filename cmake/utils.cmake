@@ -39,7 +39,7 @@ function(add_ringmesh_library directory)
             OUTPUT_NAME RINGMesh_${target_name} 
             FOLDER "Libraries"
             CXX_VISIBILITY_PRESET hidden
-            POSITION_INDEPENDENT_CODE TRUE
+            VISIBILITY_INLINES_HIDDEN ON
     )
     target_include_directories(${target_name} 
         PUBLIC   
