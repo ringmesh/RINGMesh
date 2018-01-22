@@ -88,10 +88,10 @@ function(add_js_target target src)
         return()
     endif()
     set(js_target ${target}_js)
-    set(NBIND_FILE ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc)
+    set(NBIND_FILE ${NBIND_DIR}/src/v8/Binding.cc)
     add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
     set(target_node_name RINGMesh_${target_name})
-    configure_file(${PROJECT_SOURCE_DIR}/cmake/nbind.js.in
+    configure_file(${PROJECT_BINARY_DIR}/nbind.js.in
         ${PROJECT_BINARY_DIR}/lib/${target_node_name}.js)
     set_target_properties(${js_target}
         PROPERTIES 

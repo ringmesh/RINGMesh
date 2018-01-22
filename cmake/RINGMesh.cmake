@@ -111,7 +111,7 @@ if(RINGMESH_WITH_GUI)
     file(READ ${NBIND_DIR}/dist/nbind.js filedata)
     string(REGEX REPLACE "nbind.node" "@target_node_name@.node" filedata "${filedata}")
     string(REGEX REPLACE "nbind.js" "@target_node_name@.js" filedata "${filedata}")
-    file(WRITE ${PROJECT_SOURCE_DIR}/cmake/nbind.js.in "${filedata}")
+    file(WRITE ${PROJECT_BINARY_DIR}/nbind.js.in "${filedata}")
 endif()
 
 #------------------------------------------------------------------------------------------------
