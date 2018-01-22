@@ -83,5 +83,3 @@ target_link_libraries(${target_name}
 )
 
 add_js_target(${target_name} "${lib_source_dir}/io_js.cpp")
-
-target_link_libraries(${target_name}_js PUBLIC geomodel_core_js)
