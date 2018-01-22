@@ -82,10 +82,18 @@ if(RINGMESH_WITH_GUI)
     include(node_modules/node-cmake/NodeJS.cmake)
     nodejs_init()
     
+    function(add_nodejs_module NAME)
+        _add_nodejs_module(${NAME} ${ARGN})
+        set_target_properties(${NAME} 
+            PROPERTIES 
+                C_VISIBILITY_PRESET default
+                CXX_VISIBILITY_PRESET default
+        )
+    endfunction()
+    
     set(NBIND_SOURCE_FILES
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/singleton.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
         ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
     )

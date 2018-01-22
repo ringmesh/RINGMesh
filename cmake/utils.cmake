@@ -88,14 +88,8 @@ function(add_js_target target src)
         return()
     endif()
     set(js_target ${target}_js)
-    set(NBIND_SOURCE_FILES
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/common.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/reflect.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/singleton.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc
-        ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Buffer.cc
-    )
-    add_nodejs_module(${js_target} ${src} ) #${NBIND_SOURCE_FILES})
+    set(NBIND_FILE ${PROJECT_SOURCE_DIR}/node_modules/nbind/src/v8/Binding.cc)
+    add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
     set(target_node_name RINGMesh_${target_name})
     configure_file(${PROJECT_SOURCE_DIR}/cmake/nbind.js.in
         ${PROJECT_BINARY_DIR}/lib/${target_node_name}.js)
@@ -103,15 +97,6 @@ function(add_js_target target src)
         PROPERTIES 
             OUTPUT_NAME ${target_node_name}
     )
-#    target_compile_definitions(${js_target}
-#        PUBLIC
-#            -DBUILDING_NODE_EXTENSION
-#            -DUSING_V8_SHARED
-#            -DUSING_UV_SHARED
-#    )
-#    target_include_directories(${js_target} SYSTEM
-#        PRIVATE node_modules/nbind/include
-#    )
     target_link_libraries(${js_target} LINK_PUBLIC ${target} nbind)
 endfunction()
 
