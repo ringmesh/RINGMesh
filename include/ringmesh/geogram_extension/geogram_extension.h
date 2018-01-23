@@ -142,7 +142,8 @@ namespace RINGMesh
      * @todo Probably extremely prone to bugs. Is it worth the risk?
      */
     template < typename T >
-    class geogram_extension_api AttributeVector : public std::vector< GEO::Attribute< T >* >
+    class geogram_extension_api AttributeVector
+        : public std::vector< GEO::Attribute< T >* >
     {
         ringmesh_disable_copy_and_move( AttributeVector );
 
