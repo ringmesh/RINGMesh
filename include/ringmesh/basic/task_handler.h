@@ -53,6 +53,7 @@ namespace RINGMesh
     class basic_api TaskHandler
     {
         ringmesh_disable_copy_and_move( TaskHandler );
+
     public:
         TaskHandler() = default;
 
