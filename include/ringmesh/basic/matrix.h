@@ -409,7 +409,8 @@ namespace RINGMesh
      * ids of the values within the deque.
      */
     template < typename T >
-    class basic_api SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t >
+    class basic_api SparseMatrix< T, heavy >
+        : public SparseMatrixImpl< T, index_t >
     {
     public:
         using thisclass = SparseMatrix< T, heavy >;
