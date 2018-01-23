@@ -334,7 +334,7 @@ namespace RINGMesh
      * specialization of SparseMatrix for MatrixType "light"
      */
     template < typename T >
-    class SparseMatrix< T, light > : public SparseMatrixImpl< T, T >
+    class basic_api SparseMatrix< T, light > : public SparseMatrixImpl< T, T >
     {
     public:
         using thisclass = SparseMatrix< T, light >;
@@ -409,7 +409,7 @@ namespace RINGMesh
      * ids of the values within the deque.
      */
     template < typename T >
-    class SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t >
+    class basic_api SparseMatrix< T, heavy > : public SparseMatrixImpl< T, index_t >
     {
     public:
         using thisclass = SparseMatrix< T, heavy >;

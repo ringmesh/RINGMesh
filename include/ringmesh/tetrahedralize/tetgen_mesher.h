@@ -62,7 +62,7 @@ namespace RINGMesh
      * @brief Tetgen wrapper
      * @author Jeanne Pellerin
      */
-    class TetgenMesher
+    class tetrahedralize_api TetgenMesher
     {
         ringmesh_disable_copy_and_move( TetgenMesher );
 

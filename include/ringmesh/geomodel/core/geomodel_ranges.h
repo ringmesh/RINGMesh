@@ -68,7 +68,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class corner_range : public entity_range< DIMENSION >
+    class geomodel_core_api corner_range : public entity_range< DIMENSION >
     {
     public:
         explicit corner_range( const GeoModel< DIMENSION >& geomodel )
@@ -90,7 +90,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class line_range : public entity_range< DIMENSION >
+    class geomodel_core_api line_range : public entity_range< DIMENSION >
     {
     public:
         explicit line_range( const GeoModel< DIMENSION >& geomodel )
@@ -112,7 +112,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class surface_range : public entity_range< DIMENSION >
+    class geomodel_core_api surface_range : public entity_range< DIMENSION >
     {
     public:
         explicit surface_range( const GeoModel< DIMENSION >& geomodel )
@@ -134,7 +134,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class region_range : public entity_range< DIMENSION >
+    class geomodel_core_api region_range : public entity_range< DIMENSION >
     {
     public:
         explicit region_range( const GeoModel< DIMENSION >& geomodel )
@@ -156,7 +156,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geol_entity_range : public entity_range< DIMENSION >
+    class geomodel_core_api geol_entity_range : public entity_range< DIMENSION >
     {
     public:
         geol_entity_range( const GeoModel< DIMENSION >& geomodel,

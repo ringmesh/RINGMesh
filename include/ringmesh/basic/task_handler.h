@@ -50,7 +50,7 @@
 
 namespace RINGMesh
 {
-    class TaskHandler
+    class basic_api TaskHandler
     {
     public:
         TaskHandler() = default;
