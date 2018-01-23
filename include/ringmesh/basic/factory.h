@@ -68,7 +68,7 @@ namespace RINGMesh
 
     public:
         template < typename DerivedClass >
-        static void register_creator( const Key& key )
+        static void basic_api register_creator( const Key& key )
         {
             static_assert( std::is_base_of< BaseClass, DerivedClass >::value,
                 "DerivedClass is not a subclass of BaseClass" );
@@ -86,7 +86,7 @@ namespace RINGMesh
             }
         }
 
-        static std::unique_ptr< BaseClass > create(
+        static std::unique_ptr< BaseClass > basic_api create(
             const Key& key, const Args&... args )
         {
             auto& store = get_store();
@@ -99,7 +99,7 @@ namespace RINGMesh
             return {};
         }
 
-        static std::vector< Key > list_creators()
+        static std::vector< Key > basic_api list_creators()
         {
             auto& store = get_store();
             std::vector< Key > creators;
@@ -111,7 +111,7 @@ namespace RINGMesh
             return creators;
         }
 
-        static bool has_creator( const Key& key )
+        static bool basic_api has_creator( const Key& key )
         {
             auto& store = get_store();
             return store.find( key ) != store.end();
