@@ -45,7 +45,7 @@
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class basic_api Box
+    class Box
     {
     public:
         bool initialized() const;
