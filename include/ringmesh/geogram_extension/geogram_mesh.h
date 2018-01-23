@@ -117,7 +117,7 @@ protected:                                                                     \
     std::unique_ptr< GEO::Mesh > mesh_
 
     template < index_t DIMENSION >
-    class geogram_extension_api GeogramPointSetMesh
+    class  GeogramPointSetMesh
         : public PointSetMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramPointSetMesh );
@@ -126,7 +126,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramPointSetMesh );
 
     template < index_t DIMENSION >
-    class geogram_extension_api GeogramLineMesh : public LineMesh< DIMENSION >
+    class  GeogramLineMesh : public LineMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramLineMesh );
 
@@ -152,7 +152,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramLineMesh );
 
     template < index_t DIMENSION >
-    class geogram_extension_api GeogramSurfaceMesh
+    class  GeogramSurfaceMesh
         : public SurfaceMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramSurfaceMesh );
@@ -196,7 +196,7 @@ protected:                                                                     \
     ALIAS_2D_AND_3D( GeogramSurfaceMesh );
 
     template < index_t DIMENSION >
-    class geogram_extension_api GeogramVolumeMesh
+    class  GeogramVolumeMesh
         : public VolumeMesh< DIMENSION >
     {
         COMMON_GEOGRAM_MESH_IMPLEMENTATION( GeogramVolumeMesh );
