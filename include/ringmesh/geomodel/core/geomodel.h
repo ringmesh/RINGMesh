@@ -408,7 +408,7 @@ namespace RINGMesh
     };
 
     template <>
-    class GeoModel< 2 > final : public GeoModelBase< 2 >
+    class geomodel_core_api GeoModel< 2 > final : public GeoModelBase< 2 >
     {
         friend class GeoModelAccess< 2 >;
 

@@ -34,7 +34,13 @@
 function(add_ringmesh_library directory)
     string(REPLACE "/" "_" target_name ${directory})
     add_library(${target_name} SHARED "")
-    set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
+    set_target_properties(${target_name} 
+        PROPERTIES 
+            OUTPUT_NAME RINGMesh_${target_name} 
+            FOLDER "Libraries"
+            CXX_VISIBILITY_PRESET hidden
+            VISIBILITY_INLINES_HIDDEN ON
+    )
     target_include_directories(${target_name} 
         PUBLIC   
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>

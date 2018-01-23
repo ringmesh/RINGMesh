@@ -47,7 +47,7 @@
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class NNSearch
+    class basic_api NNSearch
     {
         ringmesh_disable_copy_and_move( NNSearch );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

@@ -52,7 +52,7 @@ namespace RINGMesh
      *      // do something
      *    }
      */
-    class range
+    class basic_api range
     {
     public:
         template < typename T1, typename T2 >
