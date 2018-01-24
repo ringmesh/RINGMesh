@@ -34,7 +34,7 @@
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
 execute_process(
-   COMMAND git submodule update --init --recursive
+   COMMAND git submodule update --init data third_party/zlib third_party/tinyxml2
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
