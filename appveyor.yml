@@ -11,14 +11,15 @@ environment:
     GENERATOR: "Visual Studio 14 2015 Win64"
     RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2015
     CMAKE_OPTIONS: -DRINGMESH_WITH_GUI:BOOL=ON
+    nodejs_version: "8"
 
 platform: x64
 
 matrix:
   fast_finish: true
 
-#cache:
-#  - node_modules  
+cache:
+  - node_modules  
   
 for:
 -
