@@ -90,12 +90,16 @@ function(add_js_target target src)
     set(js_target ${target}_js)
     set(NBIND_FILE ${NBIND_DIR}/src/v8/Binding.cc)
     add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
-    set(target_node_name RINGMesh_${target_name})
+    set(target_node_name ${target})
+    set(output_directory ${PROJECT_BINARY_DIR}/node/ringmesh)
     configure_file(${PROJECT_BINARY_DIR}/nbind.js.in
-        ${PROJECT_BINARY_DIR}/lib/${target_node_name}.js)
+        ${output_directory}/${target_node_name}.js)
     set_target_properties(${js_target}
         PROPERTIES 
             OUTPUT_NAME ${target_node_name}
+          	RUNTIME_OUTPUT_DIRECTORY ${output_directory}
+          	LIBRARY_OUTPUT_DIRECTORY ${output_directory}
+          	ARCHIVE_OUTPUT_DIRECTORY ${output_directory}
     )
     target_link_libraries(${js_target} ${target} nbind)
 endfunction()
