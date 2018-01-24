@@ -33,8 +33,12 @@
 
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
+set(submodules data third_party/zlib third_party/tinyxml2)
+if(RINGMESH_WITH_GUI)
+    set(submodules ${submodules} third_party/nbind)
+endif()
 execute_process(
-   COMMAND git submodule update --init data third_party/zlib third_party/tinyxml2
+   COMMAND git submodule update --init ${submodules}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 

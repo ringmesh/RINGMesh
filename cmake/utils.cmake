@@ -92,7 +92,7 @@ function(add_js_target target src)
     add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
     set(target_node_name ${target})
     set(output_directory ${PROJECT_BINARY_DIR}/node/ringmesh)
-    configure_file(${PROJECT_BINARY_DIR}/nbind.js.in
+    configure_file(${NBIND_DIR}/nbind.js.in
         ${output_directory}/${target_node_name}.js)
     set_target_properties(${js_target}
         PROPERTIES 

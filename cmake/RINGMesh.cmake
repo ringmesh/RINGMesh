@@ -72,6 +72,8 @@ if(WIN32)
     )
 endif()
 
+include(GenerateExportHeader)
+
 if(RINGMESH_WITH_GUI)
     message(STATUS "Configure RINGMesh with GUI")
     find_program(NPM NAMES npm.cmd npm)
@@ -91,7 +93,7 @@ if(RINGMESH_WITH_GUI)
         )
     endfunction()
     
-    set(NBIND_DIR ${PROJECT_SOURCE_DIR}/node_modules/nbind)
+    set(NBIND_DIR ${PROJECT_SOURCE_DIR}/third_party/nbind)
     set(NBIND_SOURCE_FILES
         ${NBIND_DIR}/src/common.cc
         ${NBIND_DIR}/src/reflect.cc
@@ -107,11 +109,10 @@ if(RINGMESH_WITH_GUI)
             -DUSING_V8_SHARED
             -DUSING_UV_SHARED
     )
-    
-    file(READ ${NBIND_DIR}/dist/nbind.js filedata)
-    string(REGEX REPLACE "nbind.node" "@target_node_name@.node" filedata "${filedata}")
-    string(REGEX REPLACE "nbind.js" "@target_node_name@.js" filedata "${filedata}")
-    file(WRITE ${PROJECT_BINARY_DIR}/nbind.js.in "${filedata}")
+    generate_export_header(nbind
+        EXPORT_MACRO_NAME nbind_api 
+        EXPORT_FILE_NAME ${NBIND_DIR}/include/nbind/export.h
+    )
 endif()
 
 #------------------------------------------------------------------------------------------------
@@ -142,7 +143,6 @@ install(
 
 # Exports RINGMesh target
 include(CMakePackageConfigHelpers)
-include(GenerateExportHeader)
 include(InstallRequiredSystemLibraries)
 configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
