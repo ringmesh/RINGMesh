@@ -73,7 +73,7 @@ jobs:
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
           bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
