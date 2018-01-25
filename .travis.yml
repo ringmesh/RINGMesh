@@ -74,6 +74,7 @@ jobs:
         - sonar-scanner
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
@@ -97,6 +98,7 @@ jobs:
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
@@ -113,6 +115,7 @@ jobs:
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
@@ -130,6 +133,7 @@ jobs:
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: deploy
@@ -161,6 +165,7 @@ jobs:
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: deploy
@@ -185,5 +190,6 @@ jobs:
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
+          cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
