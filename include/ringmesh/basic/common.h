@@ -46,15 +46,15 @@
 #if defined( _WIN32 )
 #define RINGMESH_WINDOWS
 #else
-#unset RINGMESH_WINDOWS
+#undef RINGMESH_WINDOWS
 #if defined( __linux__ )
 #define RINGMESH_LINUX
 #else
-#unset RINGMESH_LINUX
+#undef RINGMESH_LINUX
 #if defined( __APPLE__ )
 #define RINGMESH_APPLE
 #else
-#unset RINGMESH_APPLE
+#undef RINGMESH_APPLE
 #endif
 #endif
 #endif
