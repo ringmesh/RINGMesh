@@ -68,12 +68,12 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- --quiet -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
         - cmake --build ringmesh --target package
         - cd $TRAVIS_BUILD_DIR
         - sonar-scanner
       after_failure:
-        - if [ "$TRAVIS_BRANCH" = "travis_via_in_webhook" ]; then 
+        - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
