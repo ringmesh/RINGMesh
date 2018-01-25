@@ -3,6 +3,8 @@
 travis_job_id=$1
 travis_branch=$2
   
+echo Script_OK  
+
 curl -X POST \
   --data-urlencode "payload={ \
   \"channel\": \"#travis\", \
