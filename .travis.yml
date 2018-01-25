@@ -74,7 +74,7 @@ jobs:
         - sonar-scanner
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+          bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       os: linux
@@ -98,7 +98,7 @@ jobs:
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           chmod 777 ./../travis_slack_notif.sh;
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+          bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       if: branch = master
@@ -114,7 +114,7 @@ jobs:
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+          bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: compile and test
       if: branch = master
@@ -131,7 +131,7 @@ jobs:
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+          bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
     - stage: deploy
       os: linux
@@ -186,5 +186,5 @@ jobs:
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
-          ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+          bash ./../travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
 
