@@ -89,7 +89,7 @@ namespace
     }
 } //namespace
 
-#if _WIN32
+#ifdef RINGMESH_WINDOWS
 #include <KnownFolders.h>
 #include <Shlobj.h>
 #include <Windows.h>

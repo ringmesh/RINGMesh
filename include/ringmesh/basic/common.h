@@ -44,8 +44,18 @@
 #include <ringmesh/ringmesh_config.h>
 
 #if defined( _WIN32 )
-#ifndef WIN32
-#define WIN32
+#define RINGMESH_WINDOWS
+#else
+#unset RINGMESH_WINDOWS
+#if defined( __linux__ )
+#define RINGMESH_LINUX
+#else
+#unset RINGMESH_LINUX
+#if defined( __APPLE__ )
+#define RINGMESH_APPLE
+#else
+#unset RINGMESH_APPLE
+#endif
 #endif
 #endif
 
@@ -55,7 +65,7 @@
 #undef RINGMESH_DEBUG
 #endif
 
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
 #pragma warning(                                                               \
     disable : 4267 ) // conversion between long unsigned int and unsigned int
 #pragma warning( disable : 4250 ) // warning about diamond inheritance
