@@ -44,10 +44,7 @@
 
 #include <ringmesh/mesh/mesh_aabb.h>
 
-namespace GEO
-{
-    class AttributesManager;
-} // namespace GEO
+
 
 namespace RINGMesh
 {

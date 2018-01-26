@@ -1183,14 +1183,12 @@ namespace RINGMesh
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
-   // template class mesh_api MeshBase< 2 >;
     template class mesh_api PointSetMesh< 2 >;
     template class mesh_api LineMesh< 2 >;
     template class mesh_api SurfaceMeshBase< 2 >;
     template class mesh_api MeshSetBase< 2 >;
     template class mesh_api MeshSet< 2 >;
 
-//   template class mesh_api MeshBase< 3 >;
     template class mesh_api PointSetMesh< 3 >;
     template class mesh_api LineMesh< 3 >;
     template class mesh_api SurfaceMeshBase< 3 >;
