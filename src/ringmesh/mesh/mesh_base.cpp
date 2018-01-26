@@ -35,15 +35,15 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/mesh/mesh.h>
+//#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_base.h>
+#include <ringmesh/mesh/mesh_index.h>
 
 #include <numeric>
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
 #include <stack>
 
-#include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/mesh_base.h>
 
 namespace RINGMesh
 {
@@ -62,4 +62,8 @@ namespace RINGMesh
         }
         return *vertex_nn_search_.get();
     }
+
+    template class mesh_api MeshBase< 2 >;
+    template class mesh_api MeshBase< 3 >;
+
 } // namespace RINGMesh

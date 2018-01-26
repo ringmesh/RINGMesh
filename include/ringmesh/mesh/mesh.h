@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <ringmesh/mesh/mesh_base.h>
+
 #include <ringmesh/mesh/common.h>
 #include <algorithm>
 #include <memory>

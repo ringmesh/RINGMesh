@@ -52,18 +52,7 @@ namespace GEO
 
 namespace RINGMesh
 {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( MeshBaseBuilder );
-    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMeshBuilder );
-    FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
-    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
-    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
-    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
-
-    struct EdgeLocalVertex;
-    struct ElementLocalVertex;
-    struct PolygonLocalEdge;
-    struct CellLocalFacet;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -75,7 +64,6 @@ namespace RINGMesh
      * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-// BEGINING OF MESHBASE DEFINITION
     template < index_t DIMENSION >
     class MeshBase
     {
@@ -128,9 +116,8 @@ namespace RINGMesh
     protected:
         MeshBase() = default;
 
-    protected:
+    private:
         mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
     };
     ALIAS_2D_AND_3D( MeshBase );
-// END OF MESHBASE DEFINITION
 } // namespace RINGMesh
