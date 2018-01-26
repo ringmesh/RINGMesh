@@ -35,12 +35,12 @@
 
 #pragma once
 
-#include <ringmesh/mesh/mesh_base.h>
-#include <ringmesh/mesh/common.h>
 #include <algorithm>
 #include <memory>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>
+#include <ringmesh/mesh/common.h>
+#include <ringmesh/mesh/mesh_base.h>
 
 #include <ringmesh/mesh/mesh_aabb.h>
 
