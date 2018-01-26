@@ -36,16 +36,13 @@
 #pragma once
 
 #include <ringmesh/mesh/mesh_base.h>
-
 #include <ringmesh/mesh/common.h>
 #include <algorithm>
 #include <memory>
-
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>
 
 #include <ringmesh/mesh/mesh_aabb.h>
-#include <ringmesh/mesh/mesh_base.h>
 
 namespace GEO
 {
@@ -77,62 +74,65 @@ namespace RINGMesh
      * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-//    template < index_t DIMENSION >
-//    class MeshBase
-//    {
-//        ringmesh_disable_copy_and_move( MeshBase );
-//        ringmesh_template_assert_2d_or_3d( DIMENSION );
-//        friend class MeshBaseBuilder< DIMENSION >;
-//
-//    public:
-//        virtual ~MeshBase() = default;
-//
-//        virtual void save_mesh( const std::string& filename ) const = 0;
-//
-//        virtual std::tuple< index_t, std::vector< index_t > >
-//            connected_components() const = 0;
-//
-//        /*!
-//         * \name Vertex methods
-//         * @{
-//         */
-//        /*!
-//         * @brief Gets a point.
-//         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
-//         * @return const reference to the point that corresponds to the vertex.
-//         */
-//        virtual const vecn< DIMENSION >& vertex( index_t v_id ) const = 0;
-//        /*
-//         * @brief Gets the number of vertices in the Mesh.
-//         */
-//        virtual index_t nb_vertices() const = 0;
-//
-//        virtual GEO::AttributesManager& vertex_attribute_manager() const = 0;
-//
-//        /*!
-//         * @brief return the NNSearch at vertices
-//         * @warning the NNSearch is destroyed when calling the
-//         * Mesh::polygons_aabb()
-//         * and Mesh::cells_aabb()
-//         */
-//        const NNSearch< DIMENSION >& vertex_nn_search() const;
-//
-//        virtual MeshType type_name() const = 0;
-//
-//        virtual std::string default_extension() const = 0;
-//
-//        virtual bool is_mesh_valid() const = 0;
-//
-//        /*!
-//         * @}
-//         */
-//    protected:
-//        MeshBase() = default;
-//
-//    protected:
-//        mutable std::unique_ptr< NNSearch< DIMENSION > > vertex_nn_search_{};
-//    };
-//    ALIAS_2D_AND_3D( MeshBase );
+    //    template < index_t DIMENSION >
+    //    class MeshBase
+    //    {
+    //        ringmesh_disable_copy_and_move( MeshBase );
+    //        ringmesh_template_assert_2d_or_3d( DIMENSION );
+    //        friend class MeshBaseBuilder< DIMENSION >;
+    //
+    //    public:
+    //        virtual ~MeshBase() = default;
+    //
+    //        virtual void save_mesh( const std::string& filename ) const = 0;
+    //
+    //        virtual std::tuple< index_t, std::vector< index_t > >
+    //            connected_components() const = 0;
+    //
+    //        /*!
+    //         * \name Vertex methods
+    //         * @{
+    //         */
+    //        /*!
+    //         * @brief Gets a point.
+    //         * @param[in] v_id the vertex, in 0.. @function nb_vetices()-1.
+    //         * @return const reference to the point that corresponds to the
+    //         vertex.
+    //         */
+    //        virtual const vecn< DIMENSION >& vertex( index_t v_id ) const = 0;
+    //        /*
+    //         * @brief Gets the number of vertices in the Mesh.
+    //         */
+    //        virtual index_t nb_vertices() const = 0;
+    //
+    //        virtual GEO::AttributesManager& vertex_attribute_manager() const =
+    //        0;
+    //
+    //        /*!
+    //         * @brief return the NNSearch at vertices
+    //         * @warning the NNSearch is destroyed when calling the
+    //         * Mesh::polygons_aabb()
+    //         * and Mesh::cells_aabb()
+    //         */
+    //        const NNSearch< DIMENSION >& vertex_nn_search() const;
+    //
+    //        virtual MeshType type_name() const = 0;
+    //
+    //        virtual std::string default_extension() const = 0;
+    //
+    //        virtual bool is_mesh_valid() const = 0;
+    //
+    //        /*!
+    //         * @}
+    //         */
+    //    protected:
+    //        MeshBase() = default;
+    //
+    //    protected:
+    //        mutable std::unique_ptr< NNSearch< DIMENSION > >
+    //        vertex_nn_search_{};
+    //    };
+    //    ALIAS_2D_AND_3D( MeshBase );
 
     /*!
      * class for encapsulating mesh composed of points
