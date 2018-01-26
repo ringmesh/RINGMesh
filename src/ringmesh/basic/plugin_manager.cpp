@@ -216,7 +216,7 @@ namespace RINGMesh
     private:
         std::string library_name( const std::string& plugin_name ) const
         {
-#if __APPLE__
+#ifdef RINGMESH_APPLE
             return { "lib" + plugin_name + ".dylib" };
 #else
             return { "lib" + plugin_name + ".so" };
