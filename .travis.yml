@@ -78,6 +78,10 @@ jobs:
         - if [ "$TRAVIS_BRANCH" = "master" ]; then 
           cd $TRAVIS_BUILD_DIR;
           bash ./travis_slack_notif.sh "$TRAVIS_JOB_ID" "$TRAVIS_BRANCH"; fi
+      after_success:
+        - if [ "$TRAVIS_BRANCH" = "$TRAVIS_BRANCH" ]; then
+          cd $TRAVIS_BUILD_DIR;
+          bash ./sonar_slack_notif.sh; fi
 
     - stage: compile and test
       os: linux
