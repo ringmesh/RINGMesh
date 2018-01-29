@@ -44,8 +44,6 @@
 
 #include <ringmesh/mesh/mesh_aabb.h>
 
-
-
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
