@@ -44,47 +44,10 @@
 
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/mesh_base.h>
+#include <ringmesh/mesh/pointsetmesh.h>
 
 namespace RINGMesh
 {
-    template < index_t DIMENSION >
-    std::unique_ptr< PointSetMesh< DIMENSION > >
-        PointSetMesh< DIMENSION >::create_mesh( const MeshType type )
-    {
-        auto new_type = type;
-        if( new_type.empty() )
-        {
-            if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
-            {
-                throw RINGMeshException( "PointSetMesh",
-                    "Default mesh data structure not registered" );
-            }
-            return create_mesh( "GeogramPointSetMesh" );
-        }
-        auto mesh = PointSetMeshFactory< DIMENSION >::create( new_type );
-        if( !mesh )
-        {
-            Logger::warn( "PointSetMesh",
-                "Could not create mesh data structure: ", new_type );
-            Logger::warn( "PointSetMesh",
-                "Falling back to GeogramPointSetMesh data structure" );
-
-            return create_mesh();
-        }
-        return mesh;
-    }
-
-    template < index_t DIMENSION >
-    std::tuple< index_t, std::vector< index_t > >
-        PointSetMesh< DIMENSION >::connected_components() const
-    {
-        const auto nb_compoments = this->nb_vertices();
-        std::vector< index_t > components( nb_compoments );
-        std::iota( components.begin(), components.end(), 0 );
-        return std::make_tuple( nb_compoments, components );
-    }
-
     template < index_t DIMENSION >
     std::unique_ptr< LineMesh< DIMENSION > > LineMesh< DIMENSION >::create_mesh(
         const MeshType type )
@@ -1183,13 +1146,11 @@ namespace RINGMesh
         volume_mesh = VolumeMesh3D::create_mesh( type );
     }
 
-    template class mesh_api PointSetMesh< 2 >;
     template class mesh_api LineMesh< 2 >;
     template class mesh_api SurfaceMeshBase< 2 >;
     template class mesh_api MeshSetBase< 2 >;
     template class mesh_api MeshSet< 2 >;
 
-    template class mesh_api PointSetMesh< 3 >;
     template class mesh_api LineMesh< 3 >;
     template class mesh_api SurfaceMeshBase< 3 >;
     template class mesh_api VolumeMesh< 3 >;

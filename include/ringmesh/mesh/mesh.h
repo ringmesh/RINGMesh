@@ -41,6 +41,7 @@
 #include <ringmesh/basic/nn_search.h>
 #include <ringmesh/mesh/common.h>
 #include <ringmesh/mesh/mesh_base.h>
+#include <ringmesh/mesh/pointsetmesh.h>
 
 #include <ringmesh/mesh/mesh_aabb.h>
 
@@ -69,33 +70,6 @@ namespace RINGMesh
      * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-    /*!
-     * class for encapsulating mesh composed of points
-     */
-    template < index_t DIMENSION >
-    class PointSetMesh : public MeshBase< DIMENSION >
-    {
-        friend class PointSetMeshBuilder< DIMENSION >;
-
-    public:
-        static std::unique_ptr< PointSetMesh< DIMENSION > > create_mesh(
-            const MeshType type = "" );
-        std::tuple< index_t, std::vector< index_t > >
-            connected_components() const final;
-        bool is_mesh_valid() const override
-        {
-            return true;
-        }
-
-    protected:
-        PointSetMesh() = default;
-    };
-    ALIAS_2D_AND_3D( PointSetMesh );
-
-    template < index_t DIMENSION >
-    using PointSetMeshFactory = Factory< MeshType, PointSetMesh< DIMENSION > >;
-    ALIAS_2D_AND_3D( PointSetMeshFactory );
-
     /*!
      * class for encapsulating line mesh (composed of edges)
      */
