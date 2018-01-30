@@ -56,14 +56,13 @@ namespace
         RINGMesh::Logger::instance()->register_client(
             new RINGMesh::ThreadSafeConsoleLogger );
         GEO::CmdLine::import_arg_group( "sys" );
-#ifdef RINGMESH_DEBUG
-        GEO::CmdLine::set_arg( "sys:assert", "abort" );
+        GEO::CmdLine::set_arg( "sys:use_doubles", true );
+#ifndef RINGMESH_WITH_GUI
+        GEO::CmdLine::set_arg( "sys:FPE", true );
 #endif
-        GEO::CmdLine::set_arg( "sys:FPE", false );
         GEO::CmdLine::import_arg_group( "algo" );
         GEO::CmdLine::set_arg( "algo:predicates", "exact" );
         GEO::CmdLine::import_arg_group( "log" );
-        GEO::CmdLine::set_arg( "sys:use_doubles", true );
     }
 
     void configure_ringmesh()
