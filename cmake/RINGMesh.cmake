@@ -129,6 +129,10 @@ if(RINGMESH_WITH_GRAPHICS)
     add_ringmesh_library(visualize)
 endif(RINGMESH_WITH_GRAPHICS)
 
+#copy dll to make it accessible for plugins
+copy_for_windows(${PROJECT_BINARY_DIR}/lib)
+
+
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 
