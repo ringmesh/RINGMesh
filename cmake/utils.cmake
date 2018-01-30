@@ -116,6 +116,56 @@ if(WIN32)
 endif(WIN32)
 endmacro()
 
+macro(copy_for_windows_deps directory)
+
+    # On windows, without proper installation steps, we need to
+    # copy of Geogram dll and pdb information to RINGMesh
+    # to be able to launch RINGMesh utilities and tests from the debugger
+
+    # The dll and debug info of RINGMesh are in
+    # build/ringmesh/Debug or build/ringmesh/Release.
+if(WIN32)
+    add_custom_command(TARGET copy_dll POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy geogram binaries")
+    add_custom_command(TARGET copy_dll POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET copy_dll POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${ZLIB_ROOT}/bin"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy zlib binaries")
+    add_custom_command(TARGET copy_dll POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${TINYXML2_INSTALL_PREFIX}/bin"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy tinyxml2 binaries")
+endif(WIN32)
+endmacro()
+
+
+macro(copy_for_windows_all directory)
+
+    # On windows, without proper installation steps, we need to
+    # copy of Geogram dll and pdb information to RINGMesh
+    # to be able to launch RINGMesh utilities and tests from the debugger
+
+    # The dll and debug info of RINGMesh are in
+    # build/ringmesh/Debug or build/ringmesh/Release.
+if(WIN32)
+    add_custom_command(TARGET copy_dll POST_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
+            COMMENT "Copy RINGMesh dll")
+endif(WIN32)
+endmacro()
+
 macro(add_ringmesh_executable exe_path folder_name)
     get_filename_component(exe_name ${exe_path} NAME_WE)
 
