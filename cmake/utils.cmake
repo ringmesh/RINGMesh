@@ -79,40 +79,54 @@ function(add_ringmesh_library directory)
     )
 endfunction()
 
-macro(copy_for_windows directory)
+macro(copy_deps_dll_window)
 
     # On windows, without proper installation steps, we need to
-    # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities and tests from the debugger
-
-    # The dll and debug info of RINGMesh are in
+    # copy of dlls of all third parties and pdb information.
+    # This dlls are put in the RINGMesh dll directory:
     # build/ringmesh/Debug or build/ringmesh/Release.
+
+if(WIN32)
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${ZLIB_ROOT}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy zlib binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${TINYXML2_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy tinyxml2 binaries")
+endif(WIN32)
+endmacro()
+
+macro(copy_for_all_ringmesh_dlls directory)
+
+    # On windows, without proper installation steps, we need to
+    # copy of all dlls and pdb information from RINGMesh and its 
+    # third parties to binary folder. 
+    
+    # All third parties informations
+    # have already been copied to the RINGMesh dll folder 
+    # (copy_deps_dll_window()). We only need to copy it to 
+    # the needed directory.
+
 if(WIN32)
     add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_INSTALL_PREFIX}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_INSTALL_PREFIX}/lib"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy geogram visualization libraries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${ZLIB_ROOT}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${TINYXML2_INSTALL_PREFIX}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy tinyxml2 binaries")
 endif(WIN32)
 endmacro()
 

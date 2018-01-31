@@ -129,6 +129,9 @@ if(RINGMESH_WITH_GRAPHICS)
     add_ringmesh_library(visualize)
 endif(RINGMESH_WITH_GRAPHICS)
 
+#Copy dll from RINGMesh third parties to make it accessible for plugins
+copy_deps_dll_window()
+
 #------------------------------------------------------------------------------------------------
 # Optional modules configuration
 
@@ -136,7 +139,7 @@ set(binary_source_dir ${PROJECT_SOURCE_DIR}/src/bin)
 if(BUILD_RINGMESH_VIEW)
     message(STATUS "Configure ringmesh-view")
     add_ringmesh_binary(${binary_source_dir}/ringmesh-view.cpp visualize)
-    copy_for_windows(${PROJECT_BINARY_DIR}/bin)
+    copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin)
 endif()
 
 if(RINGMESH_WITH_UTILITIES)
@@ -146,13 +149,13 @@ if(RINGMESH_WITH_UTILITIES)
     foreach(utility_src ${utility_sources})
         add_ringmesh_binary(${utility_src} geomodel_tools io)
     endforeach()
-    copy_for_windows(${PROJECT_BINARY_DIR}/bin)
+    copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin)
 endif()
 
 if(RINGMESH_WITH_TUTORIALS)
     message(STATUS "Configuring RINGMesh with tutorials")
     add_subdirectory(doc/tutorials)
-    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tutorials)
+    copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin/tutorials)
 endif()
 
 if(RINGMESH_WITH_TESTS)
@@ -160,7 +163,7 @@ if(RINGMESH_WITH_TESTS)
     enable_testing()
     message(STATUS "Configuring RINGMesh with tests")
     add_subdirectory(tests)
-    copy_for_windows(${PROJECT_BINARY_DIR}/bin/tests)
+    copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin/tests)
 endif()
 
 #------------------------------------------------------------------------------------------------
