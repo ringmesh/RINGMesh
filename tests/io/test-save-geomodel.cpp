@@ -203,7 +203,7 @@ void process_extension( const std::string& extension )
     {
         return;
     }
-#if defined( WIN32 ) || defined( __APPLE__ )
+#if defined( RINGMESH_WINDOWS ) || defined( RINGMESH_APPLE )
     if( extension == "adeli" )
     {
         // @todo Temporary switch off the test for saving GeoModel into

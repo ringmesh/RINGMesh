@@ -35,7 +35,7 @@
 
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
 #include <io.h>
 #endif
 
@@ -86,7 +86,7 @@ namespace RINGMesh
 #ifndef RINGMESH_DEBUG
         // Save position of current standard output
         fgetpos( out, &pos );
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
         fd = _dup( fileno( out ) );
         freopen( "nul", "w", out );
 #else
@@ -104,7 +104,7 @@ namespace RINGMesh
         fflush( out );
 // Close file and restore standard output to stdout - which should be the
 // terminal
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
         _dup2( fd, fileno( out ) );
 #else
         dup2( fd, fileno( out ) );
