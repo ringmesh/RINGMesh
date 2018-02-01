@@ -33,26 +33,16 @@
  *     FRANCE
  */
 
-/*!
- * Configuration file generated at the configuration step by CMake
- * Do not modify it directly but modify the include/ringmesh_config.h.in file
- * and re-run project configuration.
- */
+#include <ringmesh/io/io.h>
 
-#pragma once
+#include <nbind/nbind.h>
 
 namespace RINGMesh
 {
-#define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
-#define RINGMesh_VERSION_MINOR @RINGMesh_VERSION_MINOR@
-
-/* Optional components with which RINGMesh can be compiled */
-#cmakedefine USE_MG_TETRA
-#cmakedefine RINGMESH_WITH_TETGEN
-
-/* Optional components of RINGMesh */
-#cmakedefine RINGMESH_WITH_GRAPHICS
-#cmakedefine RINGMESH_WITH_UTILITIES
-#cmakedefine RINGMESH_WITH_TESTS
-#cmakedefine RINGMESH_WITH_GUI
+    NBIND_GLOBAL() {
+        function(geomodel_load< 3 >, "geomodel_load3D");
+        function(geomodel_save< 3 >, "geomodel_save3D");
+    }
 } // namespace RINGMesh
+
+

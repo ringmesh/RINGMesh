@@ -63,3 +63,5 @@ target_link_libraries(${target_name}
         basic 
         mesh
 )
+
+add_js_target(${target_name} "${lib_source_dir}/geomodel_core_js.cpp")
