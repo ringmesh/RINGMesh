@@ -23,12 +23,12 @@ for:
       
   configuration:
     - Debug
-    - Release
+    - RelWithDebInfo
 
   build_script:
    - mkdir build
    - cd build
-   - if %configuration% == Release (
+   - if %configuration% == RelWithDebInfo (
      cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=%RINGMESH_PACKAGE% ..
      ) else (
      cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
@@ -41,7 +41,7 @@ for:
      )
 
   deploy_script:
-   - if %configuration% == Release (
+   - if %configuration% == RelWithDebInfo (
      cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
