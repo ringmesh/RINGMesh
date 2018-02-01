@@ -41,7 +41,7 @@ for:
      )
 
   deploy_script:
-   - if %configuration% == Release (
+   - if %configuration% == RelWithDebInfo (
      cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
