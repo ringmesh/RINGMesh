@@ -72,9 +72,9 @@ function(add_ringmesh_library directory)
     )
     install(TARGETS ${target_name} 
         EXPORT ${target_name}
-        RUNTIME DESTINATION bin/${config}
-        LIBRARY DESTINATION lib/${config}
-        ARCHIVE DESTINATION lib/${config}
+        RUNTIME DESTINATION bin/$<CONFIGURATION>
+        LIBRARY DESTINATION lib/$<CONFIGURATION>
+        ARCHIVE DESTINATION lib/$<CONFIGURATION>
     )
     install(EXPORT ${target_name}
         FILE RINGMesh_${target_name}_target.cmake
