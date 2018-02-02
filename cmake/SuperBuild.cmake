@@ -33,8 +33,12 @@
 
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
+set(submodules data third_party/zlib third_party/tinyxml2)
+if(RINGMESH_WITH_GUI)
+    set(submodules ${submodules} third_party/nbind)
+endif()
 execute_process(
-   COMMAND git submodule update --init --recursive
+   COMMAND git submodule update --init ${submodules}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
 
@@ -48,6 +52,7 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
     -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
+    -DRINGMESH_WITH_GUI:BOOL=${RINGMESH_WITH_GUI}
 )
 
 if(CPACK_PACKAGE_FILE_NAME)
