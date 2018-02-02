@@ -68,7 +68,7 @@ if(WIN32)
         FILES
             ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
         DESTINATION
-            bin
+            bin/$<CONFIGURATION>
     )
 endif()
 

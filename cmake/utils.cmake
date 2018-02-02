@@ -173,13 +173,13 @@ macro(add_ringmesh_executable exe_path folder_name)
     set_target_properties(${exe_name} 
         PROPERTIES 
             FOLDER ${folder_name}
-            INSTALL_RPATH "${OS_RPATH}/../lib"
+            INSTALL_RPATH "${OS_RPATH}/../lib/"
     )
 endmacro()
 
 function(add_ringmesh_binary bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
-    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin/$<CONFIGURATION>)
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
