@@ -1,24 +1,19 @@
 # Contributing to this project
 
-Please take a moment to review this document in order to make the contribution
-process easy and effective for everyone involved.
-
-Following these guidelines helps to communicate that you respect the time of
-the developers managing and developing this open source project. In return,
-they should reciprocate that respect in addressing your issue or assessing
-patches and features.
-
+Please follow these guidelines to ensure and efficient contribution to RINGMesh.
+The RINGMesh community will do its best to address your issues and assess patches and features
+as long as you communicate in the proper way.
 
 ## Using the issue tracker
 
 The issue tracker is the preferred channel for [bug reports](#bugs),
 [features requests](#features) and [submitting pull
-requests](#pull-requests), but please respect the following restrictions:
+requests](#pull-requests). Please respect the following restrictions:
 
-* Please **do not** use the issue tracker for personal support requests (use
+* **do not** use the issue tracker for personal support requests (use
   [Stack Overflow](http://stackoverflow.com) or IRC).
 
-* Please **do not** derail or troll issues. Keep the discussion on topic and
+* **do not** derail or troll issues. Keep the discussion on topic and
   respect the opinions of others.
 
 
@@ -40,10 +35,11 @@ Guidelines for bug reports:
    case](http://css-tricks.com/reduced-test-cases/) and a live example.
 
 A good bug report shouldn't leave others needing to chase you up for more
-information. Please try to be as detailed as possible in your report. What is
-your environment? What steps will reproduce the issue? What browser(s) and OS
-experience the problem? What would you expect to be the outcome? All these
-details will help people to fix any potential bugs.
+information. Please try to be as detailed as possible in your report. 
+ * What is your environment?
+ * What steps will reproduce the issue? 
+ * What browser(s) and OS experience the problem? 
+ * What would you expect to be the outcome?
 
 Example:
 
@@ -69,8 +65,8 @@ Example:
 
 Feature requests are welcome. But take a moment to find out whether your idea
 fits with the scope and aims of the project. It's up to *you* to make a strong
-case to convince the project's developers of the merits of this feature. Please
-provide as much detail and context as possible.
+case to convince the project's developers. Please provide as much detail and 
+context as possible.
 
 
 <a name="pull-requests"></a>
@@ -83,13 +79,15 @@ commits.
 **Please ask first** before embarking on any significant pull request (e.g.
 implementing features, refactoring code, porting to a different language),
 otherwise you risk spending a lot of time working on something that the
-project's developers might not want to merge into the project.
+project's developers might not want to merge.
 
 Please adhere to the coding conventions used throughout a project (indentation,
 accurate comments, etc.) and any other requirements (such as test coverage).
 
-Follow this process if you'd like your work considered for inclusion in the
-project:
+**To contribute**, please adhere to the coding conventions used throughout a 
+project (indentation, accurate comments, etc.); ensure any other requirements 
+(such as test coverage); and follow the steps detailled behind:
+
 
 1. [Fork](http://help.github.com/fork-a-repo/) the project, clone your fork,
    and configure the remotes:
@@ -110,17 +108,16 @@ project:
    git pull upstream <dev-branch>
    ```
 
-3. Create a new topic branch (off the main project development branch) to
-   contain your feature, change, or fix:
+3. Create a new topic branch (off the main project development branch)
+   containing your feature, change, or fix:
 
    ```bash
    git checkout -b <topic-branch-name>
    ```
 
-4. Commit your changes in logical chunks. Please adhere to these [git commit
-   message guidelines](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html)
-   or your code is unlikely be merged into the main project. Use Git's
-   [interactive rebase](https://help.github.com/articles/interactive-rebase)
+4. Commit your changes in logical chunks. Your code must follow the [git commit
+   message guidelines](http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html). 
+   Use Git's [interactive rebase](https://help.github.com/articles/interactive-rebase)
    feature to tidy up your commits before making them public.
 
 5. Locally merge (or rebase) the upstream development branch into your topic branch:
