@@ -240,8 +240,11 @@ namespace RINGMesh
             {
                 throw RINGMeshException( "Plugin", plugin_name, " already loaded" );
             }
-
+#ifdef RINGMESH_DEBUG
+            impl_->load_library( plugin_name+"d" );
+#else
             impl_->load_library( plugin_name );
+#endif
             plugins.push_back( plugin_name );
         }
         catch( RINGMeshException& e )
