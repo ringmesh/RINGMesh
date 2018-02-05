@@ -82,7 +82,11 @@ int main()
 {
     try
     {
+#ifdef RINGMESH_DEBUG
+        PluginManager::load_plugin( "RINGMesh_iod" );
+#else 
         PluginManager::load_plugin( "RINGMesh_io" );
+#endif
 
         Logger::out( "TEST", "Is io plugin well loaded?" );
         // Test mesh initialize
