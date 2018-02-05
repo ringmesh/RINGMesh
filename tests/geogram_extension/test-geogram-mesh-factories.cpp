@@ -113,7 +113,7 @@ int main()
     try
     {
 #ifdef RINGMESH_DEBUG
-        PluginManager::load_plugin( "RINGMesh_geogram_extension" );
+        PluginManager::load_plugin( "RINGMesh_geogram_extensiond" );
 #else
         PluginManager::load_plugin( "RINGMesh_geogram_extension" );
 #endif
