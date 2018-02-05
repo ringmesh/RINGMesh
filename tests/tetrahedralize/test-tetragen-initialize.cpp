@@ -77,7 +77,11 @@ int main()
 {
     try
     {
+#ifdef RINGMESH_DEBUG
+        PluginManager::load_plugin( "RINGMesh_tetrahedralized" );
+#else 
         PluginManager::load_plugin( "RINGMesh_tetrahedralize" );
+#endif
 
         Logger::out( "TEST", "Is tetragen initialized?" );
         test_tetragen_initialize();
