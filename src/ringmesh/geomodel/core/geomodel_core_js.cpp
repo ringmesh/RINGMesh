@@ -40,9 +40,21 @@
 
 namespace RINGMesh
 {
-    NBIND_CLASS( GeoModel3D )
+    NBIND_CLASS(GeoModelBase3D)
     {
+        method(name);
+        method(nb_mesh_entities);
+        method(nb_geological_entities);
+        method(nb_corners);
+        method(nb_lines);
+        method(nb_surfaces);
+    }
+
+    NBIND_CLASS(GeoModel3D)
+    {
+        inherit(GeoModelBase3D);
         construct<>();
+        method(nb_regions);
     }
 
     NBIND_GLOBAL() {
