@@ -81,9 +81,6 @@ implementing features, refactoring code, porting to a different language),
 otherwise you risk spending a lot of time working on something that the
 project's developers might not want to merge.
 
-Please adhere to the coding conventions used throughout a project (indentation,
-accurate comments, etc.) and any other requirements (such as test coverage).
-
 **To contribute**, please adhere to the coding conventions used throughout a 
 project (indentation, accurate comments, etc.); ensure any other requirements 
 (such as test coverage); and follow the steps detailled behind:
