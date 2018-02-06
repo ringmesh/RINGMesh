@@ -82,11 +82,11 @@ int main()
 {
     try
     {
+        std::string geo_io = "RINGMesh_io";
 #ifdef RINGMESH_DEBUG
-        PluginManager::load_plugin( "RINGMesh_iod" );
-#else 
-        PluginManager::load_plugin( "RINGMesh_io" );
+        geo_io += "d";
 #endif
+        PluginManager::load_plugin( geo_io );
 
         Logger::out( "TEST", "Is io plugin well loaded?" );
         // Test mesh initialize

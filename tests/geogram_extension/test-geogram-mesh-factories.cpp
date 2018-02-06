@@ -112,11 +112,12 @@ int main()
 {
     try
     {
+        std::string geo_ext = "RINGMesh_geogram_extension";
 #ifdef RINGMESH_DEBUG
-        PluginManager::load_plugin( "RINGMesh_geogram_extensiond" );
-#else
-        PluginManager::load_plugin( "RINGMesh_geogram_extension" );
+        geo_ext += "d";
 #endif
+        PluginManager::load_plugin( geo_ext );
+
         Logger::out( "TEST", "Is geogram plugin well loaded?" );
         // Test geogram mesh register
         test_geogram_factory_2D();
