@@ -173,7 +173,7 @@ macro(add_ringmesh_executable exe_path folder_name)
     set_target_properties(${exe_name} 
         PROPERTIES 
             FOLDER ${folder_name}
-            INSTALL_RPATH "${OS_RPATH}/../lib/$<CONFIGURATION>"
+            INSTALL_RPATH "${OS_RPATH}/../$<CONFIGURATION>/lib"
     )
 endmacro()
 

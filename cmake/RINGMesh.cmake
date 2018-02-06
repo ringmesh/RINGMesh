@@ -153,6 +153,7 @@ install(
 
 # Exports RINGMesh target
 include(CMakePackageConfigHelpers)
+set(CMAKE_INSTALL_SYSTEM_RUNTIME_DESTINATION bin/$<CONFIGURATION>)
 include(InstallRequiredSystemLibraries)
 configure_package_config_file(
     cmake/RINGMeshConfig.cmake.in 
