@@ -31,8 +31,8 @@ Guidelines for bug reports:
 2. **Check if the issue has been fixed** &mdash; try to reproduce it using the
    latest `master` or development branch in the repository.
 
-3. **Isolate the problem** &mdash; create a [reduced test
-   case](http://css-tricks.com/reduced-test-cases/) and a live example.
+3. **Isolate the problem** &mdash; create a reduced test case 
+   with a data example.
 
 A good bug report shouldn't leave others needing to chase you up for more
 information. Please try to be as detailed as possible in your report. 
