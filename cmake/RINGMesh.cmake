@@ -61,7 +61,7 @@ install(
         ${ZLIB_ROOT}/lib/
         ${GEOGRAM_INSTALL_PREFIX}/lib/
     DESTINATION
-        lib/$<CONFIGURATION>
+        lib/${CMAKE_BUILD_TYPE}
 )
 install(
     DIRECTORY
@@ -69,14 +69,14 @@ install(
         ${ZLIB_ROOT}/bin/
         ${GEOGRAM_INSTALL_PREFIX}/bin/
     DESTINATION
-        bin/$<CONFIGURATION>
+        bin/${CMAKE_BUILD_TYPE}
 )
 if(WIN32)
     install(
         FILES
             ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
         DESTINATION
-            bin/$<CONFIGURATION>
+            bin/${CMAKE_BUILD_TYPE}
     )
 endif()
 
