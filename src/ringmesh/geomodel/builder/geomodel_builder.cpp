@@ -701,20 +701,24 @@ namespace
 
         bool vertex_is_on_corner( index_t t, bool backward ) const
         {
-            if( backward )
+            const auto& surfaces = [t, backward, this]{
+                if( backward )
+                {
+                    return surfaces_around_vertices_[this->border_polygons_[t].v1];
+                }
+                else
+                {
+                    return surfaces_around_vertices_[this->border_polygons_[t].v0];
+                }
+            }();
+            for( auto surface : surfaces )
             {
-                return !std::equal(
-                    surfaces_around_vertices_[this->border_polygons_[t].v1].begin(),
-                    surfaces_around_vertices_[this->border_polygons_[t].v1].end(),
-                    cur_line_.adjacent_surfaces_.begin() );
+                if( !contains( cur_line_.adjacent_surfaces_, surface ) )
+                {
+                    return true;
+                }
             }
-            else
-            {
-                return !std::equal(
-                    surfaces_around_vertices_[this->border_polygons_[t].v0].begin(),
-                    surfaces_around_vertices_[this->border_polygons_[t].v0].end(),
-                    cur_line_.adjacent_surfaces_.begin() );
-            }
+            return false;
         }
 
         bool equal_to_line_adjacent_surfaces( index_t t ) const

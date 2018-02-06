@@ -1,5 +1,5 @@
-Corner 60
-Line 106
+Corner 52
+Line 98
 Surface 55
 Region 8
 Vertex 6691
