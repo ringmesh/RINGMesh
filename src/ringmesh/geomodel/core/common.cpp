@@ -40,7 +40,8 @@
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 
 namespace
-{#ifdef RINGMESH_DEBUG
+{
+#ifdef RINGMESH_DEBUG
     RINGMESH_PLUGIN_INITIALIZE(
         RINGMesh_geomodel_core,
         // Plugin initialization
