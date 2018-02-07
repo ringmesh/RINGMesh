@@ -30,6 +30,14 @@ for:
     only:
       - master
       
+  notifications:
+    - provider: Slack
+      incoming_webhook:
+        secure: nhWXvD92AwG2//akSuMqEDraFcdaz8WcLR0Ndw+7HCGw18j1TAcTnCutfevAo5INztTFTC6NLMEroQTyy5cbm3yNkQ0Imb/ira3cL1XspEY=
+      on_build_success: false
+      on_build_failure: true
+      on_build_status_changed: true
+    
   configuration:
     - Debug
     - RelWithDebInfo
