@@ -63,20 +63,20 @@ install(
     DESTINATION
         lib/${CMAKE_BUILD_TYPE}
 )
-install(
-    DIRECTORY
-        ${TINYXML2_INSTALL_PREFIX}/bin/
-        ${ZLIB_ROOT}/bin/
-        ${GEOGRAM_INSTALL_PREFIX}/bin/
-    DESTINATION
-        bin/${CMAKE_BUILD_TYPE}
-)
 if(WIN32)
+    install(
+        DIRECTORY
+            ${TINYXML2_INSTALL_PREFIX}/bin/
+            ${ZLIB_ROOT}/bin/
+            ${GEOGRAM_INSTALL_PREFIX}/bin/
+        DESTINATION
+            bin/${CMAKE_CFG_INTDIR}
+    )
     install(
         FILES
             ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
         DESTINATION
-            bin/${CMAKE_BUILD_TYPE}
+            bin/${CMAKE_CFG_INTDIR}
     )
 endif()
 
