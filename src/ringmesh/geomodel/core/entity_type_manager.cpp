@@ -514,12 +514,8 @@ namespace RINGMesh
         std::deque< ParentChildRelationship > parent_child_relationships_;
     };
 
-    RelationshipManager::RelationshipManager()
-    {
-    }
-    RelationshipManager::~RelationshipManager()
-    {
-    }
+    RelationshipManager::RelationshipManager() {}
+    RelationshipManager::~RelationshipManager() {}
 
     std::vector< GeologicalEntityType > RelationshipManager::parent_types(
         const MeshEntityType& child_type ) const

@@ -50,7 +50,8 @@
 
 using namespace RINGMesh;
 
-const std::string ringmesh_test_save_path = ringmesh_test_path + "io/data/save/";
+const std::string ringmesh_test_save_path =
+    ringmesh_test_path + "io/data/save/";
 
 const index_t MAX_DIFF_DIGIT{ 1 };
 

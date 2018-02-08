@@ -43,8 +43,8 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
@@ -999,8 +999,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderBase< DIMENSION >::
-        build_lines_and_corners_from_surfaces()
+    void GeoModelBuilderBase<
+        DIMENSION >::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer(
             geomodel_ );
@@ -1069,9 +1069,7 @@ namespace RINGMesh
     class GeoModelBuilder< 2 >::Impl
     {
     public:
-        Impl( GeoModel2D& geomodel ) : geomodel_( geomodel )
-        {
-        }
+        Impl( GeoModel2D& geomodel ) : geomodel_( geomodel ) {}
 
         struct OrientedLine
         {
@@ -1396,9 +1394,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModelBuilder< 2 >::~GeoModelBuilder()
-    {
-    }
+    GeoModelBuilder< 2 >::~GeoModelBuilder() {}
 
     template <>
     void GeoModelBuilderBase< 2 >::cut_geomodel_on_internal_boundaries()

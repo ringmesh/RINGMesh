@@ -76,7 +76,8 @@ namespace RINGMesh
             // Coordinates are not directly modified to
             // update the matching vertices in geomodel entities
             const auto& p = geomodel.mesh.vertices.vertex( v );
-            builder.geometry.set_mesh_entity_vertex( v, p + translation_vector );
+            builder.geometry.set_mesh_entity_vertex(
+                v, p + translation_vector );
         }
     }
 
@@ -152,10 +153,12 @@ namespace RINGMesh
         geomodel.mesh.vertices.clear();
     }
 
-    template void geomodel_tools_api copy_geomodel( const GeoModel2D&, GeoModel2D& );
+    template void geomodel_tools_api copy_geomodel(
+        const GeoModel2D&, GeoModel2D& );
     template void geomodel_tools_api translate( GeoModel2D&, const vec2& );
 
-    template void geomodel_tools_api copy_geomodel( const GeoModel3D&, GeoModel3D& );
+    template void geomodel_tools_api copy_geomodel(
+        const GeoModel3D&, GeoModel3D& );
     template void geomodel_tools_api translate( GeoModel3D&, const vec3& );
 
 } // namespace RINGMesh

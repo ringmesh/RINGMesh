@@ -42,6 +42,6 @@ namespace RINGMesh
     NBIND_CLASS( Box3D )
     {
         construct<>();
-        method(initialized);
+        method( initialized );
     }
 } // namespace RINGMesh

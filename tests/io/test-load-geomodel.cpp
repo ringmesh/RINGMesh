@@ -48,7 +48,8 @@
 
 using namespace RINGMesh;
 
-const std::string ringmesh_test_load_path = ringmesh_test_path + "io/data/load/";
+const std::string ringmesh_test_load_path =
+    ringmesh_test_path + "io/data/load/";
 
 template < index_t DIMENSION >
 void load_input_geomodel(
