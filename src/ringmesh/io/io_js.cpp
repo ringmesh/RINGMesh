@@ -39,10 +39,9 @@
 
 namespace RINGMesh
 {
-    NBIND_GLOBAL() {
-        function(geomodel_load< 3 >, "geomodel_load3D");
-        function(geomodel_save< 3 >, "geomodel_save3D");
+    NBIND_GLOBAL()
+    {
+        function( geomodel_load< 3 >, "geomodel_load3D" );
+        function( geomodel_save< 3 >, "geomodel_save3D" );
     }
 } // namespace RINGMesh
-
-

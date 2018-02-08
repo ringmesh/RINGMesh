@@ -45,6 +45,5 @@ namespace
         RINGMesh_geomodel_core,
         // Plugin initialization
         RINGMesh::GeoModelGeologicalEntity2D::initialize();
-        RINGMesh::GeoModelGeologicalEntity3D::initialize();
-    );
+        RINGMesh::GeoModelGeologicalEntity3D::initialize(); );
 } // namespace

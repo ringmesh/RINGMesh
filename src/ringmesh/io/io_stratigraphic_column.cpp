@@ -71,7 +71,7 @@ namespace RINGMesh
      */
     void StratigraphicColumnIOHandler::initialize()
     {
-        StratigraphicColumnIOHandlerFactory::
-            register_creator< XMLStratigraphicColumnIOHandler >( "xml" );
+        StratigraphicColumnIOHandlerFactory::register_creator<
+            XMLStratigraphicColumnIOHandler >( "xml" );
     }
 } // namespace RINGMesh

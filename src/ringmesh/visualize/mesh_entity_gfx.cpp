@@ -493,8 +493,8 @@ namespace RINGMesh
         PointSetMeshGfx< 2 >::create_gfx( const PointSetMesh< 2 >& );
     template std::unique_ptr< LineMeshGfx< 2 > >
         visualize_api LineMeshGfx< 2 >::create_gfx( const LineMesh< 2 >& );
-    template std::unique_ptr< SurfaceMeshGfx< 2 > >
-        visualize_api SurfaceMeshGfx< 2 >::create_gfx( const SurfaceMesh< 2 >& );
+    template std::unique_ptr< SurfaceMeshGfx< 2 > > visualize_api
+        SurfaceMeshGfx< 2 >::create_gfx( const SurfaceMesh< 2 >& );
     template class visualize_api AttributeGfxManagerBase< 2 >;
     template class visualize_api AttributeGfxManager< 2 >;
 
@@ -502,8 +502,8 @@ namespace RINGMesh
         PointSetMeshGfx< 3 >::create_gfx( const PointSetMesh< 3 >& );
     template std::unique_ptr< LineMeshGfx< 3 > >
         visualize_api LineMeshGfx< 3 >::create_gfx( const LineMesh< 3 >& );
-    template std::unique_ptr< SurfaceMeshGfx< 3 > >
-        visualize_api SurfaceMeshGfx< 3 >::create_gfx( const SurfaceMesh< 3 >& );
+    template std::unique_ptr< SurfaceMeshGfx< 3 > > visualize_api
+        SurfaceMeshGfx< 3 >::create_gfx( const SurfaceMesh< 3 >& );
     template std::unique_ptr< VolumeMeshGfx< 3 > >
         visualize_api VolumeMeshGfx< 3 >::create_gfx( const VolumeMesh< 3 >& );
     template class visualize_api AttributeGfxManagerBase< 3 >;

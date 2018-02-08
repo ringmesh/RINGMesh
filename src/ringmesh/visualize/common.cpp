@@ -43,10 +43,8 @@
 
 namespace
 {
-    RINGMESH_PLUGIN_INITIALIZE(
-        RINGMesh_visualize,
-        // Plugin initialization
-        GEO::CmdLine::import_arg_group( "gfx" );
-        RINGMesh::register_geogram_mesh_gfx();
-    );
+    RINGMESH_PLUGIN_INITIALIZE( RINGMesh_visualize,
+                                // Plugin initialization
+                                GEO::CmdLine::import_arg_group( "gfx" );
+                                RINGMesh::register_geogram_mesh_gfx(); );
 } // namespace

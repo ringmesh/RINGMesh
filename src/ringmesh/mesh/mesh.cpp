@@ -70,7 +70,7 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "PointSetMesh",
                     "Default mesh data structure not registered" );
@@ -108,18 +108,18 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
-                throw RINGMeshException( "LineMesh",
-                    "Default mesh data structure not registered" );
+                throw RINGMeshException(
+                    "LineMesh", "Default mesh data structure not registered" );
             }
             return create_mesh( "GeogramLineMesh" );
         }
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
         {
-            Logger::warn( "LineMesh", "Could not create mesh data structure: ",
-                new_type );
+            Logger::warn( "LineMesh",
+                "Could not create mesh data structure: ", new_type );
             Logger::warn(
                 "LineMesh", "Falling back to GeogramLineMesh data structure" );
 
@@ -337,7 +337,7 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "SurfaceMesh",
                     "Default mesh data structure not registered" );
@@ -862,7 +862,7 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "VolumeMesh",
                     "Default mesh data structure not registered" );
