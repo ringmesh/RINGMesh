@@ -60,7 +60,11 @@ void load_plugin_from_command_line()
 void load_plugin_from_file()
 {
     std::ofstream config( PluginManager::configuration_file );
-    config << "RINGMesh_io";
+    config << "RINGMesh_io"; 
+#ifdef RINGMESH_DEBUG
+    config << "d";
+#endif
+
     config.close();
     if( !PluginManager::load_plugins() )
     {
@@ -71,27 +75,33 @@ void load_plugin_from_file()
 
 void load_plugin_from_code()
 {
-    auto status = PluginManager::load_plugin( "RINGMesh_geomodel_builder" );
+    std::string geomodel_builder = "RINGMesh_geomodel_builder";
+#ifdef RINGMESH_DEBUG
+    geomodel_builder += "d";
+#endif
+    auto status = PluginManager::load_plugin( geomodel_builder );
     if( !status )
     {
         throw RINGMeshException(
             "TEST", "Failed to load RINGMesh_geomodel_builder" );
     }
 
-    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
+    std::string geomodel_core = "RINGMesh_geomodel_core";
+#ifdef RINGMESH_DEBUG
+    geomodel_core += "d";
+#endif
+    status = PluginManager::load_plugin( geomodel_core );
     if( !status )
     {
         throw RINGMeshException(
             "TEST", "Failed to load RINGMesh_geomodel_core" );
     }
-
-    status = PluginManager::load_plugin( "RINGMesh_geomodel_core" );
+    status = PluginManager::load_plugin( geomodel_core );
     if( status )
     {
         throw RINGMeshException(
             "TEST", "Not supposed to load RINGMesh_geomodel_core twice" );
     }
-
     status = PluginManager::load_plugin( "Foo" );
     if( status )
     {

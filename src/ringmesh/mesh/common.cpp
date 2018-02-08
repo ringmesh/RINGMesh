@@ -41,9 +41,17 @@
 
 namespace
 {
+#ifdef RINGMESH_DEBUG
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_mesh,
+        // Plugin initialization
+        RINGMesh::PluginManager::load_plugin( "RINGMesh_geogram_extensiond" );
+    ); 
+#else
     RINGMESH_PLUGIN_INITIALIZE(
         RINGMesh_mesh,
         // Plugin initialization
         RINGMesh::PluginManager::load_plugin( "RINGMesh_geogram_extension" );
     );
+#endif
 } // namespace

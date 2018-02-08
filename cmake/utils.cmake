@@ -72,9 +72,9 @@ function(add_ringmesh_library directory)
     )
     install(TARGETS ${target_name} 
         EXPORT ${target_name}
-        RUNTIME DESTINATION bin
-        LIBRARY DESTINATION lib
-        ARCHIVE DESTINATION lib
+        RUNTIME DESTINATION bin/${CMAKE_BUILD_TYPE}
+        LIBRARY DESTINATION lib/${CMAKE_BUILD_TYPE}
+        ARCHIVE DESTINATION lib/${CMAKE_BUILD_TYPE}
     )
     install(EXPORT ${target_name}
         FILE RINGMesh_${target_name}_target.cmake
@@ -179,7 +179,7 @@ endmacro()
 
 function(add_ringmesh_binary bin_path)
     add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
-    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin/${CMAKE_BUILD_TYPE})
     set_target_properties(${exe_name} PROPERTIES 
         RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()

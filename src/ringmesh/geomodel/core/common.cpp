@@ -41,10 +41,21 @@
 
 namespace
 {
+#ifdef RINGMESH_DEBUG
     RINGMESH_PLUGIN_INITIALIZE(
         RINGMesh_geomodel_core,
         // Plugin initialization
+        RINGMesh::PluginManager::load_plugin( "RINGMesh_meshd" );
+        RINGMesh::GeoModelGeologicalEntity2D::initialize();
+        RINGMesh::GeoModelGeologicalEntity3D::initialize();
+    ); 
+#else
+    RINGMESH_PLUGIN_INITIALIZE(
+        RINGMesh_geomodel_core,
+        // Plugin initialization
+        RINGMesh::PluginManager::load_plugin( "RINGMesh_mesh" );
         RINGMesh::GeoModelGeologicalEntity2D::initialize();
         RINGMesh::GeoModelGeologicalEntity3D::initialize();
     );
+#endif
 } // namespace

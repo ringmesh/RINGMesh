@@ -82,7 +82,11 @@ int main()
 {
     try
     {
-        PluginManager::load_plugin( "RINGMesh_io" );
+        std::string io = "RINGMesh_io";
+#ifdef RINGMESH_DEBUG
+        io += "d";
+#endif
+        PluginManager::load_plugin( io );
 
         Logger::out( "TEST", "Is io plugin well loaded?" );
         // Test mesh initialize
