@@ -51,28 +51,26 @@
 
 using namespace RINGMesh;
 
-template < typename GME >
+template< typename GME >
 void check_element_of_a_set_are_in_another_set(
     const std::set< GME >& to_compare,
     const std::set< GME >& with,
     const std::string& set_name )
 {
-    if( to_compare != with )
-    {
+    if( to_compare != with ) {
         // To debug it is nice to know which entity fails...
-        for( const GME& cur_gme_id : to_compare )
-        {
-            if( find( with.begin(), with.end(), cur_gme_id ) == with.end() )
-            {
-                throw RINGMeshException( "RINGMesh Test", cur_gme_id.type(),
-                    " ", cur_gme_id.index(), " is not in the ", set_name, "." );
+        for( const GME& cur_gme_id : to_compare ) {
+            if( find( with.begin(), with.end(), cur_gme_id ) == with.end() ) {
+                throw RINGMeshException( "RINGMesh Test", cur_gme_id.type(), " ",
+                    cur_gme_id.index(), " is not in the ", set_name, "." );
             }
         }
         ringmesh_assert_not_reached;
     }
 }
 
-void test_template( GeoModel3D& geomodel,
+void test_template(
+    GeoModel3D& geomodel,
     const std::set< gmme_id >& solution_gmme_id,
     const std::set< gmge_id >& solution_gmge_id,
     const std::string& to_insert_type,
@@ -84,83 +82,67 @@ void test_template( GeoModel3D& geomodel,
 
     const MeshEntityType mesh_type( to_insert_type );
     if( geomodel.entity_type_manager().mesh_entity_manager.is_valid_type(
-            mesh_type ) )
-    {
+        mesh_type ) ) {
         in_mesh_entities.insert( { mesh_type, to_insert_id } );
-    }
-    else
-    {
+    } else {
         const GeologicalEntityType geological_type( to_insert_type );
         ringmesh_assert(
-            geomodel.entity_type_manager()
-                .geological_entity_manager.is_valid_type( geological_type ) );
+            geomodel.entity_type_manager().geological_entity_manager.is_valid_type(
+                geological_type ) );
         in_geological_entities.insert( { geological_type, to_insert_id } );
     }
 
     const GeoModelBuilder3D geomodel_builder( geomodel );
-    geomodel_builder.topology.get_dependent_entities(
-        in_mesh_entities, in_geological_entities );
-    check_element_of_a_set_are_in_another_set< gmme_id >(
-        in_mesh_entities, solution_gmme_id, "solution" );
-    check_element_of_a_set_are_in_another_set< gmge_id >(
-        in_geological_entities, solution_gmge_id, "solution" );
-    check_element_of_a_set_are_in_another_set< gmme_id >(
-        solution_gmme_id, in_mesh_entities, "output" );
-    check_element_of_a_set_are_in_another_set< gmge_id >(
-        solution_gmge_id, in_geological_entities, "output" );
+    geomodel_builder.topology.get_dependent_entities( in_mesh_entities,
+        in_geological_entities );
+    check_element_of_a_set_are_in_another_set< gmme_id >( in_mesh_entities,
+        solution_gmme_id, "solution" );
+    check_element_of_a_set_are_in_another_set< gmge_id >( in_geological_entities,
+        solution_gmge_id, "solution" );
+    check_element_of_a_set_are_in_another_set< gmme_id >( solution_gmme_id,
+        in_mesh_entities, "output" );
+    check_element_of_a_set_are_in_another_set< gmge_id >( solution_gmge_id,
+        in_geological_entities, "output" );
+}
+
+template< class ENTITY, typename T >
+void add_entities_in_set( std::set< T >& set )
+{
+    // Do nothing
+    ringmesh_unused( set );
+}
+
+template< class ENTITY, typename T >
+void add_entity_in_set( std::set< T >& set, int entity_id )
+{
+    set.emplace( ENTITY::type_name_static(), entity_id );
+}
+
+template< class ENTITY, typename T, typename ... Args >
+void add_entities_in_set(
+    std::set< T >& set,
+    const int& first_id,
+    const Args&... other_ids )
+{
+    add_entity_in_set< ENTITY >( set, first_id );
+    add_entities_in_set< ENTITY >( set, other_ids... );
 }
 
 void test_on_top_region( GeoModel3D& geomodel )
 {
-    std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
-                                                 31 },
-        { Corner3D::type_name_static(), 33 },
-        { Corner3D::type_name_static(), 54 },
-        { Corner3D::type_name_static(), 55 },
-        { Corner3D::type_name_static(), 56 },
-        { Corner3D::type_name_static(), 57 },
-        { Corner3D::type_name_static(), 58 },
-        { Corner3D::type_name_static(), 99 },
-        { Corner3D::type_name_static(), 125 },
-        { Corner3D::type_name_static(), 138 },
-        { Corner3D::type_name_static(), 139 },
-        { Line3D::type_name_static(), 41 }, { Line3D::type_name_static(), 43 },
-        { Line3D::type_name_static(), 68 }, { Line3D::type_name_static(), 69 },
-        { Line3D::type_name_static(), 70 }, { Line3D::type_name_static(), 71 },
-        { Line3D::type_name_static(), 72 }, { Line3D::type_name_static(), 73 },
-        { Line3D::type_name_static(), 137 },
-        { Line3D::type_name_static(), 141 },
-        { Line3D::type_name_static(), 151 },
-        { Line3D::type_name_static(), 184 },
-        { Line3D::type_name_static(), 189 },
-        { Line3D::type_name_static(), 213 },
-        { Line3D::type_name_static(), 215 },
-        { Line3D::type_name_static(), 217 },
-        { Line3D::type_name_static(), 220 },
-        { Line3D::type_name_static(), 243 },
-        { Line3D::type_name_static(), 244 },
-        { Line3D::type_name_static(), 248 },
-        { Surface3D::type_name_static(), 11 },
-        { Surface3D::type_name_static(), 37 },
-        { Surface3D::type_name_static(), 40 },
-        { Surface3D::type_name_static(), 60 },
-        { Surface3D::type_name_static(), 85 },
-        { Surface3D::type_name_static(), 91 },
-        { Surface3D::type_name_static(), 99 },
-        { Surface3D::type_name_static(), 110 },
-        { Surface3D::type_name_static(), 114 },
-        { Region3D::type_name_static(), 4 } };
+    std::set< gmme_id > solution_gmme_id;
+    add_entities_in_set< Corner3D >( solution_gmme_id, 31, 33, 54, 55, 56, 57, 58,
+        99, 125, 138, 139 );
+    add_entities_in_set< Line3D >( solution_gmme_id, 41, 43, 68, 69, 70, 71, 72, 73,
+        137, 141, 151, 184, 189, 213, 215, 217, 220, 243, 244, 248 );
+    add_entities_in_set< Surface3D >( solution_gmme_id, 11, 37, 40, 60, 85, 91, 99,
+        110, 114 );
+    add_entities_in_set< Region3D >( solution_gmme_id, 4 );
 
-    std::set< gmge_id > solution_gmge_id = {
-        { Contact3D::type_name_static(), 26 },
-        { Contact3D::type_name_static(), 27 },
-        { Contact3D::type_name_static(), 28 },
-        { Contact3D::type_name_static(), 78 },
-        { Contact3D::type_name_static(), 79 },
-        { Contact3D::type_name_static(), 83 },
-        { Interface3D::type_name_static(), 21 },
-        { Layer3D::type_name_static(), 0 },
-    };
+    std::set< gmge_id > solution_gmge_id;
+    add_entities_in_set< Contact3D >( solution_gmge_id, 26, 27, 28, 78, 79, 83 );
+    add_entities_in_set< Interface3D >( solution_gmge_id, 21 );
+    add_entities_in_set< Layer3D >( solution_gmge_id, 0 );
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
         Region3D::type_name_static().string(), 4 );
@@ -169,12 +151,11 @@ void test_on_top_region( GeoModel3D& geomodel )
 void test_on_surface_within_bottom_region_partially_connected_to_voi(
     GeoModel3D& geomodel )
 {
-    std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(), 103 },
-        { Surface3D::type_name_static(), 24 } };
+    std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(), 103 }, {
+        Surface3D::type_name_static(), 24 } };
 
-    std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(),
-                                                 36 },
-        { Interface3D::type_name_static(), 3 } };
+    std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(), 36 }, {
+        Interface3D::type_name_static(), 3 } };
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
         Surface3D::type_name_static().string(), 24 );
@@ -182,21 +163,12 @@ void test_on_surface_within_bottom_region_partially_connected_to_voi(
 
 void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
 {
-    std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(),
-                                                 170 },
-        { Line3D::type_name_static(), 172 },
-        { Line3D::type_name_static(), 173 },
-        { Line3D::type_name_static(), 175 },
-        { Surface3D::type_name_static(), 52 },
-        { Surface3D::type_name_static(), 53 },
-        { Surface3D::type_name_static(), 54 },
-        { Surface3D::type_name_static(), 55 },
-        { Surface3D::type_name_static(), 56 },
-        { Surface3D::type_name_static(), 57 } };
+    std::set< gmme_id > solution_gmme_id;
+    add_entities_in_set< Line3D >( solution_gmme_id, 170, 172, 173, 175 );
+    add_entities_in_set< Surface3D >( solution_gmme_id, 52, 53, 54, 55, 56, 57 );
 
-    std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(),
-                                                 55 },
-        { Interface3D::type_name_static(), 8 } };
+    std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(), 55 }, {
+        Interface3D::type_name_static(), 8 } };
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
         Interface3D::type_name_static().string(), 8 );
@@ -204,9 +176,9 @@ void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
 
 void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
 {
-    std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
-        135 } };
+    std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(), 135 } };
 
+    // No entity
     std::set< gmge_id > solution_gmge_id;
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
@@ -215,55 +187,20 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
 
 void test_on_top_layer( GeoModel3D& geomodel )
 {
-    std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
-                                                 31 },
-        { Corner3D::type_name_static(), 33 },
-        { Corner3D::type_name_static(), 54 },
-        { Corner3D::type_name_static(), 55 },
-        { Corner3D::type_name_static(), 56 },
-        { Corner3D::type_name_static(), 57 },
-        { Corner3D::type_name_static(), 58 },
-        { Corner3D::type_name_static(), 99 },
-        { Corner3D::type_name_static(), 125 },
-        { Corner3D::type_name_static(), 138 },
-        { Corner3D::type_name_static(), 139 },
-        { Line3D::type_name_static(), 41 }, { Line3D::type_name_static(), 43 },
-        { Line3D::type_name_static(), 68 }, { Line3D::type_name_static(), 69 },
-        { Line3D::type_name_static(), 70 }, { Line3D::type_name_static(), 71 },
-        { Line3D::type_name_static(), 72 }, { Line3D::type_name_static(), 73 },
-        { Line3D::type_name_static(), 137 },
-        { Line3D::type_name_static(), 141 },
-        { Line3D::type_name_static(), 151 },
-        { Line3D::type_name_static(), 184 },
-        { Line3D::type_name_static(), 189 },
-        { Line3D::type_name_static(), 213 },
-        { Line3D::type_name_static(), 215 },
-        { Line3D::type_name_static(), 217 },
-        { Line3D::type_name_static(), 220 },
-        { Line3D::type_name_static(), 243 },
-        { Line3D::type_name_static(), 244 },
-        { Line3D::type_name_static(), 248 },
-        { Surface3D::type_name_static(), 11 },
-        { Surface3D::type_name_static(), 37 },
-        { Surface3D::type_name_static(), 40 },
-        { Surface3D::type_name_static(), 60 },
-        { Surface3D::type_name_static(), 85 },
-        { Surface3D::type_name_static(), 91 },
-        { Surface3D::type_name_static(), 99 },
-        { Surface3D::type_name_static(), 110 },
-        { Surface3D::type_name_static(), 114 },
-        { Region3D::type_name_static(), 4 } };
 
-    std::set< gmge_id > solution_gmge_id = {
-        { Contact3D::type_name_static(), 26 },
-        { Contact3D::type_name_static(), 27 },
-        { Contact3D::type_name_static(), 28 },
-        { Contact3D::type_name_static(), 78 },
-        { Contact3D::type_name_static(), 79 },
-        { Contact3D::type_name_static(), 83 },
-        { Interface3D::type_name_static(), 21 },
-        { Layer3D::type_name_static(), 0 },
-    };
+    std::set< gmme_id > solution_gmme_id;
+    add_entities_in_set< Corner3D >( solution_gmme_id, 31, 33, 54, 55, 56, 57, 58,
+        99, 125, 138, 139 );
+    add_entities_in_set< Line3D >( solution_gmme_id, 41, 43, 68, 69, 70, 71, 72, 73,
+        137, 141, 151, 184, 189, 213, 215, 217, 220, 243, 244, 248 );
+    add_entities_in_set< Surface3D >( solution_gmme_id, 11, 37, 40, 60, 85, 91, 99,
+        110, 114 );
+    add_entities_in_set< Region3D >( solution_gmme_id, 4 );
+
+    std::set< gmge_id > solution_gmge_id;
+    add_entities_in_set< Contact3D >( solution_gmge_id, 26, 27, 28, 78, 79, 83 );
+    add_entities_in_set< Interface3D >( solution_gmge_id, 21 );
+    add_entities_in_set< Layer3D >( solution_gmge_id, 0 );
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
         Layer3D::type_name_static().string(), 0 );
@@ -280,7 +217,7 @@ void run_tests( GeoModel3D& geomodel )
 
 void load_geomodel( GeoModel3D& geomodel )
 {
-    std::string file_name{ ringmesh_test_data_path };
+    std::string file_name { ringmesh_test_data_path };
     file_name += "CloudSpin_fixed.ml";
 
     // No validity checks at loading
@@ -292,22 +229,17 @@ void load_geomodel( GeoModel3D& geomodel )
 
 int main()
 {
-    try
-    {
-        Logger::out(
-            "TEST", "Test GeoModelBuilderTopology::get_dependent_entities" );
+    try {
+        Logger::out( "TEST",
+            "Test GeoModelBuilderTopology::get_dependent_entities" );
 
         GeoModel3D geomodel;
         load_geomodel( geomodel );
         run_tests( geomodel );
-    }
-    catch( const RINGMeshException& e )
-    {
+    } catch( const RINGMeshException& e ) {
         Logger::err( e.category(), e.what() );
         return 1;
-    }
-    catch( const std::exception& e )
-    {
+    } catch( const std::exception& e ) {
         Logger::err( "Exception", e.what() );
         return 1;
     }
