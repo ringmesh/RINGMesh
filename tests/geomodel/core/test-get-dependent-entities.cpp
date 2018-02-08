@@ -35,6 +35,8 @@
 
 #include <ringmesh/ringmesh_tests_config.h>
 
+#include <geogram/basic/command_line.h>
+
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
@@ -111,9 +113,9 @@ void test_template( GeoModel3D& geomodel,
 void test_on_top_region( GeoModel3D& geomodel )
 {
     // Solution:
-    // Corners: 31, 33, 54, 55, 56, 57, 58, 93, 118, 128, 129.
-    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 131, 135, 144, 177, 182, 203, 205,
-    // 207, 210, 233, 234, 238.
+    // Corners: 31, 33, 54, 55, 56, 57, 58, 99, 125, 138, 139.
+    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 137, 141, 151, 184, 189, 213, 215,
+    // 217, 220, 243, 244, 248.
     // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
     // Region: 4.
     std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
@@ -124,26 +126,26 @@ void test_on_top_region( GeoModel3D& geomodel )
         { Corner3D::type_name_static(), 56 },
         { Corner3D::type_name_static(), 57 },
         { Corner3D::type_name_static(), 58 },
-        { Corner3D::type_name_static(), 93 },
-        { Corner3D::type_name_static(), 118 },
-        { Corner3D::type_name_static(), 128 },
-        { Corner3D::type_name_static(), 129 },
+        { Corner3D::type_name_static(), 99 },
+        { Corner3D::type_name_static(), 125 },
+        { Corner3D::type_name_static(), 138 },
+        { Corner3D::type_name_static(), 139 },
         { Line3D::type_name_static(), 41 }, { Line3D::type_name_static(), 43 },
         { Line3D::type_name_static(), 68 }, { Line3D::type_name_static(), 69 },
         { Line3D::type_name_static(), 70 }, { Line3D::type_name_static(), 71 },
         { Line3D::type_name_static(), 72 }, { Line3D::type_name_static(), 73 },
-        { Line3D::type_name_static(), 131 },
-        { Line3D::type_name_static(), 135 },
-        { Line3D::type_name_static(), 144 },
-        { Line3D::type_name_static(), 177 },
-        { Line3D::type_name_static(), 182 },
-        { Line3D::type_name_static(), 203 },
-        { Line3D::type_name_static(), 205 },
-        { Line3D::type_name_static(), 207 },
-        { Line3D::type_name_static(), 210 },
-        { Line3D::type_name_static(), 233 },
-        { Line3D::type_name_static(), 234 },
-        { Line3D::type_name_static(), 238 },
+        { Line3D::type_name_static(), 137 },
+        { Line3D::type_name_static(), 141 },
+        { Line3D::type_name_static(), 151 },
+        { Line3D::type_name_static(), 184 },
+        { Line3D::type_name_static(), 189 },
+        { Line3D::type_name_static(), 213 },
+        { Line3D::type_name_static(), 215 },
+        { Line3D::type_name_static(), 217 },
+        { Line3D::type_name_static(), 220 },
+        { Line3D::type_name_static(), 243 },
+        { Line3D::type_name_static(), 244 },
+        { Line3D::type_name_static(), 248 },
         { Surface3D::type_name_static(), 11 },
         { Surface3D::type_name_static(), 37 },
         { Surface3D::type_name_static(), 40 },
@@ -179,10 +181,10 @@ void test_on_surface_within_bottom_region_partially_connected_to_voi(
 {
     // Solution:
     // Corner: none.
-    // Line: 98.
+    // Line: 103.
     // Surface: 24.
     // Region: none.
-    std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(), 98 },
+    std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(), 103 },
         { Surface3D::type_name_static(), 24 } };
 
     // Solution:
@@ -201,14 +203,14 @@ void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
 {
     // Solution:
     // Corner: none.
-    // Lines: 163, 165, 166, 168.
+    // Lines: 170, 172, 173, 175.
     // Surfaces: 52, 53, 54, 55, 56, 57.
     // Region: none.
     std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(),
-                                                 163 },
-        { Line3D::type_name_static(), 165 },
-        { Line3D::type_name_static(), 166 },
-        { Line3D::type_name_static(), 168 },
+                                                 170 },
+        { Line3D::type_name_static(), 172 },
+        { Line3D::type_name_static(), 173 },
+        { Line3D::type_name_static(), 175 },
         { Surface3D::type_name_static(), 52 },
         { Surface3D::type_name_static(), 53 },
         { Surface3D::type_name_static(), 54 },
@@ -251,9 +253,9 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
 void test_on_top_layer( GeoModel3D& geomodel )
 {
     // Solution:
-    // Corners: 31, 33, 54, 55, 56, 57, 58, 93, 118, 128, 129.
-    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 131, 135, 144, 177, 182, 203, 205,
-    // 207, 210, 233, 234, 238.
+    // Corners: 31, 33, 54, 55, 56, 57, 58, 99, 125, 138, 139.
+    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 137, 141, 151, 184, 189, 213, 215,
+    // 217, 220, 243, 244, 248.
     // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
     // Region: 4.
     std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
@@ -264,26 +266,26 @@ void test_on_top_layer( GeoModel3D& geomodel )
         { Corner3D::type_name_static(), 56 },
         { Corner3D::type_name_static(), 57 },
         { Corner3D::type_name_static(), 58 },
-        { Corner3D::type_name_static(), 93 },
-        { Corner3D::type_name_static(), 118 },
-        { Corner3D::type_name_static(), 128 },
-        { Corner3D::type_name_static(), 129 },
+        { Corner3D::type_name_static(), 99 },
+        { Corner3D::type_name_static(), 125 },
+        { Corner3D::type_name_static(), 138 },
+        { Corner3D::type_name_static(), 139 },
         { Line3D::type_name_static(), 41 }, { Line3D::type_name_static(), 43 },
         { Line3D::type_name_static(), 68 }, { Line3D::type_name_static(), 69 },
         { Line3D::type_name_static(), 70 }, { Line3D::type_name_static(), 71 },
         { Line3D::type_name_static(), 72 }, { Line3D::type_name_static(), 73 },
-        { Line3D::type_name_static(), 131 },
-        { Line3D::type_name_static(), 135 },
-        { Line3D::type_name_static(), 144 },
-        { Line3D::type_name_static(), 177 },
-        { Line3D::type_name_static(), 182 },
-        { Line3D::type_name_static(), 203 },
-        { Line3D::type_name_static(), 205 },
-        { Line3D::type_name_static(), 207 },
-        { Line3D::type_name_static(), 210 },
-        { Line3D::type_name_static(), 233 },
-        { Line3D::type_name_static(), 234 },
-        { Line3D::type_name_static(), 238 },
+        { Line3D::type_name_static(), 137 },
+        { Line3D::type_name_static(), 141 },
+        { Line3D::type_name_static(), 151 },
+        { Line3D::type_name_static(), 184 },
+        { Line3D::type_name_static(), 189 },
+        { Line3D::type_name_static(), 213 },
+        { Line3D::type_name_static(), 215 },
+        { Line3D::type_name_static(), 217 },
+        { Line3D::type_name_static(), 220 },
+        { Line3D::type_name_static(), 243 },
+        { Line3D::type_name_static(), 244 },
+        { Line3D::type_name_static(), 248 },
         { Surface3D::type_name_static(), 11 },
         { Surface3D::type_name_static(), 37 },
         { Surface3D::type_name_static(), 40 },
@@ -328,13 +330,11 @@ void load_geomodel( GeoModel3D& geomodel )
     std::string file_name{ ringmesh_test_data_path };
     file_name += "CloudSpin_fixed.ml";
 
+    // No validity checks at loading
+    GEO::CmdLine::set_arg( "validity:do_not_check", "A" );
+
     // Load the model
-    auto init_model_is_valid = geomodel_load( geomodel, file_name );
-    if( !init_model_is_valid )
-    {
-        throw RINGMeshException( "RINGMesh Test", "Input test model ",
-            geomodel.name(), " must be valid." );
-    }
+    geomodel_load( geomodel, file_name );
 }
 
 int main()
