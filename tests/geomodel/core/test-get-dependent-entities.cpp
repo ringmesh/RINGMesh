@@ -112,19 +112,13 @@ void add_entities_in_set( std::set< T >& set )
     ringmesh_unused( set );
 }
 
-template< class ENTITY, typename T >
-void add_entity_in_set( std::set< T >& set, int entity_id )
-{
-    set.emplace( ENTITY::type_name_static(), entity_id );
-}
-
 template< class ENTITY, typename T, typename ... Args >
 void add_entities_in_set(
     std::set< T >& set,
     const int& first_id,
     const Args&... other_ids )
 {
-    add_entity_in_set< ENTITY >( set, first_id );
+    set.emplace( ENTITY::type_name_static(), first_id );
     add_entities_in_set< ENTITY >( set, other_ids... );
 }
 
