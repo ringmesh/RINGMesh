@@ -39,6 +39,8 @@ elseif(NOT CMAKE_COMPILER_IS_GNUCXX)
     message(FATAL_ERROR "Compiler is not GNU gcc! Aborting...")
 endif()
 
+set(CMAKE_COVERAGE_POSTFIX "d")
+
 add_compile_options(-g -O0 -fno-elide-constructors -fprofile-arcs -ftest-coverage -fno-inline -fno-inline-small-functions  -fno-default-inline)
 if(CMAKE_C_COMPILER_ID STREQUAL "GNU")
     link_libraries(gcov)
