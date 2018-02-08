@@ -74,8 +74,8 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        - ldd ringmesh/bin/test/test-plugin-manager
-        - objdump -x ringmesh/bin/test/test-plugin-manager | grep RPATH
+        - ldd ringmesh/bin/tests/test-plugin-manager
+        - objdump -x ringmesh/bin/tests/test-plugin-manager | grep RPATH
         - ls ringmesh/lib
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
         - cmake --build ringmesh --target package
