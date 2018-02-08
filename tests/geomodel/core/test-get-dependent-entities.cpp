@@ -112,12 +112,6 @@ void test_template( GeoModel3D& geomodel,
 
 void test_on_top_region( GeoModel3D& geomodel )
 {
-    // Solution:
-    // Corners: 31, 33, 54, 55, 56, 57, 58, 99, 125, 138, 139.
-    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 137, 141, 151, 184, 189, 213, 215,
-    // 217, 220, 243, 244, 248.
-    // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
-    // Region: 4.
     std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
                                                  31 },
         { Corner3D::type_name_static(), 33 },
@@ -157,10 +151,6 @@ void test_on_top_region( GeoModel3D& geomodel )
         { Surface3D::type_name_static(), 114 },
         { Region3D::type_name_static(), 4 } };
 
-    // Solution:
-    // Contacts: 26, 27, 28, 78, 79, 83.
-    // Interface: 21.
-    // Layer: 0.
     std::set< gmge_id > solution_gmge_id = {
         { Contact3D::type_name_static(), 26 },
         { Contact3D::type_name_static(), 27 },
@@ -179,18 +169,9 @@ void test_on_top_region( GeoModel3D& geomodel )
 void test_on_surface_within_bottom_region_partially_connected_to_voi(
     GeoModel3D& geomodel )
 {
-    // Solution:
-    // Corner: none.
-    // Line: 103.
-    // Surface: 24.
-    // Region: none.
     std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(), 103 },
         { Surface3D::type_name_static(), 24 } };
 
-    // Solution:
-    // Contact: 36.
-    // Interface: 3.
-    // Layer: none.
     std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(),
                                                  36 },
         { Interface3D::type_name_static(), 3 } };
@@ -201,11 +182,6 @@ void test_on_surface_within_bottom_region_partially_connected_to_voi(
 
 void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
 {
-    // Solution:
-    // Corner: none.
-    // Lines: 170, 172, 173, 175.
-    // Surfaces: 52, 53, 54, 55, 56, 57.
-    // Region: none.
     std::set< gmme_id > solution_gmme_id = { { Line3D::type_name_static(),
                                                  170 },
         { Line3D::type_name_static(), 172 },
@@ -218,10 +194,6 @@ void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
         { Surface3D::type_name_static(), 56 },
         { Surface3D::type_name_static(), 57 } };
 
-    // Solution:
-    // Contact: 55.
-    // Interface: 8.
-    // Layer: none.
     std::set< gmge_id > solution_gmge_id = { { Contact3D::type_name_static(),
                                                  55 },
         { Interface3D::type_name_static(), 8 } };
@@ -232,18 +204,9 @@ void test_on_fault_not_connected_to_any_surface( GeoModel3D& geomodel )
 
 void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
 {
-    // Solution:
-    // Corner: 135.
-    // Line: none.
-    // Surface: none.
-    // Region: none.
     std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
         135 } };
 
-    // Solution:
-    // Contact: none.
-    // Interface: none.
-    // Layer: none.
     std::set< gmge_id > solution_gmge_id;
 
     test_template( geomodel, solution_gmme_id, solution_gmge_id,
@@ -252,12 +215,6 @@ void test_on_corner_on_botom_corner_voi( GeoModel3D& geomodel )
 
 void test_on_top_layer( GeoModel3D& geomodel )
 {
-    // Solution:
-    // Corners: 31, 33, 54, 55, 56, 57, 58, 99, 125, 138, 139.
-    // Lines: 41, 43, 68, 69, 70, 71, 72, 73, 137, 141, 151, 184, 189, 213, 215,
-    // 217, 220, 243, 244, 248.
-    // Surfaces: 11, 37, 40, 60, 85, 91, 99, 110, 114.
-    // Region: 4.
     std::set< gmme_id > solution_gmme_id = { { Corner3D::type_name_static(),
                                                  31 },
         { Corner3D::type_name_static(), 33 },
@@ -297,10 +254,6 @@ void test_on_top_layer( GeoModel3D& geomodel )
         { Surface3D::type_name_static(), 114 },
         { Region3D::type_name_static(), 4 } };
 
-    // Solution:
-    // Contacts: 26, 27, 28, 78, 79, 83.
-    // Interface: 21.
-    // Layer: 0.
     std::set< gmge_id > solution_gmge_id = {
         { Contact3D::type_name_static(), 26 },
         { Contact3D::type_name_static(), 27 },
