@@ -71,8 +71,12 @@ void test_geomodel_geological_entity_factories()
 int main()
 {
     try
-    {
-        PluginManager::load_plugin( "RINGMesh_geomodel_core" );
+    {    
+        std::string geomodel_core = "RINGMesh_geomodel_core";
+#ifdef RINGMESH_DEBUG
+    geomodel_core += "d";
+#endif
+        PluginManager::load_plugin( geomodel_core );
 
         Logger::out( "TEST", "Are geological entity factories initialized?" );
         test_geomodel_geological_entity_factories();
