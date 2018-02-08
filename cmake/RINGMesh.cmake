@@ -72,12 +72,14 @@ if(WIN32)
         DESTINATION
             bin/${CMAKE_CFG_INTDIR}
     )
+	if(RINGMESH_WITH_GRAPHICS)
     install(
         FILES
             ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
         DESTINATION
             bin/${CMAKE_CFG_INTDIR}
     )
+	endif
 endif()
 
 include(GenerateExportHeader)
