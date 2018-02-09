@@ -57,7 +57,7 @@ option(RINGMESH_WITH_GUI "Compile GUI bindings" OFF)
 # Optional custom steps 
 option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)
 option(USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
-mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE USE_SUPERBUILD)
+mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE USE_SUPERBUILD RINGMESH_WITH_GUI)
 
 # Select Available Mesher 
 # Each selected mesher will increase the RINGMesh functionalities.
