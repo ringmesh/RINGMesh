@@ -152,9 +152,14 @@ namespace
      */
     struct BorderPolygon
     {
-        BorderPolygon(
-            index_t surface_in, index_t polygon_in, index_t v0_in, index_t v1_in )
-            : v0( v0_in ), v1( v1_in ), surface( surface_in ), polygon( polygon_in )
+        BorderPolygon( index_t surface_in,
+            index_t polygon_in,
+            index_t v0_in,
+            index_t v1_in )
+            : v0( v0_in ),
+              v1( v1_in ),
+              surface( surface_in ),
+              polygon( polygon_in )
         {
         }
 
@@ -691,7 +696,8 @@ namespace
         bool propagate( index_t t, bool backward ) const
         {
             return t != cur_border_polygon_ && !is_visited( t )
-                && equal_to_line_adjacent_surfaces( t ) && !vertex_is_on_corner( t, backward );
+                   && equal_to_line_adjacent_surfaces( t )
+                   && !vertex_is_on_corner( t, backward );
         }
 
         bool is_visited( index_t i ) const
@@ -701,14 +707,16 @@ namespace
 
         bool vertex_is_on_corner( index_t t, bool backward ) const
         {
-            const auto& surfaces = [t, backward, this]{
+            const auto& surfaces = [t, backward, this] {
                 if( backward )
                 {
-                    return surfaces_around_vertices_[this->border_polygons_[t].v1];
+                    return surfaces_around_vertices_[this->border_polygons_[t]
+                                                         .v1];
                 }
                 else
                 {
-                    return surfaces_around_vertices_[this->border_polygons_[t].v0];
+                    return surfaces_around_vertices_[this->border_polygons_[t]
+                                                         .v0];
                 }
             }();
             for( auto surface : surfaces )
