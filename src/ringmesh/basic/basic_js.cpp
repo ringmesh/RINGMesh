@@ -33,30 +33,15 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/ringmesh_assert.h>
+#include <ringmesh/basic/box.h>
 
-#include <geogram/basic/assert.h>
-
-/*!
- * @file Custom assertions
- */
+#include <nbind/nbind.h>
 
 namespace RINGMesh
 {
-    void ringmesh_assertion_failed(
-        const std::string& condition_string, const std::string& file, int line )
+    NBIND_CLASS( Box3D )
     {
-#ifdef RINGMESH_WINDOWS
-        DebugBreak();
-#endif
-        GEO::geo_assertion_failed( condition_string, file, line );
-    }
-
-    void ringmesh_should_not_have_reached( const std::string& file, int line )
-    {
-#ifdef RINGMESH_WINDOWS
-        DebugBreak();
-#endif
-        GEO::geo_should_not_have_reached( file, line );
+        construct<>();
+        method( initialized );
     }
 } // namespace RINGMesh

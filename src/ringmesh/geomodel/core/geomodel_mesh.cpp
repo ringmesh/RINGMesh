@@ -596,7 +596,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshVerticesBase< DIMENSION >::nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshVerticesBase< DIMENSION >::nn_search() const
     {
         test_and_initialize();
         return mesh_->vertex_nn_search();
@@ -1945,14 +1946,16 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshCells< DIMENSION >::cell_nn_search() const
     {
         test_and_initialize();
         return mesh_->cell_nn_search();
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshCells< DIMENSION >::cell_facet_nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshCells< DIMENSION >::cell_facet_nn_search() const
     {
         test_and_initialize();
         return mesh_->cell_facet_nn_search();
@@ -2136,13 +2139,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshEdges< DIMENSION >::attribute_manager() const
+    GEO::AttributesManager&
+        GeoModelMeshEdges< DIMENSION >::attribute_manager() const
     {
         return mesh_->edge_attribute_manager();
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshEdges< DIMENSION >::nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshEdges< DIMENSION >::nn_search() const
     {
         test_and_initialize();
         return mesh_->edge_nn_search();
@@ -2197,13 +2202,15 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshPolygonsBase< DIMENSION >::attribute_manager() const
+    GEO::AttributesManager&
+        GeoModelMeshPolygonsBase< DIMENSION >::attribute_manager() const
     {
         return mesh_->polygon_attribute_manager();
     }
 
     template < index_t DIMENSION >
-    const NNSearch< DIMENSION >& GeoModelMeshPolygonsBase< DIMENSION >::nn_search() const
+    const NNSearch< DIMENSION >&
+        GeoModelMeshPolygonsBase< DIMENSION >::nn_search() const
     {
         test_and_initialize();
         return mesh_->polygon_nn_search();
@@ -2866,7 +2873,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    GEO::AttributesManager& GeoModelMeshWells< DIMENSION >::attribute_manager() const
+    GEO::AttributesManager&
+        GeoModelMeshWells< DIMENSION >::attribute_manager() const
     {
         return mesh_->edge_attribute_manager();
     }
@@ -2957,9 +2965,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModelMesh< 3 >::~GeoModelMesh()
-    {
-    }
+    GeoModelMesh< 3 >::~GeoModelMesh() {}
 
     void GeoModelMesh< 3 >::change_volume_mesh_data_structure(
         const MeshType& type )

@@ -185,7 +185,7 @@ protected:                                                                     \
             return mesh_->facets.attributes();
         }
 
-        bool polygons_are_simplicies() const override
+        bool polygons_are_simplices() const override
         {
             return mesh_->facets.are_simplices();
         }

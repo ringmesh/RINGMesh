@@ -1,0 +1,18 @@
+{
+  "name": "ringmesh",
+  "version": "5.0.0",
+  "license": "BSD-3-Clause",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ringmesh/RINGMesh.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ringmesh/RINGMesh/issues"
+  },
+  "homepage": {
+    "url": "http://ringmesh.org"
+  },
+  "devDependencies": {
+    "node-cmake": "^2.3.2"
+  }
+}
