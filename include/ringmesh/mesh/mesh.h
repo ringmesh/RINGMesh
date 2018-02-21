@@ -386,7 +386,7 @@ namespace RINGMesh
          * polygons are triangles, storage and access is optimized.
          * @return True if all polygons are triangles and False otherwise.
          */
-        virtual bool polygons_are_simplicies() const = 0;
+        virtual bool polygons_are_simplices() const = 0;
 
         /*!
          * return true if the polygon \param polygon_id is a triangle
