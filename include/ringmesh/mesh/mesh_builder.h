@@ -45,18 +45,9 @@
 #include <ringmesh/basic/factory.h>
 
 namespace RINGMesh {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-    FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
-    FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
-    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
 
-    struct CellLocalFacet;
     struct EdgeLocalVertex;
-    struct ElementLocalVertex;
-    struct PolygonLocalEdge;
 } // namespace RINGMesh
 
 namespace RINGMesh {

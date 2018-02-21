@@ -52,7 +52,6 @@ namespace GEO
 
 namespace RINGMesh
 {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( MeshBaseBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
@@ -60,7 +59,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
 
-    struct EdgeLocalVertex;
     struct ElementLocalVertex;
     struct PolygonLocalEdge;
     struct CellLocalFacet;
