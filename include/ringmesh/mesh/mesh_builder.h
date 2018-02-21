@@ -44,7 +44,8 @@
 
 #include <ringmesh/basic/factory.h>
 
-namespace RINGMesh {
+namespace RINGMesh
+{
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
@@ -59,10 +60,12 @@ namespace RINGMesh {
     struct PolygonLocalEdge;
 } // namespace RINGMesh
 
-namespace RINGMesh {
-    template< index_t DIMENSION >
-    class MeshBaseBuilder {
-    ringmesh_disable_copy_and_move( MeshBaseBuilder );
+namespace RINGMesh
+{
+    template < index_t DIMENSION >
+    class MeshBaseBuilder
+    {
+        ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
 
     public:
@@ -176,8 +179,7 @@ namespace RINGMesh {
          * vertex.
          */
         virtual void do_copy(
-            const MeshBase< DIMENSION >& rhs,
-            bool copy_attributes ) = 0;
+            const MeshBase< DIMENSION >& rhs, bool copy_attributes ) = 0;
         /*!
          * @brief Removes all the entities and attributes of this mesh.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -194,8 +196,7 @@ namespace RINGMesh {
          * @return reference to the point that corresponds to the vertex.
          */
         virtual void do_set_vertex(
-            index_t v_id,
-            const vecn< DIMENSION >& vertex ) = 0;
+            index_t v_id, const vecn< DIMENSION >& vertex ) = 0;
         /*!
          * @brief Creates a new vertex.
          * @return the index of the created vertex
@@ -219,7 +220,8 @@ namespace RINGMesh {
          * to_delete[e] is true,
          * then entity e will be destroyed, else it will be kept.
          */
-        virtual void do_delete_vertices( const std::vector< bool >& to_delete ) = 0;
+        virtual void do_delete_vertices(
+            const std::vector< bool >& to_delete ) = 0;
         /*!
          * @brief Removes all the vertices and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -228,7 +230,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        virtual void do_clear_vertices( bool keep_attributes, bool keep_memory ) = 0;
+        virtual void do_clear_vertices(
+            bool keep_attributes, bool keep_memory ) = 0;
         virtual void do_permute_vertices(
             const std::vector< index_t >& permutation ) = 0;
 
@@ -238,11 +241,12 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
-    template< index_t DIMENSION >
-    class PointSetMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    template < index_t DIMENSION >
+    class PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
-        create_builder( PointSetMesh< DIMENSION >& mesh );
+            create_builder( PointSetMesh< DIMENSION >& mesh );
 
         void remove_isolated_vertices()
         {
@@ -267,15 +271,16 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( PointSetMeshBuilder );
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     using PointSetMeshBuilderFactory = Factory< MeshType,
-    PointSetMeshBuilder< DIMENSION >,
-    PointSetMesh< DIMENSION >& >;
+        PointSetMeshBuilder< DIMENSION >,
+        PointSetMesh< DIMENSION >& >;
 
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
-    template< index_t DIMENSION >
-    class LineMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    template < index_t DIMENSION >
+    class LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
             LineMesh< DIMENSION >& mesh );
@@ -304,8 +309,7 @@ namespace RINGMesh {
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         void set_edge_vertex(
-            const EdgeLocalVertex& edge_local_vertex,
-            index_t vertex_id );
+            const EdgeLocalVertex& edge_local_vertex, index_t vertex_id );
 
         /*!
          * @brief Deletes a set of edges.
@@ -315,8 +319,7 @@ namespace RINGMesh {
          * @param[in] remove_isolated_vertices if true, then the vertices
          * that are no longer incident to any entity are deleted.
          */
-        void delete_edges(
-            const std::vector< bool >& to_delete,
+        void delete_edges( const std::vector< bool >& to_delete,
             bool remove_isolated_vertices );
 
         /*!
@@ -384,15 +387,15 @@ namespace RINGMesh {
          * \param edge_id. Index between 0 and @function nb() - 1.
          */
         virtual void do_set_edge_vertex(
-            const EdgeLocalVertex& edge_local_vertex,
-            index_t vertex_id ) = 0;
+            const EdgeLocalVertex& edge_local_vertex, index_t vertex_id ) = 0;
         /*!
          * @brief Deletes a set of edges.
          * @param[in] to_delete     a vector of size @function nb().
          * If to_delete[e] is true, then entity e will be destroyed, else it
          * will be kept.
          */
-        virtual void do_delete_edges( const std::vector< bool >& to_delete ) = 0;
+        virtual void do_delete_edges(
+            const std::vector< bool >& to_delete ) = 0;
         /*!
          * @brief Removes all the edges and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -401,7 +404,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        virtual void do_clear_edges( bool keep_attributes, bool keep_memory ) = 0;
+        virtual void do_clear_edges(
+            bool keep_attributes, bool keep_memory ) = 0;
         virtual void do_permute_edges(
             const std::vector< index_t >& permutation ) = 0;
 
@@ -411,18 +415,19 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( LineMeshBuilder );
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     using LineMeshBuilderFactory = Factory< MeshType,
-    LineMeshBuilder< DIMENSION >,
-    LineMesh< DIMENSION >& >;
+        LineMeshBuilder< DIMENSION >,
+        LineMesh< DIMENSION >& >;
 
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
-    template< index_t DIMENSION >
-    class SurfaceMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    template < index_t DIMENSION >
+    class SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
-        create_builder( SurfaceMesh< DIMENSION >& mesh );
+            create_builder( SurfaceMesh< DIMENSION >& mesh );
 
         /*!@}
          * \name Polygon related methods
@@ -434,16 +439,17 @@ namespace RINGMesh {
          * @param[in] polygon_ptr is the vector addressing the first polygon
          * vertex for each polygon.
          */
-        void create_polygons(
-            const std::vector< index_t >& polygons,
+        void create_polygons( const std::vector< index_t >& polygons,
             const std::vector< index_t >& polygon_ptr )
         {
-            for( auto p : range( polygon_ptr.size() - 1 ) ) {
-                index_t first { polygon_ptr[p] };
-                index_t last { polygon_ptr[p + 1] };
-                index_t nb_to_copy { last - first };
+            for( auto p : range( polygon_ptr.size() - 1 ) )
+            {
+                index_t first{ polygon_ptr[p] };
+                index_t last{ polygon_ptr[p + 1] };
+                index_t nb_to_copy{ last - first };
                 std::vector< index_t > polygon_vertices( nb_to_copy );
-                for( auto i : range( nb_to_copy ) ) {
+                for( auto i : range( nb_to_copy ) )
+                {
                     polygon_vertices[i] = polygons[first + i];
                 }
                 do_create_polygon( polygon_vertices );
@@ -494,8 +500,7 @@ namespace RINGMesh {
          * polygon \param polygon_id. Index between 0 and @function nb() - 1.
          */
         void set_polygon_vertex(
-            const ElementLocalVertex& polygon_local_vertex,
-            index_t vertex_id )
+            const ElementLocalVertex& polygon_local_vertex, index_t vertex_id )
         {
             do_set_polygon_vertex( polygon_local_vertex, vertex_id );
             clear_polygon_linked_objects();
@@ -511,8 +516,7 @@ namespace RINGMesh {
          * on the border.
          */
         void set_polygon_adjacent(
-            const PolygonLocalEdge& polygon_local_edge,
-            index_t specifies )
+            const PolygonLocalEdge& polygon_local_edge, index_t specifies )
         {
             do_set_polygon_adjacent( polygon_local_edge, specifies );
         }
@@ -536,24 +540,29 @@ namespace RINGMesh {
         {
             std::vector< index_t > polygons_to_connect(
                 surface_mesh_.nb_polygons() );
-            std::iota( polygons_to_connect.begin(), polygons_to_connect.end(), 0 );
+            std::iota(
+                polygons_to_connect.begin(), polygons_to_connect.end(), 0 );
             connect_polygons( polygons_to_connect );
         }
-        void connect_polygons( const std::vector< index_t >& polygons_to_connect )
+        void connect_polygons(
+            const std::vector< index_t >& polygons_to_connect )
         {
             // Initialization of the number of local vertices
-            index_t nb_local_vertices { 0 };
-            for( auto polygon : polygons_to_connect ) {
-                nb_local_vertices += this->surface_mesh_.nb_polygon_vertices(
-                    polygon );
+            index_t nb_local_vertices{ 0 };
+            for( auto polygon : polygons_to_connect )
+            {
+                nb_local_vertices +=
+                    this->surface_mesh_.nb_polygon_vertices( polygon );
             }
 
             // Initialization of the polygon vertices
             std::vector< ElementLocalVertex > polygon_vertices;
             polygon_vertices.reserve( nb_local_vertices );
-            for( auto polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect )
+            {
                 for( auto v : range(
-                    this->surface_mesh_.nb_polygon_vertices( polygon ) ) ) {
+                         this->surface_mesh_.nb_polygon_vertices( polygon ) ) )
+                {
                     polygon_vertices.emplace_back( polygon, v );
                 }
             }
@@ -562,48 +571,61 @@ namespace RINGMesh {
                 nb_local_vertices, NO_ID );
             std::vector< index_t > vertex2polygon_local_vertex(
                 this->surface_mesh_.nb_vertices(), NO_ID );
-            index_t local_vertex_count { 0 };
-            for( auto polygon : polygons_to_connect ) {
-                for( index_t v { 0 };
-                    v < this->surface_mesh_.nb_polygon_vertices( polygon );
-                    v++, local_vertex_count++ ) {
-                    auto vertex = this->surface_mesh_.polygon_vertex(
-                        { polygon, v } );
+            index_t local_vertex_count{ 0 };
+            for( auto polygon : polygons_to_connect )
+            {
+                for( index_t v{ 0 };
+                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
+                     v++, local_vertex_count++ )
+                {
+                    auto vertex =
+                        this->surface_mesh_.polygon_vertex( { polygon, v } );
                     next_local_vertex_around_vertex[local_vertex_count] =
                         vertex2polygon_local_vertex[vertex];
                     vertex2polygon_local_vertex[vertex] = local_vertex_count;
                 }
             }
             local_vertex_count = 0;
-            for( auto polygon : polygons_to_connect ) {
+            for( auto polygon : polygons_to_connect )
+            {
                 for( index_t v = 0;
-                    v < this->surface_mesh_.nb_polygon_vertices( polygon );
-                    v++, local_vertex_count++ ) {
-                    if( !this->surface_mesh_.is_edge_on_border( { polygon, v } ) ) {
+                     v < this->surface_mesh_.nb_polygon_vertices( polygon );
+                     v++, local_vertex_count++ )
+                {
+                    if( !this->surface_mesh_.is_edge_on_border(
+                            { polygon, v } ) )
+                    {
                         continue;
                     }
-                    auto vertex = this->surface_mesh_.polygon_vertex(
-                        { polygon, v } );
+                    auto vertex =
+                        this->surface_mesh_.polygon_vertex( { polygon, v } );
                     auto next_vertex = this->surface_mesh_.polygon_vertex(
-                        this->surface_mesh_.next_polygon_vertex( { polygon, v } ) );
-                    for( auto local_vertex = vertex2polygon_local_vertex[next_vertex];
-                        local_vertex != NO_ID; local_vertex =
-                            next_local_vertex_around_vertex[local_vertex] ) {
-                        if( local_vertex == local_vertex_count ) {
+                        this->surface_mesh_.next_polygon_vertex(
+                            { polygon, v } ) );
+                    for( auto local_vertex =
+                             vertex2polygon_local_vertex[next_vertex];
+                         local_vertex != NO_ID;
+                         local_vertex =
+                             next_local_vertex_around_vertex[local_vertex] )
+                    {
+                        if( local_vertex == local_vertex_count )
+                        {
                             continue;
                         }
-                        auto adj_polygon = polygon_vertices[local_vertex].element_id;
+                        auto adj_polygon =
+                            polygon_vertices[local_vertex].element_id;
                         auto adj_local_vertex =
                             polygon_vertices[local_vertex].local_vertex_id;
-                        auto adj_next_vertex = this->surface_mesh_.polygon_vertex(
-                            this->surface_mesh_.next_polygon_vertex( {
-                                adj_polygon, adj_local_vertex } ) );
-                        if( adj_next_vertex == vertex ) {
-                            this->set_polygon_adjacent( { polygon, v },
-                                adj_polygon );
-                            this->set_polygon_adjacent( { adj_polygon,
-                                                          adj_local_vertex },
-                                polygon );
+                        auto adj_next_vertex =
+                            this->surface_mesh_.polygon_vertex(
+                                this->surface_mesh_.next_polygon_vertex(
+                                    { adj_polygon, adj_local_vertex } ) );
+                        if( adj_next_vertex == vertex )
+                        {
+                            this->set_polygon_adjacent(
+                                { polygon, v }, adj_polygon );
+                            this->set_polygon_adjacent(
+                                { adj_polygon, adj_local_vertex }, polygon );
                             break;
                         }
                     }
@@ -625,12 +647,12 @@ namespace RINGMesh {
          * are
          * no longer incident to any entity are deleted.
          */
-        void delete_polygons(
-            const std::vector< bool >& to_delete,
+        void delete_polygons( const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
             do_delete_polygons( to_delete );
-            if( remove_isolated_vertices ) {
+            if( remove_isolated_vertices )
+            {
                 this->remove_isolated_vertices();
             }
             clear_polygon_linked_objects();
@@ -718,8 +740,7 @@ namespace RINGMesh {
          * on the border.
          */
         virtual void do_set_polygon_adjacent(
-            const PolygonLocalEdge& polygon_local_edge,
-            index_t specifies ) = 0;
+            const PolygonLocalEdge& polygon_local_edge, index_t specifies ) = 0;
         /*!
          * @brief Removes all the polygons and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -728,7 +749,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        virtual void do_clear_polygons( bool keep_attributes, bool keep_memory ) = 0;
+        virtual void do_clear_polygons(
+            bool keep_attributes, bool keep_memory ) = 0;
 
         virtual void do_permute_polygons(
             const std::vector< index_t >& permutation ) = 0;
@@ -738,7 +760,8 @@ namespace RINGMesh {
          * If to_delete[e] is true, then entity e will be destroyed, else it
          * will be kept.
          */
-        virtual void do_delete_polygons( const std::vector< bool >& to_delete ) = 0;
+        virtual void do_delete_polygons(
+            const std::vector< bool >& to_delete ) = 0;
 
     protected:
         SurfaceMeshBase< DIMENSION >& surface_mesh_;
@@ -746,15 +769,16 @@ namespace RINGMesh {
 
     ALIAS_2D_AND_3D( SurfaceMeshBuilder );
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     using SurfaceMeshBuilderFactory = Factory< MeshType,
-    SurfaceMeshBuilder< DIMENSION >,
-    SurfaceMesh< DIMENSION >& >;
+        SurfaceMeshBuilder< DIMENSION >,
+        SurfaceMesh< DIMENSION >& >;
 
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
-    template< index_t DIMENSION >
-    class VolumeMeshBuilder: public MeshBaseBuilder< DIMENSION > {
+    template < index_t DIMENSION >
+    class VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 
     public:
@@ -797,8 +821,7 @@ namespace RINGMesh {
          * @function nb() - 1.
          */
         void set_cell_vertex(
-            const ElementLocalVertex& cell_local_vertex,
-            index_t vertex_id )
+            const ElementLocalVertex& cell_local_vertex, index_t vertex_id )
         {
             do_set_cell_vertex( cell_local_vertex, vertex_id );
             clear_cell_linked_objects();
@@ -810,8 +833,7 @@ namespace RINGMesh {
          * \param corner_index is incident to
          */
         void set_cell_corner_vertex_index(
-            index_t corner_index,
-            index_t vertex_index )
+            index_t corner_index, index_t vertex_index )
         {
             do_set_cell_corner_vertex_index( corner_index, vertex_index );
             clear_cell_linked_objects();
@@ -823,8 +845,7 @@ namespace RINGMesh {
          * \param[in] cell_adjacent adjacent value to set
          */
         void set_cell_adjacent(
-            const CellLocalFacet& cell_local_facet,
-            index_t cell_adjacent )
+            const CellLocalFacet& cell_local_facet, index_t cell_adjacent )
         {
             do_set_cell_adjacent( cell_local_facet, cell_adjacent );
         }
@@ -872,12 +893,12 @@ namespace RINGMesh {
          * are
          * no longer incident to any entity are deleted.
          */
-        void delete_cells(
-            const std::vector< bool >& to_delete,
+        void delete_cells( const std::vector< bool >& to_delete,
             bool remove_isolated_vertices )
         {
             do_delete_cells( to_delete );
-            if( remove_isolated_vertices ) {
+            if( remove_isolated_vertices )
+            {
                 this->remove_isolated_vertices();
             }
             clear_cell_linked_objects();
@@ -951,8 +972,7 @@ namespace RINGMesh {
          * \param corner_index is incident to
          */
         virtual void do_set_cell_corner_vertex_index(
-            index_t corner_index,
-            index_t vertex_index ) = 0;
+            index_t corner_index, index_t vertex_index ) = 0;
         /*!
          * \brief Sets the cell adjacent
          * \param[in] cell_local_facet index of the cell, and local index of the
@@ -960,8 +980,7 @@ namespace RINGMesh {
          * \param[in] cell_adjacent adjacent value to set
          */
         virtual void do_set_cell_adjacent(
-            const CellLocalFacet& cell_local_facet,
-            index_t cell_adjacent ) = 0;
+            const CellLocalFacet& cell_local_facet, index_t cell_adjacent ) = 0;
         /*!
          * @brief Removes all the cells and attributes.
          * @param[in] keep_attributes if true, then all the existing attribute
@@ -970,7 +989,8 @@ namespace RINGMesh {
          * @param[in] keep_memory if true, then memory is kept and can be reused
          * by subsequent mesh entity creations.
          */
-        virtual void do_clear_cells( bool keep_attributes, bool keep_memory ) = 0;
+        virtual void do_clear_cells(
+            bool keep_attributes, bool keep_memory ) = 0;
         /*!
          * @brief Applies a permutation to the entities and their attributes.
          * On exit, permutation is modified (used for internal bookkeeping).
@@ -990,7 +1010,8 @@ namespace RINGMesh {
          * If to_delete[e] is true, then entity e will be destroyed, else it
          * will be kept.
          */
-        virtual void do_delete_cells( const std::vector< bool >& to_delete ) = 0;
+        virtual void do_delete_cells(
+            const std::vector< bool >& to_delete ) = 0;
 
     protected:
         VolumeMesh< DIMENSION >& volume_mesh_;
@@ -998,10 +1019,10 @@ namespace RINGMesh {
 
     using VolumeMeshBuilder3D = VolumeMeshBuilder< 3 >;
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     using VolumeMeshBuilderFactory = Factory< MeshType,
-    VolumeMeshBuilder< DIMENSION >,
-    VolumeMesh< DIMENSION >& >;
+        VolumeMeshBuilder< DIMENSION >,
+        VolumeMesh< DIMENSION >& >;
 
     using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
 } // namespace RINGMesh
