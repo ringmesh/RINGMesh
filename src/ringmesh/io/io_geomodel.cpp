@@ -115,6 +115,8 @@ namespace RINGMesh
             "gm" );
         GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
             "mfem" );
+        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler3D >(
+            "msh" );
     }
 
     template <>
@@ -147,7 +149,7 @@ namespace RINGMesh
         // todo GPRS export is not working for the moment [AB]
         //        GeoModelOutputHandlerFactory3D::register_creator<
         //        GPRSIOHandler >( "gprs" );
-        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler >(
+        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler3D >(
             "msh" );
         GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
