@@ -115,7 +115,7 @@ namespace RINGMesh
             "gm" );
         GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
             "mfem" );
-        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler3D >(
+        GeoModelOutputHandlerFactory2D::register_creator< MSHIOHandler2D >(
             "msh" );
     }
 
