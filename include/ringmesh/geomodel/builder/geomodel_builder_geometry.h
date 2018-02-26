@@ -119,7 +119,7 @@ namespace RINGMesh
 
         /*!
          * @brief Copy all entity meshes from the input geomodel
-         * @pre The geomodel under construction has exaclty the same number of
+         * @pre The geomodel under construction has exactly the same number of
          * entities
          * than the input geomodel.
          */
