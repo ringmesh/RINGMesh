@@ -200,6 +200,19 @@ namespace {
                     for( auto elem_in_cur_gmme : range( cur_gmme.nb_mesh_elements() ) ) {
                         index_t nb_vertices_in_cur_element =
                             cur_gmme.nb_mesh_element_vertices( elem_in_cur_gmme );
+                        if( cur_gmme_id.type() == surface_type_name_static()
+                            && nb_vertices_in_cur_element > 4 ) {
+                            throw RINGMeshException( "I/O",
+                                "Cannot export into GMSH file format a GeoModel "
+                                "with unclassified polygons (not a triangle "
+                                "or a quad)." );
+                        }
+                        if( cur_gmme_id.type() == region_type_name_static()
+                            && nb_vertices_in_cur_element > 8 ) {
+                            throw RINGMeshException( "I/O",
+                                "Cannot export into GMSH file format a GeoModel "
+                                "with polyhedra." );
+                        }
                         index_t gmsh_element_type = find_gmsh_element_type(
                             nb_vertices_in_cur_element, gmme_type_index );
                         out << element_index++ << SPACE << gmsh_element_type << SPACE
