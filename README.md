@@ -1,10 +1,13 @@
 RINGMesh dashboard
 =====================
 
-	Window [![Appveyor build](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
-	Linux [![Travis build](https://travis-ci.org/ringmesh/RINGMesh.svg?branch=master)](https://travis-ci.org/ringmesh/RINGMesh)
-	Sonar [![Sonar quality](https://sonarcloud.io/api/badges/gate?key=ringmesh)](https://sonarcloud.io/dashboard/index/ringmesh)
-	Test [![Coverage](https://sonarcloud.io/api/badges/measure?key=ringmesh&metric=coverage)](https://sonarcloud.io/dashboard/index/ringmesh)
+Window [![Appveyor build](https://ci.appveyor.com/api/projects/status/nlso0s96wcuge2vn/branch/master?svg=true)](https://ci.appveyor.com/project/ringmesh/ringmesh/branch/master)
+
+Linux [![Travis build](https://travis-ci.org/ringmesh/RINGMesh.svg?branch=master)](https://travis-ci.org/ringmesh/RINGMesh)
+
+Sonar [![Sonar quality](https://sonarcloud.io/api/badges/gate?key=ringmesh)](https://sonarcloud.io/dashboard/index/ringmesh)
+
+Test [![Coverage](https://sonarcloud.io/api/badges/measure?key=ringmesh&metric=coverage)](https://sonarcloud.io/dashboard/index/ringmesh)
 
 General information
 ====================
