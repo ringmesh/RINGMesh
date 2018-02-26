@@ -35,7 +35,7 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/mesh/mesh.h>
+//#include <ringmesh/mesh/mesh.h>
 
 #include <numeric>
 #include <ringmesh/basic/algorithm.h>
@@ -43,7 +43,8 @@
 #include <stack>
 
 #include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/mesh_base.h>
+#include <ringmesh/mesh/point_set_mesh.h>
+#include <ringmesh/mesh/line_mesh.h>
 
 namespace RINGMesh
 {

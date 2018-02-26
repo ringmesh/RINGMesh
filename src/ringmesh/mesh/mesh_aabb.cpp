@@ -40,8 +40,10 @@
 
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
+#include <ringmesh/mesh/line_mesh.h>
+#include <ringmesh/mesh/surface_mesh.h>
+#include <ringmesh/mesh/volume_mesh.h>
 
 /// Copied and adapted from Geogram
 

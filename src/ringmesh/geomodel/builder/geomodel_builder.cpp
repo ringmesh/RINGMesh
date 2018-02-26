@@ -45,9 +45,11 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
-#include <ringmesh/mesh/mesh.h>
+
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
+
+#include <ringmesh/mesh/surface_mesh.h>
 
 /*!
  * @file ringmesh/geomodel/builder/geomodel_builder.cpp

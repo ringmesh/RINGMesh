@@ -37,10 +37,11 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/mesh_quality.h>
-#include <ringmesh/mesh/mesh.h>
+
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 
+#include <ringmesh/mesh/volume_mesh.h>
 /*!
  * @author Benjamin Chauvin
  * This code is inspired from
