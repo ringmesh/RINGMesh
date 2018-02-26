@@ -33,7 +33,8 @@
  *     FRANCE
  */
 
-namespace {
+namespace
+{
     // Vertices order for a vertex in GMSH
     static index_t vertices_in_vertex[1] = { 0 };
     // Vertices order for an edge in GMSH
@@ -66,17 +67,15 @@ namespace {
     // Pyramid :     3 + 5 = 8
     // Prism         3 + 6 = 9
     // Hexahedron :  3 + 8 = 11
-    index_t element_type[12] =
-        { NO_ID, 15, NO_ID, 1, NO_ID, 2, 3, 4, 7, 6, NO_ID, 5 };
+    index_t element_type[12] = { NO_ID, 15, NO_ID, 1, NO_ID, 2, 3, 4, 7, 6,
+        NO_ID, 5 };
 
     // This is a tricky table that associate an unique id with another table
     // containing the ordering of vertices inside the elementS
     index_t* vertices_in_elements[12] = { nullptr, vertices_in_vertex, nullptr,
-                                          vertices_in_edge, nullptr,
-                                          vertices_in_triangle, vertices_in_quad,
-                                          vertices_in_tetrahedron,
-                                          vertices_in_pyramid, vertices_in_prism,
-                                          nullptr, vertices_in_hexahedron };
+        vertices_in_edge, nullptr, vertices_in_triangle, vertices_in_quad,
+        vertices_in_tetrahedron, vertices_in_pyramid, vertices_in_prism,
+        nullptr, vertices_in_hexahedron };
 
     // The physical id is a mandatory value for GMSH which is not used
     index_t physical_id = 0;
@@ -84,7 +83,8 @@ namespace {
     // in GMSH, a tag is a physical id (not used) or a geometry id
     index_t nb_of_tags = 2;
 
-    enum struct GMSHElementType {
+    enum struct GMSHElementType
+    {
         EDGE = 1,
         TRIANGLE = 2,
         QUADRANGLE = 3,
@@ -102,8 +102,7 @@ namespace {
      * in which the element belong
      */
     index_t find_gmsh_element_type(
-        index_t nb_vertices,
-        index_t mesh_entity_type_index )
+        index_t nb_vertices, index_t mesh_entity_type_index )
     {
         return element_type[nb_vertices + mesh_entity_type_index];
     }
@@ -113,12 +112,12 @@ namespace {
      * the number of vertices and the mesh entity index
      * in which the element belong
      */
-    index_t find_gmsh_element_local_vertex_id(
-        index_t nb_vertices,
+    index_t find_gmsh_element_local_vertex_id( index_t nb_vertices,
         index_t mesh_entity_type_index,
         index_t local_vertex_index )
     {
-        return vertices_in_elements[nb_vertices + mesh_entity_type_index][local_vertex_index];
+        return vertices_in_elements[nb_vertices + mesh_entity_type_index]
+                                   [local_vertex_index];
     }
 
     /*!
@@ -133,17 +132,19 @@ namespace {
      * - A Prism
      * - An Hexaedron
      */
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     index_t count_elements( const GeoModel< DIMENSION >& geomodel )
     {
-        index_t nb_elements { 0 };
-        const auto& gmme_types =
-            geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
-        for( const auto& cur_mesh_entity_type : gmme_types ) {
-            for( auto index_of_gmme_of_the_current_type : range(
-                geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
-                gmme_id cur_gmme_id { gmme_id( cur_mesh_entity_type,
-                    index_of_gmme_of_the_current_type ) };
+        index_t nb_elements{ 0 };
+        const auto& gmme_types = geomodel.entity_type_manager()
+                                     .mesh_entity_manager.mesh_entity_types();
+        for( const auto& cur_mesh_entity_type : gmme_types )
+        {
+            for( auto index_of_gmme_of_the_current_type :
+                range( geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) )
+            {
+                gmme_id cur_gmme_id{ gmme_id(
+                    cur_mesh_entity_type, index_of_gmme_of_the_current_type ) };
                 const GeoModelMeshEntity< DIMENSION >& cur_gmme =
                     geomodel.mesh_entity( cur_gmme_id );
                 nb_elements += cur_gmme.nb_mesh_elements();
@@ -168,16 +169,20 @@ namespace {
 
     bool all_third_coord_null( const std::string& filename )
     {
-        GEO::LineInput file_line { filename };
-        while( !file_line.eof() && file_line.get_line() ) {
+        GEO::LineInput file_line{ filename };
+        while( !file_line.eof() && file_line.get_line() )
+        {
             file_line.get_fields();
             if( file_line.nb_fields() == 1
-                && file_line.field_matches( 0, "$EndNodes" ) ) {
+                && file_line.field_matches( 0, "$EndNodes" ) )
+            {
                 // All nodes read and all the third coordinates are equal to 0
                 return true;
             }
-            if( file_line.nb_fields() >= 4 ) {
-                if( !file_line.field_matches( 3, "0" ) ) {
+            if( file_line.nb_fields() >= 4 )
+            {
+                if( !file_line.field_matches( 3, "0" ) )
+                {
                     return false;
                 }
             }
@@ -186,22 +191,26 @@ namespace {
         return false;
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     std::vector< vecn< DIMENSION > > read_nodes( GEO::LineInput& line_parser )
     {
         std::vector< vecn< DIMENSION > > nodes;
         // Skip header block
-        while( !line_parser.eof() && line_parser.get_line() ) {
+        while( !line_parser.eof() && line_parser.get_line() )
+        {
             line_parser.get_fields();
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$EndMeshFormat" ) ) {
+                && line_parser.field_matches( 0, "$EndMeshFormat" ) )
+            {
                 break;
             }
         }
-        while( !line_parser.eof() && line_parser.get_line() ) {
+        while( !line_parser.eof() && line_parser.get_line() )
+        {
             line_parser.get_fields();
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$Nodes" ) ) {
+                && line_parser.field_matches( 0, "$Nodes" ) )
+            {
                 // Reserve capacity of vector of nodes
                 line_parser.get_line();
                 line_parser.get_fields();
@@ -210,12 +219,14 @@ namespace {
                 continue;
             }
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$EndNodes" ) ) {
+                && line_parser.field_matches( 0, "$EndNodes" ) )
+            {
                 return nodes;
             }
             ringmesh_assert( line_parser.nb_fields() >= 4 );
-            vecn < DIMENSION > cur_node;
-            for( auto coord : range( DIMENSION ) ) {
+            vecn< DIMENSION > cur_node;
+            for( auto coord : range( DIMENSION ) )
+            {
                 cur_node[coord] = line_parser.field_as_double( 1 + coord );
             }
             nodes.push_back( cur_node );
@@ -224,68 +235,82 @@ namespace {
         return nodes;
     }
 
-    template< index_t DIMENSION >
-    void read_elements_base(
-        GEO::LineInput& line_parser,
+    template < index_t DIMENSION >
+    void read_elements_base( GEO::LineInput& line_parser,
         GeoModel< DIMENSION >& geomodel,
         const std::vector< vecn< DIMENSION > >& nodes )
     {
         DEBUG( "read elements" );
         std::map< index_t, gmme_id > map_gmsh_ref_to_mesh_entities;
         std::map< index_t, std::vector< index_t > > map_gmsh_ref_to_added_nodes;
-        GeoModelBuilder < DIMENSION > geomodel_builder( geomodel );
-        while( !line_parser.eof() && line_parser.get_line() ) {
+        GeoModelBuilder< DIMENSION > geomodel_builder( geomodel );
+        while( !line_parser.eof() && line_parser.get_line() )
+        {
             line_parser.get_fields();
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$EndElements" ) ) {
+                && line_parser.field_matches( 0, "$EndElements" ) )
+            {
                 return;
             }
-            if( line_parser.nb_fields() < 3 ) {
+            if( line_parser.nb_fields() < 3 )
+            {
                 continue;
             }
             // Read one element
-            GMSHElementType cur_element_type =
-                static_cast< GMSHElementType >( line_parser.field_as_uint( 1 ) );
-            index_t nb_tags { line_parser.field_as_uint( 2 ) };
+            GMSHElementType cur_element_type = static_cast< GMSHElementType >(
+                line_parser.field_as_uint( 1 ) );
+            index_t nb_tags{ line_parser.field_as_uint( 2 ) };
 
-            if( cur_element_type == GMSHElementType::EDGE ) {
+            if( cur_element_type == GMSHElementType::EDGE )
+            {
                 index_t gmsh_entity = line_parser.field_as_uint( 4 );
                 // Get or create corresponding mesh entity
-                gmme_id cur_gmme_id { map_gmsh_ref_to_mesh_entities[gmsh_entity] };
-                if( !cur_gmme_id.is_defined() ) {
+                gmme_id cur_gmme_id{
+                    map_gmsh_ref_to_mesh_entities[gmsh_entity]
+                };
+                if( !cur_gmme_id.is_defined() )
+                {
                     cur_gmme_id = geomodel_builder.topology.create_mesh_entity(
                         line_type_name_static() );
                     map_gmsh_ref_to_mesh_entities[gmsh_entity] = cur_gmme_id;
                 }
                 ringmesh_assert( cur_gmme_id.is_defined() );
 
-                auto line_builder = geomodel_builder.geometry.create_line_builder(
-                    cur_gmme_id.index() );
+                auto line_builder =
+                    geomodel_builder.geometry.create_line_builder(
+                        cur_gmme_id.index() );
                 auto& added_nodes = map_gmsh_ref_to_added_nodes[gmsh_entity];
 
                 // Add corresponding nodes
                 index_t edge_gmme_ids[2];
-                for( auto element_vertex_id : range( 2 ) ) {
-                    index_t gmsh_node_id { line_parser.field_as_uint(
+                for( auto element_vertex_id : range( 2 ) )
+                {
+                    index_t gmsh_node_id{ line_parser.field_as_uint(
                         3 + nb_tags + element_vertex_id ) };
-                    edge_gmme_ids[element_vertex_id] = find( added_nodes,
-                        gmsh_node_id );
-                    if( edge_gmme_ids[element_vertex_id] == NO_ID ) {
+                    edge_gmme_ids[element_vertex_id] =
+                        find( added_nodes, gmsh_node_id );
+                    if( edge_gmme_ids[element_vertex_id] == NO_ID )
+                    {
                         added_nodes.push_back( gmsh_node_id );
                         edge_gmme_ids[element_vertex_id] =
                             line_builder->create_vertex(
                                 nodes[gmsh_node_id - gmsh_offset] );
                     }
-                    ringmesh_assert( edge_gmme_ids[element_vertex_id] != NO_ID );
+                    ringmesh_assert(
+                        edge_gmme_ids[element_vertex_id] != NO_ID );
                 }
                 // Add corresponding edge
                 line_builder->create_edge( edge_gmme_ids[0], edge_gmme_ids[1] );
-
-            } else if( cur_element_type == GMSHElementType::TRIANGLE ) {
+            }
+            else if( cur_element_type == GMSHElementType::TRIANGLE )
+            {
                 index_t gmsh_entity = line_parser.field_as_uint( 4 );
                 // Get or create corresponding mesh entity
-                gmme_id cur_gmme_id { map_gmsh_ref_to_mesh_entities[gmsh_entity] };
-                if( !cur_gmme_id.is_defined() ) {
+                gmme_id cur_gmme_id{
+                    map_gmsh_ref_to_mesh_entities[gmsh_entity]
+                };
+                if( !cur_gmme_id.is_defined() )
+                {
                     cur_gmme_id = geomodel_builder.topology.create_mesh_entity(
                         surface_type_name_static() );
                     map_gmsh_ref_to_mesh_entities[gmsh_entity] = cur_gmme_id;
@@ -299,30 +324,35 @@ namespace {
 
                 // Add corresponding nodes
                 std::vector< index_t > triangle_gmme_ids( 3 );
-                for( auto element_vertex_id : range( 3 ) ) {
-                    index_t gmsh_node_id { line_parser.field_as_uint(
+                for( auto element_vertex_id : range( 3 ) )
+                {
+                    index_t gmsh_node_id{ line_parser.field_as_uint(
                         3 + nb_tags + element_vertex_id ) };
-                    triangle_gmme_ids[element_vertex_id] = find( added_nodes,
-                        gmsh_node_id );
-                    if( triangle_gmme_ids[element_vertex_id] == NO_ID ) {
+                    triangle_gmme_ids[element_vertex_id] =
+                        find( added_nodes, gmsh_node_id );
+                    if( triangle_gmme_ids[element_vertex_id] == NO_ID )
+                    {
                         added_nodes.push_back( gmsh_node_id );
                         triangle_gmme_ids[element_vertex_id] =
                             surface_builder->create_vertex(
                                 nodes[gmsh_node_id - gmsh_offset] );
                     }
-                    ringmesh_assert( triangle_gmme_ids[element_vertex_id] != NO_ID );
+                    ringmesh_assert(
+                        triangle_gmme_ids[element_vertex_id] != NO_ID );
                 }
                 // Add corresponding edge
                 surface_builder->create_polygon( triangle_gmme_ids );
-            } else if( cur_element_type == GMSHElementType::QUADRANGLE ) {
-                throw RINGMeshException( "I/O", "Import of GeoModels form GMSH with "
+            }
+            else if( cur_element_type == GMSHElementType::QUADRANGLE )
+            {
+                throw RINGMeshException( "I/O",
+                    "Import of GeoModels form GMSH with "
                     "quadrangles is not yet implemented." );
             }
         }
     }
 
-    void read_volume_elements(
-        const std::string& filename,
+    void read_volume_elements( const std::string& filename,
         GeoModel3D& geomodel,
         const std::vector< vec3 >& nodes )
     {
@@ -330,34 +360,43 @@ namespace {
         std::map< index_t, gmme_id > map_gmsh_ref_to_mesh_entities;
         std::map< index_t, std::vector< index_t > > map_gmsh_ref_to_added_nodes;
         GeoModelBuilder3D geomodel_builder( geomodel );
-        GEO::LineInput line_parser { filename };
+        GEO::LineInput line_parser{ filename };
         // Go to Elements section
-        while( !line_parser.eof() && line_parser.get_line() ) {
+        while( !line_parser.eof() && line_parser.get_line() )
+        {
             line_parser.get_fields();
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$Elements" ) ) {
+                && line_parser.field_matches( 0, "$Elements" ) )
+            {
                 break;
             }
         }
-        while( !line_parser.eof() && line_parser.get_line() ) {
+        while( !line_parser.eof() && line_parser.get_line() )
+        {
             line_parser.get_fields();
             if( line_parser.nb_fields() == 1
-                && line_parser.field_matches( 0, "$EndElements" ) ) {
+                && line_parser.field_matches( 0, "$EndElements" ) )
+            {
                 return;
             }
-            if( line_parser.nb_fields() < 3 ) {
+            if( line_parser.nb_fields() < 3 )
+            {
                 continue;
             }
             // Read one element
-            GMSHElementType cur_element_type =
-                static_cast< GMSHElementType >( line_parser.field_as_uint( 1 ) );
-            index_t nb_tags { line_parser.field_as_uint( 2 ) };
+            GMSHElementType cur_element_type = static_cast< GMSHElementType >(
+                line_parser.field_as_uint( 1 ) );
+            index_t nb_tags{ line_parser.field_as_uint( 2 ) };
 
-            if( cur_element_type == GMSHElementType::TETRAHEDRON ) {
+            if( cur_element_type == GMSHElementType::TETRAHEDRON )
+            {
                 index_t gmsh_entity = line_parser.field_as_uint( 4 );
                 // Get or create corresponding mesh entity
-                gmme_id cur_gmme_id { map_gmsh_ref_to_mesh_entities[gmsh_entity] };
-                if( !cur_gmme_id.is_defined() ) {
+                gmme_id cur_gmme_id{
+                    map_gmsh_ref_to_mesh_entities[gmsh_entity]
+                };
+                if( !cur_gmme_id.is_defined() )
+                {
                     cur_gmme_id = geomodel_builder.topology.create_mesh_entity(
                         region_type_name_static() );
                     map_gmsh_ref_to_mesh_entities[gmsh_entity] = cur_gmme_id;
@@ -370,17 +409,19 @@ namespace {
                 auto& added_nodes = map_gmsh_ref_to_added_nodes[gmsh_entity];
 
                 // Add corresponding edge
-                index_t cell_id = region_builder->create_cells( 1,
-                    CellType::TETRAHEDRON );
+                index_t cell_id =
+                    region_builder->create_cells( 1, CellType::TETRAHEDRON );
 
                 // Add corresponding nodes
                 std::vector< index_t > tetra_gmme_ids( 4 );
-                for( auto element_vertex_id : range( 4 ) ) {
-                    index_t gmsh_node_id { line_parser.field_as_uint(
+                for( auto element_vertex_id : range( 4 ) )
+                {
+                    index_t gmsh_node_id{ line_parser.field_as_uint(
                         3 + nb_tags + element_vertex_id ) };
-                    tetra_gmme_ids[element_vertex_id] = find( added_nodes,
-                        gmsh_node_id );
-                    if( tetra_gmme_ids[element_vertex_id] == NO_ID ) {
+                    tetra_gmme_ids[element_vertex_id] =
+                        find( added_nodes, gmsh_node_id );
+                    if( tetra_gmme_ids[element_vertex_id] == NO_ID )
+                    {
                         added_nodes.push_back( gmsh_node_id );
                         tetra_gmme_ids[element_vertex_id] =
                             region_builder->create_vertex(
@@ -389,20 +430,22 @@ namespace {
                             { cell_id, element_vertex_id },
                             tetra_gmme_ids[element_vertex_id] );
                     }
-                    ringmesh_assert( tetra_gmme_ids[element_vertex_id] != NO_ID );
+                    ringmesh_assert(
+                        tetra_gmme_ids[element_vertex_id] != NO_ID );
                 }
-
-            } else if( cur_element_type == GMSHElementType::PRISM
-                || cur_element_type == GMSHElementType::PYRAMIDE
-                || cur_element_type == GMSHElementType::HEXAHEDRON ) {
-                throw RINGMeshException( "I/O", "Import of GeoModels form GMSH with "
+            }
+            else if( cur_element_type == GMSHElementType::PRISM
+                     || cur_element_type == GMSHElementType::PYRAMIDE
+                     || cur_element_type == GMSHElementType::HEXAHEDRON )
+            {
+                throw RINGMeshException( "I/O",
+                    "Import of GeoModels form GMSH with "
                     "non simplicial meshes is not yet implemented." );
             }
         }
     }
 
-    void read_elements(
-        GEO::LineInput& line_parser,
+    void read_elements( GEO::LineInput& line_parser,
         const std::string& filename,
         GeoModel2D& geomodel,
         const std::vector< vec2 >& nodes )
@@ -410,8 +453,7 @@ namespace {
         read_elements_base( line_parser, geomodel, nodes );
     }
 
-    void read_elements(
-        GEO::LineInput& line_parser,
+    void read_elements( GEO::LineInput& line_parser,
         const std::string& filename,
         GeoModel3D& geomodel,
         const std::vector< vec3 >& nodes )
@@ -420,31 +462,34 @@ namespace {
         read_volume_elements( filename, geomodel, nodes );
     }
 
-    template< index_t DIMENSION >
-    class MSHInputHandler final : public GeoModelInputHandler< DIMENSION > {
+    template < index_t DIMENSION >
+    class MSHInputHandler final : public GeoModelInputHandler< DIMENSION >
+    {
     public:
-        void load( const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
+        void load(
+            const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
             DEBUG( "TODO" );
-            GEO::LineInput file_line { filename };
-            GeoModelBuilder < DIMENSION > geomodel_builder( geomodel );
+            GEO::LineInput file_line{ filename };
+            GeoModelBuilder< DIMENSION > geomodel_builder( geomodel );
             geomodel_builder.info.set_geomodel_name( "Unnamed" );
-            std::vector< vecn< DIMENSION > > nodes = read_nodes< DIMENSION >(
-                file_line );
+            std::vector< vecn< DIMENSION > > nodes =
+                read_nodes< DIMENSION >( file_line );
             read_elements( file_line, filename, geomodel, nodes );
         }
 
         index_t dimension( const std::string& filename ) const final
         {
-            index_t dimension { 2 };
+            index_t dimension{ 2 };
             bool truly_2d = all_third_coord_null( filename );
-            if( !truly_2d ) {
+            if( !truly_2d )
+            {
                 dimension = 3;
             }
             return dimension;
         }
     };
-    ALIAS_2D_AND_3D (MSHInputHandler);
+    ALIAS_2D_AND_3D( MSHInputHandler );
 
     /*!
      * @brief Export GeoModel3D for the GMSH format 2.2 which is
@@ -452,11 +497,11 @@ namespace {
      * http://gmsh.info/doc/texinfo/gmsh.html#MSH-ASCII-file-format
      * NB : Mesh entities are also exported
      */
-    template< index_t DIMENSION >
-    class MSHOutputHandler final : public GeoModelOutputHandler< DIMENSION > {
+    template < index_t DIMENSION >
+    class MSHOutputHandler final : public GeoModelOutputHandler< DIMENSION >
+    {
     public:
-        void save(
-            const GeoModel< DIMENSION >& geomodel,
+        void save( const GeoModel< DIMENSION >& geomodel,
             const std::string& filename ) final
         {
             std::ofstream out( filename.c_str() );
@@ -468,63 +513,78 @@ namespace {
 
             out << "$Nodes" << EOL;
             out << geomodel.mesh.vertices.nb() << EOL;
-            for( auto v : range( geomodel.mesh.vertices.nb() ) ) {
+            for( auto v : range( geomodel.mesh.vertices.nb() ) )
+            {
                 out << v + gmsh_offset << SPACE
-                    << vertex_in_3d( geomodel.mesh.vertices.vertex( v ) ) << EOL;
+                    << vertex_in_3d( geomodel.mesh.vertices.vertex( v ) )
+                    << EOL;
             }
             out << "$EndNodes" << EOL;
 
             out << "$Elements" << EOL;
             out << count_elements( geomodel ) << EOL;
             const auto& gmme_types =
-                geomodel.entity_type_manager().mesh_entity_manager.mesh_entity_types();
+                geomodel.entity_type_manager()
+                    .mesh_entity_manager.mesh_entity_types();
 
-            index_t element_index { 1 };
-            for( auto gmme_type_index : range(
-                geomodel.entity_type_manager().mesh_entity_manager.nb_mesh_entity_types() ) ) {
-                MeshEntityType cur_mesh_entity_type { gmme_types[gmme_type_index] };
-                for( auto index_of_gmme_of_the_current_type : range(
-                    geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) ) {
+            index_t element_index{ 1 };
+            for( auto gmme_type_index :
+                range( geomodel.entity_type_manager()
+                           .mesh_entity_manager.nb_mesh_entity_types() ) )
+            {
+                MeshEntityType cur_mesh_entity_type{
+                    gmme_types[gmme_type_index]
+                };
+                for( auto index_of_gmme_of_the_current_type :
+                    range( geomodel.nb_mesh_entities( cur_mesh_entity_type ) ) )
+                {
                     gmme_id cur_gmme_id = gmme_id( cur_mesh_entity_type,
                         index_of_gmme_of_the_current_type );
                     const GeoModelMeshEntity< DIMENSION >& cur_gmme =
                         geomodel.mesh_entity( cur_gmme_id );
-                    for( auto elem_in_cur_gmme : range( cur_gmme.nb_mesh_elements() ) ) {
+                    for( auto elem_in_cur_gmme :
+                        range( cur_gmme.nb_mesh_elements() ) )
+                    {
                         index_t nb_vertices_in_cur_element =
-                            cur_gmme.nb_mesh_element_vertices( elem_in_cur_gmme );
+                            cur_gmme.nb_mesh_element_vertices(
+                                elem_in_cur_gmme );
                         if( cur_gmme_id.type() == surface_type_name_static()
-                            && nb_vertices_in_cur_element > 4 ) {
+                            && nb_vertices_in_cur_element > 4 )
+                        {
                             throw RINGMeshException( "I/O",
                                 "Cannot export into GMSH file format a "
-                                    "GeoModel "
-                                    "with unclassified polygons (not a triangle "
-                                    "or a quad)." );
+                                "GeoModel "
+                                "with unclassified polygons (not a triangle "
+                                "or a quad)." );
                         }
                         if( cur_gmme_id.type() == region_type_name_static()
-                            && nb_vertices_in_cur_element > 8 ) {
+                            && nb_vertices_in_cur_element > 8 )
+                        {
                             throw RINGMeshException( "I/O", "Cannot export "
-                                "into GMSH file "
-                                "format a GeoModel "
-                                "with polyhedra." );
+                                                            "into GMSH file "
+                                                            "format a GeoModel "
+                                                            "with polyhedra." );
                         }
                         index_t gmsh_element_type = find_gmsh_element_type(
                             nb_vertices_in_cur_element, gmme_type_index );
-                        out << element_index++ << SPACE << gmsh_element_type << SPACE
-                            << nb_of_tags << SPACE << physical_id << SPACE
+                        out << element_index++ << SPACE << gmsh_element_type
+                            << SPACE << nb_of_tags << SPACE << physical_id
+                            << SPACE
                             << index_of_gmme_of_the_current_type + gmsh_offset
                             << SPACE;
-                        for( auto v_index_in_cur_element : range(
-                            nb_vertices_in_cur_element ) ) {
-                            out
-                                << geomodel.mesh.vertices.geomodel_vertex_id(
-                                    cur_gmme_id,
-                                    cur_gmme.mesh_element_vertex_index(
-                                        ElementLocalVertex( elem_in_cur_gmme,
-                                            find_gmsh_element_local_vertex_id(
-                                                nb_vertices_in_cur_element,
-                                                gmme_type_index,
-                                                v_index_in_cur_element ) ) ) )
-                                    + gmsh_offset << SPACE;
+                        for( auto v_index_in_cur_element :
+                            range( nb_vertices_in_cur_element ) )
+                        {
+                            out << geomodel.mesh.vertices.geomodel_vertex_id(
+                                       cur_gmme_id,
+                                       cur_gmme.mesh_element_vertex_index(
+                                           ElementLocalVertex( elem_in_cur_gmme,
+                                               find_gmsh_element_local_vertex_id(
+                                                   nb_vertices_in_cur_element,
+                                                   gmme_type_index,
+                                                   v_index_in_cur_element ) ) ) )
+                                       + gmsh_offset
+                                << SPACE;
                         }
                         out << EOL;
                     }
@@ -534,5 +594,5 @@ namespace {
             out << std::flush;
         }
     };
-    ALIAS_2D_AND_3D (MSHOutputHandler);
+    ALIAS_2D_AND_3D( MSHOutputHandler );
 }
