@@ -115,7 +115,7 @@ namespace RINGMesh
             "gm" );
         GeoModelOutputHandlerFactory2D::register_creator< MFEMIOHandler2D >(
             "mfem" );
-        GeoModelOutputHandlerFactory2D::register_creator< MSHIOHandler2D >(
+        GeoModelOutputHandlerFactory2D::register_creator< MSHOutputHandler2D >(
             "msh" );
     }
 
@@ -128,6 +128,8 @@ namespace RINGMesh
             StradivariusIOHandler >( "model" );
         GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >(
             "svg" );
+        GeoModelInputHandlerFactory2D::register_creator< MSHInputHandler2D >(
+            "msh" );
     }
 
     /*
@@ -149,7 +151,7 @@ namespace RINGMesh
         // todo GPRS export is not working for the moment [AB]
         //        GeoModelOutputHandlerFactory3D::register_creator<
         //        GPRSIOHandler >( "gprs" );
-        GeoModelOutputHandlerFactory3D::register_creator< MSHIOHandler3D >(
+        GeoModelOutputHandlerFactory3D::register_creator< MSHOutputHandler3D >(
             "msh" );
         GeoModelOutputHandlerFactory3D::register_creator< MFEMIOHandler3D >(
             "mfem" );
@@ -176,6 +178,8 @@ namespace RINGMesh
         GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
         GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >(
             "so" );
+        GeoModelInputHandlerFactory3D::register_creator< MSHInputHandler3D >(
+            "msh" );
     }
 
     /***************************************************************************/
