@@ -240,7 +240,6 @@ namespace
         GeoModel< DIMENSION >& geomodel,
         const std::vector< vecn< DIMENSION > >& nodes )
     {
-        DEBUG( "read elements" );
         std::map< index_t, gmme_id > map_gmsh_ref_to_mesh_entities;
         std::map< index_t, std::vector< index_t > > map_gmsh_ref_to_added_nodes;
         GeoModelBuilder< DIMENSION > geomodel_builder( geomodel );
@@ -356,7 +355,6 @@ namespace
         GeoModel3D& geomodel,
         const std::vector< vec3 >& nodes )
     {
-        DEBUG( "read volume elements" );
         std::map< index_t, gmme_id > map_gmsh_ref_to_mesh_entities;
         std::map< index_t, std::vector< index_t > > map_gmsh_ref_to_added_nodes;
         GeoModelBuilder3D geomodel_builder( geomodel );
@@ -450,6 +448,7 @@ namespace
         GeoModel2D& geomodel,
         const std::vector< vec2 >& nodes )
     {
+        ringmesh_unused( filename );
         read_elements_base( line_parser, geomodel, nodes );
     }
 
@@ -469,7 +468,6 @@ namespace
         void load(
             const std::string& filename, GeoModel< DIMENSION >& geomodel ) final
         {
-            DEBUG( "TODO" );
             GEO::LineInput file_line{ filename };
             GeoModelBuilder< DIMENSION > geomodel_builder( geomodel );
             geomodel_builder.info.set_geomodel_name( "Unnamed" );
