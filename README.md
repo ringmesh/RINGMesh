@@ -17,11 +17,7 @@ Please visit the RINGMesh website: [www.ringmesh.org](http://www.ringmesh.org)
 Compiling RINGMesh
 ====================
 
-RINGMesh is a cross platform project tested under 
- * Window (64bits)
- * Linux (64bits)
- * Mac OS (64bits)
- 
+RINGMesh is a cross platform project tested under Window (64bits), Linux (64bits) and Mac OS (64bits).  
 Please, follow the installation procedure described on the RINGMesh website: [ringmesh.org/try/installation/](http://ringmesh.org/try/installation/). 
 
 Develop with RINGMesh
