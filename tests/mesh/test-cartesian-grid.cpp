@@ -90,13 +90,13 @@ void test_frames()
 
 void test_cartesian_grids()
 {
-	vec3 origin{ 100, 200, -4 };
-	vec3 x{ 1, 2, -1 };
-	vec3 y{ 2, 1, 4 };
-	vec3 z{ 3, -2, -1 };
+    vec3 origin{ 100, 200, -4 };
+    vec3 x{ 1, 2, -1 };
+    vec3 y{ 2, 1, 4 };
+    vec3 z{ 3, -2, -1 };
 
-	Frame3D frame{ x, y, z };
-	ReferenceFrame3D reference_frame{ origin, frame };
+    Frame3D frame{ x, y, z };
+    ReferenceFrame3D reference_frame{ origin, frame };
     ivec3 grid_dimensions{ 10, 8, 9 };
     CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
     if( cartesiangrid.cell_volume() != 42. )
@@ -113,19 +113,23 @@ void test_cartesian_grids()
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 2" );
     }
-    if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } ) != NO_ID )
+    if( cartesiangrid.cell_offset_from_global_point( vec3{ 1, 1, 1 } )
+        != NO_ID )
     {
         throw RINGMeshException( "TEST", "Error in calculating the offset 3" );
     }
     if( cartesiangrid.cell_offset( cartesiangrid.local_from_offset( 51 ) )
         != 51 )
     {
-        throw RINGMeshException( "TEST", "Error in calculating the inverse offset 1" );
+        throw RINGMeshException(
+            "TEST", "Error in calculating the inverse offset 1" );
     }
-    if( cartesiangrid.local_from_offset( cartesiangrid.cell_offset( sivec3{ 5, 2, 8 } ) )
+    if( cartesiangrid.local_from_offset(
+            cartesiangrid.cell_offset( sivec3{ 5, 2, 8 } ) )
         != sivec3{ 5, 2, 8 } )
     {
-        throw RINGMeshException( "TEST", "Error in calculating the inverse offset 2" );
+        throw RINGMeshException(
+            "TEST", "Error in calculating the inverse offset 2" );
     }
 }
 
