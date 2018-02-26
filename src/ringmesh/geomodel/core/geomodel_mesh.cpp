@@ -2044,7 +2044,7 @@ namespace RINGMesh
     {
         test_and_initialize();
         ringmesh_assert( line < this->geomodel_.nb_lines() );
-        return line_edge_ptr_[line + 1];
+        return line_edge_ptr_[line + 1] - line_edge_ptr_[line];
     }
 
     template < index_t DIMENSION >
