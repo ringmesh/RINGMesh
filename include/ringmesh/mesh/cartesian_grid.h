@@ -370,20 +370,26 @@ namespace RINGMesh
         {
         }
 
+        /*!
+         * Returns the 4 segments that represent the grid cage.
+         * They are ordered in this way :
+         * first the two vectors in the direction of the first grid vector.
+         * then the two vectors in the direction of the second grid vector.
+         */
         const std::vector< Geometry::Segment2D > grid_cage() const
         {
             std::vector< Geometry::Segment2D > cage;
             cage.reserve( 4 );
             cage.emplace_back( cartesian_frame_.origin(),
-                cartesian_frame_.origin() + cartesian_frame_[0] );
-            cage.emplace_back( cartesian_frame_.origin(),
-                cartesian_frame_.origin() + cartesian_frame_[1] );
-            cage.emplace_back( cartesian_frame_.origin() + cartesian_frame_[0],
-                cartesian_frame_.origin() + cartesian_frame_[0]
-                    + cartesian_frame_[1] );
+                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0) );
             cage.emplace_back( cartesian_frame_.origin() + cartesian_frame_[1],
-                cartesian_frame_.origin() + cartesian_frame_[0]
-                    + cartesian_frame_[1] );
+                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0)
+                    + cartesian_frame_[1]*nb_cells_axis(1) );
+            cage.emplace_back( cartesian_frame_.origin(),
+                cartesian_frame_.origin() + cartesian_frame_[1]*nb_cells_axis(1) );
+            cage.emplace_back( cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0),
+                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0)
+                    + cartesian_frame_[1]*nb_cells_axis(1) );
 
             return cage;
         }
