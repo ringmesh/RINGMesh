@@ -87,10 +87,11 @@ namespace
             // First line : type - id - name - geol_feature
             if( file_line.nb_fields() < 4 )
             {
-                throw RINGMeshException( "I/O", "Invalid line: ",
-                    file_line.line_number(), ", 4 fields are expected, the "
-                                             "type, id, name, and geological "
-                                             "feature" );
+                throw RINGMeshException( "I/O",
+                    "Invalid line: ", file_line.line_number(),
+                    ", 4 fields are expected, the "
+                    "type, id, name, and geological "
+                    "feature" );
             }
             auto entity = read_first_line( file_line );
             read_second_line( file_line, entity );
@@ -126,8 +127,8 @@ namespace
             // First line : type - id - name - geol_feature - mesh type
             if( file_line.nb_fields() < 5 )
             {
-                throw RINGMeshException( "I/O", "Invalid line: ",
-                    file_line.line_number(),
+                throw RINGMeshException( "I/O",
+                    "Invalid line: ", file_line.line_number(),
                     ", 5 fields are expected, the type, id, name, ",
                     "geological feature, and mesh type" );
             }
@@ -163,8 +164,7 @@ namespace
     template < index_t DIMENSION >
     const std::string GeoModelBuilderGMImpl_1< DIMENSION >::new_names[4] = {
         std::string( "GeogramPointSetMesh" ), std::string( "GeogramLineMesh" ),
-        std::string( "GeogramSurfaceMesh" ),
-        std::string( "GeogramVolumeMesh" )
+        std::string( "GeogramSurfaceMesh" ), std::string( "GeogramVolumeMesh" )
     };
 
     template < index_t DIMENSION >
@@ -184,8 +184,8 @@ namespace
             // First line : type - id - name  - mesh type
             if( file_line.nb_fields() < 4 )
             {
-                throw RINGMeshException( "I/O", "Invalid line: ",
-                    file_line.line_number(),
+                throw RINGMeshException( "I/O",
+                    "Invalid line: ", file_line.line_number(),
                     ", 4 fields are expected, the type, id, name, ",
                     "geological feature, and mesh type" );
             }
@@ -346,8 +346,9 @@ namespace
             const std::string directory_to_unzip{
                 GEO::FileSystem::normalized_path(
                     GEO::FileSystem::dir_name( this->filename() ) )
-                + "/" + std::to_string(
-                            std::hash< std::string >()( this->filename() ) )
+                + "/"
+                + std::to_string(
+                      std::hash< std::string >()( this->filename() ) )
             };
             UnZipFile uz{ this->filename(), directory_to_unzip };
 
