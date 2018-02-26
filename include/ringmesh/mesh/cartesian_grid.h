@@ -381,15 +381,20 @@ namespace RINGMesh
             std::vector< Geometry::Segment2D > cage;
             cage.reserve( 4 );
             cage.emplace_back( cartesian_frame_.origin(),
-                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0) );
+                cartesian_frame_.origin()
+                    + cartesian_frame_[0] * nb_cells_axis( 0 ) );
             cage.emplace_back( cartesian_frame_.origin() + cartesian_frame_[1],
-                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0)
-                    + cartesian_frame_[1]*nb_cells_axis(1) );
+                cartesian_frame_.origin()
+                    + cartesian_frame_[0] * nb_cells_axis( 0 )
+                    + cartesian_frame_[1] * nb_cells_axis( 1 ) );
             cage.emplace_back( cartesian_frame_.origin(),
-                cartesian_frame_.origin() + cartesian_frame_[1]*nb_cells_axis(1) );
-            cage.emplace_back( cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0),
-                cartesian_frame_.origin() + cartesian_frame_[0]*nb_cells_axis(0)
-                    + cartesian_frame_[1]*nb_cells_axis(1) );
+                cartesian_frame_.origin()
+                    + cartesian_frame_[1] * nb_cells_axis( 1 ) );
+            cage.emplace_back( cartesian_frame_.origin()
+                                   + cartesian_frame_[0] * nb_cells_axis( 0 ),
+                cartesian_frame_.origin()
+                    + cartesian_frame_[0] * nb_cells_axis( 0 )
+                    + cartesian_frame_[1] * nb_cells_axis( 1 ) );
 
             return cage;
         }
