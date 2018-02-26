@@ -41,17 +41,14 @@
 #include <ringmesh/basic/nn_search.h>
 #include <ringmesh/mesh/common.h>
 #include <ringmesh/mesh/mesh_base.h>
-#include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
-#include <ringmesh/mesh/surface_mesh.h>
-#include <ringmesh/mesh/volume_mesh.h>
 
 #include <ringmesh/mesh/mesh_aabb.h>
 
 namespace RINGMesh
 {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
+    FORWARD_DECLARATION_DIMENSION_CLASS( LineMeshBuilder );
 
+    struct ElementLocalVertex;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -63,49 +60,69 @@ namespace RINGMesh
      * on which we base the RINGMesh algorithms
      * @note For now, we encapsulate the GEO::Mesh class.
      */
-
     /*!
-     * class composed of meshes from all the dimensions
+     * class for encapsulating line mesh (composed of edges)
      */
     template < index_t DIMENSION >
-    class MeshSetBase
+    class LineMesh : public MeshBase< DIMENSION >
     {
-        ringmesh_disable_copy_and_move( MeshSetBase );
-        ringmesh_template_assert_2d_or_3d( DIMENSION );
+        friend class LineMeshBuilder< DIMENSION >;
 
     public:
-        void create_point_set_mesh( MeshType type );
-        void create_line_mesh( MeshType type );
-        void create_well_mesh( MeshType type );
-        void create_surface_mesh( MeshType type );
+        static std::unique_ptr< LineMesh< DIMENSION > > create_mesh(
+            const MeshType type = "" );
+
+        /*
+         * @brief Gets the index of an edge vertex.
+         * @param[in] edge_local_vertex index of the edge and of the
+         * local index of the vertex, in {0,1}
+         * @return the global index of vertex in \p edge_local_vertex.
+         */
+        virtual index_t edge_vertex(
+            const ElementLocalVertex& edge_local_vertex ) const = 0;
+
+        /*!
+         * @brief Gets the number of all the edges in the whole Mesh.
+         */
+        virtual index_t nb_edges() const = 0;
+
+        /*!
+         * @brief Gets the length of the edge \param edge_id
+         */
+        double edge_length( index_t edge_id ) const;
+
+        vecn< DIMENSION > edge_barycenter( index_t edge_id ) const;
+
+        /*!
+         * @brief return the NNSearch at edges
+         * @warning the NNSearch is destroyed when calling the
+         * Mesh::polygons_aabb()
+         * and Mesh::cells_aabb()
+         */
+        const NNSearch< DIMENSION >& edge_nn_search() const;
+
+        /*!
+         * @brief Creates an AABB tree for a Mesh edges
+         */
+        const LineAABBTree< DIMENSION >& edge_aabb() const;
+
+        virtual GEO::AttributesManager& edge_attribute_manager() const = 0;
+
+        bool is_mesh_valid() const override;
+
+        std::tuple< index_t, std::vector< index_t > >
+            connected_components() const final;
 
     protected:
-        MeshSetBase();
-        virtual ~MeshSetBase() = default;
+        LineMesh() = default;
 
-    public:
-        std::unique_ptr< PointSetMesh< DIMENSION > > point_set_mesh{};
-        std::unique_ptr< LineMesh< DIMENSION > > well_mesh{};
-        std::unique_ptr< LineMesh< DIMENSION > > line_mesh{};
-        std::unique_ptr< SurfaceMesh< DIMENSION > > surface_mesh{};
+    private:
+        mutable std::unique_ptr< NNSearch< DIMENSION > > edge_nn_search_{};
+        mutable std::unique_ptr< LineAABBTree< DIMENSION > > edge_aabb_{};
     };
+    ALIAS_2D_AND_3D( LineMesh );
 
     template < index_t DIMENSION >
-    class mesh_api MeshSet : public MeshSetBase< DIMENSION >
-    {
-    public:
-        MeshSet() = default;
-    };
-
-    template <>
-    class mesh_api MeshSet< 3 > : public MeshSetBase< 3 >
-    {
-    public:
-        MeshSet();
-
-        void create_volume_mesh( MeshType type );
-
-    public:
-        std::unique_ptr< VolumeMesh3D > volume_mesh{};
-    };
+    using LineMeshFactory = Factory< MeshType, LineMesh< DIMENSION > >;
+    ALIAS_2D_AND_3D( LineMeshFactory );
 } // namespace RINGMesh
