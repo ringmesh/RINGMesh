@@ -52,7 +52,8 @@ namespace
 {
     std::vector< std::string > plugins;
 
-    bool read_plugins_configuration_file( const std::string& configuration_file )
+    bool read_plugins_configuration_file(
+        const std::string& configuration_file )
     {
         try
         {
@@ -64,7 +65,8 @@ namespace
                 ringmesh_assert( file.nb_fields() == 1 );
                 if( !RINGMesh::PluginManager::load_plugin( file.field( 0 ) ) )
                 {
-                    RINGMesh::Logger::err( "Plugin", "Failed to load ", file.field( 0 ) );
+                    RINGMesh::Logger::err(
+                        "Plugin", "Failed to load ", file.field( 0 ) );
                     return false;
                 }
             }
@@ -77,19 +79,20 @@ namespace
         return true;
     }
 
-    bool load_plugins_configuration( const std::string& configuration_directory )
+    bool load_plugins_configuration(
+        const std::string& configuration_directory )
     {
         auto config_file = configuration_directory + "/"
-            + RINGMesh::PluginManager::configuration_file;
+                           + RINGMesh::PluginManager::configuration_file;
         if( std::ifstream{ config_file.c_str() }.good() )
         {
             return read_plugins_configuration_file( config_file );
         }
         return false;
     }
-} //namespace
+} // namespace
 
-#if _WIN32
+#ifdef RINGMESH_WINDOWS
 #include <KnownFolders.h>
 #include <Shlobj.h>
 #include <Windows.h>
@@ -112,32 +115,32 @@ namespace RINGMesh
                 FormatMessage(
                     // use system message tables to retrieve error text
                     FORMAT_MESSAGE_FROM_SYSTEM
-                    // allocate buffer on local heap for error text
-                    |FORMAT_MESSAGE_ALLOCATE_BUFFER
-                    // Important! will fail otherwise, since we're not
-                    // (and CANNOT) pass insertion parameters
-                    |FORMAT_MESSAGE_IGNORE_INSERTS,
-                    NULL,// unused with FORMAT_MESSAGE_FROM_SYSTEM
-                    GetLastError(),
-                    MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT),
-                    (LPTSTR) &errorText,// output
-                    0,// minimum size for output buffer
-                    NULL);// arguments - see note
+                        // allocate buffer on local heap for error text
+                        | FORMAT_MESSAGE_ALLOCATE_BUFFER
+                        // Important! will fail otherwise, since we're not
+                        // (and CANNOT) pass insertion parameters
+                        | FORMAT_MESSAGE_IGNORE_INSERTS,
+                    NULL, // unused with FORMAT_MESSAGE_FROM_SYSTEM
+                    GetLastError(), MAKELANGID( LANG_NEUTRAL, SUBLANG_DEFAULT ),
+                    (LPTSTR) &errorText, // output
+                    0, // minimum size for output buffer
+                    NULL ); // arguments - see note
 
                 if( errorText != nullptr )
                 {
                     message = errorText;
-                    LocalFree(errorText);
+                    LocalFree( errorText );
                 }
-                throw RINGMeshException( "Plugin", "Could not load ", plugin_path,
-                    ": ", message );
+                throw RINGMeshException(
+                    "Plugin", "Could not load ", plugin_path, ": ", message );
             }
         }
 
         std::string home_directory() const
         {
             PWSTR path{ nullptr };
-            HRESULT hr = SHGetKnownFolderPath(FOLDERID_Documents, 0, nullptr, &path);
+            HRESULT hr =
+                SHGetKnownFolderPath( FOLDERID_Documents, 0, nullptr, &path );
             std::string result;
             if( SUCCEEDED( hr ) )
             {
@@ -145,7 +148,7 @@ namespace RINGMesh
                 ss << path;
                 result = ss.str();
             }
-            CoTaskMemFree(path);
+            CoTaskMemFree( path );
             return result;
         }
 
@@ -174,20 +177,20 @@ namespace RINGMesh
     public:
         /*!
          * Loads the given library.
-         * RTLD_NOW: All undefined symbols in the library are resolved before dlopen() returns.
-         *          If this cannot be done, an error is returned.
-         * RTLD_GLOBAL: The symbols defined by this library will be made available
-         *          for symbol resolution of subsequently loaded libraries.
+         * RTLD_NOW: All undefined symbols in the library are resolved before
+         * dlopen() returns. If this cannot be done, an error is returned.
+         * RTLD_GLOBAL: The symbols defined by this library will be made
+         * available for symbol resolution of subsequently loaded libraries.
          */
         void load_library( const std::string& plugin_name ) const
         {
             std::string library{ library_name( plugin_name ) };
-            void* plugin_handle = dlopen( library.c_str(),
-            RTLD_NOW | RTLD_GLOBAL );
+            void* plugin_handle =
+                dlopen( library.c_str(), RTLD_NOW | RTLD_GLOBAL );
             if( plugin_handle == nullptr )
             {
-                throw RINGMeshException( "Plugin", "Could not load ", library,
-                    ": ", dlerror() );
+                throw RINGMeshException(
+                    "Plugin", "Could not load ", library, ": ", dlerror() );
             }
         }
 
@@ -216,7 +219,7 @@ namespace RINGMesh
     private:
         std::string library_name( const std::string& plugin_name ) const
         {
-#if __APPLE__
+#ifdef RINGMESH_APPLE
             return { "lib" + plugin_name + ".dylib" };
 #else
             return { "lib" + plugin_name + ".so" };
@@ -229,7 +232,8 @@ namespace RINGMesh
 namespace RINGMesh
 {
     PImpl< PluginManager::Impl > PluginManager::impl_;
-    const std::string PluginManager::configuration_file = std::string{ "RINGMesh.ini" };
+    const std::string PluginManager::configuration_file =
+        std::string{ "RINGMesh.ini" };
 
     bool PluginManager::load_plugin( const std::string& plugin_name )
     {
@@ -238,7 +242,8 @@ namespace RINGMesh
             Logger::out( "Plugin", "Loading ", plugin_name );
             if( contains( plugins, plugin_name ) )
             {
-                throw RINGMeshException( "Plugin", plugin_name, " already loaded" );
+                throw RINGMeshException(
+                    "Plugin", plugin_name, " already loaded" );
             }
 
             impl_->load_library( plugin_name );
@@ -269,6 +274,6 @@ namespace RINGMesh
             return true;
         }
         return load_plugins_configuration( impl_->running_directory() )
-            || load_plugins_configuration( impl_->home_directory() );
+               || load_plugins_configuration( impl_->home_directory() );
     }
 } // namespace RINGMesh

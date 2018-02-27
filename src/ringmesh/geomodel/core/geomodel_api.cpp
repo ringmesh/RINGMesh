@@ -39,10 +39,10 @@
 
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/geomodel/core/geomodel_entity.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/core/geomodel_api.h>
 
 #include <ringmesh/mesh/volume_mesh.h>
 /*!
@@ -398,7 +398,8 @@ namespace RINGMesh
     }
 
     template void geomodel_core_api print_geomodel( const GeoModel2D& );
-    template void geomodel_core_api print_geomodel_mesh_stats( const GeoModel2D& );
+    template void geomodel_core_api print_geomodel_mesh_stats(
+        const GeoModel2D& );
     template index_t geomodel_core_api find_mesh_entity_id_from_name(
         const GeoModel2D&, const MeshEntityType&, const std::string& );
     template index_t geomodel_core_api find_geological_entity_id_from_name(
@@ -407,7 +408,8 @@ namespace RINGMesh
         const std::string& );
 
     template void geomodel_core_api print_geomodel( const GeoModel3D& );
-    template void geomodel_core_api print_geomodel_mesh_stats( const GeoModel3D& );
+    template void geomodel_core_api print_geomodel_mesh_stats(
+        const GeoModel3D& );
     template index_t geomodel_core_api find_mesh_entity_id_from_name(
         const GeoModel3D&, const MeshEntityType&, const std::string& );
     template index_t geomodel_core_api find_geological_entity_id_from_name(

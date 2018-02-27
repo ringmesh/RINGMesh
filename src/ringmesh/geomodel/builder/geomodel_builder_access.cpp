@@ -106,8 +106,8 @@ namespace RINGMesh
         GeoModelAccess< DIMENSION >::modifiable_mesh_entities(
             const MeshEntityType& type )
     {
-        return const_cast< std::
-                vector< std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& >(
+        return const_cast< std::vector<
+            std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >& >(
             geomodel_.mesh_entities( type ) );
     }
 
@@ -119,8 +119,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    std::vector< std::vector< std::
-            unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
+    std::vector< std::vector<
+        std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >&
         GeoModelAccess< DIMENSION >::modifiable_geological_entities()
     {
         return geomodel_.geological_entities_;
@@ -131,8 +131,8 @@ namespace RINGMesh
         GeoModelAccess< DIMENSION >::modifiable_geological_entities(
             const GeologicalEntityType& type )
     {
-        return const_cast< std::vector< std::
-                unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& >(
+        return const_cast< std::vector<
+            std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >& >(
             geomodel_.geological_entities( type ) );
     }
 

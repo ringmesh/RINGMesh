@@ -613,8 +613,9 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "Validity", " Vertex"
-                                              " is twice in Line ",
+                    Logger::warn( "Validity",
+                        " Vertex"
+                        " is twice in Line ",
                         line );
                     return false;
                 }
@@ -677,8 +678,9 @@ namespace
             {
                 if( !geomodel.line( line ).is_closed() )
                 {
-                    Logger::warn( "Validity", " Vertex"
-                                              " is twice in Line ",
+                    Logger::warn( "Validity",
+                        " Vertex"
+                        " is twice in Line ",
                         line );
                     return false;
                 }
@@ -904,8 +906,9 @@ namespace
         }
         if( !invalid_corners.empty() )
         {
-            Logger::warn( "Validity", " Invalid surface boundary: ",
-                invalid_corners.size() / 2, " boundary edges of ", S_id,
+            Logger::warn( "Validity",
+                " Invalid surface boundary: ", invalid_corners.size() / 2,
+                " boundary edges of ", S_id,
                 "  are in no line of the GeoModel." );
             if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
@@ -966,8 +969,9 @@ namespace
         }
         if( !unconformal_polygons.empty() )
         {
-            Logger::warn( "Validity", " Unconformal surface: ",
-                unconformal_polygons.size(), " polygons of ", surface.gmme(),
+            Logger::warn( "Validity",
+                " Unconformal surface: ", unconformal_polygons.size(),
+                " polygons of ", surface.gmme(),
                 " are unconformal with the GeoModel cells." );
             if( GEO::CmdLine::get_arg_bool( "validity:save" ) )
             {
@@ -1524,9 +1528,10 @@ namespace RINGMesh
         }
         if( count_invalid != 0 )
         {
-            Logger::warn( "Validity", count_invalid, " mesh entities of the "
-                                                     "GeoModel have an invalid "
-                                                     "connectivity." );
+            Logger::warn( "Validity", count_invalid,
+                " mesh entities of the "
+                "GeoModel have an invalid "
+                "connectivity." );
         }
         return count_invalid == 0;
     }
@@ -1753,8 +1758,8 @@ namespace RINGMesh
         const GeoModel2D&, ValidityCheckMode );
     template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel2D& );
-    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel2D& );
+    template bool geomodel_tools_api
+        are_geomodel_mesh_entities_connectivity_valid( const GeoModel2D& );
     template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel2D& );
     template bool geomodel_tools_api are_geomodel_geological_entities_valid(
@@ -1764,8 +1769,8 @@ namespace RINGMesh
         const GeoModel3D&, ValidityCheckMode );
     template bool geomodel_tools_api are_geomodel_mesh_entities_mesh_valid(
         const GeoModel3D& );
-    template bool geomodel_tools_api are_geomodel_mesh_entities_connectivity_valid(
-        const GeoModel3D& );
+    template bool geomodel_tools_api
+        are_geomodel_mesh_entities_connectivity_valid( const GeoModel3D& );
     template bool geomodel_tools_api are_geomodel_mesh_entities_parent_valid(
         const GeoModel3D& );
     template bool geomodel_tools_api are_geomodel_geological_entities_valid(

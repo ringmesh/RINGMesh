@@ -33,30 +33,32 @@
  *     FRANCE
  */
 
-#include <ringmesh/basic/ringmesh_assert.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 
-#include <geogram/basic/assert.h>
-
-/*!
- * @file Custom assertions
- */
+#include <nbind/nbind.h>
 
 namespace RINGMesh
 {
-    void ringmesh_assertion_failed(
-        const std::string& condition_string, const std::string& file, int line )
+    NBIND_CLASS( GeoModelBase3D )
     {
-#ifdef RINGMESH_WINDOWS
-        DebugBreak();
-#endif
-        GEO::geo_assertion_failed( condition_string, file, line );
+        method( name );
+        method( nb_mesh_entities );
+        method( nb_geological_entities );
+        method( nb_corners );
+        method( nb_lines );
+        method( nb_surfaces );
     }
 
-    void ringmesh_should_not_have_reached( const std::string& file, int line )
+    NBIND_CLASS( GeoModel3D )
     {
-#ifdef RINGMESH_WINDOWS
-        DebugBreak();
-#endif
-        GEO::geo_should_not_have_reached( file, line );
+        inherit( GeoModelBase3D );
+        construct<>();
+        method( nb_regions );
+    }
+
+    NBIND_GLOBAL()
+    {
+        function( print_geomodel< 3 >, "print_geomodel3D" );
     }
 } // namespace RINGMesh

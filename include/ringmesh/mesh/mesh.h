@@ -51,7 +51,6 @@
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-
 } // namespace RINGMesh
 
 namespace RINGMesh

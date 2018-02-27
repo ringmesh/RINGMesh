@@ -43,8 +43,9 @@
 #include <ringmesh/geomodel/builder/geomodel_builder_geometry.h>
 #include <ringmesh/geomodel/builder/geomodel_builder_remove.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
+
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
@@ -154,9 +155,14 @@ namespace
      */
     struct BorderPolygon
     {
-        BorderPolygon(
-            index_t surface, index_t polygon, index_t v0, index_t v1 )
-            : v0_( v0 ), v1_( v1 ), surface_( surface ), polygon_( polygon )
+        BorderPolygon( index_t surface_in,
+            index_t polygon_in,
+            index_t v0_in,
+            index_t v1_in )
+            : v0( v0_in ),
+              v1( v1_in ),
+              surface( surface_in ),
+              polygon( polygon_in )
         {
         }
 
@@ -166,35 +172,35 @@ namespace
          */
         bool operator<( const BorderPolygon& rhs ) const
         {
-            if( std::min( v0_, v1_ ) != std::min( rhs.v0_, rhs.v1_ ) )
+            if( std::min( v0, v1 ) != std::min( rhs.v0, rhs.v1 ) )
             {
-                return std::min( v0_, v1_ ) < std::min( rhs.v0_, rhs.v1_ );
+                return std::min( v0, v1 ) < std::min( rhs.v0, rhs.v1 );
             }
-            if( std::max( v0_, v1_ ) != std::max( rhs.v0_, rhs.v1_ ) )
+            if( std::max( v0, v1 ) != std::max( rhs.v0, rhs.v1 ) )
             {
-                return std::max( v0_, v1_ ) < std::max( rhs.v0_, rhs.v1_ );
+                return std::max( v0, v1 ) < std::max( rhs.v0, rhs.v1 );
             }
-            if( surface_ != rhs.surface_ )
+            if( surface != rhs.surface )
             {
-                return surface_ < rhs.surface_;
+                return surface < rhs.surface;
             }
-            return polygon_ < rhs.polygon_;
+            return polygon < rhs.polygon;
         }
 
         bool same_edge( const BorderPolygon& rhs ) const
         {
-            return std::min( v0_, v1_ ) == std::min( rhs.v0_, rhs.v1_ )
-                   && std::max( v0_, v1_ ) == std::max( rhs.v0_, rhs.v1_ );
+            return std::min( v0, v1 ) == std::min( rhs.v0, rhs.v1 )
+                   && std::max( v0, v1 ) == std::max( rhs.v0, rhs.v1 );
         }
 
         /// Indices of the points in the geomodel.
         /// The edge v0v1 is on the one on the boundary.
-        index_t v0_;
-        index_t v1_;
-        // Index of the surface containing the polygon
-        index_t surface_;
-        // Index of the polygon in the surface
-        index_t polygon_;
+        index_t v0;
+        index_t v1;
+        /// Index of the surface containing the polygon
+        index_t surface;
+        /// Index of the polygon in the surface
+        index_t polygon;
     };
 
     template < index_t DIMENSION >
@@ -244,7 +250,7 @@ namespace
 
     protected:
         const GeoModel< DIMENSION >& geomodel_;
-        // All the polygons on a boundary of all the Surfaces of the GeoModel
+        /// All the polygons on a boundary of all the Surfaces of the GeoModel
         std::vector< BorderPolygon > border_polygons_;
     };
 
@@ -525,13 +531,13 @@ namespace
                 {
                     if( line_border.same_edge( border ) )
                     {
-                        auto surface_id = border.surface_;
+                        auto surface_id = border.surface;
                         region_info_[line.index()].add_polygon_edge( surface_id,
                             this->geomodel_.surface( surface_id )
                                 .mesh()
-                                .polygon_normal( border.polygon_ ),
-                            vertices.vertex( border.v0_ ),
-                            vertices.vertex( border.v1_ ) );
+                                .polygon_normal( border.polygon ),
+                            vertices.vertex( border.v0 ),
+                            vertices.vertex( border.v1 ) );
                     }
                 }
                 region_info_[line.index()].sort();
@@ -599,6 +605,13 @@ namespace
               cur_border_polygon_( 0 )
         {
             visited_.resize( this->border_polygons_.size(), false );
+            const auto& geomodel_vertices = this->geomodel_.mesh.vertices;
+            surfaces_around_vertices_.resize( geomodel_vertices.nb() );
+            for( const auto& border : this->border_polygons_ )
+            {
+                fill_surfaces_around_vertex( border.v0 );
+                fill_surfaces_around_vertex( border.v1 );
+            }
         }
 
         /*!
@@ -629,11 +642,26 @@ namespace
         }
 
     private:
+        void fill_surfaces_around_vertex( index_t vertex )
+        {
+            auto& surfaces = surfaces_around_vertices_[vertex];
+            if( !surfaces.empty() )
+            {
+                return;
+            }
+            auto gme_vertices = this->geomodel_.mesh.vertices.gme_type_vertices(
+                surface_type_name_static(), vertex );
+            for( const auto& gme_vertex : gme_vertices )
+            {
+                surfaces.push_back( gme_vertex.gmme.index() );
+            }
+        }
+
         void compute_line_geometry()
         {
             visit_border_polygons_on_same_edge( cur_border_polygon_ );
-            auto p0 = this->border_polygons_[cur_border_polygon_].v0_;
-            auto p1 = this->border_polygons_[cur_border_polygon_].v1_;
+            auto p0 = this->border_polygons_[cur_border_polygon_].v0;
+            auto p1 = this->border_polygons_[cur_border_polygon_].v1;
             cur_line_.vertices_.push_back( p0 );
             cur_line_.vertices_.push_back( p1 );
 
@@ -659,7 +687,7 @@ namespace
 
             auto t = get_next_border_polygon( cur_border_polygon_, backward );
             ringmesh_assert( t != NO_ID );
-            while( propagate( t ) )
+            while( propagate( t, backward ) )
             {
                 visit_border_polygons_on_same_edge( t );
                 add_border_polygon_vertices_to_line( t, backward );
@@ -668,15 +696,40 @@ namespace
             }
         }
 
-        bool propagate( index_t t ) const
+        bool propagate( index_t t, bool backward ) const
         {
             return t != cur_border_polygon_ && !is_visited( t )
-                   && equal_to_line_adjacent_surfaces( t );
+                   && equal_to_line_adjacent_surfaces( t )
+                   && !vertex_is_on_corner( t, backward );
         }
 
         bool is_visited( index_t i ) const
         {
             return visited_[i];
+        }
+
+        bool vertex_is_on_corner( index_t t, bool backward ) const
+        {
+            const auto& surfaces = [t, backward, this] {
+                if( backward )
+                {
+                    return surfaces_around_vertices_[this->border_polygons_[t]
+                                                         .v1];
+                }
+                else
+                {
+                    return surfaces_around_vertices_[this->border_polygons_[t]
+                                                         .v0];
+                }
+            }();
+            for( auto surface : surfaces )
+            {
+                if( !contains( cur_line_.adjacent_surfaces_, surface ) )
+                {
+                    return true;
+                }
+            }
+            return false;
         }
 
         bool equal_to_line_adjacent_surfaces( index_t t ) const
@@ -695,7 +748,7 @@ namespace
         {
             const auto& border_polygon = this->border_polygons_[polygon_index];
             add_vertices_to_line(
-                border_polygon.v0_, border_polygon.v1_, !backward );
+                border_polygon.v0, border_polygon.v1, !backward );
         }
 
         void add_vertices_to_line( index_t v0, index_t v1, bool at_the_end )
@@ -736,15 +789,15 @@ namespace
         index_t get_next_border_polygon( index_t from, bool backward ) const
         {
             const auto& border_polygon = this->border_polygons_[from];
-            const auto& S = this->geomodel_.surface( border_polygon.surface_ );
+            const auto& S = this->geomodel_.surface( border_polygon.surface );
             const auto& mesh = S.mesh();
             auto surface_id = S.gmme();
             const auto& geomodel_vertices = this->geomodel_.mesh.vertices;
 
             // Gets the next edge on border in the Surface
-            auto p = border_polygon.polygon_;
+            auto p = border_polygon.polygon;
             auto possible_v0_id = geomodel_vertices.mesh_entity_vertex_id(
-                surface_id, border_polygon.v0_ );
+                surface_id, border_polygon.v0 );
             ringmesh_assert( !possible_v0_id.empty() );
             index_t v0_id{ NO_ID };
             for( auto id : possible_v0_id )
@@ -777,7 +830,7 @@ namespace
 
             // Finds the BorderPolygon that is corresponding to this
             // It must exist and there is only one
-            BorderPolygon bait{ border_polygon.surface_,
+            BorderPolygon bait{ border_polygon.surface,
                 next_polygon_local_edge0_on_border.polygon_id,
                 geomodel_vertices.geomodel_vertex_id(
                     surface_id, next_polygon_local_edge0_on_border ),
@@ -826,7 +879,7 @@ namespace
             std::vector< index_t > adjacent_surfaces;
             adjacent_surfaces.reserve( 10 );
             adjacent_surfaces.push_back(
-                this->border_polygons_[border_id].surface_ );
+                this->border_polygons_[border_id].surface );
 
             for( auto next_border_id = border_id + 1;
                  next_border_id < this->border_polygons_.size()
@@ -835,7 +888,7 @@ namespace
                  next_border_id++ )
             {
                 adjacent_surfaces.push_back(
-                    this->border_polygons_[next_border_id].surface_ );
+                    this->border_polygons_[next_border_id].surface );
             }
 
             for( auto prev_border_id = border_id - 1;
@@ -845,18 +898,20 @@ namespace
                  prev_border_id-- )
             {
                 adjacent_surfaces.push_back(
-                    this->border_polygons_[prev_border_id].surface_ );
+                    this->border_polygons_[prev_border_id].surface );
             }
             std::sort( adjacent_surfaces.begin(), adjacent_surfaces.end() );
             return adjacent_surfaces;
         }
 
     private:
-        // Internal use to flag the visited border_polygons when computing the
-        // Lines
+        /// Flag the visited border_polygons when computing the Lines
         std::vector< bool > visited_;
 
-        // Currently computed line information
+        /// Surfaces around vertices (only filled for boundary vertices)
+        std::vector< std::vector< index_t > > surfaces_around_vertices_;
+
+        /// Currently computed line information
         index_t cur_border_polygon_;
         LineDefinition cur_line_;
     };
@@ -955,8 +1010,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderBase< DIMENSION >::
-        build_lines_and_corners_from_surfaces()
+    void GeoModelBuilderBase<
+        DIMENSION >::build_lines_and_corners_from_surfaces()
     {
         LineGeometryFromGeoModelSurfaces< DIMENSION > line_computer(
             geomodel_ );
@@ -1025,9 +1080,7 @@ namespace RINGMesh
     class GeoModelBuilder< 2 >::Impl
     {
     public:
-        Impl( GeoModel2D& geomodel ) : geomodel_( geomodel )
-        {
-        }
+        Impl( GeoModel2D& geomodel ) : geomodel_( geomodel ) {}
 
         struct OrientedLine
         {
@@ -1352,9 +1405,7 @@ namespace RINGMesh
     {
     }
 
-    GeoModelBuilder< 2 >::~GeoModelBuilder()
-    {
-    }
+    GeoModelBuilder< 2 >::~GeoModelBuilder() {}
 
     template <>
     void GeoModelBuilderBase< 2 >::cut_geomodel_on_internal_boundaries()

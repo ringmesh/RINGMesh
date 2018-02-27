@@ -917,7 +917,7 @@ namespace RINGMesh
     template < index_t DIMENSION >
     bool SurfaceBase< DIMENSION >::is_simplicial() const
     {
-        return surface_mesh_->polygons_are_simplicies();
+        return surface_mesh_->polygons_are_simplices();
     }
 
     template < index_t DIMENSION >

@@ -41,9 +41,7 @@
 
 namespace
 {
-    RINGMESH_PLUGIN_INITIALIZE(
-        RINGMesh_tetrahedralize,
-        // Plugin initialization
-        RINGMesh::TetraGen::initialize();
-    );
+    RINGMESH_PLUGIN_INITIALIZE( RINGMesh_tetrahedralize,
+                                // Plugin initialization
+                                RINGMesh::TetraGen::initialize(); );
 } // namespace

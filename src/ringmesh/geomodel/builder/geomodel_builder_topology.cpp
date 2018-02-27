@@ -432,9 +432,9 @@ namespace RINGMesh
         index_t nb_entities{ geomodel_.nb_mesh_entities( entity_type ) };
         index_t new_id{ nb_entities };
         geomodel_access_.modifiable_mesh_entities( entity_type )
-            .emplace_back( GeoModelMeshEntityAccess< DIMENSION >::
-                    template create_entity< ENTITY >(
-                        geomodel_, new_id, mesh_type ) );
+            .emplace_back(
+                GeoModelMeshEntityAccess< DIMENSION >::template create_entity<
+                    ENTITY >( geomodel_, new_id, mesh_type ) );
         return geomodel_access_.modifiable_mesh_entities( entity_type )
             .back()
             ->gmme();
@@ -452,8 +452,9 @@ namespace RINGMesh
         store.reserve( new_size );
         for( auto i : range( old_size, new_size ) )
         {
-            store.emplace_back( GeoModelMeshEntityAccess< DIMENSION >::
-                    template create_entity< ENTITY >( geomodel_, i, type ) );
+            store.emplace_back(
+                GeoModelMeshEntityAccess< DIMENSION >::template create_entity<
+                    ENTITY >( geomodel_, i, type ) );
         }
         return true;
     }
@@ -565,10 +566,10 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderTopologyBase< DIMENSION >::
-        set_mesh_entity_incident_entity( const gmme_id& gmme,
-            index_t current_local_incident_entity_id,
-            index_t new_global_incident_entity_id )
+    void GeoModelBuilderTopologyBase<
+        DIMENSION >::set_mesh_entity_incident_entity( const gmme_id& gmme,
+        index_t current_local_incident_entity_id,
+        index_t new_global_incident_entity_id )
     {
         /// No check on the validity of the index of the entity incident_entity
         /// NO_ID is used to flag entities to delete
@@ -687,9 +688,8 @@ namespace RINGMesh
             geomodel_.entity_type_manager().mesh_entity_manager;
         if( manager.is_region( entity_type ) )
         {
-            return GeoModelBuilderTopologyBase3D::
-                create_mesh_entities< Region >(
-                    nb_additional_entities, mesh_type );
+            return GeoModelBuilderTopologyBase3D::create_mesh_entities<
+                Region >( nb_additional_entities, mesh_type );
         }
         return GeoModelBuilderTopologyBase3D::create_mesh_entities(
             entity_type, nb_additional_entities, mesh_type );

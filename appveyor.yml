@@ -2,36 +2,53 @@ environment:
   GITHUB_TOKEN:
     secure: 5JPgkWrjzetioB0LX9ZmMUV+5gk2/4vtkhgvaMVmkoOCNwxaraKuHGYjr6CkD8hR
   MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
+  nodejs_version: "8"
   matrix:
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
     GENERATOR: "Visual Studio 12 2013 Win64"
     RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2013
+    CMAKE_OPTIONS: -DRINGMESH_WITH_GUI:BOOL=OFF
   - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
     GENERATOR: "Visual Studio 14 2015 Win64"
     RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2015
+    CMAKE_OPTIONS: -DRINGMESH_WITH_GUI:BOOL=ON
 
 platform: x64
 
 matrix:
   fast_finish: true
-
+  
+install:
+  - ps: Install-Product node $env:nodejs_version
+  
+cache:
+  - node_modules  
+  
 for:
 -
   branches:
     only:
       - master
       
+  notifications:
+    - provider: Slack
+      incoming_webhook:
+        secure: nhWXvD92AwG2//akSuMqEDraFcdaz8WcLR0Ndw+7HCGw18j1TAcTnCutfevAo5INztTFTC6NLMEroQTyy5cbm3yNkQ0Imb/ira3cL1XspEY=
+      on_build_success: false
+      on_build_failure: true
+      on_build_status_changed: true
+    
   configuration:
     - Debug
-    - Release
+    - RelWithDebInfo
 
   build_script:
    - mkdir build
    - cd build
-   - if %configuration% == Release (
-     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=%RINGMESH_PACKAGE% ..
+   - if %configuration% == RelWithDebInfo (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=%RINGMESH_PACKAGE% %CMAKE_OPTIONS% ..
      ) else (
-     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON %CMAKE_OPTIONS% ..
      )
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
@@ -41,7 +58,7 @@ for:
      )
 
   deploy_script:
-   - if %configuration% == Release (
+   - if %configuration% == RelWithDebInfo (
      cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
@@ -58,7 +75,7 @@ for:
   build_script:
    - mkdir build
    - cd build
-   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON %CMAKE_OPTIONS% ..
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   test_script:
