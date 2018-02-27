@@ -40,8 +40,6 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/mesh/mesh_base.h>
 
-
-
 /*!
  * @file ringmesh/geomodel/builder/geomodel_builder_access.cpp
  * @brief Implementation of the classes to access the GeoModel and its Entities

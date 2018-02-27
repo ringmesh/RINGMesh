@@ -47,7 +47,6 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_tools.h>
 
-
 #include <ringmesh/tetrahedralize/tetra_gen.h>
 
 /*!

@@ -44,7 +44,6 @@
 #include <ringmesh/basic/geometry.h>
 #include <stack>
 
-
 namespace RINGMesh
 {
     template < index_t DIMENSION >

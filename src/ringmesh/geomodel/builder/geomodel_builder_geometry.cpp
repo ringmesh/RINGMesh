@@ -41,10 +41,10 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
 namespace
