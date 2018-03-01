@@ -90,7 +90,7 @@ namespace RINGMesh
         /*!
          * @brief Create a PointMeshBuilder for a given corner
          * @param[in] corner_id the corner index
-         * @return The created Mesh0DBuilder
+         * @return The created PointSetMeshBuilder
          * @warn The client code is responsible for the memory unallocation.
          * You can use the smartpointer Mesh0DBuilder_var.
          */
