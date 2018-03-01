@@ -49,7 +49,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMeshBuilder );
 
-    struct ElementLocalVertex;
     struct CellLocalFacet;
 } // namespace RINGMesh
 
@@ -289,7 +288,7 @@ namespace RINGMesh
     protected:
         VolumeMesh() = default;
 
-    protected:
+    private:
         mutable std::unique_ptr< NNSearch< DIMENSION > >
             cell_facet_nn_search_{};
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_{};

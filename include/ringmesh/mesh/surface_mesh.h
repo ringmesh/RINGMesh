@@ -49,7 +49,6 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
 
-    struct ElementLocalVertex;
     struct PolygonLocalEdge;
 } // namespace RINGMesh
 
@@ -342,7 +341,7 @@ namespace RINGMesh
     protected:
         SurfaceMeshBase() = default;
 
-    protected:
+    private:
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
     };
