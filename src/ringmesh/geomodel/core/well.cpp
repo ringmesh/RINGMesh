@@ -48,11 +48,10 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
-
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 
 /*!
@@ -298,8 +297,7 @@ namespace
         return edges_around_vertices;
     }
 
-    void process_linear_edges(
-        const std::vector< index_t >& edges,
+    void process_linear_edges( const std::vector< index_t >& edges,
         std::vector< bool >& edge_visited,
         const LineMesh3D& conformal_mesh,
         std::stack< OrientedEdge >& S_part,
@@ -692,7 +690,8 @@ namespace RINGMesh
         auto conformal_mesh = LineMesh3D::create_mesh();
         compute_conformal_mesh( mesh, *conformal_mesh );
 
-        auto edges_around_vertices = get_edges_around_vertices( *conformal_mesh );
+        auto edges_around_vertices =
+            get_edges_around_vertices( *conformal_mesh );
 
         std::stack< OrientedEdge > S;
         for( auto v : range( conformal_mesh->nb_vertices() ) )
@@ -741,8 +740,8 @@ namespace RINGMesh
                 const auto& edges = edges_around_vertices[v_to_id];
                 if( edges.size() == 2 )
                 {
-                    process_linear_edges( edges, edge_visited, *conformal_mesh,
-                        S_part, v_to_id );
+                    process_linear_edges(
+                        edges, edge_visited, *conformal_mesh, S_part, v_to_id );
                 }
                 else
                 {

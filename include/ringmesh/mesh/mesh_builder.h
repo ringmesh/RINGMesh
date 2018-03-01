@@ -51,13 +51,8 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( PointSetMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
-    FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
-    FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
 
-    struct CellLocalFacet;
     struct EdgeLocalVertex;
-    struct ElementLocalVertex;
-    struct PolygonLocalEdge;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -585,7 +580,6 @@ namespace RINGMesh
                     vertex2polygon_local_vertex[vertex] = local_vertex_count;
                 }
             }
-
             local_vertex_count = 0;
             for( auto polygon : polygons_to_connect )
             {

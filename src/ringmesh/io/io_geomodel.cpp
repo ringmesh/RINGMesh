@@ -47,20 +47,19 @@
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/task_handler.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
-#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
-#include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/well.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/io/geomodel_builder_gocad.h>
 
 #include <ringmesh/io/zip_file.h>
 
-
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
 /*!
@@ -125,8 +124,8 @@ namespace RINGMesh
     {
         GeoModelInputHandlerFactory2D::register_creator< GeoModelHandlerGM2D >(
             "gm" );
-        GeoModelInputHandlerFactory2D::
-            register_creator< StradivariusIOHandler >( "model" );
+        GeoModelInputHandlerFactory2D::register_creator<
+            StradivariusIOHandler >( "model" );
         GeoModelInputHandlerFactory2D::register_creator< SVGIOHandler >(
             "svg" );
     }

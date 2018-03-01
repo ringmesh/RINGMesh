@@ -42,9 +42,9 @@
 #include <ringmesh/basic/geometry.h>
 #include <stack>
 
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 
 namespace RINGMesh
 {
@@ -56,7 +56,7 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "PointSetMesh",
                     "Default mesh data structure not registered" );
@@ -94,18 +94,18 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
-                throw RINGMeshException( "LineMesh",
-                    "Default mesh data structure not registered" );
+                throw RINGMeshException(
+                    "LineMesh", "Default mesh data structure not registered" );
             }
             return create_mesh( "GeogramLineMesh" );
         }
         auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
         if( !mesh )
         {
-            Logger::warn( "LineMesh", "Could not create mesh data structure: ",
-                new_type );
+            Logger::warn( "LineMesh",
+                "Could not create mesh data structure: ", new_type );
             Logger::warn(
                 "LineMesh", "Falling back to GeogramLineMesh data structure" );
 
@@ -116,4 +116,4 @@ namespace RINGMesh
 
     template class mesh_api PointSetMesh< 2 >;
     template class mesh_api PointSetMesh< 3 >;
- } // namespace RINGMesh
+} // namespace RINGMesh

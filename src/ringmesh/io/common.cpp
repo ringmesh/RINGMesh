@@ -42,10 +42,8 @@
 
 namespace
 {
-    RINGMESH_PLUGIN_INITIALIZE(
-        RINGMesh_io,
-        // Plugin initialization
-        RINGMesh::initialize_gocad_import_factories();
-        RINGMesh::mesh_initialize();
-    );
+    RINGMESH_PLUGIN_INITIALIZE( RINGMesh_io,
+                                // Plugin initialization
+                                RINGMesh::initialize_gocad_import_factories();
+                                RINGMesh::mesh_initialize(); );
 } // namespace

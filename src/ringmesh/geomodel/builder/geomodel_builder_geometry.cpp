@@ -41,10 +41,10 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
 namespace
@@ -345,15 +345,15 @@ namespace RINGMesh
         }
     }
 
-    template< index_t DIMENSION >
+    template < index_t DIMENSION >
     void GeoModelBuilderGeometryBase< DIMENSION >::set_mesh_entity_vertex(
-        index_t geomodel_vertex_id,
-        const vecn< DIMENSION >& point )
+        index_t geomodel_vertex_id, const vecn< DIMENSION >& point )
     {
         auto& geomodel_vertices = geomodel_.mesh.vertices;
         geomodel_vertices.set_point( geomodel_vertex_id, point );
 
-        const auto& gme_v = geomodel_vertices.gme_vertices( geomodel_vertex_id );
+        const auto& gme_v =
+            geomodel_vertices.gme_vertices( geomodel_vertex_id );
         for( const auto& info : gme_v )
         {
             set_mesh_entity_vertex( info.gmme, info.v_index, point, false );
@@ -550,8 +550,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::delete_mesh_entity_isolated_vertices( const gmme_id& E_id )
     {
         if( geomodel_.entity_type_manager().mesh_entity_manager.is_line(
                 E_id.type() ) )
@@ -653,8 +653,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        cut_surfaces_by_internal_lines()
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::cut_surfaces_by_internal_lines()
     {
         for( const auto& surface : geomodel_.surfaces() )
         {
@@ -691,9 +691,9 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    void GeoModelBuilderGeometryBase< DIMENSION >::
-        duplicate_surface_vertices_along_line(
-            index_t surface_id, index_t line_id )
+    void GeoModelBuilderGeometryBase<
+        DIMENSION >::duplicate_surface_vertices_along_line( index_t surface_id,
+        index_t line_id )
     {
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
         ringmesh_assert( line_id < geomodel_.nb_lines() );
@@ -865,9 +865,9 @@ namespace RINGMesh
         return VolumeMeshBuilder3D::create_builder( region_mesh );
     }
 
-    index_t GeoModelBuilderGeometry< 3 >::
-        disconnect_region_cells_along_surface_polygons(
-            index_t region_id, index_t surface_id )
+    index_t GeoModelBuilderGeometry<
+        3 >::disconnect_region_cells_along_surface_polygons( index_t region_id,
+        index_t surface_id )
     {
         ringmesh_assert( region_id < geomodel_.nb_regions() );
         ringmesh_assert( surface_id < geomodel_.nb_surfaces() );
@@ -1068,8 +1068,8 @@ namespace RINGMesh
         }
         else
         {
-            GeoModelBuilderGeometryBase< 3 >::
-                delete_mesh_entity_isolated_vertices( E_id );
+            GeoModelBuilderGeometryBase<
+                3 >::delete_mesh_entity_isolated_vertices( E_id );
         }
     }
 

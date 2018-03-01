@@ -40,9 +40,9 @@
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>
 #include <ringmesh/mesh/common.h>
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_base.h>
 #include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
 
@@ -51,7 +51,6 @@
 namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModel );
-
 } // namespace RINGMesh
 
 namespace RINGMesh

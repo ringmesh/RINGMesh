@@ -35,7 +35,6 @@
 
 /*! \author Francois Bonneau */
 
-
 #include <numeric>
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
@@ -55,7 +54,7 @@ namespace RINGMesh
         if( new_type.empty() )
         {
             if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                "GeogramPointSetMesh" ) )
+                    "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "SurfaceMesh",
                     "Default mesh data structure not registered" );
