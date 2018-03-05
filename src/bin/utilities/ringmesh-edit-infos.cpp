@@ -42,6 +42,7 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/io/io.h>
 
@@ -64,6 +65,26 @@ namespace
         builder.info.set_geomodel_name( geomodel_new_name );
         if( geomodel_out_path == geomodel_in_path )
         {
+            GEO::FileSystem::delete_file( geomodel_in_path );
+        }
+        geomodel_save( geomodel, geomodel_out_path );
+    }
+
+    template < index_t DIMENSION > 
+    void edit_surface_name( const std::string& geomodel_in_path,
+        const std::string& surface_old_name,
+        const std::string& surface_new_name,
+        const std::string& geomodel_out_path )
+    {
+        GeoModel< DIMENSION > geomodel;
+        geomodel_load( geomodel, geomodel_in_path );
+        GeoModelBuilder< DIMENSION > builder( geomodel );
+        for( const auto& surface : geomodel.surfaces() ) {
+            if( surface.name() == surface_old_name ) {
+                builder.info.set_mesh_entity_name( surface.gmme(), surface_new_name );
+            }
+        }
+        if( geomodel_out_path == geomodel_in_path ) {
             GEO::FileSystem::delete_file( geomodel_in_path );
         }
         geomodel_save( geomodel, geomodel_out_path );
@@ -92,7 +113,9 @@ int main( int argc, char** argv )
         CmdLine::import_arg_group( "in" );
         CmdLine::import_arg_group( "out" );
         GEO::CmdLine::declare_arg_group( "edit", "Edit GeoModel infos" );
-        GEO::CmdLine::declare_arg( "edit:name", "", "New GeoModel name" );
+        GEO::CmdLine::declare_arg( "edit:geomodel_name", "", "New GeoModel name" );
+        GEO::CmdLine::declare_arg( "edit:surface_old_name", "", "Old Surface name" );
+        GEO::CmdLine::declare_arg( "edit:surface_new_name", "", "New Surface name" );
         if( argc == 1 )
         {
             GEO::CmdLine::show_usage();
@@ -114,11 +137,13 @@ int main( int argc, char** argv )
                 "I/O", "Give at least a filename in in:geomodel" );
         }
 
-        std::string geomodel_new_name = GEO::CmdLine::get_arg( "edit:name" );
-        if( geomodel_in_file.empty() )
+        std::string geomodel_new_name = GEO::CmdLine::get_arg( "edit:geomodel_name" );
+        std::string surface_old_name = GEO::CmdLine::get_arg( "edit:surface_old_name" );
+        std::string surface_new_name = GEO::CmdLine::get_arg( "edit:surface_new_name" );
+        if( geomodel_new_name.empty() && surface_old_name.empty() )
         {
             throw RINGMeshException(
-                "I/O", "Give at least a new GeoModel name in edit:name" );
+                "I/O", "Give at least a new GeoModel name in edit:geomodel_name or a Old Surface Name in edit:surface_old_name");
         }
 
         std::string geomodel_out_file = GEO::CmdLine::get_arg( "out:geomodel" );
@@ -130,13 +155,25 @@ int main( int argc, char** argv )
         index_t dimension = find_geomodel_dimension( geomodel_in_file );
         if( dimension == 2 )
         {
-            edit_geomodel_name< 2 >(
-                geomodel_in_file, geomodel_new_name, geomodel_out_file );
+            if( !geomodel_new_name.empty() ) {
+                edit_geomodel_name< 2 >(
+                    geomodel_in_file, geomodel_new_name, geomodel_out_file );
+            }
+            if( !surface_old_name.empty() ) {
+                edit_surface_name< 2 >(
+                    geomodel_in_file, surface_old_name, surface_new_name, geomodel_out_file);
+            }
         }
         else if( dimension == 3 )
         {
-            edit_geomodel_name< 3 >(
-                geomodel_in_file, geomodel_new_name, geomodel_out_file );
+            if( !geomodel_new_name.empty() ) {
+                edit_geomodel_name< 3 >(
+                    geomodel_in_file, geomodel_new_name, geomodel_out_file );
+            }
+            if( !surface_old_name.empty() ) {
+                edit_surface_name< 3 >(
+                    geomodel_in_file, surface_old_name, surface_new_name, geomodel_out_file );
+            }
         }
     }
     catch( const RINGMeshException& e )
