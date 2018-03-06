@@ -32,7 +32,7 @@ aux_source_directories(SOURCES "Source Files\\rply"         rply)
 aux_source_directories(SOURCES "Source Files\\shewchuk"     shewchuk)
 aux_source_directories(SOURCES "Source Files\\zlib"         zlib)
 aux_source_directories(SOURCES "Source Files\\gzstream"     gzstream)
-# aux_source_directories(SOURCES "Source Files\\PoissonRecon" PoissonRecon)
+aux_source_directories(SOURCES "Source Files\\PoissonRecon" PoissonRecon)
 
 if(GEOGRAM_WITH_LUA)
    aux_source_directories(SOURCES "Source Files\\lua"          lua)
