@@ -112,7 +112,10 @@ namespace RINGMesh
         void copy_geological_entity_topology( const GeoModel< DIMENSION >& from,
             const GeologicalEntityType& type );
 
-        bool check_if_boundary_incident_entity_relation_already_exists(
+        bool check_if_children_to_parent_relation_already_exists(
+            const gmge_id& parent, const gmme_id& children );
+
+        bool check_if_parent_to_children_relation_already_exists(
             const gmge_id& parent, const gmme_id& children );
 
     private:
