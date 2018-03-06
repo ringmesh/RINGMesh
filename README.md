@@ -17,12 +17,12 @@ Please visit the RINGMesh website: [www.ringmesh.org](http://www.ringmesh.org)
 Compiling RINGMesh
 ====================
 
-RINGMesh is a cross platform project tested under Window (64bits), Linux (64bits) and Mac OS (64bits).  
-Please, follow the installation procedure described on the RINGMesh website: [ringmesh.org/try/installation/](http://ringmesh.org/try/installation/). 
+RINGMesh is a cross platform project tested under Windows, Linux and Mac OS.  
+Please follow the installation procedure described on the RINGMesh website: [ringmesh.org/try/installation/](http://ringmesh.org/try/installation/). 
 
-Develop with RINGMesh
+Developing with RINGMesh
 =====================
-RingMesh is an open-source development platform. 
+RINGMesh is an open-source development platform. 
 Any contribution to RINGMesh is warmly welcome. 
 However, if you want to use RINGMesh for a particular usage you may need to develop a plugin. 
-An example the [RINGMesh plugin](https://github.com/ringmesh/RINGMeshPluginExample) structure is available on github.
+An example of a [RINGMesh plugin](https://github.com/ringmesh/RINGMeshPluginExample) structure is available on github.
