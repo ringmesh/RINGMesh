@@ -123,7 +123,29 @@ namespace RINGMesh
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
         }
-        remove_mesh_entities( mesh_entities );
+        if( !mesh_entities.empty() )
+        {
+            remove_mesh_entities( mesh_entities );
+        }
+        else
+        {
+            initialize_for_removal( mesh_entities );
+//            do_delete_flagged_mesh_entities();
+//            geomodel_.mesh.vertices.clear();
+//            update_mesh_entity_connectivity();
+            flag_geological_entities_without_children();
+            do_delete_flagged_geological_entities();
+            update_geological_entity_connectivity();
+//            // The geological entities have no children
+//            for( const gmge_id& it : entities )
+//            {
+//                builder_.geology.delete_geological_entity( it.type(), it.index() );
+//            }
+//            for( auto i : range( nb_geological_entity_types_ ) )
+//            {
+//                clear_null_geological_entities( i );
+//            }
+        }
     }
 
     template < index_t DIMENSION >
@@ -550,6 +572,7 @@ namespace RINGMesh
                 gmme_id new_id( entity_type, j );
                 GeoModelMeshEntity< DIMENSION >& ME =
                     geomodel_access_.modifiable_mesh_entity( new_id );
+                DEBUG(new_id);
                 update_mesh_entity_parents( ME );
                 delete_invalid_parents( ME );
             }

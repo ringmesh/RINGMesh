@@ -224,7 +224,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::set_mesh_entity_parent(
-        const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge )
+        const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge, bool update_parent )
     {
         /// No check on the validity of the index of the entity parents_
         /// NO_ID is used to flag entities to delete
@@ -238,19 +238,21 @@ namespace RINGMesh
         const auto old_parent_gmge = mesh_entity.parent_gmge( id );
         manager.set_parent_to_parent_child_relationship(
             relationship_id, parent_gmge );
-        // Add child in new parent relationships
-        GeoModelGeologicalEntityAccess< DIMENSION > parent_access{
-            geomodel_access_.modifiable_geological_entity( parent_gmge )
-        };
-        parent_access.modifiable_children().push_back( relationship_id );
-        // Remove child in old parent relationships
-        GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
-            geomodel_access_.modifiable_geological_entity( old_parent_gmge )
-        };
-        auto relationship_position = std::find(
-            old_parent_access.modifiable_children().begin(),
-            old_parent_access.modifiable_children().end(), relationship_id );
-        old_parent_access.modifiable_children().erase( relationship_position );
+        if( update_parent ) {
+            // Add child in new parent relationships
+            GeoModelGeologicalEntityAccess< DIMENSION > parent_access{
+                geomodel_access_.modifiable_geological_entity( parent_gmge )
+            };
+            parent_access.modifiable_children().push_back( relationship_id );
+            // Remove child in old parent relationships
+            GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
+                geomodel_access_.modifiable_geological_entity( old_parent_gmge )
+            };
+            auto relationship_position = std::find(
+                old_parent_access.modifiable_children().begin(),
+                old_parent_access.modifiable_children().end(), relationship_id );
+            old_parent_access.modifiable_children().erase( relationship_position );
+        }
     }
 
     template < index_t DIMENSION >
