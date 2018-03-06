@@ -200,6 +200,7 @@ namespace RINGMesh
 
         static GeologicalEntityType type_name_static();
         GeologicalEntityType type_name() const override;
+        static MeshEntityType child_type_name_static();
         MeshEntityType child_type_name() const override;
     };
 
@@ -217,6 +218,7 @@ namespace RINGMesh
 
         static GeologicalEntityType type_name_static();
         GeologicalEntityType type_name() const override;
+        static MeshEntityType child_type_name_static();
         MeshEntityType child_type_name() const override;
     };
 
@@ -233,6 +235,7 @@ namespace RINGMesh
 
         static GeologicalEntityType type_name_static();
         GeologicalEntityType type_name() const override;
+        static MeshEntityType child_type_name_static();
         MeshEntityType child_type_name() const override;
     };
 

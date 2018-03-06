@@ -190,7 +190,7 @@ namespace RINGMesh
 
     template < index_t DIMENSION >
     bool GeoModelBuilderGeology< DIMENSION >::
-        check_if_boundary_incident_entity_relation_already_exists(
+        check_if_children_to_parent_relation_already_exists(
             const gmge_id& parent, const gmme_id& children )
     {
         const auto& children_mesh_entity = geomodel_.mesh_entity( children );
@@ -204,8 +204,30 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    bool GeoModelBuilderGeology< DIMENSION >::
+        check_if_parent_to_children_relation_already_exists(
+            const gmge_id& parent, const gmme_id& children )
+    {
+        const auto& parent_geological_entity =
+            geomodel_.geological_entity( parent );
+
+        for( auto children_id :
+            range( parent_geological_entity.nb_children() ) )
+        {
+            if( parent_geological_entity.child_gmme( children_id ) == children )
+            {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::set_mesh_entity_parent(
-        const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge )
+        const gmme_id& child_gmme,
+        index_t id,
+        const gmge_id& parent_gmge,
+        bool update_parent )
     {
         /// No check on the validity of the index of the entity parents_
         /// NO_ID is used to flag entities to delete
@@ -216,8 +238,14 @@ namespace RINGMesh
         auto relationship_id = gmme_access.modifiable_parents()[id];
         auto& manager = geomodel_access_.modifiable_entity_type_manager()
                             .relationship_manager;
+        const auto old_parent_gmge = mesh_entity.parent_gmge( id );
         manager.set_parent_to_parent_child_relationship(
             relationship_id, parent_gmge );
+        if( update_parent )
+        {
+            update_parent_entity_children(
+                relationship_id, parent_gmge, old_parent_gmge );
+        }
     }
 
     template < index_t DIMENSION >
@@ -236,10 +264,19 @@ namespace RINGMesh
                 parent, " and ", children );
         }
 
-        if( check_if_boundary_incident_entity_relation_already_exists(
+        if( check_if_children_to_parent_relation_already_exists(
                 parent, children ) )
         {
-            return;
+            if( check_if_parent_to_children_relation_already_exists(
+                    parent, children ) )
+            {
+                return;
+            }
+            else
+            {
+                ringmesh_assert_not_reached;
+                return;
+            }
         }
 
         auto& children_entity =
@@ -462,6 +499,27 @@ namespace RINGMesh
             geomodel_access_.modifiable_geological_entity( gmge_id )
         };
         gmge_access.modifiable_geol_feature() = geol_feature;
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::update_parent_entity_children(
+        index_t relationship_id,
+        const gmge_id& new_parent_gmge,
+        const gmge_id& old_parent_gmge )
+    {
+        // Add child in new parent relationships
+        GeoModelGeologicalEntityAccess< DIMENSION > parent_access{
+            geomodel_access_.modifiable_geological_entity( new_parent_gmge )
+        };
+        parent_access.modifiable_children().push_back( relationship_id );
+        // Remove child in old parent relationships
+        GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
+            geomodel_access_.modifiable_geological_entity( old_parent_gmge )
+        };
+        auto relationship_position = std::find(
+            old_parent_access.modifiable_children().begin(),
+            old_parent_access.modifiable_children().end(), relationship_id );
+        old_parent_access.modifiable_children().erase( relationship_position );
     }
 
     template class geomodel_builder_api GeoModelBuilderGeology< 2 >;

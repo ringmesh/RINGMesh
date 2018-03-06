@@ -299,15 +299,33 @@ namespace RINGMesh
     }
 
     template <>
+    MeshEntityType Contact< 2 >::child_type_name_static()
+    {
+        return Corner2D::type_name_static();
+    }
+
+    template <>
     MeshEntityType Contact< 2 >::child_type_name() const
     {
         return Corner2D::type_name_static();
     }
 
     template <>
+    MeshEntityType Interface< 2 >::child_type_name_static()
+    {
+        return Line2D::type_name_static();
+    }
+
+    template <>
     MeshEntityType Interface< 2 >::child_type_name() const
     {
         return Line2D::type_name_static();
+    }
+
+    template <>
+    MeshEntityType Layer< 2 >::child_type_name_static()
+    {
+        return Surface2D::type_name_static();
     }
 
     template <>
@@ -329,9 +347,15 @@ namespace RINGMesh
     }
 
     template <>
-    MeshEntityType Contact< 3 >::child_type_name() const
+    MeshEntityType Contact< 3 >::child_type_name_static()
     {
         return Line3D::type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Contact< DIMENSION >::child_type_name() const
+    {
+        return Contact< DIMENSION >::child_type_name_static();
     }
 
     template < index_t DIMENSION >
@@ -347,9 +371,15 @@ namespace RINGMesh
     }
 
     template <>
-    MeshEntityType Interface< 3 >::child_type_name() const
+    MeshEntityType Interface< 3 >::child_type_name_static()
     {
         return Surface3D::type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Interface< DIMENSION >::child_type_name() const
+    {
+        return Interface< DIMENSION >::child_type_name_static();
     }
 
     template < index_t DIMENSION >
@@ -365,9 +395,15 @@ namespace RINGMesh
     }
 
     template <>
-    MeshEntityType Layer< 3 >::child_type_name() const
+    MeshEntityType Layer< 3 >::child_type_name_static()
     {
         return Region3D::type_name_static();
+    }
+
+    template < index_t DIMENSION >
+    MeshEntityType Layer< DIMENSION >::child_type_name() const
+    {
+        return Layer< DIMENSION >::child_type_name_static();
     }
 
     template class geomodel_core_api GeoModelGeologicalEntity< 2 >;
