@@ -120,6 +120,11 @@ namespace RINGMesh
         bool check_if_parent_to_children_relation_already_exists(
             const gmge_id& parent, const gmme_id& children );
 
+        void update_parent_entity_children(
+            index_t relationship_id,
+            const gmge_id& new_parent_gmge,
+            const gmge_id& old_parent_gmge );
+
     private:
         GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;

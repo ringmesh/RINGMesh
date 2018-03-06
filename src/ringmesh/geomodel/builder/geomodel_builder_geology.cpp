@@ -243,21 +243,8 @@ namespace RINGMesh
             relationship_id, parent_gmge );
         if( update_parent )
         {
-            // Add child in new parent relationships
-            GeoModelGeologicalEntityAccess< DIMENSION > parent_access{
-                geomodel_access_.modifiable_geological_entity( parent_gmge )
-            };
-            parent_access.modifiable_children().push_back( relationship_id );
-            // Remove child in old parent relationships
-            GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
-                geomodel_access_.modifiable_geological_entity( old_parent_gmge )
-            };
-            auto relationship_position =
-                std::find( old_parent_access.modifiable_children().begin(),
-                    old_parent_access.modifiable_children().end(),
-                    relationship_id );
-            old_parent_access.modifiable_children().erase(
-                relationship_position );
+            update_parent_entity_children( relationship_id, parent_gmge,
+                old_parent_gmge );
         }
     }
 
@@ -512,6 +499,29 @@ namespace RINGMesh
             geomodel_access_.modifiable_geological_entity( gmge_id )
         };
         gmge_access.modifiable_geol_feature() = geol_feature;
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::update_parent_entity_children(
+        index_t relationship_id,
+        const gmge_id& new_parent_gmge,
+        const gmge_id& old_parent_gmge )
+    {
+        // Add child in new parent relationships
+        GeoModelGeologicalEntityAccess< DIMENSION > parent_access{
+            geomodel_access_.modifiable_geological_entity( new_parent_gmge )
+        };
+        parent_access.modifiable_children().push_back( relationship_id );
+        // Remove child in old parent relationships
+        GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
+            geomodel_access_.modifiable_geological_entity( old_parent_gmge )
+        };
+        auto relationship_position =
+            std::find( old_parent_access.modifiable_children().begin(),
+                old_parent_access.modifiable_children().end(),
+                relationship_id );
+        old_parent_access.modifiable_children().erase(
+            relationship_position );
     }
 
     template class geomodel_builder_api GeoModelBuilderGeology< 2 >;
