@@ -243,8 +243,8 @@ namespace RINGMesh
             relationship_id, parent_gmge );
         if( update_parent )
         {
-            update_parent_entity_children( relationship_id, parent_gmge,
-                old_parent_gmge );
+            update_parent_entity_children(
+                relationship_id, parent_gmge, old_parent_gmge );
         }
     }
 
@@ -516,12 +516,10 @@ namespace RINGMesh
         GeoModelGeologicalEntityAccess< DIMENSION > old_parent_access{
             geomodel_access_.modifiable_geological_entity( old_parent_gmge )
         };
-        auto relationship_position =
-            std::find( old_parent_access.modifiable_children().begin(),
-                old_parent_access.modifiable_children().end(),
-                relationship_id );
-        old_parent_access.modifiable_children().erase(
-            relationship_position );
+        auto relationship_position = std::find(
+            old_parent_access.modifiable_children().begin(),
+            old_parent_access.modifiable_children().end(), relationship_id );
+        old_parent_access.modifiable_children().erase( relationship_position );
     }
 
     template class geomodel_builder_api GeoModelBuilderGeology< 2 >;
