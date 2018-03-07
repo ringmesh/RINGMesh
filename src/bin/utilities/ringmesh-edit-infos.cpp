@@ -42,7 +42,6 @@
 #include <ringmesh/basic/command_line.h>
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/io/io.h>
 
@@ -80,8 +79,7 @@ namespace
         geomodel_load( geomodel, geomodel_in_path );
         GeoModelBuilder< DIMENSION > builder( geomodel );
 
-        for( const auto& ge_interface : geomodel.geol_entities(
-                 RINGMesh::GeologicalEntityType( "Interface" ) ) )
+        for( const auto& ge_interface : geomodel.geol_entities(Interface< DIMENSION >::type_name_static() ) )
         {
             if( ge_interface.name() == interface_old_name )
             {
