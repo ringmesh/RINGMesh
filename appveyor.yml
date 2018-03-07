@@ -67,6 +67,7 @@ for:
      && git config --global user.name "AppVeyor"
      && git add download\%RINGMESH_PACKAGE%.zip
      && git commit -m "Update Windows master release"
+     && git pull origin master
      && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
      )
 -
