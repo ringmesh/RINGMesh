@@ -79,7 +79,8 @@ namespace
         geomodel_load( geomodel, geomodel_in_path );
         GeoModelBuilder< DIMENSION > builder( geomodel );
 
-        for( const auto& ge_interface : geomodel.geol_entities(Interface< DIMENSION >::type_name_static() ) )
+        for( const auto& ge_interface : geomodel.geol_entities(
+                 Interface< DIMENSION >::type_name_static() ) )
         {
             if( ge_interface.name() == interface_old_name )
             {
