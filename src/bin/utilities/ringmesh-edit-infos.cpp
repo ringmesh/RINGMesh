@@ -79,12 +79,14 @@ namespace
         GeoModel< DIMENSION > geomodel;
         geomodel_load( geomodel, geomodel_in_path );
         GeoModelBuilder< DIMENSION > builder( geomodel );
-        
-        for( const auto& ge_interface : geomodel.geol_entities(RINGMesh::GeologicalEntityType("Interface")))
+
+        for( const auto& ge_interface : geomodel.geol_entities(
+                 RINGMesh::GeologicalEntityType( "Interface" ) ) )
         {
             if( ge_interface.name() == interface_old_name )
             {
-                builder.info.set_geological_entity_name( ge_interface.gmge(), interface_new_name );
+                builder.info.set_geological_entity_name(
+                    ge_interface.gmge(), interface_new_name );
             }
         }
         if( geomodel_out_path == geomodel_in_path )
