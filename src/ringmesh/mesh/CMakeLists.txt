@@ -42,7 +42,7 @@ target_sources(${target_name}
         "${lib_source_dir}/line_mesh.cpp"
         "${lib_source_dir}/surface_mesh.cpp"        
         "${lib_source_dir}/volume_mesh.cpp"        
-        "${lib_source_dir}/mesh.cpp"
+        "${lib_source_dir}/mesh_set.cpp"
     PRIVATE # Could be PUBLIC from CMake 3.3
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/mesh_aabb.h"
@@ -53,7 +53,7 @@ target_sources(${target_name}
         "${lib_include_dir}/line_mesh.h"
         "${lib_include_dir}/surface_mesh.h"
         "${lib_include_dir}/volume_mesh.h"
-        "${lib_include_dir}/mesh.h"
+        "${lib_include_dir}/mesh_set.h"
 )
 
 target_link_libraries(${target_name} PUBLIC basic)

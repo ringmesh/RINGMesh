@@ -35,8 +35,6 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/mesh/mesh.h>
-
 #include <numeric>
 #include <ringmesh/basic/algorithm.h>
 #include <ringmesh/basic/geometry.h>
@@ -45,6 +43,7 @@
 #include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_base.h>
 #include <ringmesh/mesh/mesh_index.h>
+#include <ringmesh/mesh/mesh_set.h>
 #include <ringmesh/mesh/point_set_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>

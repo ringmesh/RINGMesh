@@ -44,10 +44,10 @@
 
 #include <ringmesh/geogram_extension/geogram_extension.h>
 
-#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 
 #include <ringmesh/mesh/line_mesh.h>
+#include <ringmesh/mesh/mesh_set.h>
 #include <ringmesh/mesh/point_set_mesh.h>
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
