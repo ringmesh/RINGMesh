@@ -309,7 +309,7 @@ void VolumeMesh<DIMENSION>::store_cells_around_vertex(index_t cell_hint,
         ringmesh_assert( cell_hint != NO_ID );
 
         // Flag the visited cells
-	store_cells_around_vertex(cell_hint, vertex_id, result);
+	    store_cells_around_vertex(cell_hint, vertex_id, result);
         return result;
     }
 

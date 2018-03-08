@@ -357,6 +357,40 @@ index_t SurfaceMeshBase<DIMENSION>::find_first_polygon_around_vertex(
 }
 
 template<index_t DIMENSION>
+void SurfaceMeshBase<DIMENSION>::stacking_polygons(index_t vertex_id,
+		bool border_only, std::stack<index_t>& S, std::vector<index_t>& visited,
+		std::vector<index_t>& result) const {
+	auto p = S.top();
+	S.pop();
+	for (auto v : range(nb_polygon_vertices(p))) {
+		if (polygon_vertex( { p, v }) == vertex_id) {
+			auto adj_P = polygon_adjacent( { p, v });
+			auto prev = prev_polygon_vertex( { p, v }).local_vertex_id;
+			auto adj_prev = polygon_adjacent( { p, prev });
+			if (adj_P != NO_ID && !contains(visited, adj_P)) {
+				// The edge starting at P is not on the boundary
+				S.push(adj_P);
+				visited.push_back(adj_P);
+			}
+			if (adj_prev != NO_ID && !contains(visited, adj_prev)) {
+				// The edge ending at P is not on the boundary
+				S.push(adj_prev);
+				visited.push_back(adj_prev);
+			}
+			if (border_only) {
+				if (adj_P == NO_ID || adj_prev == NO_ID) {
+					result.push_back(p);
+				}
+			} else {
+				result.push_back(p);
+			}
+			// We are done with this polygon
+			return;
+		}
+	}
+}
+
+template<index_t DIMENSION>
 std::vector<index_t> SurfaceMeshBase<DIMENSION>::store_polygons_around_vertex(
 		index_t first_polygon, index_t vertex_id, bool border_only) const {
 	// Flag the visited polygons
@@ -369,34 +403,7 @@ std::vector<index_t> SurfaceMeshBase<DIMENSION>::store_polygons_around_vertex(
 	std::vector<index_t> result;
 	result.reserve(10);
 	do {
-		auto p = S.top();
-		S.pop();
-		for (auto v : range(nb_polygon_vertices(p))) {
-			if (polygon_vertex( { p, v }) == vertex_id) {
-				auto adj_P = polygon_adjacent( { p, v });
-				auto prev = prev_polygon_vertex( { p, v }).local_vertex_id;
-				auto adj_prev = polygon_adjacent( { p, prev });
-				if (adj_P != NO_ID && !contains(visited, adj_P)) {
-					// The edge starting at P is not on the boundary
-					S.push(adj_P);
-					visited.push_back(adj_P);
-				}
-				if (adj_prev != NO_ID && !contains(visited, adj_prev)) {
-					// The edge ending at P is not on the boundary
-					S.push(adj_prev);
-					visited.push_back(adj_prev);
-				}
-				if (border_only) {
-					if (adj_P == NO_ID || adj_prev == NO_ID) {
-						result.push_back(p);
-					}
-				} else {
-					result.push_back(p);
-				}
-				// We are done with this polygon
-				break;
-			}
-		}
+		stacking_polygons(vertex_id, border_only, S, visited, result);
 	} while (!S.empty());
 	return result;
 }

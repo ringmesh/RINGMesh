@@ -43,6 +43,7 @@
 
 #include <ringmesh/mesh/mesh_aabb.h>
 #include <ringmesh/mesh/mesh_base.h>
+#include <stack>
 
 namespace RINGMesh
 {
@@ -350,6 +351,9 @@ namespace RINGMesh
 	std::vector<index_t> store_polygons_around_vertex(
 			GEO::index_t first_polygon, GEO::index_t vertex_id,
 			bool border_only) const;
+	void stacking_polygons(GEO::index_t vertex_id, bool border_only,
+			std::stack<index_t>& S, std::vector<index_t>& visited,
+			std::vector<index_t>& result) const;
 };
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
