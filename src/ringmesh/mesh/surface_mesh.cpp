@@ -344,69 +344,86 @@ namespace RINGMesh
         return result;
     }
 
-template<index_t DIMENSION>
-index_t SurfaceMeshBase<DIMENSION>::find_first_polygon_around_vertex(
-		index_t cur_p, index_t vertex_id, index_t& first_polygon) const {
-	for (auto lv : range(nb_polygon_vertices(cur_p))) {
-		if (polygon_vertex( { cur_p, lv }) == vertex_id) {
-			first_polygon = cur_p;
-			break;
-		}
-	}
-	return cur_p;
-}
+    template < index_t DIMENSION >
+    index_t SurfaceMeshBase< DIMENSION >::find_first_polygon_around_vertex(
+        index_t cur_p, index_t vertex_id, index_t& first_polygon ) const
+    {
+        for( auto lv : range( nb_polygon_vertices( cur_p ) ) )
+        {
+            if( polygon_vertex( { cur_p, lv } ) == vertex_id )
+            {
+                first_polygon = cur_p;
+                break;
+            }
+        }
+        return cur_p;
+    }
 
-template<index_t DIMENSION>
-void SurfaceMeshBase<DIMENSION>::stacking_polygons(index_t vertex_id,
-		bool border_only, std::stack<index_t>& S, std::vector<index_t>& visited,
-		std::vector<index_t>& result) const {
-	auto p = S.top();
-	S.pop();
-	for (auto v : range(nb_polygon_vertices(p))) {
-		if (polygon_vertex( { p, v }) == vertex_id) {
-			auto adj_P = polygon_adjacent( { p, v });
-			auto prev = prev_polygon_vertex( { p, v }).local_vertex_id;
-			auto adj_prev = polygon_adjacent( { p, prev });
-			if (adj_P != NO_ID && !contains(visited, adj_P)) {
-				// The edge starting at P is not on the boundary
-				S.push(adj_P);
-				visited.push_back(adj_P);
-			}
-			if (adj_prev != NO_ID && !contains(visited, adj_prev)) {
-				// The edge ending at P is not on the boundary
-				S.push(adj_prev);
-				visited.push_back(adj_prev);
-			}
-			if (border_only) {
-				if (adj_P == NO_ID || adj_prev == NO_ID) {
-					result.push_back(p);
-				}
-			} else {
-				result.push_back(p);
-			}
-			// We are done with this polygon
-			return;
-		}
-	}
-}
+    template < index_t DIMENSION >
+    void SurfaceMeshBase< DIMENSION >::stacking_polygons( index_t vertex_id,
+        bool border_only,
+        std::stack< index_t >& S,
+        std::vector< index_t >& visited,
+        std::vector< index_t >& result ) const
+    {
+        auto p = S.top();
+        S.pop();
+        for( auto v : range( nb_polygon_vertices( p ) ) )
+        {
+            if( polygon_vertex( { p, v } ) == vertex_id )
+            {
+                auto adj_P = polygon_adjacent( { p, v } );
+                auto prev = prev_polygon_vertex( { p, v } ).local_vertex_id;
+                auto adj_prev = polygon_adjacent( { p, prev } );
+                if( adj_P != NO_ID && !contains( visited, adj_P ) )
+                {
+                    // The edge starting at P is not on the boundary
+                    S.push( adj_P );
+                    visited.push_back( adj_P );
+                }
+                if( adj_prev != NO_ID && !contains( visited, adj_prev ) )
+                {
+                    // The edge ending at P is not on the boundary
+                    S.push( adj_prev );
+                    visited.push_back( adj_prev );
+                }
+                if( border_only )
+                {
+                    if( adj_P == NO_ID || adj_prev == NO_ID )
+                    {
+                        result.push_back( p );
+                    }
+                }
+                else
+                {
+                    result.push_back( p );
+                }
+                // We are done with this polygon
+                return;
+            }
+        }
+    }
 
-template<index_t DIMENSION>
-std::vector<index_t> SurfaceMeshBase<DIMENSION>::store_polygons_around_vertex(
-		index_t first_polygon, index_t vertex_id, bool border_only) const {
-	// Flag the visited polygons
-	std::vector<index_t> visited;
-	visited.reserve(10);
-	// Stack of the adjacent polygons
-	std::stack<index_t> S;
-	S.push(first_polygon);
-	visited.push_back(first_polygon);
-	std::vector<index_t> result;
-	result.reserve(10);
-	do {
-		stacking_polygons(vertex_id, border_only, S, visited, result);
-	} while (!S.empty());
-	return result;
-}
+    template < index_t DIMENSION >
+    std::vector< index_t >
+        SurfaceMeshBase< DIMENSION >::store_polygons_around_vertex(
+            index_t first_polygon, index_t vertex_id, bool border_only ) const
+    {
+        // Flag the visited polygons
+        std::vector< index_t > visited;
+        visited.reserve( 10 );
+        // Stack of the adjacent polygons
+        std::stack< index_t > S;
+        S.push( first_polygon );
+        visited.push_back( first_polygon );
+        std::vector< index_t > result;
+        result.reserve( 10 );
+        do
+        {
+            stacking_polygons( vertex_id, border_only, S, visited, result );
+        } while( !S.empty() );
+        return result;
+    }
 
     template < index_t DIMENSION >
     std::vector< index_t > SurfaceMeshBase< DIMENSION >::polygons_around_vertex(
@@ -415,15 +432,15 @@ std::vector<index_t> SurfaceMeshBase<DIMENSION>::store_polygons_around_vertex(
         index_t cur_p{ 0 };
         while( first_polygon == NO_ID && cur_p < nb_polygons() )
         {
-		cur_p = find_first_polygon_around_vertex(cur_p, vertex_id,
-				first_polygon);
+            cur_p = find_first_polygon_around_vertex(
+                cur_p, vertex_id, first_polygon );
             cur_p++;
         }
         ringmesh_assert( first_polygon != NO_ID );
 
         // Flag the visited polygons
-	std::vector<index_t> result = store_polygons_around_vertex(first_polygon,
-			vertex_id, border_only);
+        std::vector< index_t > result = store_polygons_around_vertex(
+            first_polygon, vertex_id, border_only );
         return result;
     }
 

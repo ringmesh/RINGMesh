@@ -249,45 +249,55 @@ namespace RINGMesh
         return valid;
     }
 
-template<index_t DIMENSION>
-void VolumeMesh<DIMENSION>::store_cells_around_vertex(index_t cell_hint,
-		index_t vertex_id, std::vector<index_t>& result) const {
-	// Flag the visited cells
-	std::vector<index_t> visited;
-	visited.reserve(10);
-	// Stack of the adjacent cells
-	std::stack<index_t> S;
-	S.push(cell_hint);
-	visited.push_back(cell_hint);
-	do {
-		auto c = S.top();
-		S.pop();
-		bool cell_includes_vertex { false };
-		for (auto v : range(nb_cell_vertices(c))) {
-			if (cell_vertex( { c, v }) == vertex_id) {
-				result.push_back(c);
-				cell_includes_vertex = true;
-				break;
-			}
-		}
-		if (!cell_includes_vertex) {
-			continue;
-		}
-		for (auto f : range(nb_cell_facets(c))) {
-			for (auto v : range(nb_cell_facet_vertices( { c, f }))) {
-				auto vertex = cell_facet_vertex( { c, f }, v);
-				if (vertex == vertex_id) {
-					auto adj_P = cell_adjacent( { c, f });
-					if (adj_P != NO_ID && !contains(visited, adj_P)) {
-						S.push(adj_P);
-						visited.push_back(adj_P);
-					}
-					break;
-				}
-			}
-		}
-	} while (!S.empty());
-}
+    template < index_t DIMENSION >
+    void VolumeMesh< DIMENSION >::store_cells_around_vertex( index_t cell_hint,
+        index_t vertex_id,
+        std::vector< index_t >& result ) const
+    {
+        // Flag the visited cells
+        std::vector< index_t > visited;
+        visited.reserve( 10 );
+        // Stack of the adjacent cells
+        std::stack< index_t > S;
+        S.push( cell_hint );
+        visited.push_back( cell_hint );
+        do
+        {
+            auto c = S.top();
+            S.pop();
+            bool cell_includes_vertex{ false };
+            for( auto v : range( nb_cell_vertices( c ) ) )
+            {
+                if( cell_vertex( { c, v } ) == vertex_id )
+                {
+                    result.push_back( c );
+                    cell_includes_vertex = true;
+                    break;
+                }
+            }
+            if( !cell_includes_vertex )
+            {
+                continue;
+            }
+            for( auto f : range( nb_cell_facets( c ) ) )
+            {
+                for( auto v : range( nb_cell_facet_vertices( { c, f } ) ) )
+                {
+                    auto vertex = cell_facet_vertex( { c, f }, v );
+                    if( vertex == vertex_id )
+                    {
+                        auto adj_P = cell_adjacent( { c, f } );
+                        if( adj_P != NO_ID && !contains( visited, adj_P ) )
+                        {
+                            S.push( adj_P );
+                            visited.push_back( adj_P );
+                        }
+                        break;
+                    }
+                }
+            }
+        } while( !S.empty() );
+    }
 
     template < index_t DIMENSION >
     std::vector< index_t > VolumeMesh< DIMENSION >::cells_around_vertex(
@@ -309,7 +319,7 @@ void VolumeMesh<DIMENSION>::store_cells_around_vertex(index_t cell_hint,
         ringmesh_assert( cell_hint != NO_ID );
 
         // Flag the visited cells
-	    store_cells_around_vertex(cell_hint, vertex_id, result);
+        store_cells_around_vertex( cell_hint, vertex_id, result );
         return result;
     }
 
