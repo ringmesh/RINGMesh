@@ -355,6 +355,7 @@ namespace RINGMesh
 			std::stack<index_t>& S, std::vector<index_t>& visited,
 			std::vector<index_t>& result) const;
 };
+
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template < index_t DIMENSION >
