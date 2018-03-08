@@ -293,7 +293,10 @@ namespace RINGMesh
             cell_facet_nn_search_{};
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_{};
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_{};
-    };
+
+	void store_cells_around_vertex(GEO::index_t cell_hint,
+			GEO::index_t vertex_id, std::vector<index_t>& result) const;
+};
 
     using VolumeMesh3D = VolumeMesh< 3 >;
 

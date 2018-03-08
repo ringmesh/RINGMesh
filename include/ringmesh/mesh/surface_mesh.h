@@ -344,7 +344,13 @@ namespace RINGMesh
     private:
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
-    };
+
+	GEO::index_t find_first_polygon_around_vertex(GEO::index_t cur_p,
+			GEO::index_t vertex_id, GEO::index_t& first_polygon) const;
+	std::vector<index_t> store_polygons_around_vertex(
+			GEO::index_t first_polygon, GEO::index_t vertex_id,
+			bool border_only) const;
+};
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template < index_t DIMENSION >
