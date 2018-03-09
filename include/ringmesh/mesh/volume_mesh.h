@@ -294,8 +294,8 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > cell_nn_search_{};
         mutable std::unique_ptr< VolumeAABBTree< DIMENSION > > cell_aabb_{};
 
-        void store_cells_around_vertex( GEO::index_t cell_hint,
-            GEO::index_t vertex_id,
+        void flag_cells_around_vertex( index_t cell_hint,
+            index_t vertex_id,
             std::vector< index_t >& result ) const;
     };
 

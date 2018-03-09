@@ -357,7 +357,7 @@ index_t SurfaceMeshBase<DIMENSION>::find_first_polygon_around_vertex(
 }
 
 template<index_t DIMENSION>
-void SurfaceMeshBase<DIMENSION>::stacking_polygons(index_t vertex_id,
+void SurfaceMeshBase<DIMENSION>::push_polygons_from_stack(index_t vertex_id,
 		bool border_only, std::stack<index_t>& S, std::vector<index_t>& visited,
 		std::vector<index_t>& result) const {
 	auto p = S.top();
@@ -403,7 +403,7 @@ std::vector<index_t> SurfaceMeshBase<DIMENSION>::store_polygons_around_vertex(
 	std::vector<index_t> result;
 	result.reserve(10);
 	do {
-		stacking_polygons(vertex_id, border_only, S, visited, result);
+		push_polygons_from_stack(vertex_id, border_only, S, visited, result);
 	} while (!S.empty());
 	return result;
 }

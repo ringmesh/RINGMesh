@@ -250,7 +250,7 @@ namespace RINGMesh
     }
 
 template<index_t DIMENSION>
-void VolumeMesh<DIMENSION>::store_cells_around_vertex(index_t cell_hint,
+void VolumeMesh<DIMENSION>::flag_cells_around_vertex(index_t cell_hint,
 		index_t vertex_id, std::vector<index_t>& result) const {
 	// Flag the visited cells
 	std::vector<index_t> visited;
@@ -309,7 +309,7 @@ void VolumeMesh<DIMENSION>::store_cells_around_vertex(index_t cell_hint,
         ringmesh_assert( cell_hint != NO_ID );
 
         // Flag the visited cells
-	    store_cells_around_vertex(cell_hint, vertex_id, result);
+	    flag_cells_around_vertex(cell_hint, vertex_id, result);
         return result;
     }
 

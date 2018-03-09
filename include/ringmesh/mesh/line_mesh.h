@@ -35,7 +35,6 @@
 
 #pragma once
 
-#include <algorithm>
 #include <memory>
 #include <ringmesh/basic/factory.h>
 #include <ringmesh/basic/nn_search.h>

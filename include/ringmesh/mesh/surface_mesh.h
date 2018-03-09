@@ -346,12 +346,12 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
 
-	GEO::index_t find_first_polygon_around_vertex(GEO::index_t cur_p,
-			GEO::index_t vertex_id, GEO::index_t& first_polygon) const;
+	index_t find_first_polygon_around_vertex( index_t cur_p,
+			index_t vertex_id, index_t& first_polygon) const;
 	std::vector<index_t> store_polygons_around_vertex(
-			GEO::index_t first_polygon, GEO::index_t vertex_id,
+			 index_t first_polygon,  index_t vertex_id,
 			bool border_only) const;
-	void stacking_polygons(GEO::index_t vertex_id, bool border_only,
+	void push_polygons_from_stack( index_t vertex_id, bool border_only,
 			std::stack<index_t>& S, std::vector<index_t>& visited,
 			std::vector<index_t>& result) const;
 };
