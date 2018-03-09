@@ -37,6 +37,8 @@
  * @file Implementation of visualization of GeoModelEntities
  * @author Benjamin Chauvin and Arnaud Botella
  */
+ 
+//#include <typeinfo>
 
 #include <ringmesh/visualize/gfx_application.h>
 
@@ -134,10 +136,11 @@ namespace
 }
 namespace RINGMesh
 {
+     
     template < index_t DIMENSION >
     RINGMeshApplication::GeoModelViewerBase< DIMENSION >::GeoModelViewerBase(
         RINGMeshApplication& app, const std::string& filename )
-        : app_( app )
+        : app_( app ), GM_builder_( GM_ )
     {
         corner_style_.color_ = red;
         corner_style_.size_ = 1;
@@ -161,27 +164,47 @@ namespace RINGMesh
         reset_attribute_name();
 
         geomodel_load( GM_, filename );
+        
         // Computation of the BBox is set with surface vertices
         // or with those of lines and corners if the model has no surface
+        
+        temp_name_ = new char[40];
+        strcpy( temp_name_, GM_.name().data() );
+        
         if( GM_.nb_surfaces() > 0 )
         {
             for( const auto& surface : GM_.surfaces() )
             {
                 compute_mesh_entity_bbox( surface, bbox_ );
+                SpeBool newbool;
+                surface_is_visible_.push_back( newbool );
+                char* newchar = new char[20];
+                strcpy( newchar, surface.name().data() );
+                temp_surface_name_.push_back( newchar );
             }
         }
-        else if( GM_.nb_lines() > 0 )
+        if( GM_.nb_lines() > 0 )
         {
             for( const auto& line : GM_.lines() )
             {
                 compute_mesh_entity_bbox( line, bbox_ );
+                SpeBool newbool;
+                line_is_visible_.push_back( newbool );
+                char* newchar = new char[20];
+                strcpy( newchar, line.name().data() );
+                temp_line_name_.push_back( newchar );
             }
         }
-        else
+        if( GM_.nb_corners() > 0 )
         {
             for( const auto& corner : GM_.corners() )
             {
                 compute_mesh_entity_bbox( corner, bbox_ );
+                SpeBool newbool;
+                corner_is_visible_.push_back( newbool );
+                char* newchar = new char[20];
+                strcpy( newchar, corner.name().data() );
+                temp_corner_name_.push_back( newchar );
             }
         }
 
@@ -247,6 +270,9 @@ namespace RINGMesh
                 toggle_geological_entity_visibility( entity_id );
             }
         }
+        // place test for imgui object here
+
+
 
         if( show_attributes_ )
         {
@@ -263,6 +289,24 @@ namespace RINGMesh
                 corner_style_.color_.y, corner_style_.color_.z );
             GM_gfx_.corners.set_vertex_size(
                 static_cast< index_t >( corner_style_.size_ ) );
+            for( const auto& corner : GM_.corners() )
+            {
+                if ( not corner_is_visible_[ corner.index() ].value_ )
+                {
+                    GM_gfx_.corners.set_vertex_visibility( 
+                        corner.index(), false );
+                }
+                else
+                {
+                    GM_gfx_.corners.set_vertex_visibility( 
+                        corner.index(), true );
+                }
+                if ( corner.name() != std::string(temp_corner_name_[ corner.index() ] ) )
+                {
+                    GM_builder_.info.set_mesh_entity_name( corner.gmme(),
+                      std::string(temp_corner_name_[ corner.index() ] ) );
+                }
+            }
             GM_gfx_.corners.draw();
         }
 
@@ -284,7 +328,30 @@ namespace RINGMesh
                 GM_gfx_.lines.set_vertex_color( line_style_.vertex_color_.x,
                     line_style_.vertex_color_.y, line_style_.vertex_color_.z );
             }
+            for( const auto& line : GM_.lines() )
+            {
+                if ( not line_is_visible_[ line.index() ].value_ )
+                {
+                    GM_gfx_.lines.set_line_visibility( 
+                        line.index(), false );
+                }
+                else
+                {
+                    GM_gfx_.lines.set_line_visibility( 
+                        line.index(), true );
+                }
+                if ( line.name() != std::string(temp_line_name_[ line.index() ] ) )
+                {
+                    GM_builder_.info.set_mesh_entity_name( line.gmme(),
+                      std::string(temp_line_name_[ line.index() ] ) );
+                }
+            }
             GM_gfx_.lines.draw();
+            
+            if ( GM_.name() != std::string( temp_name_ ) )
+            {
+                GM_builder_.info.set_geomodel_name( std::string( temp_name_ ) );
+            }
         }
 
         if( show_surface_ )
@@ -319,6 +386,24 @@ namespace RINGMesh
                         GM_gfx_.surfaces.set_surface_visibility(
                             surface.index(), show_voi_ );
                     }
+                }
+            }
+            for( const auto& surface : GM_.surfaces() )
+            {
+                if ( not surface_is_visible_[ surface.index() ].value_ )
+                {
+                    GM_gfx_.surfaces.set_surface_visibility( 
+                        surface.index(), false );
+                }
+                else
+                {
+                    GM_gfx_.surfaces.set_surface_visibility( 
+                        surface.index(), true );
+                }
+                if ( surface.name() != std::string(temp_surface_name_[ surface.index() ] ) )
+                {
+                    GM_builder_.info.set_mesh_entity_name( surface.gmme(),
+                      std::string(temp_surface_name_[ surface.index() ] ) );  
                 }
             }
             GM_gfx_.surfaces.draw();
@@ -602,10 +687,78 @@ namespace RINGMesh
 
         ImGui::Separator();
         ImGui::Checkbox( "Corner [c]", &show_corners_ );
+        ImGui::SameLine();
+        if (ImGui::TreeNode("##corners"))
+        {
+            if ( ImGui::Button("Select All") )
+            {
+                for ( auto& corner : corner_is_visible_ )
+                {
+                    corner.value_ = true;
+                }
+            }
+            if ( ImGui::Button("Unselect All") )
+            {
+                for ( auto& corner : corner_is_visible_ )
+                {
+                    corner.value_ = false;
+                }
+            }
+            
+            unsigned int i = 0;
+            int j = 0;
+            for( const auto& corner : GM_.corners() )
+            {
+                ++i;
+                ++j;
+                ImGui::PushID(j);
+                ImGui::Checkbox( ( std::to_string(i) ).data(),
+                    &corner_is_visible_[ corner.index() ].value_ );
+                ImGui::SameLine();
+                ImGui::InputText( ( "##" + std::to_string(i) ).data(), 
+                    temp_corner_name_[ i - 1 ], 20);
+                ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
         draw_entity_style_editor( "Corner color", corner_style_ );
 
         ImGui::Separator();
         ImGui::Checkbox( "Line [e]", &show_lines_ );
+        ImGui::SameLine();
+        if (ImGui::TreeNode("##lines"))
+        {
+            if ( ImGui::Button("Select All") )
+            {
+                for ( auto& line : line_is_visible_ )
+                {
+                    line.value_ = true;
+                }
+            }
+            if ( ImGui::Button("Unselect All") )
+            {
+                for ( auto& line : line_is_visible_ )
+                {
+                    line.value_ = false;
+                }
+            }
+            
+            unsigned int i = 0;
+            int j = 0;
+            for( const auto& line : GM_.lines() )
+            {
+                ++i;
+                ++j;
+                ImGui::PushID(j);
+                ImGui::Checkbox( ( std::to_string(i) ).data(),
+                    &line_is_visible_[ line.index() ].value_ );
+                ImGui::SameLine();
+                ImGui::InputText( ( "##" + std::to_string(i) ).data(), 
+                    temp_line_name_[ i - 1 ], 20);
+                ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
         draw_entity_style_editor( "Line color", line_style_ );
         ImGui::Checkbox( "Vertices##Line", &line_style_.visible_vertices_ );
         if( line_style_.visible_vertices_ )
@@ -615,6 +768,40 @@ namespace RINGMesh
 
         ImGui::Separator();
         ImGui::Checkbox( "Surface [s]", &show_surface_ );
+        ImGui::SameLine();
+        if (ImGui::TreeNode("##surfaces"))
+        {
+            if ( ImGui::Button("Select All") )
+            {
+                for ( auto& surface : surface_is_visible_ )
+                {
+                    surface.value_ = true;
+                }
+            }
+            if ( ImGui::Button("Unselect All") )
+            {
+                for ( auto& surface : surface_is_visible_ )
+                {
+                    surface.value_ = false;
+                }
+            }
+            
+            unsigned int i = 0;
+            int j = 0;
+            for( const auto& surface : GM_.surfaces() )
+            {
+                ++i;
+                ++j;
+                ImGui::PushID(j);
+                ImGui::Checkbox( ( std::to_string(i) ).data(),
+                    &surface_is_visible_[ surface.index() ].value_ );
+                ImGui::SameLine();
+                ImGui::InputText( ( "##" + std::to_string(i) ).data(), 
+                    temp_surface_name_[ i - 1 ], 20);
+                ImGui::PopID();
+            }
+            ImGui::TreePop();
+        }
         draw_entity_style_editor( "Surface color", surface_style_ );
         ImGui::Checkbox(
             "Vertices##Surface", &surface_style_.visible_vertices_ );
@@ -623,13 +810,13 @@ namespace RINGMesh
             draw_entity_vertex_style_editor(
                 "Surface vertex color", surface_style_ );
         }
+        
     }
 
     template < index_t DIMENSION >
     void RINGMeshApplication::GeoModelViewerBase< DIMENSION >::
         draw_entity_style_editor( const std::string& label, EntityStyle& style )
     {
-        ImGui::SameLine();
         ImGui::ColorEdit3WithPalette( label.c_str(), &style.color_.x );
         ImGui::InputInt( "", &style.size_, 1 );
         style.size_ = std::max( style.size_, 0 );
@@ -915,6 +1102,7 @@ namespace RINGMesh
         {
             ImGui::Separator();
             ImGui::Checkbox( "Region [v]", &show_volume_ );
+            ImGui::SameLine();
             draw_entity_style_editor( "Volume color", volume_style_ );
             ImGui::Checkbox(
                 "Vertices##Region", &volume_style_.visible_vertices_ );
@@ -955,6 +1143,7 @@ namespace RINGMesh
         {
             GEO::mesh_load( filename, mesh_ );
             name_ = GEO::FileSystem::base_name( filename, true );
+            strcpy( temp_name_, name_.data() );
         }
         mesh_gfx_.set_mesh( &mesh_ );
 
@@ -1490,6 +1679,32 @@ namespace RINGMesh
         update_region_of_interest();
         return true;
     }
+    
+    //Warning : this function is not safe, need to add tests on the string 
+    //(validity and extensions) and shoud be able to support mesh #TODO
+    bool RINGMeshApplication::save( const std::string& filename ) 
+    {
+    if( current_viewer_ == NO_ID )
+            return false;
+        switch( current_viewer_type_ )
+        {
+        case ViewerType::GEOMODEL2D:
+            ringmesh_assert( current_viewer_ < geomodels2d_.size() );
+            geomodel_save(geomodels2d_[current_viewer_]->GM_, filename);
+            return true;
+        case ViewerType::GEOMODEL3D:
+            ringmesh_assert( current_viewer_ < geomodels3d_.size() );
+            geomodel_save(geomodels3d_[current_viewer_]->GM_, filename);
+            return true;
+        case ViewerType::MESH:
+            ringmesh_assert( current_viewer_ < meshes_.size() );
+            //#TODO
+            return true;
+        default:
+            return false;
+        }
+        return true;
+    }
 
     void RINGMeshApplication::update_region_of_interest()
     {
@@ -1608,12 +1823,15 @@ namespace RINGMesh
                 GeoModelViewer< DIMENSION >& viewer = *geomodels[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox(
-                        viewer.GM_.name().c_str(), &viewer.is_visible_ ) )
+                        ( std::to_string(i) ).data(), &viewer.is_visible_ ) )
                 {
                     current_viewer_ = i;
                     current_viewer_type_ = viewer.type();
                     update_region_of_interest();
                 }
+                ImGui::SameLine();
+                ImGui::InputText( ( "##" + std::to_string(i) ).data(), 
+                    viewer.temp_name_, 40);
                 ImGui::SameLine( ImGui::GetWindowWidth() - 30 );
                 if( ImGui::Button( "X" ) )
                 {
@@ -1698,12 +1916,16 @@ namespace RINGMesh
                 MeshViewer& viewer = *meshes_[i];
                 ImGui::PushID( id++ );
                 if( ImGui::Checkbox(
-                        viewer.name_.c_str(), &viewer.is_visible_ ) )
+                        std::to_string(i).data() , &viewer.is_visible_ ) ) //
                 {
                     current_viewer_ = i;
                     current_viewer_type_ = ViewerType::MESH;
                     update_region_of_interest();
                 }
+                ImGui::SameLine();
+                ImGui::InputText( ( "##" + std::to_string(i) ).data(), 
+                    viewer.temp_name_, 40);
+                
                 ImGui::SameLine( ImGui::GetWindowWidth() - 30 );
                 if( ImGui::Button( "X" ) )
                 {

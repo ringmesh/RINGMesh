@@ -1499,12 +1499,13 @@ namespace GEO {
         h -= MENU_HEIGHT();
 
         ImGui::SetNextWindowPos(
-            ImVec2(float(w-PANE_WIDTH()), float(MENU_HEIGHT())),
+            ImVec2(float(float(w)-float(PANE_WIDTH())*1.5f), 
+        float(MENU_HEIGHT())),
 	    fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once	    
         );
         
         ImGui::SetNextWindowSize(
-            ImVec2(float(PANE_WIDTH()), float(h)),
+            ImVec2(float(PANE_WIDTH())*1.5f, float(h)),
 	    fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once	    
         );
         
@@ -1687,9 +1688,9 @@ namespace GEO {
 		    }
 		}
 #endif		
-                if(supported_write_file_extensions() != "") {
+                //if(supported_write_file_extensions() != "") {
                     draw_save_menu();
-                }
+                //}
 		draw_fileops_menu();
                 draw_about();
 #ifndef GEO_OS_EMSCRIPTEN                        
@@ -1771,9 +1772,10 @@ namespace GEO {
 	    }
             ImGui::EndMenu();
         }
-#else        
+#else     
         if(ImGui::MenuItem("Save as...")) {
             save_dialog_.show();
+            
         }
 #endif        
     }

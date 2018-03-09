@@ -43,6 +43,7 @@
 
 #include <ringmesh/basic/box.h>
 #include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
 
 #include <ringmesh/visualize/geomodel_gfx.h>
 
@@ -72,12 +73,14 @@ namespace RINGMesh
         virtual void quit();
 
     protected:
+        
         static RINGMeshApplication* instance();
 
         std::string supported_read_file_extensions() override;
         std::string supported_geogram_read_file_extensions();
         void init_graphics() override;
         bool load( const std::string& filename ) override;
+        bool save( const std::string& filename ) override;
         void draw_scene() override;
         void draw_object_properties() override;
         void draw_viewer_properties() override;
@@ -137,6 +140,7 @@ namespace RINGMesh
                 ImVec4 vertex_color_;
                 int vertex_size_{ 1 };
             };
+            
 
         public:
             GeoModelViewerBase(
@@ -167,16 +171,26 @@ namespace RINGMesh
                 const gmme_id& entity_id );
 
             virtual ViewerType type() = 0;
+            
 
         public:
+        
+            struct SpeBool
+            {
+            bool value_{ true };
+            };
+            
             RINGMeshApplication& app_;
             bool is_visible_{ true };
             GeoModel< DIMENSION > GM_;
+            GeoModelBuilder< DIMENSION > GM_builder_;
             GeoModelGfx< DIMENSION > GM_gfx_;
             Box< DIMENSION > bbox_;
             std::vector< std::string > entity_types_;
             int selected_entity_type_{ 0 };
             int selected_entity_id_{ 0 };
+            
+            //add variable here
 
             bool show_corners_{ true };
             EntityStyle corner_style_;
@@ -186,6 +200,15 @@ namespace RINGMesh
             EntityStyle surface_style_;
             bool show_voi_{ false };
             bool show_colormap_{ false };
+            
+            std::vector<SpeBool> surface_is_visible_; //determine if each surface is visible or not
+            std::vector<SpeBool> line_is_visible_; //eq for lines
+            std::vector<SpeBool> corner_is_visible_; //eq for corners
+            
+            std::vector<char*> temp_surface_name_; //use to modify surface names
+            std::vector<char*> temp_line_name_; //eq for line
+            std::vector<char*> temp_corner_name_; //eq for corners
+            char* temp_name_; //eq for GM
 
             bool mesh_visible_{ true };
             ImVec4 mesh_color_;
@@ -226,6 +249,7 @@ namespace RINGMesh
             GEO::MeshGfx mesh_gfx_;
             Box3D bbox_;
             std::string name_;
+            char* temp_name_; //use to modify name
 
             bool show_vertices_{ false };
             float vertices_size_{ 1 };
