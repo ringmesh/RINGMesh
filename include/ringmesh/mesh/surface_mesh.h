@@ -346,15 +346,16 @@ namespace RINGMesh
         mutable std::unique_ptr< NNSearch< DIMENSION > > nn_search_{};
         mutable std::unique_ptr< SurfaceAABBTree< DIMENSION > > polygon_aabb_{};
 
-	index_t find_first_polygon_around_vertex( index_t cur_p,
-			index_t vertex_id, index_t& first_polygon) const;
-	std::vector<index_t> store_polygons_around_vertex(
-			 index_t first_polygon,  index_t vertex_id,
-			bool border_only) const;
-	void push_polygons_from_stack( index_t vertex_id, bool border_only,
-			std::stack<index_t>& S, std::vector<index_t>& visited,
-			std::vector<index_t>& result) const;
-};
+        index_t find_first_polygon_around_vertex(
+            index_t cur_p, index_t vertex_id, index_t& first_polygon ) const;
+        std::vector< index_t > store_polygons_around_vertex(
+            index_t first_polygon, index_t vertex_id, bool border_only ) const;
+        void push_polygons_from_stack( index_t vertex_id,
+            bool border_only,
+            std::stack< index_t >& S,
+            std::vector< index_t >& visited,
+            std::vector< index_t >& result ) const;
+    };
 
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
