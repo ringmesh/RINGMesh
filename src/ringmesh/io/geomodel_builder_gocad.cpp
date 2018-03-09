@@ -36,10 +36,10 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_index.h>
 
@@ -939,8 +939,9 @@ namespace
         {
             if( !load_storage.vertices_.empty() )
             {
-                builder().geometry.set_region_geometry( load_storage.cur_region_,
-                    load_storage.vertices_, load_storage.tetra_corners_ );
+                builder().geometry.set_region_geometry(
+                    load_storage.cur_region_, load_storage.vertices_,
+                    load_storage.tetra_corners_ );
                 assign_attributes_to_mesh(
                     geomodel().region( load_storage.cur_region_ ), load_storage,
                     load_storage.attributes_ );
@@ -1159,8 +1160,8 @@ namespace
         void execute(
             GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            read_and_add_atom_to_region_vertices( geomodel(), line, load_storage,
-                load_storage.vertices_, load_storage.attributes_,
+            read_and_add_atom_to_region_vertices( geomodel(), line,
+                load_storage, load_storage.vertices_, load_storage.attributes_,
                 load_storage.vertex_map_ );
         }
         void execute_light(
@@ -1344,8 +1345,9 @@ namespace
             ringmesh_unused( line );
             if( !load_storage.vertices_.empty() )
             {
-                builder().geometry.set_region_geometry( load_storage.cur_region_,
-                    load_storage.vertices_, load_storage.tetra_corners_ );
+                builder().geometry.set_region_geometry(
+                    load_storage.cur_region_, load_storage.vertices_,
+                    load_storage.tetra_corners_ );
                 assign_attributes_to_mesh(
                     geomodel().region( load_storage.cur_region_ ), load_storage,
                     load_storage.attributes_ );

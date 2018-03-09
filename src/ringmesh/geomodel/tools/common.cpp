@@ -40,8 +40,7 @@
 
 namespace
 {
-    RINGMESH_PLUGIN_INITIALIZE(
-        RINGMesh_geomodel_tools,
+    RINGMESH_PLUGIN_INITIALIZE( RINGMesh_geomodel_tools,
         // Plugin initialization
     );
 } // namespace

@@ -92,13 +92,9 @@ namespace RINGMesh
         zipFile zip_file_{ nullptr };
     };
 
-    ZipFile::ZipFile( const std::string& filename ) : impl_{ filename }
-    {
-    }
+    ZipFile::ZipFile( const std::string& filename ) : impl_{ filename } {}
 
-    ZipFile::~ZipFile()
-    {
-    }
+    ZipFile::~ZipFile() {}
 
     void ZipFile::add_file( const std::string& filename )
     {
@@ -221,9 +217,7 @@ namespace RINGMesh
     {
     }
 
-    UnZipFile::~UnZipFile()
-    {
-    }
+    UnZipFile::~UnZipFile() {}
 
     std::string UnZipFile::get_file( const std::string& filename )
     {

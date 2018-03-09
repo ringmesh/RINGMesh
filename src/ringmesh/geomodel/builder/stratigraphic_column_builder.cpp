@@ -34,8 +34,8 @@
  */
 
 #include <ringmesh/geomodel/builder/stratigraphic_column_builder.h>
-#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <tinyxml2.h>
 
 namespace RINGMesh

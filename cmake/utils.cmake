@@ -34,7 +34,11 @@
 function(add_ringmesh_library directory)
     string(REPLACE "/" "_" target_name ${directory})
     add_library(${target_name} SHARED "")
-    set_target_properties(${target_name} PROPERTIES OUTPUT_NAME RINGMesh_${target_name} FOLDER "Libraries")
+    set_target_properties(${target_name} 
+        PROPERTIES 
+            OUTPUT_NAME RINGMesh_${target_name}
+            FOLDER "Libraries"
+    )
     target_include_directories(${target_name} 
         PUBLIC   
             $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
@@ -79,40 +83,75 @@ function(add_ringmesh_library directory)
     )
 endfunction()
 
-macro(copy_for_windows directory)
+function(add_js_target target src)
+    if(NOT RINGMESH_WITH_GUI)
+        return()
+    endif()
+    set(js_target ${target}_js)
+    set(NBIND_FILE ${NBIND_DIR}/src/v8/Binding.cc)
+    add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
+    set(target_node_name ${target})
+    set(output_directory ${PROJECT_BINARY_DIR}/node/ringmesh)
+    configure_file(${NBIND_DIR}/nbind.js.in
+        ${output_directory}/${target_node_name}.js)
+    set_target_properties(${js_target}
+        PROPERTIES 
+            OUTPUT_NAME ${target_node_name}
+          	RUNTIME_OUTPUT_DIRECTORY ${output_directory}
+          	LIBRARY_OUTPUT_DIRECTORY ${output_directory}
+          	ARCHIVE_OUTPUT_DIRECTORY ${output_directory}
+    )
+    target_link_libraries(${js_target} ${target} nbind)
+endfunction()
+
+macro(copy_deps_dll_window)
 
     # On windows, without proper installation steps, we need to
-    # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities and tests from the debugger
-
-    # The dll and debug info of RINGMesh are in
+    # copy of dlls of all third parties and pdb information.
+    # This dlls are put in the RINGMesh dll directory:
     # build/ringmesh/Debug or build/ringmesh/Release.
+
+if(WIN32)
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${ZLIB_ROOT}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy zlib binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${TINYXML2_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy tinyxml2 binaries")
+endif(WIN32)
+endmacro()
+
+macro(copy_for_all_ringmesh_dlls directory)
+
+    # On windows, without proper installation steps, we need to
+    # copy of all dlls and pdb information from RINGMesh and its 
+    # third parties to binary folder. 
+    
+    # All third parties informations
+    # have already been copied to the RINGMesh dll folder 
+    # (copy_deps_dll_window()). We only need to copy it to 
+    # the needed directory.
+
 if(WIN32)
     add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_INSTALL_PREFIX}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_INSTALL_PREFIX}/lib"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy geogram visualization libraries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${ZLIB_ROOT}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET copy_dll POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${TINYXML2_INSTALL_PREFIX}/bin"
-            "${directory}/$<CONFIGURATION>"
-            COMMENT "Copy tinyxml2 binaries")
 endif(WIN32)
 endmacro()
 

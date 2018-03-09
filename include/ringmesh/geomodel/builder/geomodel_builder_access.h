@@ -111,7 +111,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geomodel_builder_api GeoModelMeshEntityAccess
+    class GeoModelMeshEntityAccess
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -188,7 +188,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( GeoModelMeshEntityAccess );
 
     template < index_t DIMENSION >
-    class geomodel_builder_api GeoModelGeologicalEntityAccess
+    class GeoModelGeologicalEntityAccess
     {
         ringmesh_disable_copy_and_move( GeoModelGeologicalEntityAccess );
         friend class GeoModelBuilderTopology< DIMENSION >;
@@ -240,7 +240,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class geomodel_builder_api GeoModelAccess
+    class GeoModelAccess
     {
         ringmesh_disable_copy_and_move( GeoModelAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

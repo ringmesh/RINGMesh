@@ -123,12 +123,22 @@ namespace RINGMesh
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
         }
-        remove_mesh_entities( mesh_entities );
+        if( !mesh_entities.empty() )
+        {
+            remove_mesh_entities( mesh_entities );
+        }
+        else
+        {
+            initialize_for_removal( mesh_entities );
+            flag_geological_entities_without_children();
+            do_delete_flagged_geological_entities();
+            update_geological_entity_connectivity();
+        }
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        do_delete_flagged_geological_entities()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::do_delete_flagged_geological_entities()
     {
         for( auto i : range( nb_geological_entity_types_ ) )
         {
@@ -204,8 +214,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        do_delete_flagged_mesh_entities()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::do_delete_flagged_mesh_entities()
     {
         for( auto i : range( nb_mesh_entity_types_ ) )
         {
@@ -238,8 +248,8 @@ namespace RINGMesh
         auto& store = geomodel_access_.modifiable_mesh_entities( type_name );
         store.erase(
             std::remove( store.begin(), store.end(),
-                static_cast< std::
-                        unique_ptr< GeoModelMeshEntity< DIMENSION > > >(
+                static_cast<
+                    std::unique_ptr< GeoModelMeshEntity< DIMENSION > > >(
                     nullptr ) ),
             store.end() );
 
@@ -258,8 +268,8 @@ namespace RINGMesh
             geomodel_access_.modifiable_geological_entities( type_name );
         store.erase(
             std::remove( store.begin(), store.end(),
-                static_cast< std::
-                        unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >(
+                static_cast<
+                    std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > >(
                     nullptr ) ),
             store.end() );
 
@@ -334,8 +344,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        flag_geological_entities_without_children()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::flag_geological_entities_without_children()
     {
         for( auto i : range( nb_childs_.size() ) )
         {
@@ -523,8 +533,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        update_geological_entity_connectivity()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::update_geological_entity_connectivity()
     {
         for( auto i : range( nb_geological_entity_types_ ) )
         {
@@ -557,8 +567,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        fill_removed_entities_and_mapping()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::fill_removed_entities_and_mapping()
     {
         for( auto i : range( nb_mesh_entity_types_ ) )
         {
@@ -619,8 +629,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    void GeoModelBuilderRemoveBase< DIMENSION >::
-        update_mesh_entity_connectivity()
+    void GeoModelBuilderRemoveBase<
+        DIMENSION >::update_mesh_entity_connectivity()
     {
         for( auto i : range( nb_mesh_entity_types_ ) )
         {

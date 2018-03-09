@@ -44,6 +44,5 @@ namespace
     RINGMESH_PLUGIN_INITIALIZE(
         RINGMesh_mesh,
         // Plugin initialization
-        RINGMesh::PluginManager::load_plugin( "RINGMesh_geogram_extension" );
-    );
+        RINGMesh::PluginManager::load_plugin( "RINGMesh_geogram_extension" ); );
 } // namespace

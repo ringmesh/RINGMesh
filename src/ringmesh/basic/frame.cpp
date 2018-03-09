@@ -78,4 +78,12 @@ namespace RINGMesh
         ( *this )[1] = normalize( v_axis_point - origin() );
         ( *this )[0] = cross( ( *this )[1], ( *this )[2] );
     }
+
+    template class basic_api FrameBase< 2 >;
+    template class basic_api Frame< 2 >;
+    template class basic_api ReferenceFrame< 2 >;
+
+    template class basic_api FrameBase< 3 >;
+    template class basic_api Frame< 3 >;
+    template class basic_api ReferenceFrame< 3 >;
 } // namespace RINGMesh
