@@ -38,24 +38,22 @@
 #include <ringmesh/basic/aabb.h>
 #include <ringmesh/mesh/common.h>
 
-namespace RINGMesh
-{
+namespace RINGMesh {
     FORWARD_DECLARATION_DIMENSION_CLASS( MeshBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( LineMesh );
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMeshBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( VolumeMesh );
 } // namespace RINGMesh
 
-namespace RINGMesh
-{
-    template < index_t DIMENSION >
-    class mesh_api LineAABBTree : public AABBTree< DIMENSION >
-    {
+namespace RINGMesh {
+    template< index_t DIMENSION >
+    class mesh_api LineAABBTree: public AABBTree< DIMENSION > {
     public:
         explicit LineAABBTree( const LineMesh< DIMENSION >& mesh );
 
         /*!
-         * @brief Gets the closest edge to a given point
+         * @brief Gets the closest edge to a given point using
+         * Euclidean distance
          * @param[in] query the point to use
          * @return a tuple containing:
          * - the closest edge index.
@@ -65,19 +63,37 @@ namespace RINGMesh
         std::tuple< index_t, vecn< DIMENSION >, double > closest_edge(
             const vecn< DIMENSION >& query ) const;
 
+        /*!
+         * @brief Gets the closest edge to a given point using the
+         * given distance \p EvalDistance
+         * @param[in] query the point to use
+         * @return a tuple containing:
+         * - the closest edge index.
+         * - nearest_point the nearest point on the closest edge.
+         * - distance the distance between \p query and \p nearest_point.
+         */
+        template< typename EvalDistance >
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_edge(
+            const vecn< DIMENSION >& query,
+            EvalDistance action ) const
+        {
+            return this->closest_element_box( query, action );
+        }
+
     private:
         /*!
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
         vecn< DIMENSION > get_point_hint_from_box(
-            const Box< DIMENSION >& box, index_t element_id ) const override;
+            const Box< DIMENSION >& box,
+            index_t element_id ) const override;
+
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and an edge
          */
-        class DistanceToEdge
-        {
+        class DistanceToEdge {
         public:
             explicit DistanceToEdge( const LineMesh< DIMENSION >& mesh )
                 : mesh_( mesh )
@@ -85,7 +101,8 @@ namespace RINGMesh
             }
 
             std::tuple< double, vecn< DIMENSION > > operator()(
-                const vecn< DIMENSION >& query, index_t cur_box ) const;
+                const vecn< DIMENSION >& query,
+                index_t cur_box ) const;
 
         private:
             const LineMesh< DIMENSION >& mesh_;
@@ -97,14 +114,14 @@ namespace RINGMesh
 
     ALIAS_2D_AND_3D( LineAABBTree );
 
-    template < index_t DIMENSION >
-    class mesh_api SurfaceAABBTree : public AABBTree< DIMENSION >
-    {
+    template< index_t DIMENSION >
+    class mesh_api SurfaceAABBTree: public AABBTree< DIMENSION > {
     public:
         explicit SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
 
         /*!
-         * @brief Gets the closest triangle to a given point
+         * @brief Gets the closest triangle to a given point using
+         * Euclidean distance
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
          * @return a tuple containing:
@@ -115,28 +132,46 @@ namespace RINGMesh
         std::tuple< index_t, vecn< DIMENSION >, double > closest_triangle(
             const vecn< DIMENSION >& query ) const;
 
+        /*!
+         * @brief Gets the closest triangle to a given point using the
+         * given distance \p EvalDistance
+         * @pre The mesh needs to be triangulated
+         * @param[in] query the point to use
+         * @return a tuple containing:
+         * - the closest triangle index.
+         * - the nearest point on the closest triangle.
+         * - the distance between \p query and \p nearest_point.
+         */
+        template< typename EvalDistance >
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_triangle(
+            const vecn< DIMENSION >& query,
+            EvalDistance action ) const
+        {
+            return this->closest_element_box( query, action );
+        }
+
     private:
         /*!
          * @brief Gets an element point from its box
          * @details In this case, the point is the first vertex of the element
          */
         vecn< DIMENSION > get_point_hint_from_box(
-            const Box< DIMENSION >& box, index_t element_id ) const override;
+            const Box< DIMENSION >& box,
+            index_t element_id ) const override;
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and a triangle
          */
-        class DistanceToTriangle
-        {
+        class DistanceToTriangle {
         public:
-            explicit DistanceToTriangle(
-                const SurfaceMeshBase< DIMENSION >& mesh )
+            explicit DistanceToTriangle( const SurfaceMeshBase< DIMENSION >& mesh )
                 : mesh_( mesh )
             {
             }
 
             std::tuple< double, vecn< DIMENSION > > operator()(
-                const vecn< DIMENSION >& query, index_t cur_box ) const;
+                const vecn< DIMENSION >& query,
+                index_t cur_box ) const;
 
         private:
             const SurfaceMeshBase< DIMENSION >& mesh_;
@@ -148,9 +183,8 @@ namespace RINGMesh
 
     ALIAS_2D_AND_3D( SurfaceAABBTree );
 
-    template < index_t DIMENSION >
-    class mesh_api VolumeAABBTree : public AABBTree< DIMENSION >
-    {
+    template< index_t DIMENSION >
+    class mesh_api VolumeAABBTree: public AABBTree< DIMENSION > {
         ringmesh_template_assert_3d( DIMENSION );
 
     public:
@@ -170,8 +204,10 @@ namespace RINGMesh
          * @details In this case, the point is the first vertex of the element
          */
         vecn< DIMENSION > get_point_hint_from_box(
-            const Box< DIMENSION >& box, index_t element_id ) const override;
-        index_t containing_cell_recursive( const vecn< DIMENSION >& query,
+            const Box< DIMENSION >& box,
+            index_t element_id ) const override;
+        index_t containing_cell_recursive(
+            const vecn< DIMENSION >& query,
             index_t node_index,
             index_t box_begin,
             index_t box_end ) const;

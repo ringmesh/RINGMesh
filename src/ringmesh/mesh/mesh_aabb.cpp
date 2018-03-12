@@ -97,7 +97,7 @@ namespace RINGMesh
             const vecn< DIMENSION >& query ) const
     {
         DistanceToEdge action( mesh_ );
-        return this->closest_element_box( query, action );
+        return this->closest_edge( query, action );
     }
 
     template < index_t DIMENSION >
