@@ -123,7 +123,17 @@ namespace RINGMesh
                 mesh_entities.insert( cur_gmge.child( i ).gmme() );
             }
         }
-        remove_mesh_entities( mesh_entities );
+        if( !mesh_entities.empty() )
+        {
+            remove_mesh_entities( mesh_entities );
+        }
+        else
+        {
+            initialize_for_removal( mesh_entities );
+            flag_geological_entities_without_children();
+            do_delete_flagged_geological_entities();
+            update_geological_entity_connectivity();
+        }
     }
 
     template < index_t DIMENSION >

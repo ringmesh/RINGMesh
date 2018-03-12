@@ -41,8 +41,9 @@
 
 #include <geogram/mesh/mesh.h>
 
-#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
+
+#include <ringmesh/mesh/volume_mesh.h>
 
 #ifdef RINGMESH_WITH_TETGEN
 /*!

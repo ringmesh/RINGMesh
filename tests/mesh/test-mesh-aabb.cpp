@@ -42,10 +42,10 @@
 
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
-#include <ringmesh/mesh/mesh.h>
 #include <ringmesh/mesh/mesh_aabb.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
+#include <ringmesh/mesh/mesh_set.h>
 
 /*!
  * @author Arnaud Botella

@@ -76,8 +76,10 @@ namespace RINGMesh
             typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE
                 geol_feature );
 
-        void set_mesh_entity_parent(
-            const gmme_id& child_gmme, index_t id, const gmge_id& parent_gmge );
+        void set_mesh_entity_parent( const gmme_id& child_gmme,
+            index_t id,
+            const gmge_id& parent_gmge,
+            bool update_parent = false );
 
         void add_parent_children_relation(
             const gmge_id& parent, const gmme_id& children );
@@ -112,8 +114,15 @@ namespace RINGMesh
         void copy_geological_entity_topology( const GeoModel< DIMENSION >& from,
             const GeologicalEntityType& type );
 
-        bool check_if_boundary_incident_entity_relation_already_exists(
+        bool check_if_children_to_parent_relation_already_exists(
             const gmge_id& parent, const gmme_id& children );
+
+        bool check_if_parent_to_children_relation_already_exists(
+            const gmge_id& parent, const gmme_id& children );
+
+        void update_parent_entity_children( index_t relationship_id,
+            const gmge_id& new_parent_gmge,
+            const gmge_id& old_parent_gmge );
 
     private:
         GeoModelBuilder< DIMENSION >& builder_;

@@ -56,10 +56,12 @@
 
 #include <ringmesh/io/zip_file.h>
 
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/line_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
-
+#include <ringmesh/mesh/point_set_mesh.h>
+#include <ringmesh/mesh/surface_mesh.h>
+#include <ringmesh/mesh/volume_mesh.h>
 /*!
  * @file Implementation of classes loading GeoModels
  * @author Arnaud Botella and Antoine Mazuyer

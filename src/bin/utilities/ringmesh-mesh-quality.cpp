@@ -43,7 +43,7 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/mesh_quality.h>
 #include <ringmesh/io/io.h>
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_set.h>
 
 /*!
  * @author Benjamin Chauvin

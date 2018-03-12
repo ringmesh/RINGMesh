@@ -290,7 +290,7 @@ namespace RINGMesh
         friend class GeoModelBuilderBase< DIMENSION >;
         friend class GeoModelBuilder< DIMENSION >;
 
-    private:
+    public:
         GeoModelBuilderRemove( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );
     };
@@ -302,10 +302,11 @@ namespace RINGMesh
         friend class GeoModelBuilderBase< 3 >;
         friend class GeoModelBuilder< 3 >;
 
-    private:
+    public:
         GeoModelBuilderRemove(
             GeoModelBuilder3D& builder, GeoModel3D& geomodel );
 
+    private:
         void update_mesh_entity( GeoModelMeshEntity3D& ME ) override;
 
         void set_boundary_side(
