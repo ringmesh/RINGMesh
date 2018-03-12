@@ -39,8 +39,6 @@
 #include <ringmesh/basic/frame.h>
 #include <ringmesh/basic/geometry.h>
 
-#include <ringmesh/mesh/mesh.h>
-
 #include <geogram/basic/attributes.h>
 
 namespace GEO
