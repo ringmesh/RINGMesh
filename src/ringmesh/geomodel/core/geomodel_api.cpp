@@ -43,8 +43,8 @@
 #include <ringmesh/geomodel/core/geomodel_entity.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/mesh/mesh.h>
 
+#include <ringmesh/mesh/volume_mesh.h>
 /*!
  * @file Set of high level API functions
  */

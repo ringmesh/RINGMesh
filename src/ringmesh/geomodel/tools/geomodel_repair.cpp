@@ -40,9 +40,12 @@
 #include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/tools/geomodel_repair.h>
-#include <ringmesh/mesh/mesh.h>
+
 #include <ringmesh/mesh/mesh_builder.h>
 #include <ringmesh/mesh/mesh_index.h>
+
+#include <ringmesh/mesh/line_mesh.h>
+#include <ringmesh/mesh/surface_mesh.h>
 
 /*!
  * @file Implementation of repair function of the surfaces of a GeoModel

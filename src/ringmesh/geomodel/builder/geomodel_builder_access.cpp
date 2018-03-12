@@ -38,7 +38,7 @@
 #include <ringmesh/geomodel/core/geomodel_entity.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/mesh/mesh_base.h>
 
 /*!
  * @file ringmesh/geomodel/builder/geomodel_builder_access.cpp

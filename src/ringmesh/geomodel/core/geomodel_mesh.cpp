@@ -53,6 +53,7 @@
 #include <ringmesh/geomodel/core/well.h>
 
 #include <ringmesh/mesh/mesh_builder.h>
+#include <ringmesh/mesh/mesh_set.h>
 
 /*!
  * @author Arnaud Botella - Jeanne Pellerin - Antoine Mazuyer
