@@ -55,7 +55,8 @@ namespace RINGMesh
         explicit LineAABBTree( const LineMesh< DIMENSION >& mesh );
 
         /*!
-         * @brief Gets the closest edge to a given point
+         * @brief Gets the closest edge to a given point using
+         * Euclidean distance (L2 norm)
          * @param[in] query the point to use
          * @return a tuple containing:
          * - the closest edge index.
@@ -65,6 +66,22 @@ namespace RINGMesh
         std::tuple< index_t, vecn< DIMENSION >, double > closest_edge(
             const vecn< DIMENSION >& query ) const;
 
+        /*!
+         * @brief Gets the closest edge to a given point using the
+         * given distance \p EvalDistance
+         * @param[in] query the point to use
+         * @return a tuple containing:
+         * - the closest edge index.
+         * - nearest_point the nearest point on the closest edge.
+         * - distance the distance between \p query and \p nearest_point.
+         */
+        template < typename EvalDistance >
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_edge(
+            const vecn< DIMENSION >& query, EvalDistance action ) const
+        {
+            return this->closest_element_box( query, action );
+        }
+
     private:
         /*!
          * @brief Gets an element point from its box
@@ -72,6 +89,7 @@ namespace RINGMesh
          */
         vecn< DIMENSION > get_point_hint_from_box(
             const Box< DIMENSION >& box, index_t element_id ) const override;
+
         /*!
          * This class is used as functor in closest_element_box() to compute
          * the distance between a point and an edge
@@ -86,6 +104,8 @@ namespace RINGMesh
 
             std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query, index_t cur_box ) const;
+            double operator()( const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& pt2 ) const;
 
         private:
             const LineMesh< DIMENSION >& mesh_;
@@ -104,7 +124,8 @@ namespace RINGMesh
         explicit SurfaceAABBTree( const SurfaceMeshBase< DIMENSION >& mesh );
 
         /*!
-         * @brief Gets the closest triangle to a given point
+         * @brief Gets the closest triangle to a given point using
+         * Euclidean distance (L2 norm)
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
          * @return a tuple containing:
@@ -114,6 +135,23 @@ namespace RINGMesh
          */
         std::tuple< index_t, vecn< DIMENSION >, double > closest_triangle(
             const vecn< DIMENSION >& query ) const;
+
+        /*!
+         * @brief Gets the closest triangle to a given point using the
+         * given distance \p EvalDistance
+         * @pre The mesh needs to be triangulated
+         * @param[in] query the point to use
+         * @return a tuple containing:
+         * - the closest triangle index.
+         * - the nearest point on the closest triangle.
+         * - the distance between \p query and \p nearest_point.
+         */
+        template < typename EvalDistance >
+        std::tuple< index_t, vecn< DIMENSION >, double > closest_triangle(
+            const vecn< DIMENSION >& query, EvalDistance action ) const
+        {
+            return this->closest_element_box( query, action );
+        }
 
     private:
         /*!
@@ -137,6 +175,8 @@ namespace RINGMesh
 
             std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query, index_t cur_box ) const;
+            double operator()( const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& pt2 ) const;
 
         private:
             const SurfaceMeshBase< DIMENSION >& mesh_;
