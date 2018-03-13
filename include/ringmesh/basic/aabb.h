@@ -235,9 +235,9 @@ namespace RINGMesh
             get_nearest_element_box_hint( const vecn< DIMENSION >& query,
                 const EvalDistance& eval_distance ) const
         {
-            index_t box_begin { 0 };
-            index_t box_end { nb_bboxes() };
-            index_t node_index { ROOT_INDEX };
+            index_t box_begin{ 0 };
+            index_t box_end{ nb_bboxes() };
+            index_t node_index{ ROOT_INDEX };
             while( !is_leaf( box_begin, box_end ) )
             {
                 index_t box_middle;
