@@ -235,9 +235,9 @@ namespace RINGMesh
             get_nearest_element_box_hint( const vecn< DIMENSION >& query,
                 const EvalDistance& eval_distance ) const
         {
-            index_t box_begin = 0;
-            index_t box_end = nb_bboxes();
-            index_t node_index = ROOT_INDEX;
+            index_t box_begin { 0 };
+            index_t box_end { nb_bboxes() };
+            index_t node_index { ROOT_INDEX };
             while( !is_leaf( box_begin, box_end ) )
             {
                 index_t box_middle;
@@ -258,10 +258,10 @@ namespace RINGMesh
                 }
             }
 
-            index_t nearest_box = mapping_morton_[box_begin];
+            auto nearest_box = mapping_morton_[box_begin];
             vecn< DIMENSION > nearest_point =
                 get_point_hint_from_box( tree_[box_begin], nearest_box );
-            double distance = eval_distance( query, nearest_point );
+            auto distance = eval_distance( query, nearest_point );
             return std::make_tuple( nearest_box, nearest_point, distance );
         }
         /*!
