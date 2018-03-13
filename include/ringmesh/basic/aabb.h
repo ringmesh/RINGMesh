@@ -232,8 +232,7 @@ namespace RINGMesh
          */
         template < class EvalDistance >
         std::tuple< index_t, vecn< DIMENSION >, double >
-            get_nearest_element_box_hint(
-                const vecn< DIMENSION >& query,
+            get_nearest_element_box_hint( const vecn< DIMENSION >& query,
                 const EvalDistance& eval_distance ) const
         {
             index_t box_begin = 0;
@@ -244,10 +243,10 @@ namespace RINGMesh
                 index_t box_middle;
                 index_t child_left;
                 index_t child_right;
-                get_recursive_iterators( node_index, box_begin, box_end, box_middle,
-                    child_left, child_right );
+                get_recursive_iterators( node_index, box_begin, box_end,
+                    box_middle, child_left, child_right );
                 if( eval_distance( node( child_left ).center(), query )
-                    < eval_distance( node( child_right ).center() , query ) )
+                    < eval_distance( node( child_right ).center(), query ) )
                 {
                     box_end = box_middle;
                     node_index = child_left;

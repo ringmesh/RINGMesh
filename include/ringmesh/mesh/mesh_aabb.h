@@ -103,10 +103,8 @@ namespace RINGMesh
             }
 
             std::tuple< double, vecn< DIMENSION > > operator()(
-                const vecn< DIMENSION >& query,
-                index_t cur_box ) const;
-            double operator()(
-                const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& query, index_t cur_box ) const;
+            double operator()( const vecn< DIMENSION >& pt1,
                 const vecn< DIMENSION >& pt2 ) const;
 
         private:
@@ -176,10 +174,8 @@ namespace RINGMesh
             }
 
             std::tuple< double, vecn< DIMENSION > > operator()(
-                const vecn< DIMENSION >& query,
-                index_t cur_box ) const;
-            double operator()(
-                const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& query, index_t cur_box ) const;
+            double operator()( const vecn< DIMENSION >& pt1,
                 const vecn< DIMENSION >& pt2 ) const;
 
         private:

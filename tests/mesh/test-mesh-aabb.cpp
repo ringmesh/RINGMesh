@@ -375,46 +375,40 @@ void test_locate_edge_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
 }
 
 template < index_t DIMENSION >
-class L2NormSegmentEval {
+class L2NormSegmentEval
+{
 public:
-    L2NormSegmentEval( const LineMesh< DIMENSION >& mesh )
-    : mesh_( mesh )
-    {
-    }
+    L2NormSegmentEval( const LineMesh< DIMENSION >& mesh ) : mesh_( mesh ) {}
 
     std::tuple< double, vecn< DIMENSION > > operator()(
-        const vecn< DIMENSION >& query,
-        index_t cur_box ) const
+        const vecn< DIMENSION >& query, index_t cur_box ) const
     {
         const auto& v0 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 0 } ) );
         const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
-        return Distance::point_to_segment( query,
-            Geometry::Segment< DIMENSION > { v0, v1 } );
+        return Distance::point_to_segment(
+            query, Geometry::Segment< DIMENSION >{ v0, v1 } );
     }
 
     double operator()(
-        const vecn< DIMENSION >& pt1,
-        const vecn< DIMENSION >& pt2 ) const
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
         return length2( pt1 - pt2 );
     }
+
 private:
     const LineMesh< DIMENSION >& mesh_;
 };
 
 template < index_t DIMENSION >
-class L1NormSegmentEval {
+class L1NormSegmentEval
+{
 public:
-    L1NormSegmentEval( const LineMesh< DIMENSION >& mesh )
-    : mesh_( mesh )
-    {
-    }
+    L1NormSegmentEval( const LineMesh< DIMENSION >& mesh ) : mesh_( mesh ) {}
 
     double operator()(
-        const vecn< DIMENSION >& pt1,
-        const vecn< DIMENSION >& pt2 ) const
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
-        double distance { 0 };
+        double distance{ 0 };
         for( auto dim : range( DIMENSION ) )
         {
             distance += std::fabs( pt1[dim] - pt2[dim] );
@@ -423,19 +417,24 @@ public:
     }
 
     std::tuple< double, vecn< DIMENSION > > operator()(
-        const vecn< DIMENSION >& query,
-        index_t cur_box ) const
+        const vecn< DIMENSION >& query, index_t cur_box ) const
     {
         const auto& v0 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 0 } ) );
         auto l1_norm_v0 = this->operator()( query, v0 );
         const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
         double l1_norm_v1 = this->operator()( query, v1 );
-        if( l1_norm_v0 < l1_norm_v1 ) {
+        if( l1_norm_v0 < l1_norm_v1 )
+        {
             return std::make_tuple( l1_norm_v0, v0 );
-        } else if( l1_norm_v1 < l1_norm_v0 ) {
+        }
+        else if( l1_norm_v1 < l1_norm_v0 )
+        {
             return std::make_tuple( l1_norm_v1, v1 );
-        } else {
-            return std::make_tuple( l1_norm_v0, mesh_.edge_barycenter( cur_box ) );
+        }
+        else
+        {
+            return std::make_tuple(
+                l1_norm_v0, mesh_.edge_barycenter( cur_box ) );
         }
     }
 
@@ -463,19 +462,22 @@ void test_compare_eval_distance_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
 
     if( l2_norm_closest_edge != default_closest_edge )
     {
-        throw RINGMeshException( "TEST", "Different closest edges between "
+        throw RINGMeshException( "TEST",
+            "Different closest edges between "
             "default distance evaluator and L2 norm evaluator." );
     }
 
     if( l2_norm_closest_point != default_closest_point )
     {
-        throw RINGMeshException( "TEST", "Different closest points between "
+        throw RINGMeshException( "TEST",
+            "Different closest points between "
             "default distance evaluator and L2 norm evaluator." );
     }
 
     if( l2_norm_distance != default_distance )
     {
-        throw RINGMeshException( "TEST", "Different distances between "
+        throw RINGMeshException( "TEST",
+            "Different distances between "
             "default distance evaluator and L2 norm evaluator." );
     }
 
@@ -489,7 +491,7 @@ void test_compare_eval_distance_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
     if( l1_norm_distance != 7. )
     {
         throw RINGMeshException( "TEST", "Wrong minimal distance "
-            "using the L1 norm evaluator." );
+                                         "using the L1 norm evaluator." );
     }
 }
 

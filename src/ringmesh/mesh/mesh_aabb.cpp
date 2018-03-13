@@ -112,9 +112,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-        double LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
-        const vecn< DIMENSION >& pt1,
-        const vecn< DIMENSION >& pt2 ) const
+    double LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
         return length2( pt1 - pt2 );
     }
@@ -170,9 +169,8 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-        double SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
-        const vecn< DIMENSION >& pt1,
-        const vecn< DIMENSION >& pt2 ) const
+    double SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
         return length2( pt1 - pt2 );
     }
