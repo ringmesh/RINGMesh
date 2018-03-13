@@ -38,6 +38,9 @@
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/frame.h>
 #include <ringmesh/basic/geometry.h>
+#include <ringmesh/basic/logger.h>
+
+#include <ringmesh/mesh/common.h>
 
 #include <geogram/basic/attributes.h>
 
