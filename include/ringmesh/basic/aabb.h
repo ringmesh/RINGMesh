@@ -96,7 +96,7 @@ namespace RINGMesh
             vecn< DIMENSION > nearest_point;
             double distance;
             std::tie( nearest_box, nearest_point, distance ) =
-                get_nearest_element_box_hint( query );
+                get_nearest_element_box_hint( query, action );
             closest_element_box_recursive< EvalDistance >( query, nearest_box,
                 nearest_point, distance, ROOT_INDEX, 0, nb_bboxes(), action );
             ringmesh_assert( nearest_box != NO_ID );
@@ -225,14 +225,45 @@ namespace RINGMesh
         /*!
          * @brief Gets an hint of the result
          * @details Compute the result by approximating each bbox to its
-         * barycenter.
+         * barycenter (using given distance evaluator).
          * This result is then used to speed-up the computation by minimizing
          * the distance computation between \p query and the real elements
          * inside the bboxes
          */
+        template < class EvalDistance >
         std::tuple< index_t, vecn< DIMENSION >, double >
-            get_nearest_element_box_hint(
-                const vecn< DIMENSION >& query ) const;
+            get_nearest_element_box_hint( const vecn< DIMENSION >& query,
+                const EvalDistance& eval_distance ) const
+        {
+            index_t box_begin{ 0 };
+            index_t box_end{ nb_bboxes() };
+            index_t node_index{ ROOT_INDEX };
+            while( !is_leaf( box_begin, box_end ) )
+            {
+                index_t box_middle;
+                index_t child_left;
+                index_t child_right;
+                get_recursive_iterators( node_index, box_begin, box_end,
+                    box_middle, child_left, child_right );
+                if( eval_distance( node( child_left ).center(), query )
+                    < eval_distance( node( child_right ).center(), query ) )
+                {
+                    box_end = box_middle;
+                    node_index = child_left;
+                }
+                else
+                {
+                    box_begin = box_middle;
+                    node_index = child_right;
+                }
+            }
+
+            auto nearest_box = mapping_morton_[box_begin];
+            vecn< DIMENSION > nearest_point =
+                get_point_hint_from_box( tree_[box_begin], nearest_box );
+            auto distance = eval_distance( query, nearest_point );
+            return std::make_tuple( nearest_box, nearest_point, distance );
+        }
         /*!
          * @brief Gets an element point from its box
          * @details This function is used to get a result from the selected hint

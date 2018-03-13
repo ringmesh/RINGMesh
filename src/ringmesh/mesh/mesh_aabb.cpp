@@ -97,7 +97,7 @@ namespace RINGMesh
             const vecn< DIMENSION >& query ) const
     {
         DistanceToEdge action( mesh_ );
-        return this->closest_element_box( query, action );
+        return this->closest_edge( query, action );
     }
 
     template < index_t DIMENSION >
@@ -109,6 +109,13 @@ namespace RINGMesh
         const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
         return Distance::point_to_segment(
             query, Geometry::Segment< DIMENSION >{ v0, v1 } );
+    }
+
+    template < index_t DIMENSION >
+    double LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
+    {
+        return length2( pt1 - pt2 );
     }
 
     template < index_t DIMENSION >
@@ -159,6 +166,13 @@ namespace RINGMesh
         const auto& v2 = mesh_.vertex( mesh_.polygon_vertex( { cur_box, 2 } ) );
         return Distance::point_to_triangle(
             query, Geometry::Triangle< DIMENSION >{ v0, v1, v2 } );
+    }
+
+    template < index_t DIMENSION >
+    double SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+        const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
+    {
+        return length2( pt1 - pt2 );
     }
 
     template < index_t DIMENSION >
