@@ -53,7 +53,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the closest edge to a given point using
-         * Euclidean distance
+         * Euclidean distance (L2 norm)
          * @param[in] query the point to use
          * @return a tuple containing:
          * - the closest edge index.
@@ -103,6 +103,9 @@ namespace RINGMesh {
             std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
                 index_t cur_box ) const;
+            double operator()(
+                const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& pt2 ) const;
 
         private:
             const LineMesh< DIMENSION >& mesh_;
@@ -121,7 +124,7 @@ namespace RINGMesh {
 
         /*!
          * @brief Gets the closest triangle to a given point using
-         * Euclidean distance
+         * Euclidean distance (L2 norm)
          * @pre The mesh needs to be triangulated
          * @param[in] query the point to use
          * @return a tuple containing:
@@ -172,6 +175,9 @@ namespace RINGMesh {
             std::tuple< double, vecn< DIMENSION > > operator()(
                 const vecn< DIMENSION >& query,
                 index_t cur_box ) const;
+            double operator()(
+                const vecn< DIMENSION >& pt1,
+                const vecn< DIMENSION >& pt2 ) const;
 
         private:
             const SurfaceMeshBase< DIMENSION >& mesh_;

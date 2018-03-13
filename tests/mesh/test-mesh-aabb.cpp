@@ -360,10 +360,10 @@ void test_VolumeAABB()
 template < index_t DIMENSION >
 void test_locate_edge_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
 {
+    const LineAABBTree< DIMENSION >& aabb1D = mesh.edge_aabb();
     for( index_t e : range( mesh.nb_edges() ) )
     {
         vecn< DIMENSION > barycenter = mesh.edge_barycenter( e );
-        const LineAABBTree< DIMENSION >& aabb1D = mesh.edge_aabb();
         index_t closest_edge = NO_ID;
         std::tie( closest_edge, std::ignore, std::ignore ) =
             aabb1D.closest_edge( barycenter );
@@ -371,6 +371,125 @@ void test_locate_edge_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
         {
             throw RINGMeshException( "TEST", "Not the correct edge found" );
         }
+    }
+}
+
+template < index_t DIMENSION >
+class L2NormSegmentEval {
+public:
+    L2NormSegmentEval( const LineMesh< DIMENSION >& mesh )
+    : mesh_( mesh )
+    {
+    }
+
+    std::tuple< double, vecn< DIMENSION > > operator()(
+        const vecn< DIMENSION >& query,
+        index_t cur_box ) const
+    {
+        const auto& v0 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 0 } ) );
+        const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
+        return Distance::point_to_segment( query,
+            Geometry::Segment< DIMENSION > { v0, v1 } );
+    }
+
+    double operator()(
+        const vecn< DIMENSION >& pt1,
+        const vecn< DIMENSION >& pt2 ) const
+    {
+        return length2( pt1 - pt2 );
+    }
+private:
+    const LineMesh< DIMENSION >& mesh_;
+};
+
+template < index_t DIMENSION >
+class L1NormSegmentEval {
+public:
+    L1NormSegmentEval( const LineMesh< DIMENSION >& mesh )
+    : mesh_( mesh )
+    {
+    }
+
+    double operator()(
+        const vecn< DIMENSION >& pt1,
+        const vecn< DIMENSION >& pt2 ) const
+    {
+        double distance { 0 };
+        for( auto dim : range( DIMENSION ) )
+        {
+            distance += std::fabs( pt1[dim] - pt2[dim] );
+        }
+        return distance;
+    }
+
+    std::tuple< double, vecn< DIMENSION > > operator()(
+        const vecn< DIMENSION >& query,
+        index_t cur_box ) const
+    {
+        const auto& v0 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 0 } ) );
+        auto l1_norm_v0 = this->operator()( query, v0 );
+        const auto& v1 = mesh_.vertex( mesh_.edge_vertex( { cur_box, 1 } ) );
+        double l1_norm_v1 = this->operator()( query, v1 );
+        if( l1_norm_v0 < l1_norm_v1 ) {
+            return std::make_tuple( l1_norm_v0, v0 );
+        } else if( l1_norm_v1 < l1_norm_v0 ) {
+            return std::make_tuple( l1_norm_v1, v1 );
+        } else {
+            return std::make_tuple( l1_norm_v0, mesh_.edge_barycenter( cur_box ) );
+        }
+    }
+
+private:
+    const LineMesh< DIMENSION >& mesh_;
+};
+
+template < index_t DIMENSION >
+void test_compare_eval_distance_on_1D_mesh( const LineMesh< DIMENSION >& mesh )
+{
+    const LineAABBTree< DIMENSION >& aabb1D = mesh.edge_aabb();
+    auto tested_point = create_vertex< DIMENSION >( -3., 5. );
+    index_t default_closest_edge;
+    vecn< DIMENSION > default_closest_point;
+    double default_distance;
+    std::tie( default_closest_edge, default_closest_point, default_distance ) =
+        aabb1D.closest_edge( tested_point );
+
+    index_t l2_norm_closest_edge;
+    vecn< DIMENSION > l2_norm_closest_point;
+    double l2_norm_distance;
+    L2NormSegmentEval< DIMENSION > l2_norm_eval( mesh );
+    std::tie( l2_norm_closest_edge, l2_norm_closest_point, l2_norm_distance ) =
+        aabb1D.closest_edge( tested_point, l2_norm_eval );
+
+    if( l2_norm_closest_edge != default_closest_edge )
+    {
+        throw RINGMeshException( "TEST", "Different closest edges between "
+            "default distance evaluator and L2 norm evaluator." );
+    }
+
+    if( l2_norm_closest_point != default_closest_point )
+    {
+        throw RINGMeshException( "TEST", "Different closest points between "
+            "default distance evaluator and L2 norm evaluator." );
+    }
+
+    if( l2_norm_distance != default_distance )
+    {
+        throw RINGMeshException( "TEST", "Different distances between "
+            "default distance evaluator and L2 norm evaluator." );
+    }
+
+    index_t l1_norm_closest_edge;
+    vecn< DIMENSION > l1_norm_closest_point;
+    double l1_norm_distance;
+    L1NormSegmentEval< DIMENSION > l1_norm_eval( mesh );
+    std::tie( l1_norm_closest_edge, l1_norm_closest_point, l1_norm_distance ) =
+        aabb1D.closest_edge( tested_point, l1_norm_eval );
+
+    if( l1_norm_distance != 7. )
+    {
+        throw RINGMeshException( "TEST", "Wrong minimal distance "
+            "using the L1 norm evaluator." );
     }
 }
 
@@ -386,6 +505,7 @@ void test_LineAABB()
     add_vertices( builder.get(), size );
     add_edges( builder.get(), size );
     test_locate_edge_on_1D_mesh( *mesh );
+    test_compare_eval_distance_on_1D_mesh( *mesh );
 }
 
 int main()

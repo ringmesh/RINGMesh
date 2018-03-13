@@ -255,41 +255,6 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
-    std::tuple< index_t, vecn< DIMENSION >, double >
-        AABBTree< DIMENSION >::get_nearest_element_box_hint(
-            const vecn< DIMENSION >& query ) const
-    {
-        index_t box_begin = 0;
-        index_t box_end = nb_bboxes();
-        index_t node_index = ROOT_INDEX;
-        while( !is_leaf( box_begin, box_end ) )
-        {
-            index_t box_middle;
-            index_t child_left;
-            index_t child_right;
-            get_recursive_iterators( node_index, box_begin, box_end, box_middle,
-                child_left, child_right );
-            if( length2( node( child_left ).center() - query )
-                < length2( node( child_right ).center() - query ) )
-            {
-                box_end = box_middle;
-                node_index = child_left;
-            }
-            else
-            {
-                box_begin = box_middle;
-                node_index = child_right;
-            }
-        }
-
-        index_t nearest_box = mapping_morton_[box_begin];
-        vecn< DIMENSION > nearest_point =
-            get_point_hint_from_box( tree_[box_begin], nearest_box );
-        double distance = length( query - nearest_point );
-        return std::make_tuple( nearest_box, nearest_point, distance );
-    }
-
-    template < index_t DIMENSION >
     BoxAABBTree< DIMENSION >::BoxAABBTree(
         const std::vector< Box< DIMENSION > >& bboxes )
     {

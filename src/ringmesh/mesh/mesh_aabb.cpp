@@ -112,6 +112,14 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+        double LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
+        const vecn< DIMENSION >& pt1,
+        const vecn< DIMENSION >& pt2 ) const
+    {
+        return length2( pt1 - pt2 );
+    }
+
+    template < index_t DIMENSION >
     vecn< DIMENSION > LineAABBTree< DIMENSION >::get_point_hint_from_box(
         const Box< DIMENSION >& box, index_t element_id ) const
     {
@@ -159,6 +167,14 @@ namespace RINGMesh
         const auto& v2 = mesh_.vertex( mesh_.polygon_vertex( { cur_box, 2 } ) );
         return Distance::point_to_triangle(
             query, Geometry::Triangle< DIMENSION >{ v0, v1, v2 } );
+    }
+
+    template < index_t DIMENSION >
+        double SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
+        const vecn< DIMENSION >& pt1,
+        const vecn< DIMENSION >& pt2 ) const
+    {
+        return length2( pt1 - pt2 );
     }
 
     template < index_t DIMENSION >
