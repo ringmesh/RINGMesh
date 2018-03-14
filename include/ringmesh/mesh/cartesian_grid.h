@@ -50,6 +50,7 @@ namespace GEO
 } // namespace GEO
 namespace RINGMesh
 {
+    FORWARD_DECLARATION_DIMENSION_CLASS( CartesianGridBaseBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( CartesianGridBuilder );
 }
 
@@ -69,7 +70,7 @@ namespace RINGMesh
     class CartesianGridBase
     {
         ringmesh_disable_copy_and_move( CartesianGridBase );
-        friend class CartesianGridBuilder< DIMENSION >;
+        friend class CartesianGridBaseBuilder< DIMENSION >;
 
     public:
         /*!
@@ -326,6 +327,17 @@ namespace RINGMesh
                   nb_cells_in_each_direction, vec_cartesian_axis ),
               grid_cage_()
         {
+        	create_grid_cage();
+        }
+
+        const std::vector< Geometry::Plane >& grid_cage() const
+        {
+            return grid_cage_;
+        }
+
+    protected:
+        void create_grid_cage()
+        {
             vec3 highest_coordinates_point{
                 cartesian_frame_.origin()
                 + cartesian_frame_[0] * nb_cells_axis( 0 )
@@ -342,12 +354,6 @@ namespace RINGMesh
             }
         }
 
-        const std::vector< Geometry::Plane >& grid_cage() const
-        {
-            return grid_cage_;
-        }
-
-    private:
         /// The 6 planes of the grid cage are ordered in this way :
         /// First the 2 with a normal to the first axis of the grid,
         /// then the 2 with a normal to the second axis of the grid,
@@ -402,16 +408,17 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class CartesianGridBuilder
+    class CartesianGridBaseBuilder
     {
-    public:
-        static std::unique_ptr< CartesianGridBuilder< DIMENSION > >
-            create_builder( CartesianGrid< DIMENSION >& cartesian_grid );
+        ringmesh_disable_copy_and_move( CartesianGridBaseBuilder );
 
-        explicit CartesianGridBuilder(
-            CartesianGrid< DIMENSION >& cartesian_grid )
-            : cartesian_grid_( dynamic_cast< CartesianGrid< DIMENSION >& >(
-                  cartesian_grid ) )
+    public:
+        virtual ~CartesianGridBaseBuilder() = default;
+
+        explicit CartesianGridBaseBuilder(
+            CartesianGridBase< DIMENSION >& cartesian_grid_base )
+            : cartesian_grid_base_( dynamic_cast< CartesianGridBase< DIMENSION >& >(
+                  cartesian_grid_base ) )
         {
         }
 
@@ -426,89 +433,88 @@ namespace RINGMesh
             }
             else
             {
-                cartesian_grid_.cartesian_frame_[axis_id] *=
+                cartesian_grid_base_.cartesian_frame_[axis_id] *=
                     ( new_size
-                        / cartesian_grid_.cartesian_frame_[axis_id].length() );
+                        / cartesian_grid_base_.cartesian_frame_[axis_id].length() );
             }
         }
 
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
-            cartesian_grid_.change_frame( vec_cartesian_axis );
+            cartesian_grid_base_.change_frame( vec_cartesian_axis );
         }
 
         void change_attribute_manager(
             GEO::AttributesManager attributes_manager )
         {
-            cartesian_grid_.change_attribute_manager( attributes_manager );
+            cartesian_grid_base_.change_attribute_manager( attributes_manager );
         }
 
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
             // TODO
-            //        	if( cartesian_grid_.nb_cells_in_each_direction[axis_id]
-            //        < 2 )
-            //			{
-            //				throw RINGMeshException( "RINGMesh Test",
-            //					"Error: You are trying to remove a section in
-            // direction",
-            //					axis_id, ", but it would reduce the number of
-            // cells
-            // in
-            // this directions below 1." );
-            //			}
-            //        	cartesian_grid_.nb_total_cells_ -=
-            //        cartesian_grid_.nb_total_cells_ /
-            //        cartesian_grid_.nb_cells_in_each_direction_[ axis_id ];
-            //        	cartesian_grid_.nb_cells_in_each_direction_[ axis_id ]
-            //        -= 1;
-            //        	cartesian_grid_.attributes_manager_.resize(
-            //        cartesian_grid_.nb_total_cells_ );
+        	if( cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] < 2 )
+			{
+				throw RINGMeshException( "RINGMesh Test",
+					"Error: You are trying to remove a section in direction",
+					axis_id, ", but it would reduce the number of cells in this directions below 1." );
+			}
+        	cartesian_grid_base_.nb_total_cells_ -=
+        			cartesian_grid_base_.nb_total_cells_ /
+					cartesian_grid_base_.nb_cells_in_each_direction_[ axis_id ];
+        	cartesian_grid_base_.nb_cells_in_each_direction_[ axis_id ] -= 1;
+        	cartesian_grid_base_.attributes_manager_.resize(
+        			cartesian_grid_base_.nb_total_cells_ );
         }
 
     protected:
-        CartesianGrid< DIMENSION >& cartesian_grid_;
+        CartesianGridBase< DIMENSION >& cartesian_grid_base_;
+    };
+    ALIAS_2D_AND_3D( CartesianGridBaseBuilder );
+
+    template < index_t DIMENSION >
+    class CartesianGridBuilder final : public CartesianGridBaseBuilder< DIMENSION >
+    {
     };
     ALIAS_2D_AND_3D( CartesianGridBuilder );
 
-    //    class RINGMESH_API CartesianGridVolumeMesh : public VolumeMesh3D
-    //    {
-    //    public:
-    //        CartesianGridVolumeMesh() = default;
-    //
-    //        static MeshType type_name_static()
-    //        {
-    //            return "CartesianGrid";
-    //        }
-    //
-    //        MeshType type_name() const override
-    //        {
-    //            return type_name_static();
-    //        }
-    //
-    //        index_t nb_cells() const override
-    //        {
-    //            return cartesian_grid_.nb_cells();
-    //        }
-    //
-    //        //        GEO::AttributesManager& cell_attribute_manager() const
-    //        //        override
-    //        //        {
-    //        //            return cartesian_grid_.attributes_manager();
-    //        //        }
-    //
-    //        CellType cell_type( index_t cell_id ) const override
-    //        {
-    //            return static_cast< CellType >( 1 );
-    //        }
-    //
-    //        double cell_volume( index_t cell_id ) const override
-    //        {
-    //            return cartesian_grid_.cell_volume();
-    //        }
-    //
-    //    private:
-    //        CartesianGrid3D cartesian_grid_;
-    //    };
+    template <>
+    class CartesianGridBuilder< 3 > final : public CartesianGridBaseBuilder< 3 >
+    {
+    public:
+        virtual ~CartesianGridBuilder() = default;
+
+        explicit CartesianGridBuilder(
+            CartesianGrid< 3 >& cartesian_grid )
+            : CartesianGridBaseBuilder< 3 >(
+                  cartesian_grid ), cartesian_grid_( cartesian_grid )
+        {
+        }
+
+        void resize_vec_axis( index_t axis_id, double new_size )
+        {
+            CartesianGridBaseBuilder<3>::resize_vec_axis( axis_id, new_size );
+            cartesian_grid_.grid_cage_[ axis_id*2+1 ].origin =
+            		cartesian_grid_.cartesian_frame_.origin() +
+					cartesian_grid_.cartesian_frame_[axis_id] * cartesian_grid_.nb_cells_axis(axis_id);
+        }
+
+        void change_frame( ReferenceFrame< 3 >& vec_cartesian_axis )
+        {
+            cartesian_grid_.change_frame( vec_cartesian_axis );
+            cartesian_grid_.create_grid_cage();
+        }
+
+        void remove_section_from_cartesian_grid(
+            index_t axis_id, index_t section_position )
+        {
+            CartesianGridBaseBuilder<3>::remove_section_from_cartesian_grid( axis_id, section_position );
+            cartesian_grid_.grid_cage_[ axis_id*2+1 ].origin -=
+					cartesian_grid_.cartesian_frame_[axis_id];
+        }
+
+	 private:
+		 CartesianGrid< 3 >& cartesian_grid_;
+    };
 }
