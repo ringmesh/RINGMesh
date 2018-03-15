@@ -39,7 +39,7 @@
 #include <ringmesh/basic/logger.h>
 
 /*!
- * @author Arnaud Botella
+ * @authors Arnaud Botella & Marine Hubert
  */
 
 using namespace RINGMesh;
