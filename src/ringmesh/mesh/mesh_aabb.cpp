@@ -115,7 +115,7 @@ namespace RINGMesh
     double LineAABBTree< DIMENSION >::DistanceToEdge::operator()(
         const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
-        return length2( pt1 - pt2 );
+        return length( pt1 - pt2 );
     }
 
     template < index_t DIMENSION >
@@ -172,7 +172,7 @@ namespace RINGMesh
     double SurfaceAABBTree< DIMENSION >::DistanceToTriangle::operator()(
         const vecn< DIMENSION >& pt1, const vecn< DIMENSION >& pt2 ) const
     {
-        return length2( pt1 - pt2 );
+        return length( pt1 - pt2 );
     }
 
     template < index_t DIMENSION >
