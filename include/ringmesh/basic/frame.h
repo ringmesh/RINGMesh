@@ -148,8 +148,8 @@ namespace RINGMesh
         }
 
         /*!
-         * Two reference frames are considered equal if they have the same origin
-         * and the same axis in the same order.
+         * Two reference frames are considered equal if they have the same
+         * origin and the same axis in the same order.
          */
         bool operator==(
             const ReferenceFrame< DIMENSION >& other_reference_frame ) const
@@ -211,10 +211,10 @@ namespace RINGMesh
     class basic_api ReferenceFrameManipulator
     {
     public:
-    	/*!
-    	 * @return the coordinates of the input point \global_coords in the
-    	 * input \reference_frame.
-    	 */
+        /*!
+         * @return the coordinates of the input point \global_coords in the
+         * input \reference_frame.
+         */
         static vecn< DIMENSION > coords_from_global_to_frame(
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& global_coords )
@@ -234,10 +234,10 @@ namespace RINGMesh
             return local_coords;
         }
 
-    	/*!
-    	 * @return the global coordinates of the input point from its coordinates
-    	 * \local_coords in the input \reference_frame.
-    	 */
+        /*!
+         * @return the global coordinates of the input point from its
+         * coordinates \local_coords in the input \reference_frame.
+         */
         static vecn< DIMENSION > coords_from_frame_to_global(
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& local_coords )
@@ -280,7 +280,8 @@ namespace RINGMesh
         /*!
          * @return the inverse of the input reference_frame (equivalent to the
          * coordinates of the global frame in the input reference frame).
-         * This method is optimized for orthogonal frames and works only on them.
+         * This method is optimized for orthogonal frames and works only on
+         * them.
          */
         static ReferenceFrame< DIMENSION >
             orthogonal_reference_frame_from_global_to_local(

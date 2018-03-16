@@ -83,36 +83,37 @@ namespace RINGMesh
     // This is an array of 2 signed integers
     using sivec2 = sivecn< 2 >;
 
-//    template < index_t DIMENSION >
-//    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-//    {
-//        for( index_t i = 0; i < DIMENSION; i++ )
-//        {
-//            if( u[i] != v[i] )
-//            {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
-//
-//    template < index_t DIMENSION >
-//    bool operator==(
-//        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
-//    {
-//        for( index_t i = 0; i < DIMENSION; i++ )
-//        {
-//            if( u[i] != v[i] )
-//            {
-//                return false;
-//            }
-//        }
-//        return true;
-//    }
+    //    template < index_t DIMENSION >
+    //    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >&
+    //    v )
+    //    {
+    //        for( index_t i = 0; i < DIMENSION; i++ )
+    //        {
+    //            if( u[i] != v[i] )
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //        return true;
+    //    }
+    //
+    //    template < index_t DIMENSION >
+    //    bool operator==(
+    //        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
+    //    {
+    //        for( index_t i = 0; i < DIMENSION; i++ )
+    //        {
+    //            if( u[i] != v[i] )
+    //            {
+    //                return false;
+    //            }
+    //        }
+    //        return true;
+    //    }
 
     template < index_t DIMENSION, class type >
-    bool operator==(
-        const GEO::vecng< DIMENSION, type >& u, const GEO::vecng< DIMENSION, type >& v )
+    bool operator==( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
     {
         for( index_t i = 0; i < DIMENSION; i++ )
         {
@@ -125,24 +126,25 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION, class type >
-    bool operator!=(
-        const GEO::vecng< DIMENSION, type >& u, const GEO::vecng< DIMENSION, type >& v )
+    bool operator!=( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
     {
         return !( u == v );
     }
 
-//    template < index_t DIMENSION >
-//    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
-//    {
-//        return !( u == v );
-//    }
-//
-//    template < index_t DIMENSION >
-//    bool operator!=(
-//        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
-//    {
-//        return !( u == v );
-//    }
+    //    template < index_t DIMENSION >
+    //    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >&
+    //    v )
+    //    {
+    //        return !( u == v );
+    //    }
+    //
+    //    template < index_t DIMENSION >
+    //    bool operator!=(
+    //        const sivecn< DIMENSION >& u, const sivecn< DIMENSION >& v )
+    //    {
+    //        return !( u == v );
+    //    }
 
     template < index_t DIMENSION >
     bool inexact_equal( const vecn< DIMENSION >& v1,
