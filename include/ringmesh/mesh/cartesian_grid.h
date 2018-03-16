@@ -294,7 +294,7 @@ namespace RINGMesh
             {
                 cell_volume *= cartesian_frame_[i].length2();
             }
-            return sqrt( cell_volume );
+            return std::sqrt( cell_volume );
         }
 
     private:
