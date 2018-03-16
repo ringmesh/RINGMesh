@@ -147,6 +147,10 @@ namespace RINGMesh
             return origin_;
         }
 
+        /*!
+         * Two reference frames are considered equal if they have the same origin
+         * and the same axis in the same order.
+         */
         bool operator==(
             const ReferenceFrame< DIMENSION >& other_reference_frame ) const
         {
@@ -175,6 +179,11 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
 
+    /*!
+     * Verifies if the two input reference frames are almost the same:
+     * @return true if the origin and each each of the vectors of the input
+     * reference frames are close up to epsilon, false otherwise.
+     */
     template < index_t DIMENSION >
     bool inexact_equal( const ReferenceFrame< DIMENSION >& v1,
         const ReferenceFrame< DIMENSION >& v2,
@@ -194,10 +203,18 @@ namespace RINGMesh
         return true;
     }
 
+    /*!
+     * @brief Class for manipulating reference frames coordinates and such.
+     * All of its functions are static.
+     */
     template < index_t DIMENSION >
     class basic_api ReferenceFrameManipulator
     {
     public:
+    	/*!
+    	 * @return the coordinates of the input point \global_coords in the
+    	 * input \reference_frame.
+    	 */
         static vecn< DIMENSION > coords_from_global_to_frame(
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& global_coords )
@@ -217,6 +234,10 @@ namespace RINGMesh
             return local_coords;
         }
 
+    	/*!
+    	 * @return the global coordinates of the input point from its coordinates
+    	 * \local_coords in the input \reference_frame.
+    	 */
         static vecn< DIMENSION > coords_from_frame_to_global(
             const ReferenceFrame< DIMENSION >& reference_frame,
             const vecn< DIMENSION >& local_coords )
@@ -232,6 +253,10 @@ namespace RINGMesh
             return global_coords;
         }
 
+        /*!
+         * @return the inverse of the input reference_frame (equivalent to the
+         * coordinates of the global frame in the input reference frame).
+         */
         static ReferenceFrame< DIMENSION > reference_frame_from_global_to_local(
             const ReferenceFrame< DIMENSION >& reference_frame )
         {
@@ -252,6 +277,11 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
 
+        /*!
+         * @return the inverse of the input reference_frame (equivalent to the
+         * coordinates of the global frame in the input reference frame).
+         * This method is optimized for orthogonal frames and works only on them.
+         */
         static ReferenceFrame< DIMENSION >
             orthogonal_reference_frame_from_global_to_local(
                 const ReferenceFrame< DIMENSION >& reference_frame )
@@ -273,6 +303,9 @@ namespace RINGMesh
             return inverse_reference_frame;
         }
 
+        /*!
+         * Verifies if the given reference frame is orthogonal.
+         */
         static bool is_frame_orthogonal(
             const ReferenceFrame< DIMENSION >& reference_frame )
         {

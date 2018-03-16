@@ -62,9 +62,11 @@ namespace RINGMesh
 namespace RINGMesh
 {
     /**
-     * Template class for Cartesian grids of different dimensions
+     * Template base class for Cartesian grids of different dimensions
      * Each value of the grid represents the cell for which the point
      * is the corner with the smallest coordinates.
+     * After the grid is created, it can only be modified through its
+     * associated builder.
      */
     template < index_t DIMENSION >
     class CartesianGridBase
@@ -79,8 +81,8 @@ namespace RINGMesh
          * direction of the grid.
          * \param[in] vec_cartesian_axis used to define
          * the cartesian grid cells : the origin of the frame is the position of
-         * the cell (0,0,0) in the cartesian grid, the vectors are the
-         * directions and length of the grid cells.
+         * the corner (0,0,0) of the cell (0,0,0) in the cartesian grid, the vectors
+         * are the directions and size in these directions of the grid cells.
          */
         CartesianGridBase( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
@@ -96,16 +98,15 @@ namespace RINGMesh
         void save_mesh( const std::string& filename ) const
         {
             // TODO
+        	throw RINGMeshException(
+        			"SAVE", "The save_mesh function is not implemented"
+        					"for cartesian grids yet." );
         }
 
-        //        void print_mesh_bounded_attributes( const std::string&
-        //        output_location ) const
-        //        {
-        //        	print_bounded_attributes( attributes_manager_,
-        //        output_location );
-        //        }
-
-        vecn< DIMENSION > cell_center_global_coords(
+        /*!
+         * @return the coordinates in the global frame of the given grid point.
+         */
+        vecn< DIMENSION > cell_corner_global_coords(
             const sivecn< DIMENSION >& cartesian_coords ) const
         {
             vecn< DIMENSION > cartesian_double_coords;
@@ -119,6 +120,9 @@ namespace RINGMesh
                 cartesian_double_coords );
         }
 
+        /*!
+         * @return the grid coordinates of the given point from its global coordinates.
+         */
         vecn< DIMENSION > local_coords_from_global_point(
             const vecn< DIMENSION >& reference_vertex ) const
         {
@@ -129,6 +133,9 @@ namespace RINGMesh
                     inverse_cartesian_frame_, reference_vertex );
         }
 
+        /*!
+         * @return the grid cell containing the given point from its global coordinates.
+         */
         sivecn< DIMENSION > containing_cell_from_global_point(
             const vecn< DIMENSION >& reference_vertex ) const
         {
@@ -140,6 +147,10 @@ namespace RINGMesh
                         inverse_cartesian_frame_, reference_vertex ) );
         }
 
+        /*!
+         * @return the grid cell containing the given point from its coordinates
+         * in the cartesian grid.
+         */
         sivecn< DIMENSION > containing_cell_from_local_point(
             const vecn< DIMENSION >& vertex ) const
         {
@@ -152,6 +163,9 @@ namespace RINGMesh
             return coord;
         }
 
+        /*!
+         * @return the index of the cell if we consider the grid as a single vector of cells in memory.
+         */
         index_t cell_offset( const sivecn< DIMENSION >& coords ) const
         {
             index_t offset{ 0 };
@@ -168,19 +182,27 @@ namespace RINGMesh
                 else
                 {
                     Logger::warn( "Point ", coords,
-                        " has indexes outside of the cartesian grid limits." );
+                        " has indices outside of the cartesian grid limits." );
                     return NO_ID;
                 }
             }
             return offset;
         }
 
+        /*!
+         * @return the index of the cell containing the given point, from its global
+         * coordinates, in the vector containing all the cells of the grid.
+         */
         index_t cell_offset_from_global_point(
             const vecn< DIMENSION > coords ) const
         {
             return cell_offset( containing_cell_from_global_point( coords ) );
         }
 
+        /*!
+         * @return the coordinates of the cell from its index in the vector
+         * containing all the cells of the grid.
+         */
         sivecn< DIMENSION > local_from_offset( const index_t offset ) const
         {
             sivecn< DIMENSION > coords;
@@ -197,41 +219,67 @@ namespace RINGMesh
             return coords;
         }
 
+        /*!
+         * @return the total number of cells in grid.
+         */
         index_t nb_cells() const
         {
             return nb_total_cells_;
         }
 
+        /*!
+         * @return the number of cells in the grid in the given direction.
+         */
         index_t nb_cells_axis( index_t i ) const
         {
             return nb_cells_in_each_direction_[i];
         }
 
+        /*!
+         * @return the vector containing the number of cells of the grid
+         * in each direction.
+         */
         const ivecn< DIMENSION >& nb_cells_vector() const
         {
             return nb_cells_in_each_direction_;
         }
 
+        /*!
+         * @return the reference frame of the grid.
+         */
         const ReferenceFrame< DIMENSION >& grid_vectors() const
         {
             return cartesian_frame_;
         }
 
+        /*!
+         * @return the size of the cells in the given direction \i
+         * (length of the vector of the grid reference frame in direction \i)
+         */
         double grid_vector_size( index_t i ) const
         {
             return cartesian_frame_[i].length();
         }
 
+        /*!
+         * @return the reference frame containing the grid coordinates of the global frame.
+         */
         const ReferenceFrame< DIMENSION >& inverse_grid_vectors() const
         {
             return inverse_cartesian_frame_;
         }
 
+        /*!
+         * @return the attribute manager containing the grid point attributes values.
+         */
         GEO::AttributesManager& attributes_manager() const
         {
             return attributes_manager_;
         }
 
+        /*!
+         * @return the volume of a grid cell.
+         */
         double cell_volume() const
         {
             double cell_volume{ 1. };
@@ -243,6 +291,9 @@ namespace RINGMesh
         }
 
     private:
+        /*!
+         * Function to call to change the number of cells of the grid.
+         */
         void check_and_update_number_of_cells(
             ivecn< DIMENSION >& nb_cells_in_each_direction )
         {
@@ -280,6 +331,9 @@ namespace RINGMesh
     protected:
         CartesianGridBase() = default;
 
+        /*!
+         * Function to call to change the reference frame of the grid.
+         */
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
             check_and_update_frame( vec_cartesian_axis );
@@ -315,6 +369,10 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( CartesianGrid );
 
+    /*!
+     * Implementation of the cartesian grid in 3D, allowing to include
+     * the 6 planes that surround it as a class attribute.
+     */
     template <>
     class CartesianGrid< 3 > final : public CartesianGridBase< 3 >
     {
@@ -364,6 +422,10 @@ namespace RINGMesh
         std::vector< Geometry::Plane > grid_cage_;
     };
 
+    /*!
+     * Implementation of the cartesian grid in 2D, allowing to include
+     * the 4 segments that surround it as a class attribute.
+     */
     template <>
     class CartesianGrid< 2 > final : public CartesianGridBase< 2 >
     {
@@ -407,6 +469,10 @@ namespace RINGMesh
         }
     };
 
+    /*!
+     * Builder class associated to CartesianGridBase.
+     * It can be instantiated to modify a cartesian grid base.
+     */
     template < index_t DIMENSION >
     class CartesianGridBaseBuilder
     {
@@ -422,6 +488,10 @@ namespace RINGMesh
         {
         }
 
+        /*!
+         * Changes the length of vector \axis_id of the reference frame of the grid associated
+         * to this builder, and sets it to \new_size.
+         */
         void resize_vec_axis( index_t axis_id, double new_size )
         {
             if( new_size == 0 )
@@ -439,21 +509,32 @@ namespace RINGMesh
             }
         }
 
+        /*!
+         * Replaces the reference frame of the grid associated to this builder
+         * by input reference frame.
+         */
         void change_frame( ReferenceFrame< DIMENSION >& vec_cartesian_axis )
         {
             cartesian_grid_base_.change_frame( vec_cartesian_axis );
         }
 
+        /*!
+         * Replaces the attribute manager of the grid associated to this builder
+         * by input attribute manager.
+         */
         void change_attribute_manager(
             GEO::AttributesManager attributes_manager )
         {
             cartesian_grid_base_.change_attribute_manager( attributes_manager );
         }
 
+        /*!
+         * Removes a section of cells of the grid, normal to the vector \axis_id of its
+         * reference frame, and with coordinate \section_position on this axis.
+         */
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
-            // TODO
         	if( cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] < 2 )
 			{
 				throw RINGMeshException( "RINGMesh Test",
@@ -464,6 +545,9 @@ namespace RINGMesh
         			cartesian_grid_base_.nb_total_cells_ /
 					cartesian_grid_base_.nb_cells_in_each_direction_[ axis_id ];
         	cartesian_grid_base_.nb_cells_in_each_direction_[ axis_id ] -= 1;
+
+        	//TODO remove the given section from the attribute manager.
+
         	cartesian_grid_base_.attributes_manager_.resize(
         			cartesian_grid_base_.nb_total_cells_ );
         }
@@ -479,6 +563,10 @@ namespace RINGMesh
     };
     ALIAS_2D_AND_3D( CartesianGridBuilder );
 
+    /*!
+     * 3D instantiation of the builder for cartesian grids, in order to update the grid cage
+     * when applying modifications to it.
+     */
     template <>
     class CartesianGridBuilder< 3 > final : public CartesianGridBaseBuilder< 3 >
     {
