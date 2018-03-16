@@ -385,7 +385,7 @@ namespace RINGMesh
                   nb_cells_in_each_direction, vec_cartesian_axis ),
               grid_cage_()
         {
-        	create_grid_cage();
+            create_grid_cage();
         }
 
         const std::vector< Geometry::Plane >& grid_cage() const
@@ -483,8 +483,9 @@ namespace RINGMesh
 
         explicit CartesianGridBaseBuilder(
             CartesianGridBase< DIMENSION >& cartesian_grid_base )
-            : cartesian_grid_base_( dynamic_cast< CartesianGridBase< DIMENSION >& >(
-                  cartesian_grid_base ) )
+            : cartesian_grid_base_(
+                  dynamic_cast< CartesianGridBase< DIMENSION >& >(
+                      cartesian_grid_base ) )
         {
         }
 
@@ -505,7 +506,8 @@ namespace RINGMesh
             {
                 cartesian_grid_base_.cartesian_frame_[axis_id] *=
                     ( new_size
-                        / cartesian_grid_base_.cartesian_frame_[axis_id].length() );
+                        / cartesian_grid_base_.cartesian_frame_[axis_id]
+                              .length() );
             }
         }
 
@@ -558,7 +560,8 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( CartesianGridBaseBuilder );
 
     template < index_t DIMENSION >
-    class CartesianGridBuilder final : public CartesianGridBaseBuilder< DIMENSION >
+    class CartesianGridBuilder final
+        : public CartesianGridBaseBuilder< DIMENSION >
     {
     };
     ALIAS_2D_AND_3D( CartesianGridBuilder );
@@ -573,19 +576,19 @@ namespace RINGMesh
     public:
         virtual ~CartesianGridBuilder() = default;
 
-        explicit CartesianGridBuilder(
-            CartesianGrid< 3 >& cartesian_grid )
-            : CartesianGridBaseBuilder< 3 >(
-                  cartesian_grid ), cartesian_grid_( cartesian_grid )
+        explicit CartesianGridBuilder( CartesianGrid< 3 >& cartesian_grid )
+            : CartesianGridBaseBuilder< 3 >( cartesian_grid ),
+              cartesian_grid_( cartesian_grid )
         {
         }
 
         void resize_vec_axis( index_t axis_id, double new_size )
         {
-            CartesianGridBaseBuilder<3>::resize_vec_axis( axis_id, new_size );
-            cartesian_grid_.grid_cage_[ axis_id*2+1 ].origin =
-            		cartesian_grid_.cartesian_frame_.origin() +
-					cartesian_grid_.cartesian_frame_[axis_id] * cartesian_grid_.nb_cells_axis(axis_id);
+            CartesianGridBaseBuilder< 3 >::resize_vec_axis( axis_id, new_size );
+            cartesian_grid_.grid_cage_[axis_id * 2 + 1].origin =
+                cartesian_grid_.cartesian_frame_.origin()
+                + cartesian_grid_.cartesian_frame_[axis_id]
+                      * cartesian_grid_.nb_cells_axis( axis_id );
         }
 
         void change_frame( ReferenceFrame< 3 >& vec_cartesian_axis )
@@ -597,12 +600,13 @@ namespace RINGMesh
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
-            CartesianGridBaseBuilder<3>::remove_section_from_cartesian_grid( axis_id, section_position );
-            cartesian_grid_.grid_cage_[ axis_id*2+1 ].origin -=
-					cartesian_grid_.cartesian_frame_[axis_id];
+            CartesianGridBaseBuilder< 3 >::remove_section_from_cartesian_grid(
+                axis_id, section_position );
+            cartesian_grid_.grid_cage_[axis_id * 2 + 1].origin -=
+                cartesian_grid_.cartesian_frame_[axis_id];
         }
 
-	 private:
-		 CartesianGrid< 3 >& cartesian_grid_;
+    private:
+        CartesianGrid< 3 >& cartesian_grid_;
     };
 }
