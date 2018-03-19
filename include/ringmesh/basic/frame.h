@@ -147,10 +147,198 @@ namespace RINGMesh
             return origin_;
         }
 
+        /*!
+         * Two reference frames are considered equal if they have the same
+         * origin and the same axis in the same order.
+         */
+        bool operator==(
+            const ReferenceFrame< DIMENSION >& other_reference_frame ) const
+        {
+            if( other_reference_frame.origin() != origin_ )
+            {
+                return false;
+            }
+            for( auto i : range( DIMENSION ) )
+            {
+                if( other_reference_frame[i] != ( *this )[i] )
+                {
+                    return false;
+                }
+            }
+            return true;
+        }
+
+        bool operator!=(
+            const ReferenceFrame< DIMENSION >& other_reference_frame ) const
+        {
+            return !( other_reference_frame == *this );
+        }
+
     private:
         vecn< DIMENSION > origin_{};
     };
     ALIAS_2D_AND_3D( ReferenceFrame );
+
+    /*!
+     * Verifies if the two input reference frames are almost the same:
+     * @return true if the origin and each each of the vectors of the input
+     * reference frames are close up to epsilon, false otherwise.
+     */
+    template < index_t DIMENSION >
+    bool inexact_equal( const ReferenceFrame< DIMENSION >& v1,
+        const ReferenceFrame< DIMENSION >& v2,
+        double epsilon )
+    {
+        if( !inexact_equal( v1.origin(), v2.origin(), epsilon ) )
+        {
+            return false;
+        }
+        for( auto i : range( DIMENSION ) )
+        {
+            if( !inexact_equal( v1[i], v2[i], epsilon ) )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /*!
+     * @brief Class for manipulating reference frames coordinates and such.
+     * All of its functions are static.
+     */
+    template < index_t DIMENSION >
+    class basic_api ReferenceFrameManipulator
+    {
+    public:
+        /*!
+         * @return the coordinates of the input point \global_coords in the
+         * input \reference_frame.
+         */
+        static vecn< DIMENSION > coords_from_global_to_frame(
+            const ReferenceFrame< DIMENSION >& reference_frame,
+            const vecn< DIMENSION >& global_coords )
+        {
+            GEO::Matrix< DIMENSION, double > base_change_matrix =
+                inverse_reference_matrix( reference_frame );
+            vecn< DIMENSION > local_coords;
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto x : range( DIMENSION ) )
+                {
+                    local_coords[i] +=
+                        base_change_matrix( i, x )
+                        * ( global_coords[x] - reference_frame.origin()[x] );
+                }
+            }
+            return local_coords;
+        }
+
+        /*!
+         * @return the global coordinates of the input point from its
+         * coordinates \local_coords in the input \reference_frame.
+         */
+        static vecn< DIMENSION > coords_from_frame_to_global(
+            const ReferenceFrame< DIMENSION >& reference_frame,
+            const vecn< DIMENSION >& local_coords )
+        {
+            vecn< DIMENSION > global_coords{ reference_frame.origin() };
+            for( auto x : range( DIMENSION ) )
+            {
+                for( auto i : range( DIMENSION ) )
+                {
+                    global_coords[x] += local_coords[i] * reference_frame[i][x];
+                }
+            }
+            return global_coords;
+        }
+
+        /*!
+         * @return the inverse of the input reference_frame (equivalent to the
+         * coordinates of the global frame in the input reference frame).
+         */
+        static ReferenceFrame< DIMENSION > reference_frame_from_global_to_local(
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            ReferenceFrame< DIMENSION > inverse_reference_frame;
+            GEO::Matrix< DIMENSION, double > base_change_matrix{
+                inverse_reference_matrix( reference_frame )
+            };
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( DIMENSION ) )
+                {
+                    inverse_reference_frame.origin()[i] -=
+                        base_change_matrix( i, j )
+                        * reference_frame.origin()[j];
+                    inverse_reference_frame[i][j] = base_change_matrix( j, i );
+                }
+            }
+            return inverse_reference_frame;
+        }
+
+        /*!
+         * @return the inverse of the input reference_frame (equivalent to the
+         * coordinates of the global frame in the input reference frame).
+         * This method is optimized for orthogonal frames and works only on
+         * them.
+         */
+        static ReferenceFrame< DIMENSION >
+            orthogonal_reference_frame_from_global_to_local(
+                const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            ReferenceFrame< DIMENSION > inverse_reference_frame;
+            for( auto i : range( DIMENSION ) )
+            {
+                double square_length_i{ reference_frame[i].length()
+                                        * reference_frame[i].length() };
+                for( auto j : range( DIMENSION ) )
+                {
+                    inverse_reference_frame.origin()[i] -=
+                        reference_frame.origin()[j] * reference_frame[i][j]
+                        / square_length_i;
+                    inverse_reference_frame[j][i] =
+                        reference_frame[i][j] / square_length_i;
+                }
+            }
+            return inverse_reference_frame;
+        }
+
+        /*!
+         * Verifies if the given reference frame is orthogonal.
+         */
+        static bool is_frame_orthogonal(
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            for( auto i : range( DIMENSION ) )
+            {
+                for( auto j : range( i + 1, DIMENSION ) )
+                {
+                    if( dot( reference_frame[i], reference_frame[j] ) != 0 )
+                    {
+                        return false;
+                    }
+                }
+            }
+            return true;
+        }
+
+    private:
+        static GEO::Matrix< DIMENSION, double > inverse_reference_matrix(
+            const ReferenceFrame< DIMENSION >& reference_frame )
+        {
+            GEO::Matrix< DIMENSION, double > matrix;
+            for( auto x : range( DIMENSION ) )
+            {
+                for( auto i : range( DIMENSION ) )
+                {
+                    matrix( x, i ) = reference_frame[i][x];
+                }
+            }
+            return matrix.inverse();
+        }
+    };
+    ALIAS_2D_AND_3D( ReferenceFrameManipulator );
 
     /*!
      * @brief Reference frame aligned along the plane normal and whose u axis is

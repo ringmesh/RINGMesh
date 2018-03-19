@@ -34,3 +34,4 @@
 
 add_ringmesh_test(test-mesh-aabb.cpp mesh)
 add_ringmesh_test(test-connected-components.cpp mesh)
+add_ringmesh_test(test-cartesian-grid.cpp mesh)

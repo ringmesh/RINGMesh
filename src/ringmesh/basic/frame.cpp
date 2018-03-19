@@ -82,8 +82,10 @@ namespace RINGMesh
     template class basic_api FrameBase< 2 >;
     template class basic_api Frame< 2 >;
     template class basic_api ReferenceFrame< 2 >;
+    template class basic_api ReferenceFrameManipulator< 2 >;
 
     template class basic_api FrameBase< 3 >;
     template class basic_api Frame< 3 >;
     template class basic_api ReferenceFrame< 3 >;
+    template class basic_api ReferenceFrameManipulator< 3 >;
 } // namespace RINGMesh

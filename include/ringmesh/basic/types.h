@@ -68,9 +68,24 @@ namespace RINGMesh
     using vec3 = vecn< 3 >;
     // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
-
+    // This is an array template of unsigned integers
     template < index_t DIMENSION >
-    bool operator==( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    using ivecn = GEO::vecng< DIMENSION, index_t >;
+    // This is an array of 3 unsigned integers
+    using ivec3 = ivecn< 3 >;
+    // This is an array of 2 unsigned integers
+    using ivec2 = ivecn< 2 >;
+    // This is an array template of signed integers
+    template < index_t DIMENSION >
+    using sivecn = GEO::vecng< DIMENSION, signed_index_t >;
+    // This is an array of 3 signed integers
+    using sivec3 = sivecn< 3 >;
+    // This is an array of 2 signed integers
+    using sivec2 = sivecn< 2 >;
+
+    template < index_t DIMENSION, class type >
+    bool operator==( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
     {
         for( index_t i = 0; i < DIMENSION; i++ )
         {
@@ -82,8 +97,9 @@ namespace RINGMesh
         return true;
     }
 
-    template < index_t DIMENSION >
-    bool operator!=( const vecn< DIMENSION >& u, const vecn< DIMENSION >& v )
+    template < index_t DIMENSION, class type >
+    bool operator!=( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
     {
         return !( u == v );
     }

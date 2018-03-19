@@ -63,14 +63,6 @@ namespace
 {
     using namespace RINGMesh;
 
-    template < index_t DIMENSION >
-    bool inexact_equal( const vecn< DIMENSION >& v1,
-        const vecn< DIMENSION >& v2,
-        double epsilon )
-    {
-        return length( v2 - v1 ) < epsilon;
-    }
-
     /*!
      * @brief Returns the index of the region of the geomodel neighboring the
      * surface.
