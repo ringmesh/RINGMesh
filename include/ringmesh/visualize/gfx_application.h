@@ -174,8 +174,9 @@ namespace RINGMesh
             
 
         public:
-        
-            struct SpeBool
+            /*this struc exist only to enable the use of an uncompressed 
+            std::vector<Bool> by using a std::vector<SpeBool>*/
+            struct SpeBool  
             {
             bool value_{ true };
             };
@@ -208,7 +209,7 @@ namespace RINGMesh
             std::vector<char*> temp_surface_name_; //use to modify surface names
             std::vector<char*> temp_line_name_; //eq for line
             std::vector<char*> temp_corner_name_; //eq for corners
-            char* temp_name_; //eq for GM
+            char* temp_name_; //eq for GM.name_
 
             bool mesh_visible_{ true };
             ImVec4 mesh_color_;
