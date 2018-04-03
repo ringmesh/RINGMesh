@@ -545,6 +545,7 @@ namespace RINGMesh
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
+            ringmesh_unused( section_position );
             if( cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] < 2 )
             {
                 throw RINGMeshException( "RINGMesh Test",
