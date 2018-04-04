@@ -548,9 +548,9 @@ namespace RINGMesh
         {
             if( axis_id > 2 )
             {
-                throw RINGMeshException(
-                    "RINGMesh Test", "Error: Give an axis_id between 0 and the "
-                                     "dimension of the grid -1." );
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error: Give an axis_id between 0 and the "
+                    "dimension of the grid -1." );
             }
             if( cartesian_grid_base_.nb_cells_axis( axis_id ) < 2 )
             {
@@ -563,9 +563,9 @@ namespace RINGMesh
             if( section_position
                 > cartesian_grid_base_.nb_cells_axis( axis_id ) )
             {
-                throw RINGMeshException(
-                    "RINGMesh Test", "Error: Give a correct position for the "
-                                     "section you wish to remove." );
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error: Give a correct position for the "
+                    "section you wish to remove." );
             }
 
             cartesian_grid_base_.nb_total_cells_ -=
