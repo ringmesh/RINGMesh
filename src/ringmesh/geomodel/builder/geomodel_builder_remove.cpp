@@ -211,6 +211,7 @@ namespace RINGMesh
         fill_nb_initial_entities();
         initialize_costly_storage();
         fill_nb_children_vector();
+
         check_if_entities_are_meshed( mesh_entities_to_remove );
         fill_to_erase_vectors( mesh_entities_to_remove );
         fill_removed_entities_and_mapping();
