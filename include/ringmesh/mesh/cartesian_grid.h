@@ -547,11 +547,12 @@ namespace RINGMesh
             index_t axis_id, index_t section_position )
         {
             if( axis_id > 2 )
-			{
-				throw RINGMeshException( "RINGMesh Test",
-					"Error: Give an axis_id between 0 and the dimension of the grid -1." );
-			}
-            if( cartesian_grid_base_.nb_cells_axis(axis_id) < 2 )
+            {
+                throw RINGMeshException(
+                    "RINGMesh Test", "Error: Give an axis_id between 0 and the "
+                                     "dimension of the grid -1." );
+            }
+            if( cartesian_grid_base_.nb_cells_axis( axis_id ) < 2 )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Error: You are trying to remove a section in direction",
@@ -559,38 +560,45 @@ namespace RINGMesh
                     ", but it would reduce the number of cells in this "
                     "directions below 1." );
             }
-            if( section_position > cartesian_grid_base_.nb_cells_axis(axis_id) )
-			{
-				throw RINGMeshException( "RINGMesh Test",
-					"Error: Give a correct position for the section you wish to remove." );
-			}
+            if( section_position
+                > cartesian_grid_base_.nb_cells_axis( axis_id ) )
+            {
+                throw RINGMeshException(
+                    "RINGMesh Test", "Error: Give a correct position for the "
+                                     "section you wish to remove." );
+            }
 
             cartesian_grid_base_.nb_total_cells_ -=
                 cartesian_grid_base_.nb_total_cells_
                 / cartesian_grid_base_.nb_cells_in_each_direction_[axis_id];
             cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] -= 1;
 
-            GEO::vector<index_t> permut = permutation( axis_id, section_position );
-            cartesian_grid_base_.attributes_manager_.apply_permutation(permut);
+            GEO::vector< index_t > permut =
+                permutation( axis_id, section_position );
+            cartesian_grid_base_.attributes_manager_.apply_permutation(
+                permut );
             cartesian_grid_base_.attributes_manager_.resize(
                 cartesian_grid_base_.nb_total_cells_ );
         }
 
     private:
-        GEO::vector<index_t> permutation( index_t axis_id, index_t section_position )
-		{
-        	index_t vec_size = cartesian_grid_base_.attributes_manager_.size();
-        	GEO::vector<index_t> permut{ vec_size, 0 };
-        	index_t iterator{0};
-        	for( auto i : range( vec_size ) )
-			{
-				if( cartesian_grid_base_.local_from_offset(i)[axis_id] != static_cast<signed_index_t>(section_position) ){
-					permut[iterator] = i;
-					iterator++;
-				}
-			}
-        	return permut;
-		}
+        GEO::vector< index_t > permutation(
+            index_t axis_id, index_t section_position )
+        {
+            index_t vec_size = cartesian_grid_base_.attributes_manager_.size();
+            GEO::vector< index_t > permut{ vec_size, 0 };
+            index_t iterator{ 0 };
+            for( auto i : range( vec_size ) )
+            {
+                if( cartesian_grid_base_.local_from_offset( i )[axis_id]
+                    != static_cast< signed_index_t >( section_position ) )
+                {
+                    permut[iterator] = i;
+                    iterator++;
+                }
+            }
+            return permut;
+        }
 
     protected:
         CartesianGridBase< DIMENSION >& cartesian_grid_base_;
