@@ -800,7 +800,6 @@ namespace RINGMesh
         old_2_new_mesh_entity_.clear();
         nb_childs_.clear();
         old_2_new_geological_entity_.clear();
-
     }
 
     template < index_t DIMENSION >
