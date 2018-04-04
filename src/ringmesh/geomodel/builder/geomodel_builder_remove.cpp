@@ -92,6 +92,8 @@ namespace RINGMesh
         flag_geological_entities_without_children();
         do_delete_flagged_geological_entities();
         update_geological_entity_connectivity();
+
+        reinitialize_utility_vectors();
     }
 
     template < index_t DIMENSION >
@@ -134,6 +136,8 @@ namespace RINGMesh
             do_delete_flagged_geological_entities();
             update_geological_entity_connectivity();
         }
+
+        reinitialize_utility_vectors();
     }
 
     template < index_t DIMENSION >
@@ -207,7 +211,6 @@ namespace RINGMesh
         fill_nb_initial_entities();
         initialize_costly_storage();
         fill_nb_children_vector();
-
         check_if_entities_are_meshed( mesh_entities_to_remove );
         fill_to_erase_vectors( mesh_entities_to_remove );
         fill_removed_entities_and_mapping();
@@ -783,6 +786,20 @@ namespace RINGMesh
                         .nb_children();
             }
         }
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelBuilderRemoveBase< DIMENSION >::reinitialize_utility_vectors()
+    {
+        nb_initial_mesh_entities_.clear();
+        nb_initial_geological_entities_.clear();
+        nb_removed_mesh_entities_.clear();
+        nb_removed_geological_entities_.clear();
+        mesh_entity_to_erase_.clear();
+        old_2_new_mesh_entity_.clear();
+        nb_childs_.clear();
+        old_2_new_geological_entity_.clear();
+
     }
 
     template < index_t DIMENSION >

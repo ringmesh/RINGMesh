@@ -248,6 +248,8 @@ namespace RINGMesh
         const GeologicalEntityType& index_to_geological_entity_type(
             index_t index ) const;
 
+        void reinitialize_utility_vectors();
+
     protected:
         GeoModelBuilder< DIMENSION >& builder_;
         GeoModel< DIMENSION >& geomodel_;
