@@ -75,6 +75,8 @@ namespace RINGMesh
         friend class CartesianGridBaseBuilder< DIMENSION >;
 
     public:
+        CartesianGridBase() = default;
+
         /*!
          * Constructor for the cartesian grid
          * \param[in] nb_cells_in_each_direction number of cells in each
@@ -336,8 +338,6 @@ namespace RINGMesh
         }
 
     protected:
-        CartesianGridBase() = default;
-
         /*!
          * Function to call to change the reference frame of the grid.
          */
@@ -386,6 +386,8 @@ namespace RINGMesh
         friend class CartesianGridBuilder< 3 >;
 
     public:
+        CartesianGrid() = default;
+
         CartesianGrid( ivec3 nb_cells_in_each_direction,
             ReferenceFrame3D vec_cartesian_axis )
             : CartesianGridBase(
@@ -439,6 +441,8 @@ namespace RINGMesh
         friend class CartesianGridBuilder< 2 >;
 
     public:
+        CartesianGrid() = default;
+
         CartesianGrid( ivec2 nb_cells_in_each_direction,
             ReferenceFrame2D vec_cartesian_axis )
             : CartesianGridBase(
@@ -494,6 +498,20 @@ namespace RINGMesh
                   dynamic_cast< CartesianGridBase< DIMENSION >& >(
                       cartesian_grid_base ) )
         {
+        }
+
+        void init_grid( ivecn< DIMENSION > nb_cells_in_each_direction,
+                ReferenceFrame< DIMENSION > vec_cartesian_axis )
+        {
+            cartesian_grid_base_.check_and_update_number_of_cells(
+            		nb_cells_in_each_direction );
+            cartesian_grid_base_.check_and_update_frame( vec_cartesian_axis );
+            cartesian_grid_base_.inverse_cartesian_frame_ =
+            		ReferenceFrameManipulator< DIMENSION >::
+                orthogonal_reference_frame_from_global_to_local(
+                		cartesian_grid_base_.cartesian_frame_ );
+            cartesian_grid_base_.attributes_manager_.resize(
+            		cartesian_grid_base_.nb_total_cells_ );
         }
 
         /*!
