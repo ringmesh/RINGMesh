@@ -501,17 +501,17 @@ namespace RINGMesh
         }
 
         void init_grid( ivecn< DIMENSION > nb_cells_in_each_direction,
-                ReferenceFrame< DIMENSION > vec_cartesian_axis )
+            ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
             cartesian_grid_base_.check_and_update_number_of_cells(
-            		nb_cells_in_each_direction );
+                nb_cells_in_each_direction );
             cartesian_grid_base_.check_and_update_frame( vec_cartesian_axis );
             cartesian_grid_base_.inverse_cartesian_frame_ =
-            		ReferenceFrameManipulator< DIMENSION >::
-                orthogonal_reference_frame_from_global_to_local(
-                		cartesian_grid_base_.cartesian_frame_ );
+                ReferenceFrameManipulator< DIMENSION >::
+                    orthogonal_reference_frame_from_global_to_local(
+                        cartesian_grid_base_.cartesian_frame_ );
             cartesian_grid_base_.attributes_manager_.resize(
-            		cartesian_grid_base_.nb_total_cells_ );
+                cartesian_grid_base_.nb_total_cells_ );
         }
 
         /*!
