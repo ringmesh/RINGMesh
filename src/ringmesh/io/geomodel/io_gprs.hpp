@@ -40,9 +40,7 @@ namespace
     public:
         struct Pipe
         {
-            Pipe( index_t v0_in, index_t v1_in ) : v0( v0_in ), v1( v1_in )
-            {
-            }
+            Pipe( index_t v0_in, index_t v1_in ) : v0( v0_in ), v1( v1_in ) {}
             index_t v0;
             index_t v1;
         };

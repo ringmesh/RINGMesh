@@ -648,11 +648,11 @@ namespace
                     for( auto dim_itr :
                         range( cell_attribute_dimensions_[attr_dbl_itr] ) )
                     {
-                        out_
-                            << " "
-                            << cur_attr[c_in_reg[0] * cell_attribute_dimensions_
-                                                          [attr_dbl_itr]
-                                        + dim_itr];
+                        out_ << " "
+                             << cur_attr[c_in_reg[0]
+                                             * cell_attribute_dimensions_
+                                                   [attr_dbl_itr]
+                                         + dim_itr];
                     }
                 }
                 else
@@ -708,8 +708,9 @@ namespace
                     for( auto v :
                         range( polygons.nb_vertices( key_polygon_id ) ) )
                     {
-                        out_ << " " << vertex_exported_id_[polygons.vertex(
-                                           { key_polygon_id, v } )];
+                        out_ << " "
+                             << vertex_exported_id_[polygons.vertex(
+                                    { key_polygon_id, v } )];
                     }
                     out_ << EOL;
                     for( auto p : range( polygons.nb_polygons( surface_id ) ) )
@@ -719,8 +720,9 @@ namespace
                         for( auto v :
                             range( polygons.nb_vertices( polygon_id ) ) )
                         {
-                            out_ << " " << vertex_exported_id_[polygons.vertex(
-                                               { polygon_id, v } )];
+                            out_ << " "
+                                 << vertex_exported_id_[polygons.vertex(
+                                        { polygon_id, v } )];
                         }
                         out_ << EOL;
                     }
