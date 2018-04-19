@@ -242,7 +242,6 @@ void test_circle_plane_intersection()
         Intersection::circle_plane( circle1, plane );
     verdict( !does_circle1_intersect_plane, "Test circle parallel to plane" );
 
-
     // Circle adjacent to the plane
     Geometry::Circle circle2{ { { -1., 2., 0. }, { 2., 3., 4. } }, 5. };
     bool does_circle2_intersect_plane;
@@ -280,10 +279,10 @@ void test_circle_plane_intersection()
     Geometry::Circle circle4{ { { -2., -1., 1. }, { 3., 0., 3. } }, 2. };
     bool does_circle4_intersect_plane;
     std::tie( does_circle4_intersect_plane, std::ignore ) =
-    	Intersection::circle_plane( circle4, plane );
+        Intersection::circle_plane( circle4, plane );
     verdict( !does_circle4_intersect_plane, "Test circle distance from plane" );
 
-           Logger::out( "TEST", " " );
+    Logger::out( "TEST", " " );
 }
 
 void test_disk_segment_intersection()
