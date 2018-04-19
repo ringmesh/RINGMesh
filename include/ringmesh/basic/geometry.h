@@ -46,6 +46,7 @@
 
 namespace RINGMesh
 {
+    vec2 basic_api normalized_perp( const vec2& v );
     double basic_api dot_perp( const vec2& v0, const vec2& v1 );
 
     /* @warning Duplicate from Geogram/basic/numeric.h */
