@@ -279,7 +279,8 @@ void test_circle_plane_intersection()
     bool does_circle4_intersect_plane;
     std::tie( does_circle4_intersect_plane, std::ignore ) =
         Intersection::circle_plane( circle4, plane );
-    verdict( !does_circle4_intersect_plane, "Test circle distance from plane" );
+    verdict( !does_circle4_intersect_plane, 
+        "Test circle not crossing the plane" );
 
     Logger::out( "TEST", " " );
 }
