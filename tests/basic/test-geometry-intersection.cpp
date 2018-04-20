@@ -274,6 +274,14 @@ void test_circle_plane_intersection()
                         || ( are_almost_equal( results3[1], answer32 ) ) ),
         "Test circle crossing the plane (intersection coordinates)" );
 
+    // Circle not crossing the plane (but not parallel)
+    Geometry::Circle circle4{ { { -2., -1., 1. }, { 3., 0., 3. } }, 2. };
+    bool does_circle4_intersect_plane;
+    std::tie( does_circle4_intersect_plane, std::ignore ) =
+        Intersection::circle_plane( circle4, plane );
+    verdict(
+        !does_circle4_intersect_plane, "Test circle not crossing the plane" );
+
     Logger::out( "TEST", " " );
 }
 
