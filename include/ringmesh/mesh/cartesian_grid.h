@@ -564,7 +564,7 @@ namespace RINGMesh
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
-            if( axis_id > DIMENSION-1 )
+            if( axis_id > DIMENSION - 1 )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Error: Give an axis_id between 0 and the "
