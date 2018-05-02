@@ -564,7 +564,7 @@ namespace RINGMesh
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
-            if( axis_id > 2 )
+            if( axis_id > DIMENSION-1 )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Error: Give an axis_id between 0 and the "
@@ -603,7 +603,7 @@ namespace RINGMesh
         GEO::vector< index_t > permutation(
             index_t axis_id, index_t section_position )
         {
-            index_t vec_size = cartesian_grid_base_.attributes_manager_.size();
+            index_t vec_size{ cartesian_grid_base_.attributes_manager_.size() };
             GEO::vector< index_t > permut{ vec_size, 0 };
             index_t iterator{ 0 };
             for( auto i : range( vec_size ) )
