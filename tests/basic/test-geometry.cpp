@@ -137,31 +137,6 @@ void test_triangle_barycentric_coordinates_2D()
     }
 }
 
-void test_point_plane_distance()
-{
-    Logger::out( "TEST", "Test point plane distance" );
-
-    vec3 test0{ 1, 1, 1 };
-    Geometry::Plane plane0{ { 0, 0, 2 }, { 0, 0, 0 } };
-    vec3 projected0;
-    std::tie( std::ignore, projected0 ) =
-        Distance::point_to_plane( test0, plane0 );
-    if( projected0 != vec3{ 1, 1, 0 } )
-    {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
-
-    vec3 test1{ 0, 0.5, 1 };
-    Geometry::Plane plane1{ { 1, 0, 0 }, { 1, 1, 1 } };
-    vec3 projected1;
-    std::tie( std::ignore, projected1 ) =
-        Distance::point_to_plane( test1, plane1 );
-    if( projected1 != vec3{ 1, 0.5, 1 } )
-    {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
-    }
-}
-
 void test_normalize_perp_scalar()
 {
 	Logger::out( "TEST", "Test scalar product" );
@@ -220,7 +195,6 @@ int main()
 
         test_triangle_barycentric_coordinates_3D();
         test_triangle_barycentric_coordinates_2D();
-        test_point_plane_distance();
         test_normalize_perp_scalar();
         test_dot_perp();
         test_operators();
