@@ -31,6 +31,7 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+add_ringmesh_test(test-box.cpp basic)
 add_ringmesh_test(test-factory.cpp basic)
 add_ringmesh_test(test-geometry.cpp basic)
 add_ringmesh_test(test-geometry-distance.cpp basic)
