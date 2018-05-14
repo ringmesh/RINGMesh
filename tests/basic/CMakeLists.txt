@@ -33,6 +33,7 @@
 
 add_ringmesh_test(test-factory.cpp basic)
 add_ringmesh_test(test-geometry.cpp basic)
+add_ringmesh_test(test-geometry-distance.cpp basic)
 add_ringmesh_test(test-geometry-intersection.cpp basic)
 add_ringmesh_test(test-geometry-position.cpp basic)
 add_ringmesh_test(test-matrix.cpp basic)

@@ -178,26 +178,6 @@ namespace RINGMesh
         return std::make_tuple( false, empty_point );
     }
 
-    std::tuple< double, vec3 > point_segment_distance(
-        const vec3& p, const vec3& p0, const vec3& p1 )
-    {
-        bool is_point_segment_projection_possible;
-        vec3 nearest_p;
-        std::tie( is_point_segment_projection_possible, nearest_p ) =
-            point_segment_projection( p, p0, p1 );
-        if( is_point_segment_projection_possible )
-        {
-            return std::make_tuple( length( nearest_p - p ), nearest_p );
-        }
-        double p0_distance_sq{ length2( p0 - p ) };
-        double p1_distance_sq{ length2( p1 - p ) };
-        if( p0_distance_sq < p1_distance_sq )
-        {
-            return std::make_tuple( std::sqrt( p0_distance_sq ), p0 );
-        }
-        return std::make_tuple( std::sqrt( p1_distance_sq ), p1 );
-    }
-
     GEO::Matrix< 4, double > rotation_matrix_about_arbitrary_axis(
         const vec3& origin, const vec3& axis, double theta, bool degrees )
     {

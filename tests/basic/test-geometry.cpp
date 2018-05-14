@@ -1,5 +1,4 @@
-/*
- * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
+/* Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -44,59 +43,145 @@
 
 using namespace RINGMesh;
 
-void test_triangle_barycentric_coordinates()
+void test_triangle_barycentric_coordinates_3D()
 {
-    Logger::out( "TEST", "Test triangle barycentric coordinates" );
+    Logger::out( "TEST", "Test triangle barycentric coordinates 3D" );
     vec3 p0( 0, 0, 0 );
     vec3 p1( 1, 0, 0 );
     vec3 p2( 0, 1, 0 );
+    vec3 p3( 0.9999999, 0, 0 );
 
+    bool not_nul_area;
     std::array< double, 3 > lambdas;
     std::tie( std::ignore, lambdas ) =
         triangle_barycentric_coordinates( vec3( 0.25, 0.25, 0 ), p0, p1, p2 );
     if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 )
     {
         throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
+            "TEST", "Error in triangle barycentric coordinates 3D" );
     }
     std::tie( std::ignore, lambdas ) =
         triangle_barycentric_coordinates( vec3( 0.5, 0.5, 0 ), p0, p1, p2 );
     if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 )
     {
         throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
+            "TEST", "Error in triangle barycentric coordinates 3D" );
     }
     std::tie( std::ignore, lambdas ) =
         triangle_barycentric_coordinates( vec3( 1, 1, 0 ), p0, p1, p2 );
     if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 )
     {
         throw RINGMeshException(
-            "TEST", "Error in triangle barycentric coordinates" );
+            "TEST", "Error in triangle barycentric coordinates 3D" );
+    }
+    std::tie( std::ignore, lambdas ) =
+        triangle_barycentric_coordinates( vec3( 0, 0, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 1 || lambdas[1] != 0 || lambdas[2] != 0 )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 3D" );
+    }
+    std::tie( not_nul_area, lambdas ) =
+        triangle_barycentric_coordinates( vec3( 0, 0, 0 ), p0, p1, p3 );
+    if( not_nul_area )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 3D" );
     }
 }
 
-void test_point_plane_distance()
+void test_triangle_barycentric_coordinates_2D()
 {
-    Logger::out( "TEST", "Test point plane distance" );
+    Logger::out( "TEST", "Test triangle barycentric coordinates 2D" );
+    vec2 p0( 0, 0 );
+    vec2 p1( 1, 0 );
+    vec2 p2( 0, 1 );
+    vec2 p3( 0.9999999, 0 ); // triangle 0,1, 3 degenere
 
-    vec3 test0{ 1, 1, 1 };
-    Geometry::Plane plane0{ { 0, 0, 2 }, { 0, 0, 0 } };
-    vec3 projected0;
-    std::tie( std::ignore, projected0 ) =
-        Distance::point_to_plane( test0, plane0 );
-    if( projected0 != vec3{ 1, 1, 0 } )
+    bool not_nul_area;
+    std::array< double, 3 > lambdas;
+    std::tie( std::ignore, lambdas ) =
+        triangle_barycentric_coordinates( vec2( 0.25, 0.25 ), p0, p1, p2 );
+    if( lambdas[0] != 0.5 || lambdas[1] != 0.25 || lambdas[2] != 0.25 )
     {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 2D" );
     }
-
-    vec3 test1{ 0, 0.5, 1 };
-    Geometry::Plane plane1{ { 1, 0, 0 }, { 1, 1, 1 } };
-    vec3 projected1;
-    std::tie( std::ignore, projected1 ) =
-        Distance::point_to_plane( test1, plane1 );
-    if( projected1 != vec3{ 1, 0.5, 1 } )
+    std::tie( std::ignore, lambdas ) =
+        triangle_barycentric_coordinates( vec2( 0.5, 0.5 ), p0, p1, p2 );
+    if( lambdas[0] != 0 || lambdas[1] != 0.5 || lambdas[2] != 0.5 )
     {
-        throw RINGMeshException( "TEST", "Error in point plane distance" );
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 2D" );
+    }
+    std::tie( std::ignore, lambdas ) =
+        triangle_barycentric_coordinates( vec2( 1, 1 ), p0, p1, p2 );
+    if( lambdas[0] != -1 || lambdas[1] != 1 || lambdas[2] != 1 )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 2D" );
+    }
+    std::tie( std::ignore, lambdas ) =
+        triangle_barycentric_coordinates( vec2( 0, 0 ), p0, p1, p2 );
+    if( lambdas[0] != 1 || lambdas[1] != 0 || lambdas[2] != 0 )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 2D" );
+    }
+    std::tie( not_nul_area, lambdas ) =
+        triangle_barycentric_coordinates( vec2( 0, 0 ), p0, p1, p3 );
+    if( not_nul_area )
+    {
+        throw RINGMeshException(
+            "TEST", "Error in triangle barycentric coordinates 2D" );
+    }
+}
+
+void test_normalize_perp_scalar()
+{
+    Logger::out( "TEST", "Test scalar product" );
+    vec2 v{ 1., 1. };
+    vec2 vect_n{ normalized_perp( v ) };
+    double scalar_product{ v.x * vect_n.x + v.y * vect_n.y };
+    if( scalar_product != 0 )
+    {
+        throw RINGMeshException( "TEST", "Error in scalar product" );
+    }
+}
+void test_dot_perp()
+{
+    Logger::out( "TEST", "Test dot product" );
+    vec2 v{ 1, 1 };
+    vec2 vect_n{ normalized_perp( v ) };
+    double scalar_product{ dot( v, vect_n ) };
+    if( scalar_product != 0 )
+    {
+        throw RINGMeshException( "TEST", "Error in dot product" );
+    }
+}
+
+void test_operators()
+{
+    Logger::out( "TEST", "Test operators '==' and '!='" );
+    vec3 u{ 1, 1, 1 };
+    vec3 v{ 1, 0.99999999, 1 };
+    vec3 w{ 1, 1, 1 };
+
+    if( operator==( v, u ) )
+    {
+        throw RINGMeshException( "TEST", "Error in operator ==" );
+    }
+    if( !operator==( u, w ) )
+    {
+        throw RINGMeshException( "TEST", "Error in operator ==" );
+    }
+    if( !operator!=( v, u ) )
+    {
+        throw RINGMeshException( "TEST", "Error in operator !=" );
+    }
+    if( operator!=( u, w ) )
+    {
+        throw RINGMeshException( "TEST", "Error in operator !=" );
     }
 }
 
@@ -108,8 +193,11 @@ int main()
     {
         Logger::out( "TEST", "Test geometric tools" );
 
-        test_triangle_barycentric_coordinates();
-        test_point_plane_distance();
+        test_triangle_barycentric_coordinates_3D();
+        test_triangle_barycentric_coordinates_2D();
+        test_normalize_perp_scalar();
+        test_dot_perp();
+        test_operators();
     }
     catch( const RINGMeshException& e )
     {
