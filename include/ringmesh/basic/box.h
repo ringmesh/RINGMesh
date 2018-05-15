@@ -80,8 +80,26 @@ namespace RINGMesh
 
         bool contains( const vecn< DIMENSION >& b ) const;
 
+        /*!
+         * Computes the squared distance of the query point \p p to
+         * the center of the box
+         * @param[in] p query point
+         * @warning The computed distance is the squared distance
+         * to the center.
+         */
         double distance_to_center( const vecn< DIMENSION >& p ) const;
 
+        /*!
+         * Computes a distance to the closest boundary of the box
+         * @param[in] p query point
+         * @details If the point is inside the computed distance
+         * is negative, if the point is on the boundary of the box
+         * the computed distance is equal to zero, else the distance
+         * is positive.
+         * @warning The computed distance is not the Euclidean
+         * distance! This function is dedicated for sorting several
+         * boxes in function of their distance to a point.
+         */
         double signed_distance( const vecn< DIMENSION >& p ) const;
 
     private:
