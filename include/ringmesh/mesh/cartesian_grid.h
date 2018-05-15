@@ -75,6 +75,8 @@ namespace RINGMesh
         friend class CartesianGridBaseBuilder< DIMENSION >;
 
     public:
+        CartesianGridBase() = default;
+
         /*!
          * Constructor for the cartesian grid
          * \param[in] nb_cells_in_each_direction number of cells in each
@@ -336,8 +338,6 @@ namespace RINGMesh
         }
 
     protected:
-        CartesianGridBase() = default;
-
         /*!
          * Function to call to change the reference frame of the grid.
          */
@@ -386,6 +386,8 @@ namespace RINGMesh
         friend class CartesianGridBuilder< 3 >;
 
     public:
+        CartesianGrid() = default;
+
         CartesianGrid( ivec3 nb_cells_in_each_direction,
             ReferenceFrame3D vec_cartesian_axis )
             : CartesianGridBase(
@@ -439,6 +441,8 @@ namespace RINGMesh
         friend class CartesianGridBuilder< 2 >;
 
     public:
+        CartesianGrid() = default;
+
         CartesianGrid( ivec2 nb_cells_in_each_direction,
             ReferenceFrame2D vec_cartesian_axis )
             : CartesianGridBase(
@@ -496,6 +500,20 @@ namespace RINGMesh
         {
         }
 
+        void init_grid( ivecn< DIMENSION > nb_cells_in_each_direction,
+            ReferenceFrame< DIMENSION > vec_cartesian_axis )
+        {
+            cartesian_grid_base_.check_and_update_number_of_cells(
+                nb_cells_in_each_direction );
+            cartesian_grid_base_.check_and_update_frame( vec_cartesian_axis );
+            cartesian_grid_base_.inverse_cartesian_frame_ =
+                ReferenceFrameManipulator< DIMENSION >::
+                    orthogonal_reference_frame_from_global_to_local(
+                        cartesian_grid_base_.cartesian_frame_ );
+            cartesian_grid_base_.attributes_manager_.resize(
+                cartesian_grid_base_.nb_total_cells_ );
+        }
+
         /*!
          * Changes the length of vector \axis_id of the reference frame of the
          * grid associated to this builder, and sets it to \new_size.
@@ -541,11 +559,18 @@ namespace RINGMesh
          * Removes a section of cells of the grid, normal to the vector \axis_id
          * of its reference frame, and with coordinate \section_position on this
          * axis.
+         * \param[in] axis_id axis number between 0 and DIMENSION
          */
         void remove_section_from_cartesian_grid(
             index_t axis_id, index_t section_position )
         {
-            if( cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] < 2 )
+            if( axis_id > DIMENSION - 1 )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error: Give an axis_id between 0 and the "
+                    "dimension of the grid -1." );
+            }
+            if( cartesian_grid_base_.nb_cells_axis( axis_id ) < 2 )
             {
                 throw RINGMeshException( "RINGMesh Test",
                     "Error: You are trying to remove a section in direction",
@@ -553,15 +578,44 @@ namespace RINGMesh
                     ", but it would reduce the number of cells in this "
                     "directions below 1." );
             }
+            if( section_position
+                > cartesian_grid_base_.nb_cells_axis( axis_id ) )
+            {
+                throw RINGMeshException( "RINGMesh Test",
+                    "Error: Give a correct position for the "
+                    "section you wish to remove." );
+            }
+
             cartesian_grid_base_.nb_total_cells_ -=
                 cartesian_grid_base_.nb_total_cells_
                 / cartesian_grid_base_.nb_cells_in_each_direction_[axis_id];
             cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] -= 1;
 
-            // TODO remove the given section from the attribute manager.
-
+            GEO::vector< index_t > permut =
+                permutation( axis_id, section_position );
+            cartesian_grid_base_.attributes_manager_.apply_permutation(
+                permut );
             cartesian_grid_base_.attributes_manager_.resize(
                 cartesian_grid_base_.nb_total_cells_ );
+        }
+
+    private:
+        GEO::vector< index_t > permutation(
+            index_t axis_id, index_t section_position )
+        {
+            index_t vec_size{ cartesian_grid_base_.attributes_manager_.size() };
+            GEO::vector< index_t > permut{ vec_size, 0 };
+            index_t iterator{ 0 };
+            for( auto i : range( vec_size ) )
+            {
+                if( cartesian_grid_base_.local_from_offset( i )[axis_id]
+                    != static_cast< signed_index_t >( section_position ) )
+                {
+                    permut[iterator] = i;
+                    iterator++;
+                }
+            }
+            return permut;
         }
 
     protected:
