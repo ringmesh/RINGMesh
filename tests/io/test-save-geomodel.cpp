@@ -48,10 +48,11 @@
  * @author Arnaud Botella
    Remark : Mustapha Zakari
     Comparisons from different OS fails:
-	  Loaded and saved files from different OS don't give the same cell numerotation
-	A solution here is to store reference files according to OS:
-		For windows reference files a ""_win"" has been added at the end of its name
-		if no ""_win"" figures in the reference filename the file is assumed to having been generated on a Linux OS
+      Loaded and saved files from different OS don't give the same cell
+ numerotation A solution here is to store reference files according to OS: For
+ windows reference files a ""_win"" has been added at the end of its name if no
+ ""_win"" figures in the reference filename the file is assumed to having been
+ generated on a Linux OS
  */
 
 using namespace RINGMesh;
@@ -199,20 +200,20 @@ void io_geomodel(
     GeoModel< DIMENSION > geomodel;
     geomodel_load( geomodel, geomodel_file );
 #if defined( RINGMESH_WINDOWS )
-	geomodel_save(geomodel, ringmesh_test_output_path + "geomodel"
-		+ std::to_string(DIMENSION) + "d_win."
-		+ extension);
+    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
+                                 + std::to_string( DIMENSION ) + "d_win."
+                                 + extension );
 #else
-	geomodel_save(geomodel, ringmesh_test_output_path + "geomodel"
-		+ std::to_string(DIMENSION) + "d_."
-		+ extension);
+    geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
+                                 + std::to_string( DIMENSION ) + "d_."
+                                 + extension );
 #endif
 }
 
 template < index_t DIMENSION >
 void process_extension( const std::string& extension )
 {
-	Logger::out("extension", extension);
+    Logger::out( "extension", extension );
 
     if( extension == "gm" )
     {
@@ -281,11 +282,11 @@ void process_extension( const std::string& extension )
     }
 #endif
 #if defined( RINGMESH_WINDOWS )
-	std::string info{ ringmesh_test_save_path + extension
-		+ std::to_string(DIMENSION) + "d_win.txt" };
+    std::string info{ ringmesh_test_save_path + extension
+                      + std::to_string( DIMENSION ) + "d_win.txt" };
 #else
-	std::string info{ ringmesh_test_save_path + extension
-		+ std::to_string(DIMENSION) + "d.txt" };
+    std::string info{ ringmesh_test_save_path + extension
+                      + std::to_string( DIMENSION ) + "d.txt" };
 #endif
 
     GEO::LineInput in{ info };
