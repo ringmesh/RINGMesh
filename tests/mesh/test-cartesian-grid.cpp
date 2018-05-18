@@ -170,7 +170,9 @@ void test_cartesian_grids()
     }
 
     GEO::Attribute< float > indices{ cartesiangrid.attributes_manager(), name };
-    GEO::Attribute< index_t > index_t_indices{ cartesiangrid.attributes_manager(), name2 };
+    GEO::Attribute< index_t > index_t_indices{
+        cartesiangrid.attributes_manager(), name2
+    };
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
         for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )

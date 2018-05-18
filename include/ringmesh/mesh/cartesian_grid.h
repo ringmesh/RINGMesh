@@ -306,7 +306,8 @@ namespace RINGMesh
             }
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
-                    create_attribute_store_by_element_type_name( "index_t", 1 ) );
+                    create_attribute_store_by_element_type_name(
+                        "index_t", 1 ) );
             GEO::Attribute< index_t > attribute{ attributes_manager_,
                 attribute_name };
             for( auto i : range( nb_total_cells_ ) )
@@ -340,7 +341,8 @@ namespace RINGMesh
         {
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
-                    create_attribute_store_by_element_type_name( "index_t", 1 ) );
+                    create_attribute_store_by_element_type_name(
+                        "index_t", 1 ) );
             GEO::Attribute< index_t > attribute{ attributes_manager_,
                 attribute_name };
             attribute.fill( value );
