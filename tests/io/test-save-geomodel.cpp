@@ -205,7 +205,7 @@ void io_geomodel(
                                  + extension );
 #else
     geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
-                                 + std::to_string( DIMENSION ) + "d_."
+                                 + std::to_string( DIMENSION ) + "d."
                                  + extension );
 #endif
 }
