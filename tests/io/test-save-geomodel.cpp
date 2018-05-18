@@ -199,7 +199,7 @@ void io_geomodel(
 {
     GeoModel< DIMENSION > geomodel;
     geomodel_load( geomodel, geomodel_file );
-#if defined( RINGMESH_WINDOWS )
+#ifdef RINGMESH_WINDOWS
     geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
                                  + std::to_string( DIMENSION ) + "d_win."
                                  + extension );
@@ -281,7 +281,7 @@ void process_extension( const std::string& extension )
         return;
     }
 #endif
-#if defined( RINGMESH_WINDOWS )
+#ifdef RINGMESH_WINDOWS
     std::string info{ ringmesh_test_save_path + extension
                       + std::to_string( DIMENSION ) + "d_win.txt" };
 #else
