@@ -561,7 +561,7 @@ namespace RINGMesh
         {
         }
 
-        void init_grid( ivecn< DIMENSION > nb_cells_in_each_direction,
+        void initialise_grid( ivecn< DIMENSION > nb_cells_in_each_direction,
             ReferenceFrame< DIMENSION > vec_cartesian_axis )
         {
             cartesian_grid_base_.check_and_update_number_of_cells(
