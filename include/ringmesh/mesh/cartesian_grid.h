@@ -300,9 +300,9 @@ namespace RINGMesh
         {
             if( values.size() != nb_total_cells_ )
             {
-                throw RINGMeshException(
-                    "CartesianGrid", "The attribute you're trying to retrieve "
-                                     "doesn't have float values." );
+                throw RINGMeshException( "CartesianGrid",
+                    "The attribute you're trying to retrieve "
+                    "doesn't have float values." );
             }
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
@@ -333,9 +333,9 @@ namespace RINGMesh
                         ->element_typeid_name()
                     == typeid( float ).name() ) )
             {
-                throw RINGMeshException(
-                    "CartesianGrid", "The attribute you're trying to retrieve "
-                                     "doesn't have float values." );
+                throw RINGMeshException( "CartesianGrid",
+                    "The attribute you're trying to retrieve "
+                    "doesn't have float values." );
             }
             return new GEO::Attribute< float >(
                 attributes_manager_, attribute_name );
@@ -355,9 +355,9 @@ namespace RINGMesh
                         ->element_typeid_name()
                     == typeid( float ).name() ) )
             {
-                throw RINGMeshException(
-                    "CartesianGrid", "The attribute you're trying to retrieve "
-                                     "doesn't have float values." );
+                throw RINGMeshException( "CartesianGrid",
+                    "The attribute you're trying to retrieve "
+                    "doesn't have float values." );
             }
             GEO::Attribute< float > attribute{ attributes_manager_,
                 attribute_name };
