@@ -295,56 +295,73 @@ namespace RINGMesh
             return attributes_manager_;
         }
 
-        void add_float_attribute( const std::string& attribute_name, const std::vector<float>& values )
+        void add_float_attribute( const std::string& attribute_name,
+            const std::vector< float >& values )
         {
-        	if( values.size() != nb_total_cells_ )
-			{
-				throw RINGMeshException( "CartesianGrid",
-						"The attribute you're trying to retrieve doesn't have float values.");
-			}
-        	attributes_manager_.bind_attribute_store( attribute_name,
-        			GEO::AttributeStore::create_attribute_store_by_element_type_name( "float", 1 ) );
-        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
-        	for( auto i : range( nb_total_cells_ ) )
-        	{
-        		attribute[i] = values[i];
-        	}
+            if( values.size() != nb_total_cells_ )
+            {
+                throw RINGMeshException(
+                    "CartesianGrid", "The attribute you're trying to retrieve "
+                                     "doesn't have float values." );
+            }
+            attributes_manager_.bind_attribute_store( attribute_name,
+                GEO::AttributeStore::
+                    create_attribute_store_by_element_type_name( "float", 1 ) );
+            GEO::Attribute< float > attribute{ attributes_manager_,
+                attribute_name };
+            for( auto i : range( nb_total_cells_ ) )
+            {
+                attribute[i] = values[i];
+            }
         }
 
-        void add_float_attribute( const std::string& attribute_name, float value=0 )
+        void add_float_attribute(
+            const std::string& attribute_name, float value = 0 )
         {
-        	attributes_manager_.bind_attribute_store( attribute_name,
-        			GEO::AttributeStore::create_attribute_store_by_element_type_name( "float", 1 ) );
-        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
-        	attribute.fill( value );
+            attributes_manager_.bind_attribute_store( attribute_name,
+                GEO::AttributeStore::
+                    create_attribute_store_by_element_type_name( "float", 1 ) );
+            GEO::Attribute< float > attribute{ attributes_manager_,
+                attribute_name };
+            attribute.fill( value );
         }
 
-        GEO::Attribute<float>* get_float_attribute( const std::string& attribute_name )
-		{
-        	if( !( attributes_manager_.find_attribute_store(
-        			attribute_name )->element_typeid_name() == typeid(float).name() ) )
-        	{
-				throw RINGMeshException( "CartesianGrid",
-						"The attribute you're trying to retrieve doesn't have float values.");
-			}
-        	return new GEO::Attribute<float>( attributes_manager_, attribute_name );
-		}
-
-        float& get_float_attribute_value( const std::string& attribute_name, sivecn<DIMENSION> position )
+        GEO::Attribute< float >* get_float_attribute(
+            const std::string& attribute_name )
         {
-        	index_t index = cell_offset( position );
-        	if( index == NO_ID ){
-        		throw RINGMeshException( "CartesianGrid",
-            			"Points outside of the grid have no attribute value, give a valid point position.");
-        	}
-        	if( !( attributes_manager_.find_attribute_store(
-        			attribute_name )->element_typeid_name() == typeid(float).name() ) )
-        	{
-				throw RINGMeshException( "CartesianGrid",
-						"The attribute you're trying to retrieve doesn't have float values.");
-			}
-        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
-        	return attribute[index];
+            if( !( attributes_manager_.find_attribute_store( attribute_name )
+                        ->element_typeid_name()
+                    == typeid( float ).name() ) )
+            {
+                throw RINGMeshException(
+                    "CartesianGrid", "The attribute you're trying to retrieve "
+                                     "doesn't have float values." );
+            }
+            return new GEO::Attribute< float >(
+                attributes_manager_, attribute_name );
+        }
+
+        float& get_float_attribute_value(
+            const std::string& attribute_name, sivecn< DIMENSION > position )
+        {
+            index_t index = cell_offset( position );
+            if( index == NO_ID )
+            {
+                throw RINGMeshException( "CartesianGrid",
+                    "Points outside of the grid have no attribute value, give "
+                    "a valid point position." );
+            }
+            if( !( attributes_manager_.find_attribute_store( attribute_name )
+                        ->element_typeid_name()
+                    == typeid( float ).name() ) )
+            {
+                throw RINGMeshException(
+                    "CartesianGrid", "The attribute you're trying to retrieve "
+                                     "doesn't have float values." );
+            }
+            GEO::Attribute< float > attribute{ attributes_manager_,
+                attribute_name };
+            return attribute[index];
         }
 
         /*!
@@ -676,12 +693,12 @@ namespace RINGMesh
                 if( cartesian_grid_base_.local_from_offset( i )[axis_id]
                     != static_cast< signed_index_t >( section_position ) )
                 {
-                	compression_vec[i] = iterator;
+                    compression_vec[i] = iterator;
                     iterator++;
                 }
                 else
                 {
-                	compression_vec[i] = index_t(-1);
+                    compression_vec[i] = index_t( -1 );
                 }
             }
             return compression_vec;
