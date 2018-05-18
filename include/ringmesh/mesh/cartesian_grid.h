@@ -281,9 +281,70 @@ namespace RINGMesh
          * @return the attribute manager containing the grid point attributes
          * values.
          */
-        GEO::AttributesManager& attributes_manager() const
+        GEO::AttributesManager& attributes_manager()
         {
             return attributes_manager_;
+        }
+
+        /*!
+         * @return the attribute manager containing the grid point attributes
+         * values.
+         */
+        const GEO::AttributesManager& attributes_manager() const
+        {
+            return attributes_manager_;
+        }
+
+        void add_float_attribute( const std::string& attribute_name, const std::vector<float>& values )
+        {
+        	if( values.size() != nb_total_cells_ )
+			{
+				throw RINGMeshException( "CartesianGrid",
+						"The attribute you're trying to retrieve doesn't have float values.");
+			}
+        	attributes_manager_.bind_attribute_store( attribute_name,
+        			GEO::AttributeStore::create_attribute_store_by_element_type_name( "float", 1 ) );
+        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
+        	for( auto i : range( nb_total_cells_ ) )
+        	{
+        		attribute[i] = values[i];
+        	}
+        }
+
+        void add_float_attribute( const std::string& attribute_name, float value=0 )
+        {
+        	attributes_manager_.bind_attribute_store( attribute_name,
+        			GEO::AttributeStore::create_attribute_store_by_element_type_name( "float", 1 ) );
+        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
+        	attribute.fill( value );
+        }
+
+        GEO::Attribute<float>* get_float_attribute( const std::string& attribute_name )
+		{
+        	if( !( attributes_manager_.find_attribute_store(
+        			attribute_name )->element_typeid_name() == typeid(float).name() ) )
+        	{
+				throw RINGMeshException( "CartesianGrid",
+						"The attribute you're trying to retrieve doesn't have float values.");
+			}
+        	return new GEO::Attribute<float>( attributes_manager_, attribute_name );
+		}
+
+        float& get_float_attribute_value( const std::string& attribute_name, sivecn<DIMENSION> position )
+        {
+        	index_t index = cell_offset( position );
+        	if( index == NO_ID ){
+        		throw RINGMeshException( "CartesianGrid",
+            			"Points outside of the grid have no attribute value, give a valid point position.");
+        	}
+        	if( !( attributes_manager_.find_attribute_store(
+        			attribute_name )->element_typeid_name() == typeid(float).name() ) )
+        	{
+				throw RINGMeshException( "CartesianGrid",
+						"The attribute you're trying to retrieve doesn't have float values.");
+			}
+        	GEO::Attribute<float> attribute{ attributes_manager_, attribute_name };
+        	return attribute[index];
         }
 
         /*!
@@ -311,7 +372,7 @@ namespace RINGMesh
             {
                 if( nb_cells_in_each_direction[i] < 1 )
                 {
-                    throw RINGMeshException( "RINGMesh Test",
+                    throw RINGMeshException( "CartesianGrid Test",
                         "Error: You are trying to create a Cartesian Grid "
                         "with no cell in direction ",
                         i,
@@ -330,7 +391,7 @@ namespace RINGMesh
             if( !ReferenceFrameManipulator< DIMENSION >::is_frame_orthogonal(
                     vec_cartesian_axis ) )
             {
-                throw RINGMeshException( "RINGMesh Test",
+                throw RINGMeshException( "CartesianGrid Test",
                     "Error: the frame you are giving for the "
                     "Cartesian Grid is not orthogonal. " );
             }
@@ -591,31 +652,39 @@ namespace RINGMesh
                 / cartesian_grid_base_.nb_cells_in_each_direction_[axis_id];
             cartesian_grid_base_.nb_cells_in_each_direction_[axis_id] -= 1;
 
-            GEO::vector< index_t > permut =
-                permutation( axis_id, section_position );
-            cartesian_grid_base_.attributes_manager_.apply_permutation(
-                permut );
+            GEO::vector< index_t > compression_vec =
+                compression_vector( axis_id, section_position );
+            cartesian_grid_base_.attributes_manager_.compress(
+                compression_vec );
             cartesian_grid_base_.attributes_manager_.resize(
                 cartesian_grid_base_.nb_total_cells_ );
         }
 
     private:
-        GEO::vector< index_t > permutation(
+        /*!
+         * Returns the compression vector needed to remove the values of the
+         * removed section from the attributes.
+         */
+        GEO::vector< index_t > compression_vector(
             index_t axis_id, index_t section_position )
         {
             index_t vec_size{ cartesian_grid_base_.attributes_manager_.size() };
-            GEO::vector< index_t > permut{ vec_size, 0 };
+            GEO::vector< index_t > compression_vec{ vec_size, 0 };
             index_t iterator{ 0 };
             for( auto i : range( vec_size ) )
             {
                 if( cartesian_grid_base_.local_from_offset( i )[axis_id]
                     != static_cast< signed_index_t >( section_position ) )
                 {
-                    permut[iterator] = i;
+                	compression_vec[i] = iterator;
                     iterator++;
                 }
+                else
+                {
+                	compression_vec[i] = index_t(-1);
+                }
             }
-            return permut;
+            return compression_vec;
         }
 
     protected:

@@ -131,6 +131,109 @@ void test_cartesian_grids()
         throw RINGMeshException(
             "TEST", "Error in calculating the inverse offset 2" );
     }
+
+    std::vector<float> values( cartesiangrid.nb_cells() );
+    for( auto i : range( cartesiangrid.nb_cells() ) )
+    {
+    	values[i] = (float)i;
+    }
+    std::string name{ "index" };
+    cartesiangrid.add_float_attribute( name, values );
+
+    for( auto i : range( cartesiangrid.nb_cells_axis(0) ) )
+    {
+    	for( auto j : range( cartesiangrid.nb_cells_axis(1) ) )
+		{
+			for( auto k : range( cartesiangrid.nb_cells_axis(2) ) )
+			{
+				sivec3 position{ (signed_index_t)i, (signed_index_t)j, (signed_index_t)k };
+				if( cartesiangrid.get_float_attribute_value( name, position ) !=
+						(float)cartesiangrid.cell_offset( position ) )
+				{
+					throw RINGMeshException(
+							"Test", "Error in attribute value #1." );
+				}
+			}
+		}
+    }
+
+    GEO::Attribute<float> indices{ cartesiangrid.attributes_manager(), name };
+    for( auto i : range( cartesiangrid.nb_cells_axis(0) ) )
+	{
+		for( auto j : range( cartesiangrid.nb_cells_axis(1) ) )
+		{
+			for( auto k : range( cartesiangrid.nb_cells_axis(2) ) )
+			{
+				sivec3 position{ (signed_index_t)i, (signed_index_t)j, (signed_index_t)k };
+				index_t cell_offset = cartesiangrid.cell_offset( position );
+				if( indices[ cell_offset ] != (float)cell_offset )
+				{
+					throw RINGMeshException(
+							"Test", "Error in attribute value #1." );
+				}
+			}
+		}
+	}
+
+    GEO::Attribute<float>* indices_pointer = cartesiangrid.get_float_attribute( name );
+    for( auto i : range( cartesiangrid.nb_cells_axis(0) ) )
+	{
+		for( auto j : range( cartesiangrid.nb_cells_axis(1) ) )
+		{
+			for( auto k : range( cartesiangrid.nb_cells_axis(2) ) )
+			{
+				sivec3 position{ (signed_index_t)i, (signed_index_t)j, (signed_index_t)k };
+				index_t cell_offset = cartesiangrid.cell_offset( position );
+				if( indices_pointer->operator[]( cell_offset ) != (float)cell_offset )
+				{
+					throw RINGMeshException(
+							"Test", "Error in attribute value #1." );
+				}
+			}
+		}
+	}
+    delete indices_pointer;
+
+    CartesianGridBuilder3D cgbuilder{ cartesiangrid };
+    cgbuilder.remove_section_from_cartesian_grid( 2, 4 );
+    if( cartesiangrid.nb_cells_axis( 2 ) != 8u )
+    {
+		throw RINGMeshException(
+				"Test remove section", "Wrong number of sections left : ",
+				cartesiangrid.nb_cells_axis( 2 ), "instead of 8." );
+    }
+    for( auto i : range( cartesiangrid.nb_cells_axis(0) ) )
+	{
+		for( auto j : range( cartesiangrid.nb_cells_axis(1) ) )
+		{
+			for( auto k : range( 3 ) )
+			{
+				sivec3 position{ (signed_index_t)i, (signed_index_t)j, (signed_index_t)k };
+				index_t cell_offset = cartesiangrid.cell_offset( position );
+				if( indices[ cell_offset ] != (float)cell_offset )
+				{
+					throw RINGMeshException(
+							"Test remove section", "Error in attribute value #1." );
+				}
+			}
+		}
+	}
+    for( auto i : range( cartesiangrid.nb_cells_axis(0) ) )
+	{
+		for( auto j : range( cartesiangrid.nb_cells_axis(1) ) )
+		{
+			for( auto k : range( 4, cartesiangrid.nb_cells_axis(2) ) )
+			{
+				sivec3 position{ (signed_index_t)i, (signed_index_t)j, (signed_index_t)k };
+				index_t cell_offset = cartesiangrid.cell_offset( position );
+				if( indices[ cell_offset ] != (float)( cell_offset + 10*8 ) )
+				{
+					throw RINGMeshException(
+							"Test remove section", "Error in attribute value #2." );
+				}
+			}
+		}
+	}
 }
 
 int main()
@@ -142,6 +245,7 @@ int main()
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
         test_frames();
+        Logger::out( "TEST", "Frames work" );
         test_cartesian_grids();
     }
     catch( const RINGMeshException& e )
