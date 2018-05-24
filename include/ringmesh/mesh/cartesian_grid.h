@@ -363,8 +363,8 @@ namespace RINGMesh
             const std::string& attribute_name )
         {
             if( attributes_manager_.find_attribute_store( attribute_name )
-                        ->element_typeid_name()
-                    != typeid( index_t ).name() )
+                    ->element_typeid_name()
+                != typeid( index_t ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -378,8 +378,8 @@ namespace RINGMesh
             const std::string& attribute_name )
         {
             if( attributes_manager_.find_attribute_store( attribute_name )
-                        ->element_typeid_name()
-                    != typeid( float ).name() )
+                    ->element_typeid_name()
+                != typeid( float ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -400,8 +400,8 @@ namespace RINGMesh
                     "a valid point position." );
             }
             if( attributes_manager_.find_attribute_store( attribute_name )
-                        ->element_typeid_name()
-                    != typeid( index_t ).name() )
+                    ->element_typeid_name()
+                != typeid( index_t ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -423,8 +423,8 @@ namespace RINGMesh
                     "a valid point position." );
             }
             if( attributes_manager_.find_attribute_store( attribute_name )
-                        ->element_typeid_name()
-                    != typeid( float ).name() )
+                    ->element_typeid_name()
+                != typeid( float ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
