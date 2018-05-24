@@ -362,9 +362,9 @@ namespace RINGMesh
         GEO::Attribute< index_t >* get_index_t_attribute(
             const std::string& attribute_name )
         {
-            if( !( attributes_manager_.find_attribute_store( attribute_name )
+            if( attributes_manager_.find_attribute_store( attribute_name )
                         ->element_typeid_name()
-                    == typeid( index_t ).name() ) )
+                    != typeid( index_t ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -377,9 +377,9 @@ namespace RINGMesh
         GEO::Attribute< float >* get_float_attribute(
             const std::string& attribute_name )
         {
-            if( !( attributes_manager_.find_attribute_store( attribute_name )
+            if( attributes_manager_.find_attribute_store( attribute_name )
                         ->element_typeid_name()
-                    == typeid( float ).name() ) )
+                    != typeid( float ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -399,9 +399,9 @@ namespace RINGMesh
                     "Points outside of the grid have no attribute value, give "
                     "a valid point position." );
             }
-            if( !( attributes_manager_.find_attribute_store( attribute_name )
+            if( attributes_manager_.find_attribute_store( attribute_name )
                         ->element_typeid_name()
-                    == typeid( index_t ).name() ) )
+                    != typeid( index_t ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
@@ -422,9 +422,9 @@ namespace RINGMesh
                     "Points outside of the grid have no attribute value, give "
                     "a valid point position." );
             }
-            if( !( attributes_manager_.find_attribute_store( attribute_name )
+            if( attributes_manager_.find_attribute_store( attribute_name )
                         ->element_typeid_name()
-                    == typeid( float ).name() ) )
+                    != typeid( float ).name() )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "The attribute you're trying to retrieve "
