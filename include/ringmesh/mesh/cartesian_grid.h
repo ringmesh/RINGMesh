@@ -305,9 +305,17 @@ namespace RINGMesh
         	{
         		return "index_t";
         	}
+        	else if( typeid( T ).name() == typeid( int ).name() )
+			{
+				return "int";
+			}
         	else if( typeid( T ).name() == typeid( float ).name() )
 			{
 				return "float";
+			}
+        	else if( typeid( T ).name() == typeid( double ).name() )
+			{
+				return "double";
 			}
         	else
         	{
