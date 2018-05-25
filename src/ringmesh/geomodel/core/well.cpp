@@ -657,7 +657,7 @@ namespace RINGMesh
     }
 
     template <>
-    void WellGroup< 2 >::add_well(
+    void geomodel_core_api WellGroup< 2 >::add_well(
         const LineMesh< 2 >& mesh, const std::string& name )
     {
         ringmesh_unused( mesh );
@@ -667,7 +667,7 @@ namespace RINGMesh
     }
 
     template <>
-    void WellGroup< 3 >::add_well(
+    void geomodel_core_api WellGroup< 3 >::add_well(
         const LineMesh3D& mesh, const std::string& name )
     {
         ringmesh_assert( geomodel() );
