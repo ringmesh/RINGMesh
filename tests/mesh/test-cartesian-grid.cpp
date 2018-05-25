@@ -140,9 +140,9 @@ void test_cartesian_grids()
         uint_values[i] = i;
     }
     std::string name{ "index" };
-    cartesiangrid.add_attribute<float>( name, values );
+    cartesiangrid.add_attribute< float >( name, values );
     std::string name2{ "uint_index" };
-    cartesiangrid.add_attribute<index_t>( name2, uint_values );
+    cartesiangrid.add_attribute< index_t >( name2, uint_values );
 
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
@@ -153,13 +153,14 @@ void test_cartesian_grids()
                 sivec3 position{ (signed_index_t) i, (signed_index_t) j,
                     (signed_index_t) k };
                 index_t cell_offset = cartesiangrid.cell_offset( position );
-                if( cartesiangrid.get_attribute_value<float>( name, position )
+                if( cartesiangrid.get_attribute_value< float >( name, position )
                     != (float) cell_offset )
                 {
                     throw RINGMeshException(
                         "Test", "Error in float attribute value #1." );
                 }
-                if( cartesiangrid.get_attribute_value<index_t>( name2, position )
+                if( cartesiangrid.get_attribute_value< index_t >(
+                        name2, position )
                     != cell_offset )
                 {
                     throw RINGMeshException(
@@ -197,9 +198,9 @@ void test_cartesian_grids()
     }
 
     GEO::Attribute< float >* indices_pointer =
-        cartesiangrid.get_attribute<float>( name );
+        cartesiangrid.get_attribute< float >( name );
     GEO::Attribute< index_t >* index_t_indices_pointer =
-        cartesiangrid.get_attribute<index_t>( name2 );
+        cartesiangrid.get_attribute< index_t >( name2 );
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
         for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
