@@ -296,9 +296,10 @@ namespace RINGMesh
         }
 
         /*!
-         * Allows us to avoid code duplication on the attribute creation function.
+         * Allows us to avoid code duplication on the attribute creation
+         * function.
          */
-        template< typename T >
+        template < typename T >
         static std::string type_to_string()
         {
         	if( typeid( T ).name() == typeid( index_t ).name() )
@@ -332,8 +333,8 @@ namespace RINGMesh
          * the cartesian grid cells.
          */
         template < typename T >
-        void add_attribute( const std::string& attribute_name,
-            const std::vector< T >& values )
+        void add_attribute(
+            const std::string& attribute_name, const std::vector< T >& values )
         {
             if( values.size() != nb_total_cells_ )
             {
@@ -344,7 +345,7 @@ namespace RINGMesh
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
                     create_attribute_store_by_element_type_name(
-                        type_to_string<T>() , 1 ) );
+                        type_to_string< T >(), 1 ) );
             GEO::Attribute< T > attribute{ attributes_manager_,
                 attribute_name };
             for( auto i : range( nb_total_cells_ ) )
@@ -358,31 +359,31 @@ namespace RINGMesh
          * the same value \value on every grid point.
          */
         template < typename T >
-        void add_attribute(
-            const std::string& attribute_name, T value = 0 )
+        void add_attribute( const std::string& attribute_name, T value = 0 )
         {
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
                     create_attribute_store_by_element_type_name(
-                        type_to_string<T>(), 1 ) );
+                        type_to_string< T >(), 1 ) );
             GEO::Attribute< T > attribute{ attributes_manager_,
                 attribute_name };
             attribute.fill( value );
         }
 
         /*!
-         * Returns a pointer to an Attribute of the grid, from its name \attribute_name.
+         * Returns a pointer to an Attribute of the grid, from its name
+         * \attribute_name.
          */
         template < typename T >
-        GEO::Attribute< T >* get_attribute(
-            const std::string& attribute_name )
+        GEO::Attribute< T >* get_attribute( const std::string& attribute_name )
         {
             return new GEO::Attribute< T >(
                 attributes_manager_, attribute_name );
         }
 
         /*!
-         * Returns the value of the attribute \attribute_name at the grid position \position.
+         * Returns the value of the attribute \attribute_name at the grid
+         * position \position.
          */
         template < typename T >
         T& get_attribute_value(
