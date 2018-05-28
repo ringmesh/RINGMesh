@@ -138,10 +138,10 @@ void test_cartesian_grids()
     std::vector< double > dvalues( cartesiangrid.nb_cells() );
     for( auto i : range( cartesiangrid.nb_cells() ) )
     {
-        fvalues[i] = static_cast<float>(i);
+        fvalues[i] = static_cast< float >( i );
         uvalues[i] = i;
-        ivalues[i] = static_cast<int>(i);
-        dvalues[i] = static_cast<double>(i);
+        ivalues[i] = static_cast< int >( i );
+        dvalues[i] = static_cast< double >( i );
     }
     std::string fname{ "f_index" };
     std::string uname{ "u_index" };
@@ -161,14 +161,18 @@ void test_cartesian_grids()
                 sivec3 position{ (signed_index_t) i, (signed_index_t) j,
                     (signed_index_t) k };
                 index_t cell_offset = cartesiangrid.cell_offset( position );
-                if( cartesiangrid.get_attribute_value<float>( fname, position )
-                    != static_cast<float>(cell_offset)
-					|| cartesiangrid.get_attribute_value<index_t>( uname, position )
-                    != cell_offset
-					|| cartesiangrid.get_attribute_value<int>( iname, position )
-                    != static_cast<int>(cell_offset)
-					|| cartesiangrid.get_attribute_value<double>( dname, position )
-                    != static_cast<double>(cell_offset ))
+                if( cartesiangrid.get_attribute_value< float >(
+                        fname, position )
+                        != static_cast< float >( cell_offset )
+                    || cartesiangrid.get_attribute_value< index_t >(
+                           uname, position )
+                           != cell_offset
+                    || cartesiangrid.get_attribute_value< int >(
+                           iname, position )
+                           != static_cast< int >( cell_offset )
+                    || cartesiangrid.get_attribute_value< double >(
+                           dname, position )
+                           != static_cast< double >( cell_offset ) )
                 {
                     throw RINGMeshException(
                         "Test", "Error in attribute value #1." );
@@ -193,10 +197,12 @@ void test_cartesian_grids()
                 sivec3 position{ (signed_index_t) i, (signed_index_t) j,
                     (signed_index_t) k };
                 index_t cell_offset = cartesiangrid.cell_offset( position );
-                if( findices[cell_offset] != static_cast<float>(cell_offset)
-                	|| uindices[cell_offset] != cell_offset
-                	|| iindices[cell_offset] != static_cast<int>(cell_offset)
-                	|| dindices[cell_offset] != static_cast<double>(cell_offset) )
+                if( findices[cell_offset] != static_cast< float >( cell_offset )
+                    || uindices[cell_offset] != cell_offset
+                    || iindices[cell_offset]
+                           != static_cast< int >( cell_offset )
+                    || dindices[cell_offset]
+                           != static_cast< double >( cell_offset ) )
                 {
                     throw RINGMeshException(
                         "Test", "Error in attribute value #2." );
@@ -223,13 +229,13 @@ void test_cartesian_grids()
                     (signed_index_t) k };
                 index_t cell_offset = cartesiangrid.cell_offset( position );
                 if( f_indices_pointer->operator[]( cell_offset )
-                    	!= static_cast<float>(cell_offset)
-					|| u_indices_pointer->operator[]( cell_offset )
-                		!= cell_offset
-					|| i_indices_pointer->operator[]( cell_offset )
-                		!= static_cast<int>(cell_offset)
-					|| d_indices_pointer->operator[]( cell_offset )
-                		!= static_cast<double>(cell_offset) )
+                        != static_cast< float >( cell_offset )
+                    || u_indices_pointer->operator[]( cell_offset )
+                           != cell_offset
+                    || i_indices_pointer->operator[]( cell_offset )
+                           != static_cast< int >( cell_offset )
+                    || d_indices_pointer->operator[]( cell_offset )
+                           != static_cast< double >( cell_offset ) )
                 {
                     throw RINGMeshException(
                         "Test", "Error in attribute value #3." );
