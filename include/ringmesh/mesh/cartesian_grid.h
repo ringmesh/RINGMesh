@@ -302,27 +302,27 @@ namespace RINGMesh
         template < typename T >
         static std::string type_to_string()
         {
-        	if( typeid( T ).name() == typeid( index_t ).name() )
-        	{
-        		return "index_t";
-        	}
-        	else if( typeid( T ).name() == typeid( int ).name() )
-			{
-				return "int";
-			}
-        	else if( typeid( T ).name() == typeid( float ).name() )
-			{
-				return "float";
-			}
-        	else if( typeid( T ).name() == typeid( double ).name() )
-			{
-				return "double";
-			}
-        	else
-        	{
-        		throw RINGMeshException( "CartesianGrid",
-        				"Give a valid attribute type.");
-        	}
+            if( typeid( T ).name() == typeid( index_t ).name() )
+            {
+                return "index_t";
+            }
+            else if( typeid( T ).name() == typeid( int ).name() )
+            {
+                return "int";
+            }
+            else if( typeid( T ).name() == typeid( float ).name() )
+            {
+                return "float";
+            }
+            else if( typeid( T ).name() == typeid( double ).name() )
+            {
+                return "double";
+            }
+            else
+            {
+                throw RINGMeshException(
+                    "CartesianGrid", "Give a valid attribute type." );
+            }
         }
 
         /*!

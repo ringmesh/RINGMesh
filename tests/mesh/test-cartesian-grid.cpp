@@ -147,10 +147,10 @@ void test_cartesian_grids()
     std::string uname{ "u_index" };
     std::string iname{ "i_index" };
     std::string dname{ "d_index" };
-    cartesiangrid.add_attribute<float>( fname, fvalues );
-    cartesiangrid.add_attribute<index_t>( uname, uvalues );
-    cartesiangrid.add_attribute<int>( iname, ivalues );
-    cartesiangrid.add_attribute<double>( dname, dvalues );
+    cartesiangrid.add_attribute< float >( fname, fvalues );
+    cartesiangrid.add_attribute< index_t >( uname, uvalues );
+    cartesiangrid.add_attribute< int >( iname, ivalues );
+    cartesiangrid.add_attribute< double >( dname, dvalues );
 
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
@@ -177,10 +177,13 @@ void test_cartesian_grids()
         }
     }
 
-    GEO::Attribute< float > findices{ cartesiangrid.attributes_manager(), fname };
-    GEO::Attribute< index_t > uindices{ cartesiangrid.attributes_manager(), uname };
+    GEO::Attribute< float > findices{ cartesiangrid.attributes_manager(),
+        fname };
+    GEO::Attribute< index_t > uindices{ cartesiangrid.attributes_manager(),
+        uname };
     GEO::Attribute< int > iindices{ cartesiangrid.attributes_manager(), iname };
-    GEO::Attribute< double > dindices{ cartesiangrid.attributes_manager(), dname };
+    GEO::Attribute< double > dindices{ cartesiangrid.attributes_manager(),
+        dname };
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
         for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
@@ -203,13 +206,13 @@ void test_cartesian_grids()
     }
 
     GEO::Attribute< float >* f_indices_pointer =
-        cartesiangrid.get_attribute<float>( fname );
+        cartesiangrid.get_attribute< float >( fname );
     GEO::Attribute< index_t >* u_indices_pointer =
-        cartesiangrid.get_attribute<index_t>( uname );
+        cartesiangrid.get_attribute< index_t >( uname );
     GEO::Attribute< int >* i_indices_pointer =
-        cartesiangrid.get_attribute<int>( iname );
+        cartesiangrid.get_attribute< int >( iname );
     GEO::Attribute< double >* d_indices_pointer =
-        cartesiangrid.get_attribute<double>( dname );
+        cartesiangrid.get_attribute< double >( dname );
     for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
     {
         for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
