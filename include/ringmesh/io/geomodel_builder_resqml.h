@@ -46,17 +46,17 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-
     class io_api GeoModelBuilderRESQML final : public GeoModelBuilderFile< 3 >
     {
     public:
-        GeoModelBuilderRESQML( GeoModel3D& geomodel, const std::string& filename );
+        GeoModelBuilderRESQML(
+            GeoModel3D& geomodel, const std::string& filename );
         ~GeoModelBuilderRESQML() override;
 
         void load_file() final;
 
     private:
-        std::unique_ptr<GeoModelBuilderRESQMLImpl> impl_;
+        std::unique_ptr< GeoModelBuilderRESQMLImpl > impl_;
     };
 
 } // namespace RINGMesh

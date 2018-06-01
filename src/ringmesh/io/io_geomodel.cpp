@@ -82,6 +82,7 @@ namespace
 #include "geomodel/io_mfem.hpp"
 #include "geomodel/io_model3d.hpp"
 #include "geomodel/io_msh.hpp"
+#include "geomodel/io_resqml.hpp"
 #include "geomodel/io_smesh.hpp"
 #include "geomodel/io_stl.hpp"
 #include "geomodel/io_stradivarius.hpp"
@@ -89,8 +90,7 @@ namespace
 #include "geomodel/io_tetgen.hpp"
 #include "geomodel/io_tsolid.hpp"
 #include "geomodel/io_vtk.hpp"
-#include "geomodel/io_resqml.hpp"
-    
+
     template < typename Class, typename Factory >
     std::unique_ptr< Class > create_handler( const std::string& format )
     {
