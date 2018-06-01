@@ -98,8 +98,9 @@ void check_geomodel_base( const GeoModel< DIMENSION >& geomodel,
     const auto& manager = geomodel.entity_type_manager();
     for( const auto& type : manager.mesh_entity_manager.mesh_entity_types() )
     {
-        const auto type_found = reference.find(type.string());
-        if( type_found == reference.end() || type_found->second != geomodel.nb_mesh_entities( type ) )
+        const auto type_found = reference.find( type.string() );
+        if( type_found == reference.end()
+            || type_found->second != geomodel.nb_mesh_entities( type ) )
         {
             throw_error( geomodel, type.string() );
         }
@@ -108,9 +109,9 @@ void check_geomodel_base( const GeoModel< DIMENSION >& geomodel,
     for( const auto& type :
         manager.geological_entity_manager.geological_entity_types() )
     {
-        const auto type_found = reference.find(type.string());
-        if( type_found == reference.end() || 
-            type_found->second != geomodel.nb_geological_entities( type ) )
+        const auto type_found = reference.find( type.string() );
+        if( type_found == reference.end()
+            || type_found->second != geomodel.nb_geological_entities( type ) )
         {
             throw_error( geomodel, type.string() );
         }
