@@ -36,6 +36,7 @@ target_sources(${target_name}
         "${lib_source_dir}/common.cpp"
         "${lib_source_dir}/geomodel_builder_file.cpp"
         "${lib_source_dir}/geomodel_builder_gocad.cpp"
+        "${lib_source_dir}/geomodel_builder_resqml.cpp"
         "${lib_source_dir}/io_geomodel.cpp"
         "${lib_source_dir}/io_stratigraphic_column.cpp"
         "${lib_source_dir}/io_well_group.cpp"
@@ -58,6 +59,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel/io_tetgen.hpp"
         "${lib_source_dir}/geomodel/io_tsolid.hpp"
         "${lib_source_dir}/geomodel/io_vtk.hpp"
+        "${lib_source_dir}/geomodel/io_resqml.hpp" 
         "${lib_source_dir}/stratigraphic_column/io_xml.hpp"
         "${lib_source_dir}/well_group/io_smesh.hpp"
         "${lib_source_dir}/well_group/io_wl.hpp"
@@ -66,6 +68,7 @@ target_sources(${target_name}
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/geomodel_builder_file.h"
         "${lib_include_dir}/geomodel_builder_gocad.h"
+        "${lib_include_dir}/geomodel_builder_resqml.h"
         "${lib_include_dir}/io.h"
         "${lib_include_dir}/zip_file.h"
 )

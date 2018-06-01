@@ -53,6 +53,7 @@
 #include <ringmesh/geomodel/core/well.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/geomodel_builder_gocad.h>
+#include <ringmesh/io/geomodel_builder_resqml.h>
 
 #include <ringmesh/io/zip_file.h>
 
@@ -88,7 +89,8 @@ namespace
 #include "geomodel/io_tetgen.hpp"
 #include "geomodel/io_tsolid.hpp"
 #include "geomodel/io_vtk.hpp"
-
+#include "geomodel/io_resqml.hpp"
+    
     template < typename Class, typename Factory >
     std::unique_ptr< Class > create_handler( const std::string& format )
     {
@@ -166,6 +168,8 @@ namespace RINGMesh
             "smesh" );
         GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >(
             "stl" );
+        GeoModelOutputHandlerFactory3D::register_creator< RESQMLIOHandler >(
+            "epc" );
     }
 
     template <>
@@ -176,6 +180,8 @@ namespace RINGMesh
         GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
         GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >(
             "so" );
+        GeoModelInputHandlerFactory3D::register_creator< RESQMLIOHandler >(
+            "epc" );
     }
 
     /***************************************************************************/
