@@ -322,7 +322,7 @@ namespace RINGMesh
             else
             {
                 throw RINGMeshException( "CartesianGrid",
-                		"This type cannot be implemented as an attribute." );
+                    "This type cannot be implemented as an attribute." );
             }
         }
 
@@ -360,7 +360,8 @@ namespace RINGMesh
          * the same value \single_value on every grid point.
          */
         template < typename T >
-        void add_attribute( const std::string& attribute_name, T single_value = 0 )
+        void add_attribute(
+            const std::string& attribute_name, T single_value = 0 )
         {
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::

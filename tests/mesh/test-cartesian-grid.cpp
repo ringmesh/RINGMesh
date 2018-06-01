@@ -257,7 +257,7 @@ void test_cartesian_grids()
 
 void test_cartesian_grid_exception()
 {
-	bool exceptions_are_thrown{ false };
+    bool exceptions_are_thrown{ false };
 
     vec3 origin{ 100, 200, -4 };
     vec3 x{ 1, 2, -1 };
@@ -269,39 +269,45 @@ void test_cartesian_grid_exception()
     ivec3 grid_dimensions{ 10, 8, 9 };
     CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
 
-    std::vector< bool > values( cartesiangrid.nb_cells()-1 );
+    std::vector< bool > values( cartesiangrid.nb_cells() - 1 );
     std::string name{ "index" };
-    try {
-    	cartesiangrid.add_attribute< bool >( name, values );
+    try
+    {
+        cartesiangrid.add_attribute< bool >( name, values );
     }
     catch( const RINGMeshException& e )
     {
-    	exceptions_are_thrown = true;
-    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
     }
     if( !exceptions_are_thrown )
     {
-    	throw RINGMeshException( "Test", "Exception attribute vector size is not thrown");
+        throw RINGMeshException(
+            "Test", "Exception attribute vector size is not thrown" );
     }
-    else {
-    	exceptions_are_thrown = false;
+    else
+    {
+        exceptions_are_thrown = false;
     }
     values.push_back( true );
 
-    try {
-    	cartesiangrid.add_attribute< bool >( name, values );
+    try
+    {
+        cartesiangrid.add_attribute< bool >( name, values );
     }
     catch( const RINGMeshException& e )
     {
-    	exceptions_are_thrown = true;
-    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
     }
     if( !exceptions_are_thrown )
     {
-    	throw RINGMeshException( "Test", "Exception attribute type is not thrown");
+        throw RINGMeshException(
+            "Test", "Exception attribute type is not thrown" );
     }
-    else {
-    	exceptions_are_thrown = false;
+    else
+    {
+        exceptions_are_thrown = false;
     }
 
     std::vector< float > fvalues( cartesiangrid.nb_cells() );
@@ -311,21 +317,24 @@ void test_cartesian_grid_exception()
     }
     std::string fname{ "f_index" };
     cartesiangrid.add_attribute< float >( fname, fvalues );
-    try {
-    	sivec3 position{ -1, 0, 0 };
-    	cartesiangrid.get_attribute_value< float >( fname, position );
+    try
+    {
+        sivec3 position{ -1, 0, 0 };
+        cartesiangrid.get_attribute_value< float >( fname, position );
     }
     catch( const RINGMeshException& e )
     {
-    	exceptions_are_thrown = true;
-    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
     }
     if( !exceptions_are_thrown )
     {
-    	throw RINGMeshException( "Test", "Exception out of frame is not thrown");
+        throw RINGMeshException(
+            "Test", "Exception out of frame is not thrown" );
     }
-    else {
-    	exceptions_are_thrown = false;
+    else
+    {
+        exceptions_are_thrown = false;
     }
 }
 
@@ -342,7 +351,7 @@ int main()
         test_cartesian_grids();
         Logger::out( "TEST", "Cartesian grids : OK" );
         test_cartesian_grid_exception();
-        Logger::out( "TEST", "Grid exceptions : OK");
+        Logger::out( "TEST", "Grid exceptions : OK" );
     }
     catch( const std::exception& e )
     {
