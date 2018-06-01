@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,26 +31,32 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
+set(FESAPI_PATH ${PROJECT_SOURCE_DIR}/third_party/fesapi)
+set(FESAPI_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/fesapi)
+set(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
+    CACHE INTERNAL "Fesapi install directory")
 
-ExternalProject_Add(ringmesh_ext
-    PREFIX ${RINGMesh_PATH_BIN}
-    SOURCE_DIR ${PROJECT_SOURCE_DIR}
+ExternalProject_Add(fesapi_ext
+    PREFIX ${FESAPI_PATH_BIN}
+    SOURCE_DIR ${FESAPI_PATH}
     CMAKE_GENERATOR ${CMAKE_GENERATOR}
     CMAKE_ARGS
         -DCMAKE_C_COMPILER=${CMAKE_C_COMPILER}
         -DCMAKE_CXX_COMPILER=${CMAKE_CXX_COMPILER}
         -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE}
+        -DCMAKE_INSTALL_MESSAGE=LAZY
     CMAKE_CACHE_ARGS
-        ${RINGMESH_EXTRA_ARGS}
-        -DUSE_SUPERBUILD:BOOL=OFF
-        -DFESAPI_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
-        -DGEOGRAM_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
-        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
-        -DTINYXML2_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}
+        -DBUILD_TESTING:BOOL=OFF
+        -DCMAKE_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
+        -DCMAKE_INSTALL_LIBDIR:PATH=lib
+        -DCMAKE_MACOSX_RPATH:BOOL=ON
+#        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+        -DHDF5_C_RELEASE_PATH:PATH=${HDF5_C_RELEASE_PATH}
         -DMINIZIP_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
-    BINARY_DIR ${RINGMesh_PATH_BIN}
+        -DCMAKE_INSTALL_RPATH:PATH=${FESAPI_INSTALL_PREFIX}/lib
+    BINARY_DIR ${FESAPI_PATH_BIN}
     BUILD_ALWAYS 1
-    INSTALL_COMMAND ""
-    DEPENDS fesapi_ext geogram_ext tinyxml2_ext zlib_ext minizip_ext 
+    INSTALL_DIR ${FESAPI_INSTALL_PREFIX}
+#    DEPENDS zlib_ext minizip_ext
+    DEPENDS minizip_ext
 )

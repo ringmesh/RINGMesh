@@ -33,7 +33,7 @@
 
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
-set(submodules data third_party/zlib third_party/tinyxml2)
+set(submodules data third_party/zlib third_party/tinyxml2 third_party/fesapi)
 if(RINGMESH_WITH_GUI)
     set(submodules ${submodules} third_party/nbind)
 endif()
@@ -41,6 +41,8 @@ execute_process(
    COMMAND git submodule update --init ${submodules}
       WORKING_DIRECTORY ${CMAKE_SOURCE_DIR}
 )
+
+SET (HDF5_C_RELEASE_PATH HDF5_C_INCLUDE_DIR-NOTFOUND CACHE PATH "Path to the directory which contains HDF5")
 
 set(RINGMESH_EXTRA_ARGS
     -DCMAKE_INSTALL_PREFIX:PATH=${CMAKE_INSTALL_PREFIX}
@@ -53,6 +55,7 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
     -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
     -DRINGMESH_WITH_GUI:BOOL=${RINGMESH_WITH_GUI}
+    -DHDF5_C_RELEASE_PATH:PATH=${HDF5_C_RELEASE_PATH}
 )
 
 if(CPACK_PACKAGE_FILE_NAME)
@@ -105,4 +108,5 @@ include(${PROJECT_SOURCE_DIR}/cmake/CompileGeogram.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileTinyxml2.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileZlib.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileMinizip.cmake)
+include(${PROJECT_SOURCE_DIR}/cmake/CompileFesapi.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileRINGMesh.cmake)

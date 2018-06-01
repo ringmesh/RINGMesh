@@ -45,7 +45,9 @@ function(add_ringmesh_library directory)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
             $<INSTALL_INTERFACE:include>
     )
-    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    find_package(Fesapi REQUIRED)
+    target_link_libraries(${target_name} PUBLIC  Geogram::geogram fesapi)
     if(WIN32)
         target_compile_definitions(${target_name} 
             PUBLIC 
@@ -58,7 +60,7 @@ function(add_ringmesh_library directory)
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
     include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
-    
+
     export(TARGETS ${target_name} 
         NAMESPACE RINGMesh:: 
         FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
