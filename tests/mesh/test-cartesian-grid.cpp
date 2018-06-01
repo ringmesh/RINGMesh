@@ -211,43 +211,6 @@ void test_cartesian_grids()
         }
     }
 
-    GEO::Attribute< float >* f_indices_pointer =
-        cartesiangrid.get_attribute< float >( fname );
-    GEO::Attribute< index_t >* u_indices_pointer =
-        cartesiangrid.get_attribute< index_t >( uname );
-    GEO::Attribute< int >* i_indices_pointer =
-        cartesiangrid.get_attribute< int >( iname );
-    GEO::Attribute< double >* d_indices_pointer =
-        cartesiangrid.get_attribute< double >( dname );
-    for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
-    {
-        for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
-        {
-            for( auto k : range( cartesiangrid.nb_cells_axis( 2 ) ) )
-            {
-                sivec3 position{ (signed_index_t) i, (signed_index_t) j,
-                    (signed_index_t) k };
-                index_t cell_offset = cartesiangrid.cell_offset( position );
-                if( f_indices_pointer->operator[]( cell_offset )
-                        != static_cast< float >( cell_offset )
-                    || u_indices_pointer->operator[]( cell_offset )
-                           != cell_offset
-                    || i_indices_pointer->operator[]( cell_offset )
-                           != static_cast< int >( cell_offset )
-                    || d_indices_pointer->operator[]( cell_offset )
-                           != static_cast< double >( cell_offset ) )
-                {
-                    throw RINGMeshException(
-                        "Test", "Error in attribute value #3." );
-                }
-            }
-        }
-    }
-    delete f_indices_pointer;
-    delete u_indices_pointer;
-    delete i_indices_pointer;
-    delete d_indices_pointer;
-
     CartesianGridBuilder3D cgbuilder{ cartesiangrid };
     cgbuilder.remove_section_from_cartesian_grid( 2, 4 );
     if( cartesiangrid.nb_cells_axis( 2 ) != 8u )
@@ -292,6 +255,80 @@ void test_cartesian_grids()
     }
 }
 
+void test_cartesian_grid_exception()
+{
+	bool exceptions_are_thrown{ false };
+
+    vec3 origin{ 100, 200, -4 };
+    vec3 x{ 1, 2, -1 };
+    vec3 y{ 2, 1, 4 };
+    vec3 z{ 3, -2, -1 };
+
+    Frame3D frame{ x, y, z };
+    ReferenceFrame3D reference_frame{ origin, frame };
+    ivec3 grid_dimensions{ 10, 8, 9 };
+    CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
+
+    std::vector< bool > values( cartesiangrid.nb_cells()-1 );
+    std::string name{ "index" };
+    try {
+    	cartesiangrid.add_attribute< bool >( name, values );
+    }
+    catch( const RINGMeshException& e )
+    {
+    	exceptions_are_thrown = true;
+    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+    }
+    if( !exceptions_are_thrown )
+    {
+    	throw RINGMeshException( "Test", "Exception attribute vector size is not thrown");
+    }
+    else {
+    	exceptions_are_thrown = false;
+    }
+    values.push_back( true );
+
+    try {
+    	cartesiangrid.add_attribute< bool >( name, values );
+    }
+    catch( const RINGMeshException& e )
+    {
+    	exceptions_are_thrown = true;
+    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+    }
+    if( !exceptions_are_thrown )
+    {
+    	throw RINGMeshException( "Test", "Exception attribute type is not thrown");
+    }
+    else {
+    	exceptions_are_thrown = false;
+    }
+
+    std::vector< float > fvalues( cartesiangrid.nb_cells() );
+    for( auto i : range( cartesiangrid.nb_cells() ) )
+    {
+        fvalues[i] = static_cast< float >( i );
+    }
+    std::string fname{ "f_index" };
+    cartesiangrid.add_attribute< float >( fname, fvalues );
+    try {
+    	sivec3 position{ -1, 0, 0 };
+    	cartesiangrid.get_attribute_value< float >( fname, position );
+    }
+    catch( const RINGMeshException& e )
+    {
+    	exceptions_are_thrown = true;
+    	Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown.");
+    }
+    if( !exceptions_are_thrown )
+    {
+    	throw RINGMeshException( "Test", "Exception out of frame is not thrown");
+    }
+    else {
+    	exceptions_are_thrown = false;
+    }
+}
+
 int main()
 {
     using namespace RINGMesh;
@@ -301,13 +338,11 @@ int main()
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
         test_frames();
-        Logger::out( "TEST", "Frames work" );
+        Logger::out( "TEST", "Frames : OK" );
         test_cartesian_grids();
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
+        Logger::out( "TEST", "Cartesian grids : OK" );
+        test_cartesian_grid_exception();
+        Logger::out( "TEST", "Grid exceptions : OK");
     }
     catch( const std::exception& e )
     {

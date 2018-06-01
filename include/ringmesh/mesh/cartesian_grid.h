@@ -35,6 +35,8 @@
 
 #pragma once
 
+#include <type_traits>
+
 #include <ringmesh/basic/common.h>
 #include <ringmesh/basic/frame.h>
 #include <ringmesh/basic/geometry.h>
@@ -296,41 +298,40 @@ namespace RINGMesh
         }
 
         /*!
-         * Allows us to avoid code duplication on the attribute creation
-         * function.
+         * Returns a std::string containing the name of the typename T.
          */
         template < typename T >
         static std::string type_to_string()
         {
-            if( typeid( T ).name() == typeid( index_t ).name() )
+            if( std::is_same< T, index_t >::value )
             {
                 return "index_t";
             }
-            else if( typeid( T ).name() == typeid( int ).name() )
+            else if( std::is_same< T, int >::value )
             {
                 return "int";
             }
-            else if( typeid( T ).name() == typeid( float ).name() )
+            else if( std::is_same< T, float >::value )
             {
                 return "float";
             }
-            else if( typeid( T ).name() == typeid( double ).name() )
+            else if( std::is_same< T, double >::value )
             {
                 return "double";
             }
             else
             {
-                throw RINGMeshException(
-                    "CartesianGrid", "Give a valid attribute type." );
+                throw RINGMeshException( "CartesianGrid",
+                		"This type cannot be implemented as an attribute." );
             }
         }
 
         /*!
-         * Creates and adds a new attribute to the cartesian grid from its
+         * Creates and adds a new attribute to the Cartesian grid from its
          * name and values on the grid.
          * \param[in] attribute_name the name of the new attribute to add
          * \param[in] values a vector of the values of the attribute on all
-         * the cartesian grid cells.
+         * the Cartesian grid cells.
          */
         template < typename T >
         void add_attribute(
@@ -356,10 +357,10 @@ namespace RINGMesh
 
         /*!
          * Creates a new attribute with the name \attribute_name and
-         * the same value \value on every grid point.
+         * the same value \single_value on every grid point.
          */
         template < typename T >
-        void add_attribute( const std::string& attribute_name, T value = 0 )
+        void add_attribute( const std::string& attribute_name, T single_value = 0 )
         {
             attributes_manager_.bind_attribute_store( attribute_name,
                 GEO::AttributeStore::
@@ -367,18 +368,7 @@ namespace RINGMesh
                         type_to_string< T >(), 1 ) );
             GEO::Attribute< T > attribute{ attributes_manager_,
                 attribute_name };
-            attribute.fill( value );
-        }
-
-        /*!
-         * Returns a pointer to an Attribute of the grid, from its name
-         * \attribute_name.
-         */
-        template < typename T >
-        GEO::Attribute< T >* get_attribute( const std::string& attribute_name )
-        {
-            return new GEO::Attribute< T >(
-                attributes_manager_, attribute_name );
+            attribute.fill( single_value );
         }
 
         /*!
@@ -389,12 +379,12 @@ namespace RINGMesh
         T& get_attribute_value(
             const std::string& attribute_name, sivecn< DIMENSION > position )
         {
-            index_t index = cell_offset( position );
+            auto index = cell_offset( position );
             if( index == NO_ID )
             {
                 throw RINGMeshException( "CartesianGrid",
                     "Points outside of the grid have no attribute value, give "
-                    "a valid point position." );
+                    "a point position inside the grid range." );
             }
             GEO::Attribute< T > attribute{ attributes_manager_,
                 attribute_name };
@@ -426,7 +416,7 @@ namespace RINGMesh
             {
                 if( nb_cells_in_each_direction[i] < 1 )
                 {
-                    throw RINGMeshException( "CartesianGrid Test",
+                    throw RINGMeshException( "CartesianGrid",
                         "Error: You are trying to create a Cartesian Grid "
                         "with no cell in direction ",
                         i,
@@ -445,7 +435,7 @@ namespace RINGMesh
             if( !ReferenceFrameManipulator< DIMENSION >::is_frame_orthogonal(
                     vec_cartesian_axis ) )
             {
-                throw RINGMeshException( "CartesianGrid Test",
+                throw RINGMeshException( "CartesianGrid",
                     "Error: the frame you are giving for the "
                     "Cartesian Grid is not orthogonal. " );
             }
@@ -492,7 +482,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( CartesianGrid );
 
     /*!
-     * Implementation of the cartesian grid in 3D, allowing to include
+     * Implementation of the Cartesian grid in 3D, allowing to include
      * the 6 planes that surround it as a class attribute.
      */
     template <>
@@ -597,7 +587,7 @@ namespace RINGMesh
 
     /*!
      * Builder class associated to CartesianGridBase.
-     * It can be instantiated to modify a cartesian grid base.
+     * It can be instantiated to modify a Cartesian grid base.
      */
     template < index_t DIMENSION >
     class CartesianGridBaseBuilder
@@ -681,13 +671,13 @@ namespace RINGMesh
         {
             if( axis_id > DIMENSION - 1 )
             {
-                throw RINGMeshException( "RINGMesh Test",
+                throw RINGMeshException( "CartesianGrid",
                     "Error: Give an axis_id between 0 and the "
                     "dimension of the grid -1." );
             }
             if( cartesian_grid_base_.nb_cells_axis( axis_id ) < 2 )
             {
-                throw RINGMeshException( "RINGMesh Test",
+                throw RINGMeshException( "CartesianGrid",
                     "Error: You are trying to remove a section in direction",
                     axis_id,
                     ", but it would reduce the number of cells in this "
@@ -696,7 +686,7 @@ namespace RINGMesh
             if( section_position
                 > cartesian_grid_base_.nb_cells_axis( axis_id ) )
             {
-                throw RINGMeshException( "RINGMesh Test",
+                throw RINGMeshException( "CartesianGrid",
                     "Error: Give a correct position for the "
                     "section you wish to remove." );
             }
@@ -754,7 +744,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( CartesianGridBuilder );
 
     /*!
-     * 3D instantiation of the builder for cartesian grids, in order to update
+     * 3D instantiation of the builder for Cartesian grids, in order to update
      * the grid cage when applying modifications to it.
      */
     template <>
