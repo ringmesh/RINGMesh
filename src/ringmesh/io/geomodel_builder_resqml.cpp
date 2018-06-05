@@ -47,12 +47,14 @@
 #include <ringmesh/mesh/surface_mesh.h>
 #include <ringmesh/mesh/volume_mesh.h>
 
+#include <ringmesh/mesh/mesh_builder.h>
+
 #include <fesapi/common/EpcDocument.h>
 #include <fesapi/common/HdfProxy.h>
 #include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
 #include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
-
+#include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * RESQML2 .epc file
@@ -63,30 +65,80 @@ namespace RINGMesh
 {
     using namespace RESQML2_0_1_NS;
 
+    namespace{
+        void showAllMetadata(
+            COMMON_NS::AbstractObject * obj, const std::string& prefix= "")
+        {
+            std::cout << prefix << "Title is : " << obj->getTitle() << 
+                std::endl;
+            std::cout << prefix << "Guid is : " << obj->getUuid() << std::endl;
+            if (!obj->isPartial()) {
+                for (unsigned int i = 0; i < obj->getAliasCount(); ++i) {
+                    std::cout << prefix << "Alias is : " << 
+                            obj->getAliasAuthorityAtIndex(i) << ":" << 
+                            obj->getAliasTitleAtIndex(i) << std::endl;
+                }
+                for (unsigned int i = 0; i < obj->getExtraMetadataCount(); ++i) 
+                {
+                    std::cout << prefix << "Extrametadata is : " << 
+                        obj->getExtraMetadataKeyAtIndex(i) << ":" << 
+                        obj->getExtraMetadataStringValueAtIndex(i) << std::endl;
+                }
+            }
+            else {
+                std::cout << prefix << "IS PARTIAL!" << std::endl;
+            }
+            std::cout << prefix <<
+                "--------------------------------------------------"<<std::endl;
+        }
+    } // anonymous namespace
+
+/******************************************************************************/
+
     class GeoModelBuilderRESQMLImpl
     {
     public:
-        explicit GeoModelBuilderRESQMLImpl( GeoModelBuilderRESQML& builder );
+        GeoModelBuilderRESQMLImpl(
+            GeoModelBuilderRESQML& builder,
+            GeoModel3D& geomodel
+        );
         ~GeoModelBuilderRESQMLImpl() = default;
 
         bool load_file();
+
+        void deserialize( COMMON_NS::EpcDocument& pck );
+        bool read_surfaces( const COMMON_NS::EpcDocument& pck );
         bool build_fake_geomodel();
-        void output_info( const COMMON_NS::EpcDocument& pck );
+        bool read_volume( const COMMON_NS::EpcDocument& pck );
+
 
     private:
         GeoModelBuilderRESQML& builder_;
+        GeoModel3D& geomodel_;
     };
 
     GeoModelBuilderRESQMLImpl::GeoModelBuilderRESQMLImpl(
-        GeoModelBuilderRESQML& builder )
-        : builder_( builder )
+        GeoModelBuilderRESQML& builder,
+        GeoModel3D& geomodel
+    )
+        : builder_( builder ),
+          geomodel_( geomodel )
     {
-        build_fake_geomodel();
+
     }
 
-    void GeoModelBuilderRESQMLImpl::output_info(
-        const COMMON_NS::EpcDocument& pck )
+    void GeoModelBuilderRESQMLImpl::deserialize(
+        COMMON_NS::EpcDocument& pck )
     {
+
+        std::string resqmlResult = pck.deserialize();
+        if( !resqmlResult.empty() )
+        {
+            std::cerr << resqmlResult << std::endl;
+            std::cout << "Press enter to continue..." << std::endl;
+            std::cin.get();
+        }
+
         std::cout << "EpcDocument name " << pck.getName() << " in "
                   << ( pck.getStorageDirectory().empty()
                              ? "working directory."
@@ -109,34 +161,96 @@ namespace RINGMesh
             std::cout << "Warning #" << warningIndex << " : "
                       << pck.getWarnings()[warningIndex] << std::endl;
         }
+    }
+
+    bool GeoModelBuilderRESQMLImpl::read_surfaces(
+        const COMMON_NS::EpcDocument& pck )
+    {
+        std::vector<TriangulatedSetRepresentation*> all_tri_set_rep = 
+            pck.getAllTriangulatedSetRepSet();
+        ringmesh_assert(!all_tri_set_rep.empty());
+
+        std::cout << std::endl
+                  << "ALL TRI REP: " << all_tri_set_rep.size() << std::endl;
+
+        for (size_t rep = 0; rep < all_tri_set_rep.size(); rep++) {
+            TriangulatedSetRepresentation* tri_set = all_tri_set_rep[rep];
+            showAllMetadata(tri_set);
+
+            ULONG64 pointCount = 
+                tri_set->getXyzPointCountOfAllPatches();
+
+            std::cout << "point Count " << pointCount << std::endl;
+
+            std::cout << "\tFAULTS TRI REP GEOMETRY" << std::endl;
+            double* xyzPoints = new double[pointCount * 3];
+            tri_set->getXyzPointsOfAllPatchesInGlobalCrs(xyzPoints);
+
+            std::vector<vec3> points(pointCount,vec3()); 
+            for(unsigned int i=0; i<pointCount; ++i){
+                points[i] = 
+                    vec3(xyzPoints[i*3],xyzPoints[i*3+1],xyzPoints[i*3+2]);
+            } 
+
+            unsigned int triangleCount = 
+                tri_set->getTriangleCountOfAllPatches();
+            std::cout << "triangle Count " << triangleCount << std::endl;
+
+            std::vector<index_t> trgls(triangleCount * 3, 0); 
+
+            tri_set->getTriangleNodeIndicesOfAllPatches(&trgls[0]);
+            for(unsigned int i=0; i<6; ++i){
+                std::cout<< "dump trgls: "<< trgls[i] <<" ";
+            }
+            std::cout<< std::endl;
+
+            std::vector<index_t> trgls_ptr(triangleCount+1, 0); 
+            for(unsigned int i=0; i<trgls_ptr.size(); ++i){
+                trgls_ptr[i] = i * 3;
+            }
+
+
+            gmge_id interface_id = builder_.geology.create_geological_entity(
+                Interface3D::type_name_static() );
+
+            gmme_id children = builder_.topology.create_mesh_entity(
+                Surface3D::type_name_static() );
+
+            const index_t output_region{
+                0
+            }; // always 0 since there is only 1
+            const gmme_id cur_region(
+                region_type_name_static(), output_region );
+
+            builder_.topology.add_region_surface_boundary_relation(
+                cur_region.index(), children.index(), false ); // TODO side ????
+
+            builder_.geology.add_parent_children_relation( 
+                interface_id, children );
+
+            builder_.geometry.set_surface_geometry(
+                children.index(), points, trgls, trgls_ptr );
+
+            delete[] xyzPoints;
+
+        }
+    }
+
+    bool GeoModelBuilderRESQMLImpl::read_volume(
+        const COMMON_NS::EpcDocument& pck )
+    {
         std::vector< UnstructuredGridRepresentation* > unstructuredGridRepSet =
             pck.getUnstructuredGridRepresentationSet();
+        ringmesh_assert(!unstructuredGridRepSet.empty());
 
         std::cout << std::endl
                   << "UNSTRUCTURED GRID REP: " << unstructuredGridRepSet.size()
                   << std::endl;
-    }
-
-    bool GeoModelBuilderRESQMLImpl::load_file()
-    {
-        COMMON_NS::EpcDocument pck(
-            builder_.filename(), COMMON_NS::EpcDocument::READ_ONLY );
-
-        std::string resqmlResult = pck.deserialize();
-        if( !resqmlResult.empty() )
-        {
-            std::cerr << resqmlResult << std::endl;
-            std::cout << "Press enter to continue..." << std::endl;
-            std::cin.get();
-        }
-
-        output_info( pck );
-
-        std::vector< UnstructuredGridRepresentation* > unstructuredGridRepSet =
-            pck.getUnstructuredGridRepresentationSet();
 
         for( size_t i = 0; i < unstructuredGridRepSet.size(); ++i )
         {
+            showAllMetadata(unstructuredGridRepSet[i]);
+
             if( !unstructuredGridRepSet[i]->isPartial()
                 && unstructuredGridRepSet[i]->hasGeometry() )
             {
@@ -237,6 +351,37 @@ namespace RINGMesh
                 unstructuredGridRepSet[i]->unloadGeometry();
             }
         }
+        return true;
+    }
+
+    bool GeoModelBuilderRESQMLImpl::load_file()
+    {
+        COMMON_NS::EpcDocument pck(
+            builder_.filename(), COMMON_NS::EpcDocument::READ_ONLY );
+
+        deserialize( pck );
+
+
+        if(pck.getAllTriangulatedSetRepSet().empty()){
+            build_fake_geomodel();
+            read_volume( pck );
+        }else{
+
+            gmme_id region = builder_.topology.create_mesh_entity(
+                Region3D::type_name_static() );
+
+            auto mesh_builder =
+                builder_.geometry.create_region_builder( region.index() );
+
+            read_surfaces( pck );
+            read_volume( pck );
+
+            geomodel_.mesh.vertices.test_and_initialize();
+            builder_.build_lines_and_corners_from_surfaces();
+            builder_.geology.build_contacts();
+            mesh_builder->connect_cells();
+        }
+
         return true;
     }
 
@@ -583,7 +728,7 @@ namespace RINGMesh
     GeoModelBuilderRESQML::GeoModelBuilderRESQML(
         GeoModel3D& geomodel, const std::string& filename )
         : GeoModelBuilderFile( geomodel, std::move( filename ) ),
-          impl_( new GeoModelBuilderRESQMLImpl( *this ) )
+          impl_( new GeoModelBuilderRESQMLImpl( *this, this->geomodel_ ) )
     {
     }
 
