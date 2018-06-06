@@ -173,66 +173,72 @@ namespace RINGMesh
         std::cout << std::endl
                   << "ALL TRI REP: " << all_tri_set_rep.size() << std::endl;
 
-        for (size_t rep = 0; rep < all_tri_set_rep.size(); rep++) {
+        for (size_t rep = 0; rep < all_tri_set_rep.size(); ++rep) {
             TriangulatedSetRepresentation* tri_set = all_tri_set_rep[rep];
             showAllMetadata(tri_set);
 
-            ULONG64 pointCount = 
-                tri_set->getXyzPointCountOfAllPatches();
+            const gmge_id interface_id = 
+                builder_.geology.create_geological_entity(
+                    Interface3D::type_name_static() );
 
-            std::cout << "point Count " << pointCount << std::endl;
+            const unsigned int patch_count = tri_set->getPatchCount();
 
-            std::cout << "\tFAULTS TRI REP GEOMETRY" << std::endl;
-            double* xyzPoints = new double[pointCount * 3];
-            tri_set->getXyzPointsOfAllPatchesInGlobalCrs(xyzPoints);
+            unsigned int global_point_count = 0; 
+            for(unsigned int patch = 0; patch < patch_count; ++patch) {
 
-            std::vector<vec3> points(pointCount,vec3()); 
-            for(unsigned int i=0; i<pointCount; ++i){
-                points[i] = 
-                    vec3(xyzPoints[i*3],xyzPoints[i*3+1],xyzPoints[i*3+2]);
-            } 
+                ULONG64 pointCount = 
+                    tri_set->getXyzPointCountOfPatch(patch);
 
-            unsigned int triangleCount = 
-                tri_set->getTriangleCountOfAllPatches();
-            std::cout << "triangle Count " << triangleCount << std::endl;
+                std::cout << "point Count " << pointCount << std::endl;
 
-            std::vector<index_t> trgls(triangleCount * 3, 0); 
+                std::cout << "TRI REP GEOMETRY" << std::endl;
+                std::unique_ptr< double[] > xyzPoints(
+                    new double[pointCount * 3]) ;
+                tri_set->getXyzPointsOfPatch(patch, &xyzPoints[0]);
 
-            tri_set->getTriangleNodeIndicesOfAllPatches(&trgls[0]);
-            for(unsigned int i=0; i<6; ++i){
-                std::cout<< "dump trgls: "<< trgls[i] <<" ";
+                std::vector<vec3> points(pointCount,vec3()); 
+                for(unsigned int i=0; i<pointCount; ++i){
+                    points[i] = 
+                        vec3(xyzPoints[i*3],xyzPoints[i*3+1],xyzPoints[i*3+2]);
+                } 
+
+                unsigned int triangleCount = 
+                    tri_set->getTriangleCountOfPatch(patch);
+                std::cout << "triangle Count " << triangleCount << std::endl;
+
+                std::vector<index_t> trgls(triangleCount * 3, 0); 
+
+                tri_set->getTriangleNodeIndicesOfPatch(patch, &trgls[0]);
+                for(auto& node : trgls){
+                    node -= global_point_count;
+                }
+
+                std::vector<index_t> trgls_ptr(triangleCount+1, 0); 
+                for(unsigned int i=0; i<trgls_ptr.size(); ++i){
+                    trgls_ptr[i] = i * 3;
+                }
+
+                gmme_id children = builder_.topology.create_mesh_entity(
+                    Surface3D::type_name_static() );
+
+                const index_t output_region{
+                    0
+                }; // always 0 since there is only 1
+                const gmme_id cur_region(
+                    region_type_name_static(), output_region );
+
+                builder_.topology.add_region_surface_boundary_relation(
+                    cur_region.index(), children.index(), false );
+
+                builder_.geology.add_parent_children_relation( 
+                    interface_id, children );
+
+                builder_.geometry.set_surface_geometry(
+                    children.index(), points, trgls, trgls_ptr );
+
+                global_point_count += pointCount;
+
             }
-            std::cout<< std::endl;
-
-            std::vector<index_t> trgls_ptr(triangleCount+1, 0); 
-            for(unsigned int i=0; i<trgls_ptr.size(); ++i){
-                trgls_ptr[i] = i * 3;
-            }
-
-
-            gmge_id interface_id = builder_.geology.create_geological_entity(
-                Interface3D::type_name_static() );
-
-            gmme_id children = builder_.topology.create_mesh_entity(
-                Surface3D::type_name_static() );
-
-            const index_t output_region{
-                0
-            }; // always 0 since there is only 1
-            const gmme_id cur_region(
-                region_type_name_static(), output_region );
-
-            builder_.topology.add_region_surface_boundary_relation(
-                cur_region.index(), children.index(), false ); // TODO side ????
-
-            builder_.geology.add_parent_children_relation( 
-                interface_id, children );
-
-            builder_.geometry.set_surface_geometry(
-                children.index(), points, trgls, trgls_ptr );
-
-            delete[] xyzPoints;
-
         }
     }
 
@@ -361,12 +367,10 @@ namespace RINGMesh
 
         deserialize( pck );
 
-
         if(pck.getAllTriangulatedSetRepSet().empty()){
             build_fake_geomodel();
             read_volume( pck );
         }else{
-
             gmme_id region = builder_.topology.create_mesh_entity(
                 Region3D::type_name_static() );
 
