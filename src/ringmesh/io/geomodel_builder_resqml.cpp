@@ -53,8 +53,8 @@
 #include <fesapi/common/HdfProxy.h>
 #include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
 #include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
-#include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
+#include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * RESQML2 .epc file
@@ -65,43 +65,48 @@ namespace RINGMesh
 {
     using namespace RESQML2_0_1_NS;
 
-    namespace{
+    namespace
+    {
         void showAllMetadata(
-            COMMON_NS::AbstractObject * obj, const std::string& prefix= "")
+            COMMON_NS::AbstractObject* obj, const std::string& prefix = "" )
         {
-            std::cout << prefix << "Title is : " << obj->getTitle() << 
-                std::endl;
+            std::cout << prefix << "Title is : " << obj->getTitle()
+                      << std::endl;
             std::cout << prefix << "Guid is : " << obj->getUuid() << std::endl;
-            if (!obj->isPartial()) {
-                for (unsigned int i = 0; i < obj->getAliasCount(); ++i) {
-                    std::cout << prefix << "Alias is : " << 
-                            obj->getAliasAuthorityAtIndex(i) << ":" << 
-                            obj->getAliasTitleAtIndex(i) << std::endl;
-                }
-                for (unsigned int i = 0; i < obj->getExtraMetadataCount(); ++i) 
+            if( !obj->isPartial() )
+            {
+                for( unsigned int i = 0; i < obj->getAliasCount(); ++i )
                 {
-                    std::cout << prefix << "Extrametadata is : " << 
-                        obj->getExtraMetadataKeyAtIndex(i) << ":" << 
-                        obj->getExtraMetadataStringValueAtIndex(i) << std::endl;
+                    std::cout
+                        << prefix
+                        << "Alias is : " << obj->getAliasAuthorityAtIndex( i )
+                        << ":" << obj->getAliasTitleAtIndex( i ) << std::endl;
+                }
+                for( unsigned int i = 0; i < obj->getExtraMetadataCount(); ++i )
+                {
+                    std::cout << prefix << "Extrametadata is : "
+                              << obj->getExtraMetadataKeyAtIndex( i ) << ":"
+                              << obj->getExtraMetadataStringValueAtIndex( i )
+                              << std::endl;
                 }
             }
-            else {
+            else
+            {
                 std::cout << prefix << "IS PARTIAL!" << std::endl;
             }
-            std::cout << prefix <<
-                "--------------------------------------------------"<<std::endl;
+            std::cout << prefix
+                      << "--------------------------------------------------"
+                      << std::endl;
         }
     } // anonymous namespace
 
-/******************************************************************************/
+    /******************************************************************************/
 
     class GeoModelBuilderRESQMLImpl
     {
     public:
         GeoModelBuilderRESQMLImpl(
-            GeoModelBuilderRESQML& builder,
-            GeoModel3D& geomodel
-        );
+            GeoModelBuilderRESQML& builder, GeoModel3D& geomodel );
         ~GeoModelBuilderRESQMLImpl() = default;
 
         bool load_file();
@@ -110,26 +115,19 @@ namespace RINGMesh
         bool read_surfaces( const COMMON_NS::EpcDocument& pck );
         bool read_volumes( const COMMON_NS::EpcDocument& pck );
 
-
     private:
         GeoModelBuilderRESQML& builder_;
         GeoModel3D& geomodel_;
     };
 
     GeoModelBuilderRESQMLImpl::GeoModelBuilderRESQMLImpl(
-        GeoModelBuilderRESQML& builder,
-        GeoModel3D& geomodel
-    )
-        : builder_( builder ),
-          geomodel_( geomodel )
+        GeoModelBuilderRESQML& builder, GeoModel3D& geomodel )
+        : builder_( builder ), geomodel_( geomodel )
     {
-
     }
 
-    void GeoModelBuilderRESQMLImpl::deserialize(
-        COMMON_NS::EpcDocument& pck )
+    void GeoModelBuilderRESQMLImpl::deserialize( COMMON_NS::EpcDocument& pck )
     {
-
         std::string resqmlResult = pck.deserialize();
         if( !resqmlResult.empty() )
         {
@@ -165,62 +163,65 @@ namespace RINGMesh
     bool GeoModelBuilderRESQMLImpl::read_surfaces(
         const COMMON_NS::EpcDocument& pck )
     {
-        std::vector<TriangulatedSetRepresentation*> all_tri_set_rep = 
+        std::vector< TriangulatedSetRepresentation* > all_tri_set_rep =
             pck.getAllTriangulatedSetRepSet();
-        ringmesh_assert(!all_tri_set_rep.empty());
+        ringmesh_assert( !all_tri_set_rep.empty() );
 
         std::cout << std::endl
                   << "ALL TRI REP: " << all_tri_set_rep.size() << std::endl;
 
-        for (size_t rep = 0; rep < all_tri_set_rep.size(); ++rep) {
+        for( size_t rep = 0; rep < all_tri_set_rep.size(); ++rep )
+        {
             TriangulatedSetRepresentation* tri_set = all_tri_set_rep[rep];
-            showAllMetadata(tri_set);
+            showAllMetadata( tri_set );
 
-            const gmge_id interface_id = 
+            const gmge_id interface_id =
                 builder_.geology.create_geological_entity(
                     Interface3D::type_name_static() );
 
             const unsigned int patch_count = tri_set->getPatchCount();
 
-            unsigned int global_point_count = 0; 
-            for(unsigned int patch = 0; patch < patch_count; ++patch) {
-
-                ULONG64 pointCount = 
-                    tri_set->getXyzPointCountOfPatch(patch);
+            unsigned int global_point_count = 0;
+            for( unsigned int patch = 0; patch < patch_count; ++patch )
+            {
+                ULONG64 pointCount = tri_set->getXyzPointCountOfPatch( patch );
 
                 std::cout << "point Count " << pointCount << std::endl;
 
                 std::cout << "TRI REP GEOMETRY" << std::endl;
                 std::unique_ptr< double[] > xyzPoints(
-                    new double[pointCount * 3]) ;
-                tri_set->getXyzPointsOfPatch(patch, &xyzPoints[0]);
+                    new double[pointCount * 3] );
+                tri_set->getXyzPointsOfPatch( patch, &xyzPoints[0] );
 
-                std::vector<vec3> points(pointCount,vec3()); 
-                for(unsigned int i=0; i<pointCount; ++i){
-                    points[i] = 
-                        vec3(xyzPoints[i*3],xyzPoints[i*3+1],xyzPoints[i*3+2]);
-                } 
+                std::vector< vec3 > points( pointCount, vec3() );
+                for( unsigned int i = 0; i < pointCount; ++i )
+                {
+                    points[i] = vec3( xyzPoints[i * 3], xyzPoints[i * 3 + 1],
+                        xyzPoints[i * 3 + 2] );
+                }
 
-                unsigned int triangleCount = 
-                    tri_set->getTriangleCountOfPatch(patch);
+                unsigned int triangleCount =
+                    tri_set->getTriangleCountOfPatch( patch );
                 std::cout << "triangle Count " << triangleCount << std::endl;
 
-                std::vector<index_t> trgls(triangleCount * 3, 0); 
+                std::vector< index_t > trgls( triangleCount * 3, 0 );
 
-                tri_set->getTriangleNodeIndicesOfPatch(patch, &trgls[0]);
-                for(auto& node : trgls){
+                tri_set->getTriangleNodeIndicesOfPatch( patch, &trgls[0] );
+                for( auto& node : trgls )
+                {
                     node -= global_point_count;
                 }
 
-                std::vector<index_t> trgls_ptr(triangleCount+1, 0); 
-                for(unsigned int i=0; i<trgls_ptr.size(); ++i){
+                std::vector< index_t > trgls_ptr( triangleCount + 1, 0 );
+                for( unsigned int i = 0; i < trgls_ptr.size(); ++i )
+                {
                     trgls_ptr[i] = i * 3;
                 }
 
                 gmme_id children = builder_.topology.create_mesh_entity(
                     Surface3D::type_name_static() );
 
-                builder_.geology.add_parent_children_relation( 
+                builder_.geology.add_parent_children_relation(
                     interface_id, children );
 
                 builder_.geometry.set_surface_geometry(
@@ -235,36 +236,33 @@ namespace RINGMesh
         builder_.geology.build_contacts();
     }
 
-    namespace{
-        bool read_volume_rep(
-            VolumeMesh3D& mesh,
-            UnstructuredGridRepresentation& unstructed_grid
-        ){
+    namespace
+    {
+        bool read_volume_rep( VolumeMesh3D& mesh,
+            UnstructuredGridRepresentation& unstructed_grid )
+        {
             auto mesh_builder = VolumeMeshBuilder3D::create_builder( mesh );
 
             unstructed_grid.loadGeometry();
 
             std::unique_ptr< double[] > gridPoints(
-                new double[
-                    unstructed_grid. getXyzPointCountOfPatch( 0 ) * 3] );
+                new double[unstructed_grid.getXyzPointCountOfPatch( 0 ) * 3] );
             unstructed_grid.getXyzPointsOfAllPatchesInGlobalCrs(
                 &gridPoints[0] );
 
             const ULONG64 nb_vertices =
                 unstructed_grid.getXyzPointCountOfPatch( 0 );
 
-            for( auto v : range(nb_vertices) )
+            for( auto v : range( nb_vertices ) )
             {
                 const vec3 vertex( gridPoints[v * 3], gridPoints[v * 3 + 1],
                     gridPoints[v * 3 + 2] );
 
-                mesh_builder->create_vertex( vertex);
+                mesh_builder->create_vertex( vertex );
             }
 
-            const ULONG64 nb_cells =
-                unstructed_grid.getCellCount();
-            mesh_builder
-                ->create_cells( nb_cells, CellType::TETRAHEDRON);
+            const ULONG64 nb_cells = unstructed_grid.getCellCount();
+            mesh_builder->create_cells( nb_cells, CellType::TETRAHEDRON );
 
             std::unique_ptr< ULONG64[] > faceCountOfCells(
                 new ULONG64[nb_cells] );
@@ -278,33 +276,29 @@ namespace RINGMesh
             unstructed_grid.getCumulativeNodeCountPerFace(
                 &nodeCountOfFaces[0] );
 
-            for( auto cell : range(nb_cells) )
+            for( auto cell : range( nb_cells ) )
             {
                 ULONG64 end_face = faceCountOfCells[cell];
                 ULONG64 start_face =
                     ( cell == 0 ) ? 0 : faceCountOfCells[cell - 1];
 
                 std::vector< index_t > vertices = {
-                    unstructed_grid.getNodeIndicesOfFaceOfCell(
-                        cell, 0 )[0],
-                    unstructed_grid.getNodeIndicesOfFaceOfCell(
-                        cell, 0 )[1],
-                    unstructed_grid.getNodeIndicesOfFaceOfCell(
-                        cell, 0 )[2],
-                    0
+                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[0],
+                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[1],
+                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[2], 0
                 };
 
                 bool found = false;
                 for( ULONG64 f = 1; f < ( end_face - start_face ); ++f )
                 {
                     ULONG64 nb_nodes =
-                        unstructed_grid.getNodeCountOfFaceOfCell(cell, f );
+                        unstructed_grid.getNodeCountOfFaceOfCell( cell, f );
 
                     for( ULONG64 node = 0; node < nb_nodes; ++node )
                     {
                         const ULONG64 node_index =
                             unstructed_grid.getNodeIndicesOfFaceOfCell(
-                                    cell, f )[node];
+                                cell, f )[node];
                         if( node_index != vertices[0]
                             && node_index != vertices[1]
                             && node_index != vertices[2] )
@@ -327,7 +321,6 @@ namespace RINGMesh
                     mesh_builder->set_cell_vertex(
                         { cell, v_id }, vertices[v_id] );
                 }
-
             }
             unstructed_grid.unloadGeometry();
             mesh_builder->connect_cells();
@@ -340,7 +333,8 @@ namespace RINGMesh
     {
         std::vector< UnstructuredGridRepresentation* > unstructuredGridRepSet =
             pck.getUnstructuredGridRepresentationSet();
-        if(unstructuredGridRepSet.empty()){
+        if( unstructuredGridRepSet.empty() )
+        {
             return true;
         }
 
@@ -350,27 +344,25 @@ namespace RINGMesh
 
         for( auto unstructured_grid : unstructuredGridRepSet )
         {
-            showAllMetadata(unstructured_grid);
+            showAllMetadata( unstructured_grid );
 
             if( !unstructured_grid->isPartial()
                 && unstructured_grid->hasGeometry() )
             {
                 auto mesh = VolumeMesh3D::create_mesh();
-                ringmesh_assert(
-                    read_volume_rep(*mesh, *unstructured_grid)
-                );
+                ringmesh_assert( read_volume_rep( *mesh, *unstructured_grid ) );
 
-                // the volume mesh from resqml is here, need to find the 
+                // the volume mesh from resqml is here, need to find the
                 // corresponding region of in the GeoModel3D
                 const auto& nn_search = mesh->cell_facet_nn_search();
 
                 int region_index = -1;
-                for( auto r : range(geomodel_.nb_regions()) )
+                for( auto r : range( geomodel_.nb_regions() ) )
                 {
                     const Region3D& region = geomodel_.region( r );
 
                     bool match = true;
-                    for( auto b : range(region.nb_boundaries()) )
+                    for( auto b : range( region.nb_boundaries() ) )
                     {
                         const Surface3D& surface = region.boundary( b );
                         for( auto p : range( surface.nb_mesh_elements() ) )
@@ -384,45 +376,47 @@ namespace RINGMesh
                                 break;
                             }
                         }
-                        if(!match){
+                        if( !match )
+                        {
                             break;
                         }
                     }
-                    if(match){
+                    if( match )
+                    {
                         region_index = r;
                         break;
                     }
                 }
 
-                if( region_index == -1 ){
+                if( region_index == -1 )
+                {
                     return false;
                 }
 
                 // corresponding region found, build its volume mesh
                 const gmme_id region_id(
-                    region_type_name_static(), 
-                    (index_t)region_index );
+                    region_type_name_static(), (index_t) region_index );
 
-                auto mesh_builder =
-                    builder_.geometry.create_region_builder(region_id.index());
+                auto mesh_builder = builder_.geometry.create_region_builder(
+                    region_id.index() );
 
-                for( auto v : range(mesh->nb_vertices()) )
+                for( auto v : range( mesh->nb_vertices() ) )
                 {
-                    mesh_builder->create_vertex( mesh->vertex(v));
+                    mesh_builder->create_vertex( mesh->vertex( v ) );
                 }
 
-                mesh_builder
-                    ->create_cells(mesh->nb_cells(), CellType::TETRAHEDRON);
+                mesh_builder->create_cells(
+                    mesh->nb_cells(), CellType::TETRAHEDRON );
 
-                for( auto cell : range(mesh->nb_cells()) )
+                for( auto cell : range( mesh->nb_cells() ) )
                 {
-                    const index_t nb_vertices = mesh->nb_cell_vertices(cell);
-                    std::vector<index_t> cell_vertices(nb_vertices, 0);
-                    for(auto v : range(nb_vertices)){
-                        ElementLocalVertex lv(cell, v);
+                    const index_t nb_vertices = mesh->nb_cell_vertices( cell );
+                    std::vector< index_t > cell_vertices( nb_vertices, 0 );
+                    for( auto v : range( nb_vertices ) )
+                    {
+                        ElementLocalVertex lv( cell, v );
                         mesh_builder->set_cell_vertex(
-                            lv,
-                            mesh->cell_vertex(lv));
+                            lv, mesh->cell_vertex( lv ) );
                     }
                 }
 
@@ -445,7 +439,7 @@ namespace RINGMesh
         return true;
     }
 
-/*****************************************************************************/
+    /*****************************************************************************/
 
     GeoModelBuilderRESQML::GeoModelBuilderRESQML(
         GeoModel3D& geomodel, const std::string& filename )
