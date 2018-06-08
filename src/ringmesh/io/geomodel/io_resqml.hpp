@@ -57,7 +57,8 @@ namespace
         void save(
             const GeoModel3D& geomodel, const std::string& filename ) final
         {
-            //ringmesh_assert( false );
+            ringmesh_unused(geomodel);
+            ringmesh_unused(filename);
         }
 
     };
