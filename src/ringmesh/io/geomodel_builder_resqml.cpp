@@ -181,10 +181,10 @@ namespace RINGMesh
             const unsigned int patch_count = tri_set->getPatchCount();
 
             ULONG64 global_point_count = 0;
-            for( auto patch : range(patch_count) )
+            for( auto patch : range( patch_count ) )
             {
-                const ULONG64 pointCount
-                    = tri_set->getXyzPointCountOfPatch( patch );
+                const ULONG64 pointCount =
+                    tri_set->getXyzPointCountOfPatch( patch );
 
                 std::cout << "point Count " << pointCount << std::endl;
 
@@ -194,7 +194,7 @@ namespace RINGMesh
                 tri_set->getXyzPointsOfPatch( patch, &xyzPoints[0] );
 
                 std::vector< vec3 > points( pointCount, vec3() );
-                for( auto i : range(pointCount) )
+                for( auto i : range( pointCount ) )
                 {
                     points[i] = vec3( xyzPoints[i * 3], xyzPoints[i * 3 + 1],
                         xyzPoints[i * 3 + 2] );
@@ -209,11 +209,11 @@ namespace RINGMesh
                 tri_set->getTriangleNodeIndicesOfPatch( patch, &trgls[0] );
                 for( auto& node : trgls )
                 {
-                    node -= (index_t)global_point_count;
+                    node -= (index_t) global_point_count;
                 }
 
                 std::vector< index_t > trgls_ptr( triangleCount + 1, 0 );
-                for( auto i : range(trgls_ptr.size()) )
+                for( auto i : range( trgls_ptr.size() ) )
                 {
                     trgls_ptr[i] = i * 3;
                 }
@@ -264,7 +264,7 @@ namespace RINGMesh
 
             const ULONG64 nb_cells = unstructed_grid.getCellCount();
             mesh_builder->create_cells(
-                (index_t)nb_cells, CellType::TETRAHEDRON );
+                (index_t) nb_cells, CellType::TETRAHEDRON );
 
             std::unique_ptr< ULONG64[] > faceCountOfCells(
                 new ULONG64[nb_cells] );
@@ -285,11 +285,11 @@ namespace RINGMesh
                     ( cell == 0 ) ? 0 : faceCountOfCells[cell - 1];
 
                 std::vector< index_t > vertices = {
-                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
                         cell, 0 )[0],
-                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
                         cell, 0 )[1],
-                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
                         cell, 0 )[2],
                     0
                 };
@@ -309,7 +309,7 @@ namespace RINGMesh
                             && node_index != vertices[1]
                             && node_index != vertices[2] )
                         {
-                            vertices[3] = (index_t)node_index;
+                            vertices[3] = (index_t) node_index;
                             found = true;
                             break;
                         }
@@ -389,7 +389,7 @@ namespace RINGMesh
                     }
                     if( match )
                     {
-                        region_index = (int)r;
+                        region_index = (int) r;
                         break;
                     }
                 }
