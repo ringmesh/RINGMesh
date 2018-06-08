@@ -12,4 +12,4 @@
 	url = https://github.com/ringmesh/nbind
 [submodule "third_party/fesapi"]
 	path = third_party/fesapi
-	url = https://github.com/F2I-Consulting/fesapi
+	url = https://github.com/ringmesh/fesapi
