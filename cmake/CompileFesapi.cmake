@@ -31,10 +31,32 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(FESAPI_PATH ${PROJECT_SOURCE_DIR}/third_party/fesapi)
-set(FESAPI_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/fesapi)
-set(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
+SET(FESAPI_PATH ${PROJECT_SOURCE_DIR}/third_party/fesapi)
+SET(FESAPI_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/fesapi)
+SET(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
     CACHE INTERNAL "Fesapi install directory")
+
+SET (HDF5_ZIP_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/hdf5/")
+SET (HDF5_ZIP_DESTIN "${HDF5_ZIP_DESTIN_DIR}/hdf5.tar.gz")
+
+IF(NOT EXISTS ${HDF5_ZIP_DESTIN})
+    SET (HDF5_ZIP_ROOT "hdf5-1.8.20-linux-centos7-x86_64-gcc485-shared")
+    SET (HDF5_ZIP "${HDF5_ZIP_ROOT}.tar.gz")
+    SET (HDF5_URL "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.20/bin/${HDF5_ZIP}")
+
+    MESSAGE(STATUS "Downloading: ${HDF5_URL}")
+    FILE(MAKE_DIRECTORY ${HDF5_ZIP_DESTIN_DIR})
+    FILE(DOWNLOAD ${HDF5_URL} ${HDF5_ZIP_DESTIN})
+    MESSAGE(STATUS "Downloaded: ${HDF5_URL}")
+
+    EXECUTE_PROCESS(
+        COMMAND tar -C ${HDF5_ZIP_DESTIN_DIR} -xzf ${HDF5_ZIP_DESTIN}
+    )
+ENDIF()
+
+SET (HDF5_C_RELEASE_PATH "${HDF5_ZIP_DESTIN_DIR}/${HDF5_ZIP_ROOT}/"
+    CACHE PATH "Path to the directory which contains HDF5")
+MARK_AS_ADVANCED(CLEAR HDF5_C_RELEASE_PATH)
 
 ExternalProject_Add(fesapi_ext
     PREFIX ${FESAPI_PATH_BIN}
@@ -50,13 +72,12 @@ ExternalProject_Add(fesapi_ext
         -DCMAKE_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
         -DCMAKE_INSTALL_LIBDIR:PATH=lib
         -DCMAKE_MACOSX_RPATH:BOOL=ON
-#        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
+        -DZLIB_ROOT:PATH=${ZLIB_ROOT}
         -DHDF5_C_RELEASE_PATH:PATH=${HDF5_C_RELEASE_PATH}
         -DMINIZIP_INSTALL_PREFIX:PATH=${MINIZIP_INSTALL_PREFIX}
         -DCMAKE_INSTALL_RPATH:PATH=${FESAPI_INSTALL_PREFIX}/lib
     BINARY_DIR ${FESAPI_PATH_BIN}
     BUILD_ALWAYS 1
     INSTALL_DIR ${FESAPI_INSTALL_PREFIX}
-#    DEPENDS zlib_ext minizip_ext
-    DEPENDS minizip_ext
+    DEPENDS zlib_ext minizip_ext
 )
