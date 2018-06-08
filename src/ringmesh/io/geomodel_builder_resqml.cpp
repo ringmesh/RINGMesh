@@ -170,9 +170,8 @@ namespace RINGMesh
         std::cout << std::endl
                   << "ALL TRI REP: " << all_tri_set_rep.size() << std::endl;
 
-        for( size_t rep = 0; rep < all_tri_set_rep.size(); ++rep )
+        for( auto tri_set : all_tri_set_rep )
         {
-            TriangulatedSetRepresentation* tri_set = all_tri_set_rep[rep];
             showAllMetadata( tri_set );
 
             const gmge_id interface_id =
@@ -181,10 +180,11 @@ namespace RINGMesh
 
             const unsigned int patch_count = tri_set->getPatchCount();
 
-            unsigned int global_point_count = 0;
-            for( unsigned int patch = 0; patch < patch_count; ++patch )
+            ULONG64 global_point_count = 0;
+            for( auto patch : range(patch_count) )
             {
-                ULONG64 pointCount = tri_set->getXyzPointCountOfPatch( patch );
+                const ULONG64 pointCount
+                    = tri_set->getXyzPointCountOfPatch( patch );
 
                 std::cout << "point Count " << pointCount << std::endl;
 
@@ -194,13 +194,13 @@ namespace RINGMesh
                 tri_set->getXyzPointsOfPatch( patch, &xyzPoints[0] );
 
                 std::vector< vec3 > points( pointCount, vec3() );
-                for( unsigned int i = 0; i < pointCount; ++i )
+                for( auto i : range(pointCount) )
                 {
                     points[i] = vec3( xyzPoints[i * 3], xyzPoints[i * 3 + 1],
                         xyzPoints[i * 3 + 2] );
                 }
 
-                unsigned int triangleCount =
+                const unsigned int triangleCount =
                     tri_set->getTriangleCountOfPatch( patch );
                 std::cout << "triangle Count " << triangleCount << std::endl;
 
@@ -209,16 +209,16 @@ namespace RINGMesh
                 tri_set->getTriangleNodeIndicesOfPatch( patch, &trgls[0] );
                 for( auto& node : trgls )
                 {
-                    node -= global_point_count;
+                    node -= (index_t)global_point_count;
                 }
 
                 std::vector< index_t > trgls_ptr( triangleCount + 1, 0 );
-                for( unsigned int i = 0; i < trgls_ptr.size(); ++i )
+                for( auto i : range(trgls_ptr.size()) )
                 {
                     trgls_ptr[i] = i * 3;
                 }
 
-                gmme_id children = builder_.topology.create_mesh_entity(
+                const gmme_id children = builder_.topology.create_mesh_entity(
                     Surface3D::type_name_static() );
 
                 builder_.geology.add_parent_children_relation(
@@ -234,6 +234,7 @@ namespace RINGMesh
         builder_.build_lines_and_corners_from_surfaces();
         builder_.build_regions_from_lines_and_surfaces();
         builder_.geology.build_contacts();
+        return true;
     }
 
     namespace
@@ -262,7 +263,8 @@ namespace RINGMesh
             }
 
             const ULONG64 nb_cells = unstructed_grid.getCellCount();
-            mesh_builder->create_cells( nb_cells, CellType::TETRAHEDRON );
+            mesh_builder->create_cells(
+                (index_t)nb_cells, CellType::TETRAHEDRON );
 
             std::unique_ptr< ULONG64[] > faceCountOfCells(
                 new ULONG64[nb_cells] );
@@ -283,13 +285,17 @@ namespace RINGMesh
                     ( cell == 0 ) ? 0 : faceCountOfCells[cell - 1];
 
                 std::vector< index_t > vertices = {
-                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[0],
-                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[1],
-                    unstructed_grid.getNodeIndicesOfFaceOfCell( cell, 0 )[2], 0
+                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                        cell, 0 )[0],
+                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                        cell, 0 )[1],
+                    (index_t)unstructed_grid.getNodeIndicesOfFaceOfCell(
+                        cell, 0 )[2],
+                    0
                 };
 
                 bool found = false;
-                for( ULONG64 f = 1; f < ( end_face - start_face ); ++f )
+                for( unsigned int f = 1; f < ( end_face - start_face ); ++f )
                 {
                     ULONG64 nb_nodes =
                         unstructed_grid.getNodeCountOfFaceOfCell( cell, f );
@@ -303,7 +309,7 @@ namespace RINGMesh
                             && node_index != vertices[1]
                             && node_index != vertices[2] )
                         {
-                            vertices[3] = node_index;
+                            vertices[3] = (index_t)node_index;
                             found = true;
                             break;
                         }
@@ -383,7 +389,7 @@ namespace RINGMesh
                     }
                     if( match )
                     {
-                        region_index = r;
+                        region_index = (int)r;
                         break;
                     }
                 }
@@ -423,6 +429,7 @@ namespace RINGMesh
                 mesh_builder->connect_cells();
             }
         }
+        return true;
     }
 
     bool GeoModelBuilderRESQMLImpl::load_file()
