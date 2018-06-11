@@ -40,11 +40,11 @@ SET(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
 #HDF5
 SET (HDF5_ZIP_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/hdf5/")
 SET (HDF5_ZIP_DESTIN "${HDF5_ZIP_DESTIN_DIR}/hdf5.tar.gz")
-SET (HDF5_ZIP_ROOT "hdf5-1.8.20-linux-centos7-x86_64-gcc485-shared")
+SET (HDF5_ZIP_ROOT "hdf5-1.8.18-linux-centos7-x86_64-gcc485-noszip-shared")
 
 IF(NOT EXISTS ${HDF5_ZIP_DESTIN})
     SET (HDF5_ZIP "${HDF5_ZIP_ROOT}.tar.gz")
-    SET (HDF5_URL "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.20/bin/${HDF5_ZIP}")
+    SET (HDF5_URL "https://support.hdfgroup.org/ftp/HDF5/releases/hdf5-1.8/hdf5-1.8.18/bin/linux-centos7-x86_64-gcc485-noszip/${HDF5_ZIP}")
 
     MESSAGE(STATUS "Downloading: ${HDF5_URL}")
     FILE(MAKE_DIRECTORY ${HDF5_ZIP_DESTIN_DIR})
