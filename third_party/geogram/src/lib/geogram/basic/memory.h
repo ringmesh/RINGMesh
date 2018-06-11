@@ -104,7 +104,7 @@ namespace GEO {
          * \brief Value of the null pointer
          * \internal Should be replaces by nullptr in C++11
          */
-#define nil nullptr
+#define nil 0
 
         /**
          * \brief Clears a memory block
