@@ -1,2 +1,3 @@
-modelA6_tetra.gm
-geomodel3d.adeli
+geomodel3d_only.ml
+geomodel3d.epc
+geomodel3d.h5

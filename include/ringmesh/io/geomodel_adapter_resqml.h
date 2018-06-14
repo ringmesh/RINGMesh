@@ -33,33 +33,28 @@
  *     FRANCE
  */
 
-namespace
+#pragma once
+
+#include <ringmesh/io/common.h>
+
+namespace RINGMesh
 {
+    class GeoModelAdapterRESQMLImpl;
+}
 
-    using namespace RINGMesh;
-
-    class RESQMLIOHandler final : public GeoModelInputHandler3D,
-                                  public GeoModelOutputHandler3D
+namespace RINGMesh
+{
+    class io_api GeoModelAdapterRESQML
     {
     public:
-        void load( const std::string& filename, GeoModel3D& geomodel ) final
-        {
-            std::ifstream input( filename.c_str() );
-            if( !input )
-            {
-                throw RINGMeshException(
-                    "I/O", "Failed loading geomodel from file ", filename );
-            }
+        GeoModelAdapterRESQML(
+            const GeoModel3D& geomodel, const std::string& filename );
+        ~GeoModelAdapterRESQML();
 
-            GeoModelBuilderRESQML builder( geomodel, filename );
-            builder.build_geomodel();
-        }
-        void save(
-            const GeoModel3D& geomodel, const std::string& filename ) final
-        {
-            GeoModelAdapterRESQML adapter( geomodel, filename );
-            adapter.save_file();
-        }
+        void save_file();
 
+    private:
+        std::unique_ptr< GeoModelAdapterRESQMLImpl > impl_;
     };
-}
+
+} // namespace RINGMesh
