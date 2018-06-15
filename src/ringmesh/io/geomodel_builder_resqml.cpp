@@ -431,8 +431,8 @@ namespace RINGMesh
         }
 
         if( !geomodel_.entity_type_manager()
-                .geological_entity_manager.is_valid_type(
-                    Layer3D::type_name_static() ) )
+                 .geological_entity_manager.is_valid_type(
+                     Layer3D::type_name_static() ) )
         {
             const gmge_id layer = builder_.geology.create_geological_entity(
                 Layer3D::type_name_static() );
@@ -443,7 +443,6 @@ namespace RINGMesh
                     layer, region.gmme() );
             }
         }
-
 
         return true;
     }

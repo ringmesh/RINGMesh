@@ -52,9 +52,9 @@
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/geomodel/core/well.h>
 #include <ringmesh/geomodel/tools/geomodel_validity.h>
+#include <ringmesh/io/geomodel_adapter_resqml.h>
 #include <ringmesh/io/geomodel_builder_gocad.h>
 #include <ringmesh/io/geomodel_builder_resqml.h>
-#include <ringmesh/io/geomodel_adapter_resqml.h>
 
 #include <ringmesh/io/zip_file.h>
 
