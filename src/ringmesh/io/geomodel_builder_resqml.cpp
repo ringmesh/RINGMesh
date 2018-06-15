@@ -429,6 +429,22 @@ namespace RINGMesh
                 mesh_builder->connect_cells();
             }
         }
+
+        if( !geomodel_.entity_type_manager()
+                .geological_entity_manager.is_valid_type(
+                    Layer3D::type_name_static() ) )
+        {
+            const gmge_id layer = builder_.geology.create_geological_entity(
+                Layer3D::type_name_static() );
+
+            for( auto& region : geomodel_.regions() )
+            {
+                builder_.geology.add_parent_children_relation(
+                    layer, region.gmme() );
+            }
+        }
+
+
         return true;
     }
 

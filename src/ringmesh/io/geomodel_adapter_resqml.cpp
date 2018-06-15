@@ -39,8 +39,8 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
-
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/io/geomodel_adapter_resqml.h>
 
 #include <ringmesh/mesh/mesh_index.h>
@@ -59,8 +59,10 @@
 #include <fesapi/resqml2_0_1/FrontierFeature.h>
 #include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
 #include <fesapi/resqml2_0_1/Horizon.h>
+#include <fesapi/resqml2_0_1/StratigraphicUnitFeature.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
+#include <fesapi/resqml2_0_1/StratigraphicUnitInterpretation.h>
 #include <fesapi/tools/GuidTools.h>
 
 /*!
@@ -68,14 +70,6 @@
  * RESQML2 .epc file
  * @author Wan-Chiu Li
  */
-
-namespace{
-//     bool save_volume_rep( VolumeMesh3D& mesh,
-//         UnstructuredGridRepresentation& unstructed_grid )
-//     {
-
-}
-
 
 namespace RINGMesh
 {
@@ -94,20 +88,15 @@ namespace RINGMesh
         ~GeoModelAdapterRESQMLImpl() = default;
 
         bool init();
-
         bool save_file();
-
         void serialize();
         bool save_surfaces();
-     //   bool save_volumes();
+        bool save_volumes();
 
-        AbstractFeature* find_or_create_feature(
-            const Interface3D& interface
-        );
+        AbstractFeature* find_or_create_feature(const GMGE& entity);
         AbstractFeatureInterpretation*
-        find_or_create_interpretation(
-            AbstractFeature& feature
-        );
+        find_or_create_interpretation(AbstractFeature& feature);
+
     private:
         const GeoModel3D& geomodel_;
         const std::string& filename_;
@@ -117,7 +106,6 @@ namespace RINGMesh
         LocalTime3dCrs* local_time_3d_crs_;
 
         std::map<gmge_id, AbstractFeature*> geo_entity_2_feature_;
-
         std::map<AbstractFeature*,AbstractFeatureInterpretation*> 
         feature_2_interp_;
     };
@@ -158,27 +146,30 @@ namespace RINGMesh
     }
 
     AbstractFeature* GeoModelAdapterRESQMLImpl::find_or_create_feature(
-        const Interface3D& interface
+        const GMGE& entity
     ){
         AbstractFeature* feature = nullptr;
-        auto result = geo_entity_2_feature_.find(interface.gmge());
+        auto result = geo_entity_2_feature_.find(entity.gmge());
         if(result == geo_entity_2_feature_.end())
         {
-            GMGE::GEOL_FEATURE geo_feat = interface.geological_feature();
+            GMGE::GEOL_FEATURE geo_feat = entity.geological_feature();
             std::string guid(tools::GuidTools::generateUidAsString());
-            if(GMGE::is_fault(geo_feat)
-            ){
-                feature = pck_->createFault(guid, "Fault");
-            }else if(GMGE::is_stratigraphic_limit(geo_feat)
-            ){
-                feature = pck_->createHorizon(guid, "Horizon");
-            }else if(GMGE::GEOL_FEATURE::VOI == geo_feat){
+            if(GMGE::is_fault(geo_feat))
+            {
+                feature = pck_->createFault(guid, "FAULT");
+            }else if(GMGE::is_stratigraphic_limit(geo_feat))
+            {
+                feature = pck_->createHorizon(guid, "HORIZON");
+            }else if(GMGE::GEOL_FEATURE::VOI == geo_feat)
+            {
                 feature = pck_->createFrontier(guid, "VOI");
+            }else if(GMGE::GEOL_FEATURE::STRATI_UNIT == geo_feat)
+            {
+                feature = pck_->createStratigraphicUnit(guid, "STRATI_UNIT");
             }else{
-                ringmesh_assert_not_reached;
-                return nullptr;
+                feature = pck_->createBoundaryFeature(guid, "BOUNDARYFEATURE");
             }
-            geo_entity_2_feature_[interface.gmge()] = feature;
+            geo_entity_2_feature_[entity.gmge()] = feature;
         }else{
             feature = result->second;
         }
@@ -194,30 +185,47 @@ namespace RINGMesh
         if(result == feature_2_interp_.end())
         {
             std::string guid(tools::GuidTools::generateUidAsString());
-            if(dynamic_cast<TectonicBoundaryFeature*>(&feature)!=nullptr){
+            if(dynamic_cast<TectonicBoundaryFeature*>(&feature)!=nullptr)
+            {
                 interp
                     = (AbstractFeatureInterpretation*)
                         pck_->createFaultInterpretation(
                         (TectonicBoundaryFeature*)&feature,
                         guid,
-                        "Fault1");
-            }else if(dynamic_cast<Horizon*>(&feature)!=nullptr){
+                        "Fault");
+            }else if(dynamic_cast<Horizon*>(&feature)!=nullptr)
+            {
                 interp
                     = (AbstractFeatureInterpretation*)
                         pck_->createHorizonInterpretation(
                         (Horizon*)&feature,
                         guid,
-                        "Horizon1");
-            }else if(dynamic_cast<FrontierFeature*>(&feature)!=nullptr){
+                        "Horizon");
+            }else if(dynamic_cast<FrontierFeature*>(&feature)!=nullptr)
+            {
                 interp
                     = (AbstractFeatureInterpretation*)
                         pck_->createGenericFeatureInterpretation(
                         &feature,
                         guid,
-                        "VOI1");
-            }else{
-                ringmesh_assert_not_reached;
-                return nullptr;
+                        "VOI");
+            }else if(
+                dynamic_cast<StratigraphicUnitFeature*>(&feature)!=nullptr)
+            {
+                interp
+                    = (AbstractFeatureInterpretation*)
+                        pck_->createStratigraphicUnitInterpretation(
+                        (StratigraphicUnitFeature*)&feature,
+                        guid,
+                        "STRATI_UNIT");
+            }else
+            {
+                interp
+                    = (AbstractFeatureInterpretation*)
+                        pck_->createBoundaryFeatureInterpretation(
+                        (BoundaryFeature*)&feature,
+                        guid,
+                        "BOUNDARYFEATURE");
             }
 
             feature_2_interp_[&feature] = interp;
@@ -234,30 +242,28 @@ namespace RINGMesh
         std::cout << "Start serialization of " << pck_->getName() << " in " << 
             (pck_->getStorageDirectory().empty() ? "working directory." : 
             pck_->getStorageDirectory()) << std::endl;
-            pck_->serialize();
+
+        pck_->serialize();
     }
 
     bool GeoModelAdapterRESQMLImpl::save_surfaces()
     {
-        for( const auto& cur_interface :
+        for( const auto& interface :
             geomodel_.geol_entities( Interface3D::type_name_static() ) )
         {
-            GMGE::GEOL_FEATURE geo_feat = cur_interface.geological_feature();
-            if( !cur_interface.has_geological_feature() ||
+            GMGE::GEOL_FEATURE geo_feat = interface.geological_feature();
+            if( !interface.has_geological_feature() ||
                 !(GMGE::is_fault(geo_feat) ||
                   GMGE::is_stratigraphic_limit(geo_feat)||
                   GMGE::GEOL_FEATURE::VOI == geo_feat)
             )
             {
-                Logger::err(
-                    "", cur_interface.gmge(),
+                Logger::warn(
+                    "", interface.gmge(),
                     "geological feature is empty or not supported" );
-                return false;
             }
 
-            AbstractFeature* feature
-                = find_or_create_feature(
-                    static_cast<const Interface3D&>(cur_interface));
+            AbstractFeature* feature = find_or_create_feature(interface);
             AbstractFeatureInterpretation* interp
                 = find_or_create_interpretation(*feature);
 
@@ -269,10 +275,10 @@ namespace RINGMesh
                     "nimp");
 
             unsigned int interface_vertex_count = 0;
-            for( auto i : range( cur_interface.nb_children() ) )
+            for( auto i : range( interface.nb_children() ) )
             {
                 const Surface3D& surface
-                    = static_cast<const Surface3D&>(cur_interface.child( i ));
+                    = static_cast<const Surface3D&>(interface.child( i ));
 
                 std::unique_ptr< double[] > points(
                     new double[surface.nb_vertices() * 3] );
@@ -310,111 +316,96 @@ namespace RINGMesh
         return true;
     }
 
-//     bool GeoModelAdapterRESQMLImpl::save_volumes()
-//     {
-//         std::vector< UnstructuredGridRepresentation* > unstructuredGridRepSet =
-//             pck.getUnstructuredGridRepresentationSet();
-//         if( unstructuredGridRepSet.empty() )
-//         {
-//             return true;
-//         }
-// 
-//         std::cout << std::endl
-//                   << "UNSTRUCTURED GRID REP: " << unstructuredGridRepSet.size()
-//                   << std::endl;
-// 
-//         for( auto unstructured_grid : unstructuredGridRepSet )
-//         {
-//             showAllMetadata( unstructured_grid );
-// 
-//             if( !unstructured_grid->isPartial()
-//                 && unstructured_grid->hasGeometry() )
-//             {
-//                 auto mesh = VolumeMesh3D::create_mesh();
-//                 ringmesh_assert( read_volume_rep( *mesh, *unstructured_grid ) );
-// 
-//                 // the volume mesh from resqml is here, need to find the
-//                 // corresponding region of in the GeoModel3D
-//                 const auto& nn_search = mesh->cell_facet_nn_search();
-// 
-//                 int region_index = -1;
-//                 for( auto r : range( geomodel_.nb_regions() ) )
-//                 {
-//                     const Region3D& region = geomodel_.region( r );
-// 
-//                     bool match = true;
-//                     for( auto b : range( region.nb_boundaries() ) )
-//                     {
-//                         const Surface3D& surface = region.boundary( b );
-//                         for( auto p : range( surface.nb_mesh_elements() ) )
-//                         {
-//                             auto center = surface.mesh_element_barycenter( p );
-//                             auto result = nn_search.get_neighbors(
-//                                 center, surface.geomodel().epsilon() );
-//                             if( result.empty() )
-//                             {
-//                                 match = false;
-//                                 break;
-//                             }
-//                         }
-//                         if( !match )
-//                         {
-//                             break;
-//                         }
-//                     }
-//                     if( match )
-//                     {
-//                         region_index = (int) r;
-//                         break;
-//                     }
-//                 }
-// 
-//                 if( region_index == -1 )
-//                 {
-//                     return false;
-//                 }
-// 
-//                 // corresponding region found, build its volume mesh
-//                 const gmme_id region_id(
-//                     region_type_name_static(), (index_t) region_index );
-// 
-//                 auto mesh_builder = builder_.geometry.create_region_builder(
-//                     region_id.index() );
-// 
-//                 for( auto v : range( mesh->nb_vertices() ) )
-//                 {
-//                     mesh_builder->create_vertex( mesh->vertex( v ) );
-//                 }
-// 
-//                 mesh_builder->create_cells(
-//                     mesh->nb_cells(), CellType::TETRAHEDRON );
-// 
-//                 for( auto cell : range( mesh->nb_cells() ) )
-//                 {read
-//                     const index_t nb_vertices = mesh->nb_cell_vertices( cell );
-//                     std::vector< index_t > cell_vertices( nb_vertices, 0 );
-//                     for( auto v : range( nb_vertices ) )
-//                     {
-//                         ElementLocalVertex lv( cell, v );
-//                         mesh_builder->set_cell_vertex(
-//                             lv, mesh->cell_vertex( lv ) );
-//                     }
-//                 }
-// 
-//                 mesh_builder->connect_cells();
-//             }
-//         }
-//         return true;
-//     }
+    bool GeoModelAdapterRESQMLImpl::save_volumes()
+    {
+        for( const auto& layer :
+            geomodel_.geol_entities( Layer3D::type_name_static() ) )
+        {
+            if( !layer.has_geological_feature() )
+            {
+                GeoModelBuilder3D builder( const_cast<GeoModel3D&>(geomodel_) );
+                builder.geology.set_geological_entity_geol_feature( 
+                    layer.gmge(),
+                    GMGE::GEOL_FEATURE::STRATI_UNIT);
+            }
+
+            AbstractFeature* feature = find_or_create_feature(layer);
+            AbstractFeatureInterpretation* interp
+               = find_or_create_interpretation(*feature);
+            //todo: I do not understand why the interp is not needed...
+            ringmesh_unused(interp);
+
+            for( auto i : range( layer.nb_children() ) )
+            {
+                const Region3D& region
+                    = static_cast<const Region3D&>(layer.child( i ));
+
+                std::string guid(tools::GuidTools::generateUidAsString());
+                UnstructuredGridRepresentation* rep
+                    = pck_->createUnstructuredGridRepresentation(local_3d_crs_, 
+                        guid, "tetra grid", region.nb_mesh_elements());
+
+                std::unique_ptr< double[] > points(
+                    new double[region.nb_vertices() * 3] );
+
+                vec3 p;
+                for( auto v : range( region.nb_vertices() ) )
+                {
+                    p = region.vertex(v);
+                    points[v*3]   = p[0];
+                    points[v*3+1] = p[1];
+                    points[v*3+2] = p[2];
+                }
+
+                std::unique_ptr< ULONG64[] > face_indices_per_cell(
+                    new ULONG64[region.nb_mesh_elements() * 4] );
+                for( auto f : range( region.nb_mesh_elements() * 4 ) )
+                {
+                    face_indices_per_cell[f] = f;
+                }
+
+                index_t node_count = 0;
+                std::unique_ptr< ULONG64[] > node_indices_per_face(
+                    new ULONG64[region.nb_mesh_elements() * 4 * 3] );
+                for( auto t : range( region.nb_mesh_elements() ) )
+                {
+                    for( auto f : range( region.nb_cell_facets( t )))
+                    {
+                        for( auto v :
+                             range( region.nb_cell_facet_vertices( t, f )))
+                        {
+                            node_indices_per_face[node_count++]
+                                = region.cell_facet_vertex_index(t, f, v);
+                        }
+                    }
+                }
+
+                std::unique_ptr< unsigned char[] > face_righthandness(
+                    new unsigned char[region.nb_mesh_elements() * 4] );
+                for( auto f : range( region.nb_mesh_elements() * 4 ) )
+                {
+                    face_righthandness[f] = 1;
+                }
+
+                rep->setTetrahedraOnlyGeometry(
+                    &face_righthandness[0], 
+                    &points[0],
+                    region.nb_vertices(),
+                    region.nb_mesh_elements() * 4,
+                    hdf_proxy_,
+                    &face_indices_per_cell[0],
+                    &node_indices_per_face[0]);
+            }
+        }
+
+        return true;
+     }
 
     bool GeoModelAdapterRESQMLImpl::save_file()
     {
         try {
-            save_surfaces(  );
-
-    //         save_volumes( pck );
-
-
+            save_surfaces();
+            save_volumes();
             serialize();
         }catch (const std::invalid_argument & Exp)
         {
