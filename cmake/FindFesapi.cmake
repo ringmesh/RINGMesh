@@ -2,9 +2,16 @@ set (FESAPI_INCLUDE_DIR
     ${FESAPI_INSTALL_PREFIX}/include/
     ${FESAPI_INSTALL_PREFIX}/include/fesapi
     CACHE PATH "Directories containing the FESAPI header files" FORCE )
-set (FESAPI_LIBRARY
-    ${FESAPI_INSTALL_PREFIX}/lib/libFesapiCppUnderDev.so
-    CACHE PATH "Directories containing the FESAPI lib file" FORCE )
+
+IF (UNIX)
+	set (FESAPI_LIBRARY
+		"${FESAPI_INSTALL_PREFIX}/lib/libFesapiCppUnderDev.so"
+		CACHE PATH "Directories containing the FESAPI lib file" FORCE )
+ELSEIF (WIN32)
+	set (FESAPI_LIBRARY
+		"${FESAPI_INSTALL_PREFIX}/lib/FesapiCppUnderDev.0.12.0.0.lib"
+		CACHE PATH "Directories containing the FESAPI lib file" FORCE )
+ENDIF (UNIX)
 
 include(FindPackageHandleStandardArgs)
 
