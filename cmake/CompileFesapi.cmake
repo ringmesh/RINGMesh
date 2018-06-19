@@ -111,6 +111,7 @@ IF (WIN32)
                  DESTINATION ${FESAPI_PATH_BIN}/${config} )
             file(COPY ${HDF5_INSTALL_PREFIX}/bin/zlib.dll
                  DESTINATION ${FESAPI_PATH_BIN}/${config} )
+			MESSAGE( STATUS "copied zlib path: " ${FESAPI_PATH_BIN}/${config})
 		 endforeach()
 	#endif()
 ELSEIF (UNIX)
