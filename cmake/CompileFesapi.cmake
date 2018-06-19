@@ -109,6 +109,8 @@ IF (WIN32)
 
             file(COPY ${HDF5_INSTALL_PREFIX}/bin/hdf5.dll
                  DESTINATION ${FESAPI_PATH_BIN}/${config} )
+            file(COPY ${HDF5_INSTALL_PREFIX}/bin/zlib.dll
+                 DESTINATION ${FESAPI_PATH_BIN}/${config} )
 		 endforeach()
 	#endif()
 ELSEIF (UNIX)
