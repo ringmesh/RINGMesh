@@ -134,6 +134,11 @@ if(WIN32)
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${FESAPI_INSTALL_PREFIX}/lib"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy fesapi binaries")
 endif(WIN32)
 endmacro()
 
