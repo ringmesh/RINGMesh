@@ -102,18 +102,6 @@ IF (WIN32)
 		CACHE PATH "Path to the directory which contains HDF5")
 	SET (HDF5_C_LIBRARY_RELEASE "${HDF5_INSTALL_PREFIX}/lib/hdf5.lib")
 	SET (ZLIB_LIBRARY_RELEASE "${HDF5_INSTALL_PREFIX}/lib/zlib.lib")
-
-    #if(NOT CMAKE_BUILD_TYPE)
-      # For all configuration types
-		  foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-
-            file(COPY ${HDF5_INSTALL_PREFIX}/bin/hdf5.dll
-                 DESTINATION ${FESAPI_PATH_BIN}/${config} )
-            file(COPY ${HDF5_INSTALL_PREFIX}/bin/zlib.dll
-                 DESTINATION ${FESAPI_PATH_BIN}/${config} )
-			MESSAGE( STATUS "copied zlib path: " ${FESAPI_PATH_BIN}/${config})
-		 endforeach()
-	#endif()
 ELSEIF (UNIX)
 	SET (HDF5_INSTALL_PREFIX "${HDF5_ZIP_DESTIN_DIR}/${HDF5_ZIP_ROOT}/"
 		CACHE PATH "Path to the directory which contains HDF5")
