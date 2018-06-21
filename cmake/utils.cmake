@@ -139,6 +139,11 @@ if(WIN32)
             "${FESAPI_INSTALL_PREFIX}/lib"
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             COMMENT "Copy fesapi binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${HDF5_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy hdf5 binaries")
 endif(WIN32)
 endmacro()
 
