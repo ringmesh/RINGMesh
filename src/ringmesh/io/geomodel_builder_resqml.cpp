@@ -102,7 +102,7 @@ namespace RINGMesh
 
     /******************************************************************************/
 
-    class GeoModelBuilderRESQMLImpl
+	class GeoModelBuilderRESQMLImpl
     {
     public:
         GeoModelBuilderRESQMLImpl(
@@ -356,7 +356,8 @@ namespace RINGMesh
                 && unstructured_grid->hasGeometry() )
             {
                 auto mesh = VolumeMesh3D::create_mesh();
-                ringmesh_assert( read_volume_rep( *mesh, *unstructured_grid ) );
+				bool result = read_volume_rep(*mesh, *unstructured_grid);
+				ringmesh_assert( result );
 
                 // the volume mesh from resqml is here, need to find the
                 // corresponding region of in the GeoModel3D
@@ -477,7 +478,8 @@ namespace RINGMesh
 
     void GeoModelBuilderRESQML::load_file()
     {
-        ringmesh_assert( impl_->load_file() );
+		bool result = impl_->load_file();
+        ringmesh_assert( result );
     }
 
 } // namespace RINGMesh
