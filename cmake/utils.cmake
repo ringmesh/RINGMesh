@@ -148,7 +148,7 @@ if(WIN32)
         COMMAND  "${CMAKE_COMMAND}" -E copy
             "${HDF5_INSTALL_PREFIX}/bin/zlib.dll"
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>/zlib.dll"
-            COMMENT "Copy hdf5 binaries")
+            COMMENT "Copy zlib for hdf5 binaries")
 endif(WIN32)
 endmacro()
 
