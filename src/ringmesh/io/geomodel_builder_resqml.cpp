@@ -51,16 +51,15 @@
 
 #include <fesapi/common/EpcDocument.h>
 #include <fesapi/common/HdfProxy.h>
-#include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
-#include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
-#include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
-#include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
-#include <fesapi/resqml2_0_1/PropertyKind.h>
+#include <fesapi/resqml2_0_1/CategoricalProperty.h>
 #include <fesapi/resqml2_0_1/ContinuousProperty.h>
 #include <fesapi/resqml2_0_1/DiscreteProperty.h>
-#include <fesapi/resqml2_0_1/CategoricalProperty.h>
+#include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
+#include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
 #include <fesapi/resqml2_0_1/PropertyKind.h>
 #include <fesapi/resqml2_0_1/PropertyKindMapper.h>
+#include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
+#include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
 
 /*!
  * @brief Implementation of the class to build GeoModel from input
@@ -109,8 +108,7 @@ namespace RINGMesh
 
     } // anonymous namespace
 
-
-/****************************************************************************/
+    /****************************************************************************/
 
     class GeoModelBuilderRESQMLImpl
     {
@@ -170,47 +168,50 @@ namespace RINGMesh
         }
     }
 
-    namespace{
-        bool read_property(
-            AbstractValuesProperty& property,
+    namespace
+    {
+        bool read_property( AbstractValuesProperty& property,
             const unsigned int patch_index,
-            GEO::AttributesManager& attri_manager)
+            GEO::AttributesManager& attri_manager )
         {
             showAllMetadata( &property );
             const unsigned int el_per_val = property.getElementCountPerValue();
 
             GEO::Attribute< double > attribute;
             attribute.create_vector_attribute(
-                attri_manager, property.getTitle(), el_per_val);
+                attri_manager, property.getTitle(), el_per_val );
 
-            const unsigned int dim_count
-                = property.getDimensionsCountOfPatch(patch_index);
-            ringmesh_assert(dim_count == 1);
+            const unsigned int dim_count =
+                property.getDimensionsCountOfPatch( patch_index );
+            ringmesh_assert( dim_count == 1 );
 
-            const unsigned int val_count
-                = property.getValuesCountOfPatch(patch_index);
-            if (property.getValuesHdfDatatype()
-                == AbstractValuesProperty::UNKNOWN)
+            const unsigned int val_count =
+                property.getValuesCountOfPatch( patch_index );
+            if( property.getValuesHdfDatatype()
+                == AbstractValuesProperty::UNKNOWN )
             {
-                throw RINGMeshException(
-                    "RESQML2", "Invalid property type: ",
-                    AbstractValuesProperty::UNKNOWN);
+                throw RINGMeshException( "RESQML2", "Invalid property type: ",
+                    AbstractValuesProperty::UNKNOWN );
             }
-            else if (
-              (property.getValuesHdfDatatype()==AbstractValuesProperty::FLOAT ||
-               property.getValuesHdfDatatype()==AbstractValuesProperty::DOUBLE) 
-               &&
-               dynamic_cast<ContinuousProperty*>(&property) != nullptr)
+            else if( ( property.getValuesHdfDatatype()
+                             == AbstractValuesProperty::FLOAT
+                         || property.getValuesHdfDatatype()
+                                == AbstractValuesProperty::DOUBLE )
+                     && dynamic_cast< ContinuousProperty* >( &property )
+                            != nullptr )
             {
-                ContinuousProperty& continuousProp
-                    = static_cast<ContinuousProperty&>(property);
+                ContinuousProperty& continuousProp =
+                    static_cast< ContinuousProperty& >( property );
 
                 std::unique_ptr< double[] > values( new double[val_count] );
-                continuousProp.getDoubleValuesOfPatch(patch_index, &values[0]);
-                for (auto val : range(val_count)) {
-                    for(auto element : range(el_per_val)){
-                        attribute[val * el_per_val + element]
-                            = values[val*el_per_val + element];
+                continuousProp.getDoubleValuesOfPatch(
+                    patch_index, &values[0] );
+                for( auto val : range( val_count ) )
+                {
+                    for( auto element : range( el_per_val ) )
+                    {
+                        attribute[val * el_per_val + element] =
+                            values[val * el_per_val + element];
                     }
                 }
             }
@@ -283,31 +284,29 @@ namespace RINGMesh
                 builder_.geometry.set_surface_geometry(
                     children.index(), points, trgls, trgls_ptr );
 
-                for (auto prop_index :
-                     range(tri_set->getValuesPropertySet().size()))
+                for( auto prop_index :
+                    range( tri_set->getValuesPropertySet().size() ) )
                 {
-                    AbstractValuesProperty* propVal
-                        = tri_set->getValuesPropertySet()[prop_index];
-                    const Surface3D& cur_surf
-                        = geomodel_.surface( children.index() );
+                    AbstractValuesProperty* propVal =
+                        tri_set->getValuesPropertySet()[prop_index];
+                    const Surface3D& cur_surf =
+                        geomodel_.surface( children.index() );
 
                     const gsoap_resqml2_0_1::resqml2__IndexableElements
                         attachment = propVal->getAttachmentKind();
-                    if(attachment
-                        ==gsoap_resqml2_0_1::resqml2__IndexableElements__nodes
-                    ){
-                        read_property(*propVal,
-                                      patch,
-                                      cur_surf.vertex_attribute_manager());
-                    }
-                    else if(
-                        attachment
-                        ==gsoap_resqml2_0_1::resqml2__IndexableElements__cells
-                    )
+                    if( attachment
+                        == gsoap_resqml2_0_1::
+                               resqml2__IndexableElements__nodes )
                     {
-                        read_property(*propVal,
-                                      patch,
-                                      cur_surf.polygon_attribute_manager());
+                        read_property( *propVal, patch,
+                            cur_surf.vertex_attribute_manager() );
+                    }
+                    else if( attachment
+                             == gsoap_resqml2_0_1::
+                                    resqml2__IndexableElements__cells )
+                    {
+                        read_property( *propVal, patch,
+                            cur_surf.polygon_attribute_manager() );
                     }
                 }
 
@@ -515,32 +514,30 @@ namespace RINGMesh
                 mesh_builder->connect_cells();
 
                 // property
-                const Region3D& cur_reg = geomodel_.region(region_id.index());
+                const Region3D& cur_reg = geomodel_.region( region_id.index() );
 
-                for (auto prop_index :
-                     range(unstructured_grid->getValuesPropertySet().size()))
+                for( auto prop_index :
+                    range( unstructured_grid->getValuesPropertySet().size() ) )
                 {
-                    AbstractValuesProperty* propVal
-                        = unstructured_grid->getValuesPropertySet()[prop_index];
-                    //TODO there is only one patch in a unstructured_grid
+                    AbstractValuesProperty* propVal =
+                        unstructured_grid->getValuesPropertySet()[prop_index];
+                    // TODO there is only one patch in a unstructured_grid
 
-                    const gsoap_resqml2_0_1::resqml2__IndexableElements 
+                    const gsoap_resqml2_0_1::resqml2__IndexableElements
                         attachment = propVal->getAttachmentKind();
-                    if(attachment
-                        ==gsoap_resqml2_0_1::resqml2__IndexableElements__nodes
-                    )
+                    if( attachment
+                        == gsoap_resqml2_0_1::
+                               resqml2__IndexableElements__nodes )
                     {
-                        read_property(*propVal,
-                                      0,
-                                      cur_reg.vertex_attribute_manager());
-                    }else if(
-                        attachment
-                        ==gsoap_resqml2_0_1::resqml2__IndexableElements__cells
-                    )
+                        read_property(
+                            *propVal, 0, cur_reg.vertex_attribute_manager() );
+                    }
+                    else if( attachment
+                             == gsoap_resqml2_0_1::
+                                    resqml2__IndexableElements__cells )
                     {
-                        read_property(*propVal,
-                                      0,
-                                      cur_reg.cell_attribute_manager());
+                        read_property(
+                            *propVal, 0, cur_reg.cell_attribute_manager() );
                     }
                 }
             }
@@ -565,9 +562,7 @@ namespace RINGMesh
 
     bool GeoModelBuilderRESQMLImpl::load_file()
     {
-        COMMON_NS::EpcDocument pck(
-            builder_.filename(),
-            fesapi_resources_path,
+        COMMON_NS::EpcDocument pck( builder_.filename(), fesapi_resources_path,
             COMMON_NS::EpcDocument::READ_ONLY );
 
         deserialize( pck );
@@ -579,8 +574,7 @@ namespace RINGMesh
         return true;
     }
 
-
-/****************************************************************************/
+    /****************************************************************************/
 
     GeoModelBuilderRESQML::GeoModelBuilderRESQML(
         GeoModel3D& geomodel, const std::string& filename )
