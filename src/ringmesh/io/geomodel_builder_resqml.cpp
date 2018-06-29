@@ -202,7 +202,7 @@ namespace RINGMesh
                 ContinuousProperty& continuousProp =
                     static_cast< ContinuousProperty& >( property );
 
-                std::unique_ptr< double[] > values(new double[val_count]);
+                std::unique_ptr< double[] > values( new double[val_count] );
                 continuousProp.getDoubleValuesOfPatch(
                     patch_index, &values[0] );
                 for( auto val : range( val_count ) )
