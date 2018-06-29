@@ -208,6 +208,8 @@ if(RINGMESH_WITH_TESTS)
     copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin/tests)
 endif()
 
+set(FESAPI_RESOURCES_DIRECTORY "${FESAPI_PATH}/resources")
+
 #------------------------------------------------------------------------------------------------
 # Configure CPack
 
