@@ -183,7 +183,6 @@ namespace RINGMesh
 
             const unsigned int dim_count =
                 property.getDimensionsCountOfPatch( patch_index );
-            ringmesh_assert( dim_count == 1 );
 
             const unsigned int val_count =
                 property.getValuesCountOfPatch( patch_index );
@@ -203,16 +202,12 @@ namespace RINGMesh
                 ContinuousProperty& continuousProp =
                     static_cast< ContinuousProperty& >( property );
 
-                std::unique_ptr< double[] > values( new double[val_count] );
+                std::unique_ptr< double[] > values(new double[val_count]);
                 continuousProp.getDoubleValuesOfPatch(
                     patch_index, &values[0] );
                 for( auto val : range( val_count ) )
                 {
-                    for( auto element : range( el_per_val ) )
-                    {
-                        attribute[val * el_per_val + element] =
-                            values[val * el_per_val + element];
-                    }
+                    attribute[val] = values[val];
                 }
             }
             return true;
