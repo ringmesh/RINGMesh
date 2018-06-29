@@ -174,42 +174,60 @@ namespace RINGMesh
             const unsigned int patch_index,
             GEO::AttributesManager& attri_manager )
         {
-            showAllMetadata( &property );
-            const unsigned int el_per_val = property.getElementCountPerValue();
-
-            GEO::Attribute< double > attribute;
-            attribute.create_vector_attribute(
-                attri_manager, property.getTitle(), el_per_val );
-
-            const unsigned int dim_count =
-                property.getDimensionsCountOfPatch( patch_index );
-
-            const unsigned int val_count =
-                property.getValuesCountOfPatch( patch_index );
             if( property.getValuesHdfDatatype()
                 == AbstractValuesProperty::UNKNOWN )
             {
                 throw RINGMeshException( "RESQML2", "Invalid property type: ",
                     AbstractValuesProperty::UNKNOWN );
             }
-            else if( ( property.getValuesHdfDatatype()
-                             == AbstractValuesProperty::FLOAT
-                         || property.getValuesHdfDatatype()
-                                == AbstractValuesProperty::DOUBLE )
-                     && dynamic_cast< ContinuousProperty* >( &property )
-                            != nullptr )
+            
+            showAllMetadata(&property);
+            const unsigned int el_per_val = property.getElementCountPerValue();
+
+            const unsigned int val_count =
+                property.getValuesCountOfPatch(patch_index);
+
+            if( dynamic_cast< ContinuousProperty* >( &property ) != nullptr )
             {
                 ContinuousProperty& continuousProp =
                     static_cast< ContinuousProperty& >( property );
 
-                std::unique_ptr< double[] > values( new double[val_count] );
-                continuousProp.getDoubleValuesOfPatch(
-                    patch_index, &values[0] );
-                for( auto val : range( val_count ) )
+                if ((property.getValuesHdfDatatype()
+                    == AbstractValuesProperty::FLOAT
+                    || property.getValuesHdfDatatype()
+                    == AbstractValuesProperty::DOUBLE))
+                {
+                    GEO::Attribute< double > attribute;
+                    attribute.create_vector_attribute(
+                        attri_manager, property.getTitle(), el_per_val);
+
+                    std::unique_ptr< double[] > values(new double[val_count]);
+                    continuousProp.getDoubleValuesOfPatch(
+                        patch_index, &values[0]);
+                    for (auto val : range(val_count))
+                    {
+                        attribute[val] = values[val];
+                    }
+                }
+            }
+            else if (dynamic_cast< DiscreteProperty* >(&property) != nullptr)
+            {
+                DiscreteProperty* discreteProp =
+                    dynamic_cast< DiscreteProperty* >(&property);
+                
+                GEO::Attribute< int > attribute;
+                attribute.create_vector_attribute(
+                    attri_manager, property.getTitle(), el_per_val);
+
+                std::unique_ptr< int[] > values(new int[val_count]);
+                discreteProp->getIntValuesOfPatch(
+                    patch_index, &values[0]);
+                for (auto val : range(val_count))
                 {
                     attribute[val] = values[val];
                 }
             }
+
             return true;
         }
     } // namespace
