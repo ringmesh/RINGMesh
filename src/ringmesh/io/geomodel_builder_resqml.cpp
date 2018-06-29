@@ -180,49 +180,48 @@ namespace RINGMesh
                 throw RINGMeshException( "RESQML2", "Invalid property type: ",
                     AbstractValuesProperty::UNKNOWN );
             }
-            
-            showAllMetadata(&property);
+
+            showAllMetadata( &property );
             const unsigned int el_per_val = property.getElementCountPerValue();
 
             const unsigned int val_count =
-                property.getValuesCountOfPatch(patch_index);
+                property.getValuesCountOfPatch( patch_index );
 
             if( dynamic_cast< ContinuousProperty* >( &property ) != nullptr )
             {
                 ContinuousProperty& continuousProp =
                     static_cast< ContinuousProperty& >( property );
 
-                if ((property.getValuesHdfDatatype()
-                    == AbstractValuesProperty::FLOAT
-                    || property.getValuesHdfDatatype()
-                    == AbstractValuesProperty::DOUBLE))
+                if( ( property.getValuesHdfDatatype()
+                            == AbstractValuesProperty::FLOAT
+                        || property.getValuesHdfDatatype()
+                               == AbstractValuesProperty::DOUBLE ) )
                 {
                     GEO::Attribute< double > attribute;
                     attribute.create_vector_attribute(
-                        attri_manager, property.getTitle(), el_per_val);
+                        attri_manager, property.getTitle(), el_per_val );
 
-                    std::unique_ptr< double[] > values(new double[val_count]);
+                    std::unique_ptr< double[] > values( new double[val_count] );
                     continuousProp.getDoubleValuesOfPatch(
-                        patch_index, &values[0]);
-                    for (auto val : range(val_count))
+                        patch_index, &values[0] );
+                    for( auto val : range( val_count ) )
                     {
                         attribute[val] = values[val];
                     }
                 }
             }
-            else if (dynamic_cast< DiscreteProperty* >(&property) != nullptr)
+            else if( dynamic_cast< DiscreteProperty* >( &property ) != nullptr )
             {
                 DiscreteProperty* discreteProp =
-                    dynamic_cast< DiscreteProperty* >(&property);
-                
+                    dynamic_cast< DiscreteProperty* >( &property );
+
                 GEO::Attribute< int > attribute;
                 attribute.create_vector_attribute(
-                    attri_manager, property.getTitle(), el_per_val);
+                    attri_manager, property.getTitle(), el_per_val );
 
-                std::unique_ptr< int[] > values(new int[val_count]);
-                discreteProp->getIntValuesOfPatch(
-                    patch_index, &values[0]);
-                for (auto val : range(val_count))
+                std::unique_ptr< int[] > values( new int[val_count] );
+                discreteProp->getIntValuesOfPatch( patch_index, &values[0] );
+                for( auto val : range( val_count ) )
                 {
                     attribute[val] = values[val];
                 }
