@@ -1492,6 +1492,24 @@ namespace RINGMesh
         return true;
     }
 
+    bool RINGMeshApplication::save(const std::string& filename)
+    {
+        if (!filename.empty())
+        {
+            if (current_viewer_type_ == ViewerType::GEOMODEL2D)
+            {
+                GeoModelViewerBase2D& viewer = *geomodels2d_[current_viewer_];
+                geomodel_save(viewer.GM_, filename);
+            }
+            if (current_viewer_type_ == ViewerType::GEOMODEL3D)
+            {
+                GeoModelViewerBase3D& viewer = *geomodels3d_[current_viewer_];
+                geomodel_save(viewer.GM_, filename);
+            }
+        }
+        return true;
+    }
+
     void RINGMeshApplication::update_region_of_interest()
     {
         Box3D bbox;
@@ -1590,6 +1608,11 @@ namespace RINGMesh
     std::string RINGMeshApplication::supported_geogram_read_file_extensions()
     {
         return geogram_file_extensions_;
+    }
+
+    std::string RINGMeshApplication::supported_write_file_extensions()
+    {
+        return ringmesh_file_extensions_;
     }
 
     template < index_t DIMENSION >

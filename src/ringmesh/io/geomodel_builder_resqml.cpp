@@ -49,6 +49,7 @@
 
 #include <ringmesh/mesh/mesh_builder.h>
 
+#include <fesapi/resqml2/AbstractFeatureInterpretation.h>
 #include <fesapi/common/EpcDocument.h>
 #include <fesapi/common/HdfProxy.h>
 #include <fesapi/resqml2_0_1/CategoricalProperty.h>
@@ -60,7 +61,10 @@
 #include <fesapi/resqml2_0_1/PropertyKindMapper.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
-
+#include <fesapi/resqml2_0_1/FrontierFeature.h>
+#include <fesapi/resqml2_0_1/Horizon.h>
+#include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
+#include <fesapi/resqml2_0_1/GeneticBoundaryFeature.h>
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * RESQML2 .epc file
@@ -71,6 +75,7 @@ namespace RINGMesh
 {
     using namespace RESQML2_0_1_NS;
     using namespace RESQML2_NS;
+    using GMGE = GeoModelGeologicalEntity< 3 >;
 
     namespace
     {
@@ -249,6 +254,27 @@ namespace RINGMesh
             const gmge_id interface_id =
                 builder_.geology.create_geological_entity(
                     Interface3D::type_name_static() );
+
+            AbstractFeature* feature = nullptr;
+            if (tri_set->getInterpretation() != nullptr){
+                feature
+                    = tri_set->getInterpretation()->getInterpretedFeature();
+            }
+
+            if (feature != nullptr){
+                if (dynamic_cast<TectonicBoundaryFeature*>(feature) != nullptr){
+                    builder_.geology.set_geological_entity_geol_feature(
+                        interface_id, GMGE::GEOL_FEATURE::FAULT);
+                }
+                else if (dynamic_cast<FrontierFeature*>(feature) != nullptr){
+                    builder_.geology.set_geological_entity_geol_feature(
+                        interface_id, GMGE::GEOL_FEATURE::VOI);
+                }
+                else if (dynamic_cast<GeneticBoundaryFeature*>(feature) != nullptr){
+                    builder_.geology.set_geological_entity_geol_feature(
+                        interface_id, GMGE::GEOL_FEATURE::STRATI);
+                }
+            }
 
             ULONG64 global_point_count = 0;
             for( auto patch : range( tri_set->getPatchCount() ) )
