@@ -155,7 +155,7 @@ namespace RINGMesh
             }
             else if( GMGE::is_stratigraphic_limit( geo_feat ) )
             {
-                feature = pck_->createHorizon(guid, "HORIZON");
+                feature = pck_->createHorizon( guid, "HORIZON" );
             }
             else if( GMGE::GEOL_FEATURE::VOI == geo_feat )
             {
@@ -196,11 +196,11 @@ namespace RINGMesh
                                  (TectonicBoundaryFeature*) &feature, guid,
                                  "Fault" );
             }
-            else if (dynamic_cast< Horizon*>(&feature) != nullptr)
+            else if( dynamic_cast< Horizon* >( &feature ) != nullptr )
             {
                 interp = (AbstractFeatureInterpretation*)
-                    pck_->createHorizonInterpretation(
-                    (Horizon*)&feature, guid, "Horizon");
+                             pck_->createHorizonInterpretation(
+                                 (Horizon*) &feature, guid, "Horizon" );
             }
             else if( dynamic_cast< FrontierFeature* >( &feature ) != nullptr )
             {

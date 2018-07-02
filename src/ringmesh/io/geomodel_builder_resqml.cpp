@@ -49,22 +49,22 @@
 
 #include <ringmesh/mesh/mesh_builder.h>
 
-#include <fesapi/resqml2/AbstractFeatureInterpretation.h>
 #include <fesapi/common/EpcDocument.h>
 #include <fesapi/common/HdfProxy.h>
+#include <fesapi/resqml2/AbstractFeatureInterpretation.h>
 #include <fesapi/resqml2_0_1/CategoricalProperty.h>
 #include <fesapi/resqml2_0_1/ContinuousProperty.h>
 #include <fesapi/resqml2_0_1/DiscreteProperty.h>
+#include <fesapi/resqml2_0_1/FrontierFeature.h>
+#include <fesapi/resqml2_0_1/GeneticBoundaryFeature.h>
+#include <fesapi/resqml2_0_1/Horizon.h>
 #include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
 #include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
 #include <fesapi/resqml2_0_1/PropertyKind.h>
 #include <fesapi/resqml2_0_1/PropertyKindMapper.h>
+#include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
-#include <fesapi/resqml2_0_1/FrontierFeature.h>
-#include <fesapi/resqml2_0_1/Horizon.h>
-#include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
-#include <fesapi/resqml2_0_1/GeneticBoundaryFeature.h>
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * RESQML2 .epc file
@@ -255,23 +255,30 @@ namespace RINGMesh
                     Interface3D::type_name_static() );
 
             AbstractFeature* feature = nullptr;
-            if (tri_set->getInterpretation() != nullptr){
-                feature
-                    = tri_set->getInterpretation()->getInterpretedFeature();
+            if( tri_set->getInterpretation() != nullptr )
+            {
+                feature = tri_set->getInterpretation()->getInterpretedFeature();
             }
 
-            if (feature != nullptr){
-                if (dynamic_cast<TectonicBoundaryFeature*>(feature) != nullptr){
+            if( feature != nullptr )
+            {
+                if( dynamic_cast< TectonicBoundaryFeature* >( feature )
+                    != nullptr )
+                {
                     builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::FAULT);
+                        interface_id, GMGE::GEOL_FEATURE::FAULT );
                 }
-                else if (dynamic_cast<FrontierFeature*>(feature) != nullptr){
+                else if( dynamic_cast< FrontierFeature* >( feature )
+                         != nullptr )
+                {
                     builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::VOI);
+                        interface_id, GMGE::GEOL_FEATURE::VOI );
                 }
-                else if (dynamic_cast<GeneticBoundaryFeature*>(feature) != nullptr){
+                else if( dynamic_cast< GeneticBoundaryFeature* >( feature )
+                         != nullptr )
+                {
                     builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::STRATI);
+                        interface_id, GMGE::GEOL_FEATURE::STRATI );
                 }
             }
 

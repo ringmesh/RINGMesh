@@ -79,7 +79,7 @@ namespace RINGMesh
         std::string supported_write_file_extensions() override;
         void init_graphics() override;
         bool load( const std::string& filename ) override;
-        bool save(const std::string& filename) override;
+        bool save( const std::string& filename ) override;
         void draw_scene() override;
         void draw_object_properties() override;
         void draw_viewer_properties() override;

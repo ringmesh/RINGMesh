@@ -1492,19 +1492,19 @@ namespace RINGMesh
         return true;
     }
 
-    bool RINGMeshApplication::save(const std::string& filename)
+    bool RINGMeshApplication::save( const std::string& filename )
     {
-        if (!filename.empty())
+        if( !filename.empty() )
         {
-            if (current_viewer_type_ == ViewerType::GEOMODEL2D)
+            if( current_viewer_type_ == ViewerType::GEOMODEL2D )
             {
                 GeoModelViewerBase2D& viewer = *geomodels2d_[current_viewer_];
-                geomodel_save(viewer.GM_, filename);
+                geomodel_save( viewer.GM_, filename );
             }
-            if (current_viewer_type_ == ViewerType::GEOMODEL3D)
+            if( current_viewer_type_ == ViewerType::GEOMODEL3D )
             {
                 GeoModelViewerBase3D& viewer = *geomodels3d_[current_viewer_];
-                geomodel_save(viewer.GM_, filename);
+                geomodel_save( viewer.GM_, filename );
             }
         }
         return true;
