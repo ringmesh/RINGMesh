@@ -38,8 +38,10 @@
 #include <ringmesh/basic/geometry.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
-
+#include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
+
 #include <ringmesh/io/geomodel_builder_resqml.h>
 
 #include <ringmesh/mesh/mesh_index.h>
@@ -62,9 +64,13 @@
 #include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
 #include <fesapi/resqml2_0_1/PropertyKind.h>
 #include <fesapi/resqml2_0_1/PropertyKindMapper.h>
+#include <fesapi/resqml2_0_1/StratigraphicColumn.h>
+#include <fesapi/resqml2_0_1/StratigraphicColumnRankInterpretation.h>
+#include <fesapi/resqml2_0_1/StratigraphicUnitInterpretation.h>
 #include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
+
 /*!
  * @brief Implementation of the class to build GeoModel from input
  * RESQML2 .epc file
@@ -75,12 +81,13 @@ namespace RINGMesh
 {
     using namespace RESQML2_0_1_NS;
     using namespace RESQML2_NS;
+    using namespace COMMON_NS;
     using GMGE = GeoModelGeologicalEntity< 3 >;
 
     namespace
     {
         void showAllMetadata(
-            COMMON_NS::AbstractObject* obj, const std::string& prefix = "" )
+            AbstractObject* obj, const std::string& prefix = "" )
         {
             std::cout << prefix << "Title is : " << obj->getTitle()
                       << std::endl;
@@ -114,6 +121,20 @@ namespace RINGMesh
     } // anonymous namespace
 
     /****************************************************************************/
+    struct UnitInfo
+    {
+        UnitInfo()
+            : relation_top_( RELATION::CONFORMABLE ),
+              relation_base_( RELATION::CONFORMABLE )
+        {
+        }
+
+        gmge_id interface_top_;
+        gmge_id interface_base_;
+        gmge_id layer_;
+        RELATION relation_top_;
+        RELATION relation_base_;
+    };
 
     class GeoModelBuilderRESQMLImpl
     {
@@ -124,13 +145,23 @@ namespace RINGMesh
 
         bool load_file();
 
-        void deserialize( COMMON_NS::EpcDocument& pck );
-        bool read_surfaces( const COMMON_NS::EpcDocument& pck );
-        bool read_volumes( const COMMON_NS::EpcDocument& pck );
+        void deserialize( EpcDocument& pck );
+        void read_strati_column( EpcDocument& pck );
+        bool read_surfaces( const EpcDocument& pck );
+        bool read_volumes( const EpcDocument& pck );
+
+    protected:
+        gmge_id find_layer( const Region3D& region ) const;
 
     private:
         GeoModelBuilderRESQML& builder_;
         GeoModel3D& geomodel_;
+
+        std::map< gmge_id, AbstractFeatureInterpretation* >
+            geo_entity_2_interp_;
+        std::map< AbstractFeatureInterpretation*, gmge_id >
+            interp_2_geo_entity_;
+        std::map< AbstractFeatureInterpretation*, UnitInfo > unit_2_info_;
     };
 
     GeoModelBuilderRESQMLImpl::GeoModelBuilderRESQMLImpl(
@@ -139,7 +170,7 @@ namespace RINGMesh
     {
     }
 
-    void GeoModelBuilderRESQMLImpl::deserialize( COMMON_NS::EpcDocument& pck )
+    void GeoModelBuilderRESQMLImpl::deserialize( EpcDocument& pck )
     {
         std::string resqmlResult = pck.deserialize();
         if( !resqmlResult.empty() )
@@ -170,6 +201,180 @@ namespace RINGMesh
         {
             std::cout << "Warning #" << warningIndex << " : "
                       << pck.getWarnings()[warningIndex] << std::endl;
+        }
+    }
+
+    namespace
+    {
+        RELATION get_contact_mode(
+            gsoap_resqml2_0_1::resqml2__ContactMode mode )
+        {
+            switch( mode )
+            {
+            case gsoap_resqml2_0_1::resqml2__ContactMode__baselap:
+                return RELATION::BASELAP;
+            case gsoap_resqml2_0_1::resqml2__ContactMode__erosion:
+                return RELATION::ERODED;
+            case gsoap_resqml2_0_1::resqml2__ContactMode__proportional:
+                return RELATION::CONFORMABLE;
+            default:
+                ringmesh_assert_not_reached;
+                return RELATION::CONFORMABLE;
+            }
+        }
+    } // namespace
+
+    gmge_id GeoModelBuilderRESQMLImpl::find_layer(
+        const Region3D& region ) const
+    {
+        std::set< const Interface3D* > horizons;
+        for( auto b : range( region.nb_boundaries() ) )
+        {
+            const Surface3D& surface = region.boundary( b );
+            const Interface3D& interface = static_cast< const Interface3D& >(
+                surface.parent( Interface3D::type_name_static() ) );
+            if( GMGE::is_stratigraphic_limit( interface.geological_feature() ) )
+            {
+                horizons.insert( &interface );
+            }
+        }
+
+        if( horizons.size() >= 1 && horizons.size() <= 2 )
+        {
+            std::vector< gmge_id > horizons_list;
+            for( auto h : horizons )
+            {
+                horizons_list.push_back( h->gmge() );
+            }
+            std::sort( horizons_list.begin(), horizons_list.end() );
+            for( auto& unit : unit_2_info_ )
+            {
+                std::vector< gmge_id > cur_horizons_list;
+                if( unit.second.interface_top_.is_defined() )
+                {
+                    cur_horizons_list.push_back( unit.second.interface_top_ );
+                }
+                if( unit.second.interface_base_.is_defined() )
+                {
+                    cur_horizons_list.push_back( unit.second.interface_base_ );
+                }
+                std::sort( cur_horizons_list.begin(), cur_horizons_list.end() );
+
+                std::vector< gmge_id > result;
+                std::set_intersection( horizons_list.begin(),
+                    horizons_list.end(), cur_horizons_list.begin(),
+                    cur_horizons_list.end(), std::back_inserter( result ) );
+                if( result.size() == horizons_list.size() )
+                {
+                    auto id = interp_2_geo_entity_.find( unit.first );
+                    ringmesh_assert( id != interp_2_geo_entity_.end() );
+                    return id->second;
+                }
+            }
+        }
+    }
+
+    void GeoModelBuilderRESQMLImpl::read_strati_column( EpcDocument& pck )
+    {
+        const std::vector< RESQML2_0_1_NS::StratigraphicColumn* >
+            stratiColumnSet = pck.getStratigraphicColumnSet();
+        ringmesh_assert( stratiColumnSet.size() <= 1 );
+        for( auto column : stratiColumnSet )
+        {
+            showAllMetadata( column );
+            for( auto rank_interp :
+                column->getStratigraphicColumnRankInterpretationSet() )
+            {
+                std::cout << "\tCOLUMN RANK INTERP" << std::endl;
+                showAllMetadata( rank_interp );
+                ringmesh_assert( rank_interp->isAChronoStratiRank() );
+
+                RockFeature rock( "rock", ROCKTYPE::NONE );
+
+                for( auto unit :
+                    rank_interp->getStratigraphicUnitInterpretationSet() )
+                {
+                    const gmge_id layer =
+                        builder_.geology.create_geological_entity(
+                            Layer3D::type_name_static() );
+
+                    builder_.geology.set_geological_entity_geol_feature(
+                        layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
+
+                    geo_entity_2_interp_[layer] = unit;
+                    interp_2_geo_entity_[unit] = layer;
+
+                    unit_2_info_[unit].layer_ = layer;
+                }
+
+                for( auto contactIndex :
+                    range( rank_interp->getContactCount() ) )
+                {
+                    unit_2_info_[rank_interp->getSubjectOfContact(
+                                     contactIndex )]
+                        .relation_base_ = get_contact_mode(
+                        rank_interp->getSubjectContactModeOfContact(
+                            contactIndex ) );
+                    unit_2_info_[rank_interp->getSubjectOfContact(
+                                     contactIndex )]
+                        .interface_base_ = interp_2_geo_entity_
+                        [(AbstractFeatureInterpretation*)
+                                rank_interp->getHorizonInterpretationOfContact(
+                                    contactIndex )];
+
+                    unit_2_info_[rank_interp->getDirectObjectOfContact(
+                                     contactIndex )]
+                        .relation_top_ = get_contact_mode(
+                        rank_interp->getDirectObjectContactModeOfContact(
+                            contactIndex ) );
+                    unit_2_info_[rank_interp->getDirectObjectOfContact(
+                                     contactIndex )]
+                        .interface_top_ = interp_2_geo_entity_
+                        [(AbstractFeatureInterpretation*)
+                                rank_interp->getHorizonInterpretationOfContact(
+                                    contactIndex )];
+                }
+            }
+
+            for( const auto& unit : unit_2_info_ )
+            {
+                std::cout << " relation base: "
+                          << (int) unit.second.relation_base_ << std::endl;
+                std::cout << " relation top: "
+                          << (int) unit.second.relation_top_ << std::endl;
+                std::cout << " interface base: "
+                          << unit.second.interface_base_.index() << std::endl;
+                std::cout << " interface top: "
+                          << unit.second.interface_top_.index() << std::endl;
+            }
+
+            for( auto& region : geomodel_.regions() )
+            {
+                gmge_id layer = find_layer( region );
+                ringmesh_assert( layer.is_defined() );
+                builder_.geology.add_parent_children_relation(
+                    layer, region.gmme() );
+            }
+        }
+
+        if( stratiColumnSet.empty() )
+        {
+            if( !geomodel_.entity_type_manager()
+                     .geological_entity_manager.is_valid_type(
+                         Layer3D::type_name_static() ) )
+            {
+                const gmge_id layer = builder_.geology.create_geological_entity(
+                    Layer3D::type_name_static() );
+
+                builder_.geology.set_geological_entity_geol_feature(
+                    layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
+
+                for( auto& region : geomodel_.regions() )
+                {
+                    builder_.geology.add_parent_children_relation(
+                        layer, region.gmme() );
+                }
+            }
         }
     }
 
@@ -236,8 +441,7 @@ namespace RINGMesh
         }
     } // namespace
 
-    bool GeoModelBuilderRESQMLImpl::read_surfaces(
-        const COMMON_NS::EpcDocument& pck )
+    bool GeoModelBuilderRESQMLImpl::read_surfaces( const EpcDocument& pck )
     {
         std::vector< TriangulatedSetRepresentation* > all_tri_set_rep =
             pck.getAllTriangulatedSetRepSet();
@@ -280,6 +484,11 @@ namespace RINGMesh
                     builder_.geology.set_geological_entity_geol_feature(
                         interface_id, GMGE::GEOL_FEATURE::STRATI );
                 }
+
+                interp_2_geo_entity_[tri_set->getInterpretation()] =
+                    interface_id;
+                geo_entity_2_interp_[interface_id] =
+                    tri_set->getInterpretation();
             }
 
             ULONG64 global_point_count = 0;
@@ -461,10 +670,9 @@ namespace RINGMesh
 
             return true;
         }
-    }
+    } // namespace
 
-    bool GeoModelBuilderRESQMLImpl::read_volumes(
-        const COMMON_NS::EpcDocument& pck )
+    bool GeoModelBuilderRESQMLImpl::read_volumes( const EpcDocument& pck )
     {
         std::vector< UnstructuredGridRepresentation* > unstructuredGridRepSet =
             pck.getUnstructuredGridRepresentationSet();
@@ -588,33 +796,21 @@ namespace RINGMesh
             }
         }
 
-        if( !geomodel_.entity_type_manager()
-                 .geological_entity_manager.is_valid_type(
-                     Layer3D::type_name_static() ) )
-        {
-            const gmge_id layer = builder_.geology.create_geological_entity(
-                Layer3D::type_name_static() );
-
-            for( auto& region : geomodel_.regions() )
-            {
-                builder_.geology.add_parent_children_relation(
-                    layer, region.gmme() );
-            }
-        }
-
         return true;
     }
 
     bool GeoModelBuilderRESQMLImpl::load_file()
     {
-        COMMON_NS::EpcDocument pck( builder_.filename(), fesapi_resources_path,
-            COMMON_NS::EpcDocument::READ_ONLY );
+        EpcDocument pck( builder_.filename(), fesapi_resources_path,
+            EpcDocument::READ_ONLY );
 
         deserialize( pck );
 
         read_surfaces( pck );
 
         read_volumes( pck );
+
+        read_strati_column( pck );
 
         return true;
     }

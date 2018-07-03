@@ -316,18 +316,13 @@ namespace RINGMesh
         for( const auto& layer :
             geomodel_.geol_entities( Layer3D::type_name_static() ) )
         {
-            if( !layer.has_geological_feature() )
-            {
-                GeoModelBuilder3D builder(
-                    const_cast< GeoModel3D& >( geomodel_ ) );
-                builder.geology.set_geological_entity_geol_feature(
-                    layer.gmge(), GMGE::GEOL_FEATURE::STRATI_UNIT );
-            }
+            ringmesh_assert( layer.has_geological_feature() );
 
             AbstractFeature* feature = find_or_create_feature( layer );
             AbstractFeatureInterpretation* interp =
                 find_or_create_interpretation( *feature );
-            // todo: I do not understand why the interp is not needed...
+
+            // TODO: I do not understand why the interp is not needed...
             ringmesh_unused( interp );
 
             for( auto i : range( layer.nb_children() ) )
