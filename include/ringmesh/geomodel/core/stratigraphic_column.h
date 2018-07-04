@@ -206,8 +206,8 @@ namespace RINGMesh
     {
     public:
         UnsubdividedStratigraphicUnit( std::string name,
-            const Interface3D& interface_base,
-            const Interface3D& interface_top,
+            const Interface3D* interface_base,
+            const Interface3D* interface_top,
             const Layer3D& layer,
             RELATION relation_top,
             RELATION relation_base,
@@ -327,6 +327,11 @@ namespace RINGMesh
             return sum_max_thick;
         }
 
+        const std::vector< const StratigraphicUnit* >& get_all_units() const
+        {
+            return units_;
+        }
+
     private:
         std::vector< const StratigraphicUnit* > units_{};
     };
@@ -369,6 +374,8 @@ namespace RINGMesh
             : StratigraphicColumn( std::move( name ), {}, type )
         {
         }
+
+        ~StratigraphicColumn();
 
         /*!
          * \name Stratigraphic Column edition

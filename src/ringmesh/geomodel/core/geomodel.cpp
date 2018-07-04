@@ -45,6 +45,7 @@
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace
 {
@@ -103,6 +104,20 @@ namespace RINGMesh
     template < index_t DIMENSION >
     GeoModelBase< DIMENSION >::~GeoModelBase()
     {
+    }
+
+    template < index_t DIMENSION >
+    void GeoModelBase< DIMENSION >::set_stratigraphic_column(
+        const StratigraphicColumn* column )
+    {
+        strati_column_.reset( column );
+    }
+
+    template < index_t DIMENSION >
+    const StratigraphicColumn*
+        GeoModelBase< DIMENSION >::stratigraphic_column() const
+    {
+        return strati_column_.get();
     }
 
     template < index_t DIMENSION >

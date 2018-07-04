@@ -134,6 +134,7 @@ namespace RINGMesh
         gmge_id layer_;
         RELATION relation_top_;
         RELATION relation_base_;
+        std::string name_;
     };
 
     class GeoModelBuilderRESQMLImpl
@@ -305,6 +306,7 @@ namespace RINGMesh
                     interp_2_geo_entity_[unit] = layer;
 
                     unit_2_info_[unit].layer_ = layer;
+                    unit_2_info_[unit].name_ = unit->getTitle();
                 }
 
                 for( auto contactIndex :
@@ -336,8 +338,51 @@ namespace RINGMesh
                 }
             }
 
+            // assign regions to layers
+            // TODO this is a workaround until the
+            // SealedVolumeFrameworkRepresentation
+            // is released in fesapi that tells us the layer information of a
+            // region
+            for( auto& region : geomodel_.regions() )
+            {
+                gmge_id layer = find_layer( region );
+                ringmesh_assert( layer.is_defined() );
+                builder_.geology.add_parent_children_relation(
+                    layer, region.gmme() );
+            }
+
+            // build the stati column
+            RockFeature rock( "rock", ROCKTYPE::NONE );
+            std::vector< const StratigraphicUnit* > units;
+
             for( const auto& unit : unit_2_info_ )
             {
+                const Interface3D* top =
+                    unit.second.interface_top_.is_defined()
+                        ? dynamic_cast< const Interface3D* >(
+                              &geomodel_.geological_entity(
+                                  Interface3D::type_name_static(),
+                                  unit.second.interface_top_.index() ) )
+                        : nullptr;
+                const Interface3D* base =
+                    unit.second.interface_base_.is_defined()
+                        ? dynamic_cast< const Interface3D* >(
+                              &geomodel_.geological_entity(
+                                  Interface3D::type_name_static(),
+                                  unit.second.interface_base_.index() ) )
+                        : nullptr;
+
+                UnsubdividedStratigraphicUnit* sunit =
+                    new UnsubdividedStratigraphicUnit( unit.second.name_, top,
+                        base,
+                        dynamic_cast< const Layer3D& >(
+                            geomodel_.geological_entity(
+                                Layer3D::type_name_static(), 0 ) ),
+                        unit.second.relation_top_, unit.second.relation_base_,
+                        rock, 0, 10 );
+
+                units.push_back( sunit );
+
                 std::cout << " relation base: "
                           << (int) unit.second.relation_base_ << std::endl;
                 std::cout << " relation top: "
@@ -348,13 +393,10 @@ namespace RINGMesh
                           << unit.second.interface_top_.index() << std::endl;
             }
 
-            for( auto& region : geomodel_.regions() )
-            {
-                gmge_id layer = find_layer( region );
-                ringmesh_assert( layer.is_defined() );
-                builder_.geology.add_parent_children_relation(
-                    layer, region.gmme() );
-            }
+            StratigraphicColumn* strati =
+                new StratigraphicColumn( column->getTitle(), units,
+                    STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
+            geomodel_.set_stratigraphic_column( strati );
         }
 
         if( stratiColumnSet.empty() )

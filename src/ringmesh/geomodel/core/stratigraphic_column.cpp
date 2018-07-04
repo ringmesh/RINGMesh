@@ -49,8 +49,8 @@ namespace RINGMesh
 
     UnsubdividedStratigraphicUnit::UnsubdividedStratigraphicUnit(
         std::string name,
-        const Interface3D& interface_base,
-        const Interface3D& interface_top,
+        const Interface3D* interface_base,
+        const Interface3D* interface_top,
         const Layer3D& layer,
         RELATION relation_top,
         RELATION relation_base,
@@ -58,18 +58,37 @@ namespace RINGMesh
         double min_thick,
         double max_thick )
         : StratigraphicUnit( std::move( name ), std::move( rock ) ),
-          interface_top_( &interface_top ),
-          interface_base_( &interface_base ),
+          interface_top_( interface_top ),
+          interface_base_( interface_base ),
           layer_( &layer ),
           relation_top_( relation_top ),
           relation_base_( relation_base ),
           min_thick_( min_thick ),
           max_thick_( max_thick )
     {
-        // TODO Should we keep this layer_? [AB]
         ringmesh_unused( layer_ );
     }
 
+    StratigraphicColumn::~StratigraphicColumn()
+    {
+        for( auto& unit : units_ )
+        {
+            const SubdividedStratigraphicUnit* subdivided =
+                dynamic_cast< const SubdividedStratigraphicUnit* >( unit );
+
+            if( subdivided != nullptr )
+            {
+                for( auto& sub_unit : subdivided->get_all_units() )
+                {
+                    delete sub_unit;
+                }
+            }
+            else
+            {
+                delete unit;
+            }
+        }
+    }
     void StratigraphicColumn::insert_unit_below(
         const StratigraphicUnit& above, const StratigraphicUnit& unit_to_add )
     {

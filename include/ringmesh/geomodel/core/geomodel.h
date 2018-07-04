@@ -74,7 +74,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
-
+    class StratigraphicColumn;
     ALIAS_2D_AND_3D( GeoModelMeshEntity );
     ALIAS_2D_AND_3D( Region );
 } // namespace RINGMesh
@@ -221,6 +221,10 @@ namespace RINGMesh
             return epsilon() * epsilon();
         }
 
+        void set_stratigraphic_column( const StratigraphicColumn* column );
+
+        const StratigraphicColumn* stratigraphic_column() const;
+
         /*!
          * @}
          */
@@ -305,6 +309,8 @@ namespace RINGMesh
         std::vector< std::vector<
             std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
             geological_entities_;
+
+        std::unique_ptr< const StratigraphicColumn > strati_column_{ nullptr };
 
         /*!
          * @}

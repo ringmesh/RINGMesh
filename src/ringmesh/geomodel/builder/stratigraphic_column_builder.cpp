@@ -159,11 +159,12 @@ namespace RINGMesh
                             base_interface_id ) ) );
                     ringmesh_assert( layer != nullptr );
                 }
-                UnsubdividedStratigraphicUnit unit( name_of_unit,
-                    *top_interface, *base_interface, *layer,
-                    RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
-                    std::numeric_limits< double >::max() );
-                units_vec_construction.push_back( &unit );
+                UnsubdividedStratigraphicUnit* unit =
+                    new UnsubdividedStratigraphicUnit( name_of_unit,
+                        top_interface, base_interface, *layer,
+                        RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
+                        std::numeric_limits< double >::max() );
+                units_vec_construction.push_back( unit );
             }
         }
         const std::vector< const StratigraphicUnit* > units_vec =
