@@ -273,6 +273,7 @@ namespace RINGMesh
                 }
             }
         }
+        return gmge_id();
     }
 
     void GeoModelBuilderRESQMLImpl::read_strati_column( EpcDocument& pck )
@@ -353,7 +354,7 @@ namespace RINGMesh
 
             // build the stati column
             RockFeature rock( "rock", ROCKTYPE::NONE );
-            std::vector< const StratigraphicUnit* > units;
+            std::vector< std::shared_ptr< const StratigraphicUnit > > units;
 
             for( const auto& unit : unit_2_info_ )
             {
@@ -372,14 +373,14 @@ namespace RINGMesh
                                   unit.second.interface_base_.index() ) )
                         : nullptr;
 
-                UnsubdividedStratigraphicUnit* sunit =
+                std::shared_ptr< const StratigraphicUnit > sunit(
                     new UnsubdividedStratigraphicUnit( unit.second.name_, top,
                         base,
                         dynamic_cast< const Layer3D& >(
                             geomodel_.geological_entity(
                                 Layer3D::type_name_static(), 0 ) ),
                         unit.second.relation_top_, unit.second.relation_base_,
-                        rock, 0, 10 );
+                        rock, 0, 10 ) );
 
                 units.push_back( sunit );
 

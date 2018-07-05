@@ -148,7 +148,7 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     std::string three_name = "three";
     std::string four_name = "four";
 
-    UnsubdividedStratigraphicUnit* one =
+    std::shared_ptr< const StratigraphicUnit > one(
         new UnsubdividedStratigraphicUnit( one_name,
             dynamic_cast< const Interface3D* >(
                 &in.geological_entity( Interface3D::type_name_static(), 1 ) ),
@@ -156,8 +156,8 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
                 &in.geological_entity( Interface3D::type_name_static(), 0 ) ),
             dynamic_cast< const Layer3D& >(
                 in.geological_entity( Layer3D::type_name_static(), 0 ) ),
-            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 10 );
-    UnsubdividedStratigraphicUnit* two =
+            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 10 ) );
+    std::shared_ptr< const StratigraphicUnit > two(
         new UnsubdividedStratigraphicUnit( two_name,
             dynamic_cast< const Interface3D* >(
                 &in.geological_entity( Interface3D::type_name_static(), 2 ) ),
@@ -165,8 +165,8 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
                 &in.geological_entity( Interface3D::type_name_static(), 1 ) ),
             dynamic_cast< const Layer3D& >(
                 in.geological_entity( Layer3D::type_name_static(), 1 ) ),
-            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 20 );
-    UnsubdividedStratigraphicUnit* three =
+            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 20 ) );
+    std::shared_ptr< const StratigraphicUnit > three(
         new UnsubdividedStratigraphicUnit( three_name,
             dynamic_cast< const Interface3D* >(
                 &in.geological_entity( Interface3D::type_name_static(), 3 ) ),
@@ -174,8 +174,8 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
                 &in.geological_entity( Interface3D::type_name_static(), 2 ) ),
             dynamic_cast< const Layer3D& >(
                 in.geological_entity( Layer3D::type_name_static(), 2 ) ),
-            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 30 );
-    UnsubdividedStratigraphicUnit* four =
+            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 30 ) );
+    std::shared_ptr< const StratigraphicUnit > four(
         new UnsubdividedStratigraphicUnit( four_name,
             dynamic_cast< const Interface3D* >(
                 &in.geological_entity( Interface3D::type_name_static(), 11 ) ),
@@ -183,12 +183,12 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
                 &in.geological_entity( Interface3D::type_name_static(), 3 ) ),
             dynamic_cast< const Layer3D& >(
                 in.geological_entity( Layer3D::type_name_static(), 3 ) ),
-            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 40 );
+            RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0, 40 ) );
 
     RINGMesh::Logger::out( "StratigraphicColumn",
         "First building with a vector of StratigraphicUnit" );
 
-    std::vector< const StratigraphicUnit* > units;
+    std::vector< std::shared_ptr< const StratigraphicUnit > > units;
     units.push_back( one );
     units.push_back( two );
     units.push_back( three );
@@ -215,7 +215,7 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
             "Test", "Failed when testing StratigraphicColumn::remove_unit()" );
     }
 
-    test1.insert_unit_below( *one, *two );
+    test1.insert_unit_below( *one, two );
     if( test1.get_unit( 1 )->get_name() != "two" )
     {
         throw RINGMeshException( "Test",
@@ -240,14 +240,14 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     StratigraphicColumn test2(
         "test 2", STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
 
-    test2.insert_top_unit( *one );
+    test2.insert_top_unit( one );
     if( test2.get_top_unit()->get_name() != "one" )
     {
         throw RINGMeshException( "Test",
             "Failed when testing StratigraphicColumn::insert_top_unit()" );
     }
 
-    test2.insert_base_unit( *four );
+    test2.insert_base_unit( four );
     if( test2.get_base_unit()->get_name() != "four" )
     {
         throw RINGMeshException( "Test",
@@ -263,16 +263,18 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     RINGMesh::Logger::out(
         "StratigraphicColumn", "Third building a mixed StratigraphicColumn" );
 
-    std::vector< const StratigraphicUnit* > mixed;
+    std::vector< std::shared_ptr< const StratigraphicUnit > > mixed;
     mixed.push_back( one );
     mixed.push_back( two );
-    std::vector< const StratigraphicUnit* > sub_units;
+
+    std::vector< std::shared_ptr< const StratigraphicUnit > > sub_units;
     RockFeature rocks( "several", ROCKTYPE::MULTIPLE );
     sub_units.push_back( three );
     sub_units.push_back( four );
-    SubdividedStratigraphicUnit subdivided_unit(
-        "subdivided", rocks, sub_units );
-    mixed.push_back( &subdivided_unit );
+
+    std::shared_ptr< const StratigraphicUnit > subdivided_unit(
+        new SubdividedStratigraphicUnit( "subdivided", rocks, sub_units ) );
+    mixed.push_back( subdivided_unit );
 
     StratigraphicColumn mix(
         "mix", mixed, STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
@@ -331,7 +333,7 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
             "Test", "Failed when testing StratigraphicColumn::remove_unit()" );
     }
 
-    mix.insert_unit_below( *one, *two );
+    mix.insert_unit_below( *one, two );
     if( mix.get_unit( 1 )->get_name() != "two" )
     {
         throw RINGMeshException( "Test",

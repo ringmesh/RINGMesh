@@ -69,45 +69,25 @@ namespace RINGMesh
         ringmesh_unused( layer_ );
     }
 
-    StratigraphicColumn::~StratigraphicColumn()
-    {
-        for( auto& unit : units_ )
-        {
-            const SubdividedStratigraphicUnit* subdivided =
-                dynamic_cast< const SubdividedStratigraphicUnit* >( unit );
-
-            if( subdivided != nullptr )
-            {
-                for( auto& sub_unit : subdivided->get_all_units() )
-                {
-                    delete sub_unit;
-                }
-            }
-            else
-            {
-                delete unit;
-            }
-        }
-    }
-    void StratigraphicColumn::insert_unit_below(
-        const StratigraphicUnit& above, const StratigraphicUnit& unit_to_add )
+    StratigraphicColumn::~StratigraphicColumn() {}
+    void StratigraphicColumn::insert_unit_below( const StratigraphicUnit& above,
+        std::shared_ptr< const StratigraphicUnit > unit_to_add )
     {
         index_t index = get_index( above.get_name() );
         ringmesh_assert( index != NO_ID );
-        units_.insert( units_.begin() + index + 1, &unit_to_add );
+        units_.insert( units_.begin() + index + 1, unit_to_add );
     }
 
-    void StratigraphicColumn::insert_top_unit( const StratigraphicUnit& to_add )
+    void StratigraphicColumn::insert_top_unit(
+        std::shared_ptr< const StratigraphicUnit > to_add )
     {
-        const StratigraphicUnit* ptr_add = &to_add;
-        units_.insert( units_.begin(), ptr_add );
+        units_.insert( units_.begin(), to_add );
     }
 
     void StratigraphicColumn::insert_base_unit(
-        const StratigraphicUnit& to_add )
+        std::shared_ptr< const StratigraphicUnit > to_add )
     {
-        const StratigraphicUnit* ptr_add = &to_add;
-        units_.push_back( ptr_add );
+        units_.push_back( to_add );
     }
 
     void StratigraphicColumn::remove_unit( const StratigraphicUnit& unit )
@@ -122,7 +102,7 @@ namespace RINGMesh
     {
         index_t index = get_index( unit.get_name() );
         ringmesh_assert( index > 0 && index != NO_ID );
-        return units_[index - 1];
+        return units_[index - 1].get();
     }
 
     const StratigraphicUnit* StratigraphicColumn::get_unit_below(
@@ -130,7 +110,7 @@ namespace RINGMesh
     {
         index_t index = get_index( unit.get_name() );
         ringmesh_assert( index < units_.size() - 1 && index != NO_ID );
-        return units_[index + 1];
+        return units_[index + 1].get();
     }
 
     const StratigraphicUnit* StratigraphicColumn::get_unit(
@@ -138,13 +118,13 @@ namespace RINGMesh
     {
         index_t index = get_index( name );
         ringmesh_assert( index != NO_ID );
-        return units_[index];
+        return units_[index].get();
     }
 
     double StratigraphicColumn::get_column_min_thick() const
     {
         double sum = 0;
-        for( const StratigraphicUnit* unit : units_ )
+        for( auto unit : units_ )
         {
             sum += unit->get_min_thick();
         }
@@ -154,7 +134,7 @@ namespace RINGMesh
     double StratigraphicColumn::get_column_max_thick() const
     {
         double sum = 0;
-        for( const StratigraphicUnit* unit : units_ )
+        for( auto unit : units_ )
         {
             sum += unit->get_max_thick();
         }
