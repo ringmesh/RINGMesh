@@ -430,7 +430,7 @@ namespace RINGMesh
             pck_->createStratigraphicModel(
                 tools::GuidTools::generateUidAsString(), "stratiModel" );
         StratigraphicColumnRankInterpretation* stratiColumnRank =
-            pck_->createStratigraphicColumnRankInterpretationInApparentDepth(
+            pck_->createStratigraphicColumnRankInterpretationInAge(
                 stratiModelFeature, tools::GuidTools::generateUidAsString(),
                 "Stratigraphic column rank", 0 );
         stratiColumn->pushBackStratiColumnRank( stratiColumnRank );
@@ -460,9 +460,6 @@ namespace RINGMesh
                 dynamic_cast< StratigraphicUnitInterpretation* >(
                     find_or_create_interpretation( *unit_below_feature ) );
             ringmesh_assert( unit_below_interp != nullptr );
-
-            stratiColumnRank->pushBackStratiUnitInterpretation(
-                unit_below_interp );
 
             ringmesh_assert(
                 units[unit_index]->get_interface_base() != nullptr );

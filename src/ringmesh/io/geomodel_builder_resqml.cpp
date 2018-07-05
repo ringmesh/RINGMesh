@@ -261,6 +261,10 @@ namespace RINGMesh
                 }
                 std::sort( cur_horizons_list.begin(), cur_horizons_list.end() );
 
+                if( cur_horizons_list.size() != horizons_list.size() )
+                {
+                    continue;
+                }
                 std::vector< gmge_id > result;
                 std::set_intersection( horizons_list.begin(),
                     horizons_list.end(), cur_horizons_list.begin(),
@@ -383,7 +387,8 @@ namespace RINGMesh
                             top,
                             dynamic_cast< const Layer3D& >(
                                 geomodel_.geological_entity(
-                                    Layer3D::type_name_static(), 0 ) ),
+                                    Layer3D::type_name_static(),
+                                    unit.layer_.index() ) ),
                             unit.relation_top_, unit.relation_base_, rock, 0,
                             10 ) );
 
