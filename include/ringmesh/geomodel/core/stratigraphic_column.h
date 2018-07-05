@@ -156,7 +156,9 @@ namespace RINGMesh
          * @param[in] min_thick Minimum thickness of the layer
          * @param[in] max_thick Maximum thickness of the layer
          */
-        StratigraphicUnit( std::string name, RockFeature rock );
+        StratigraphicUnit( std::string name,
+            RockFeature rock,
+            const Layer3D* layer = nullptr );
 
         virtual ~StratigraphicUnit() = default;
 
@@ -181,6 +183,12 @@ namespace RINGMesh
             return rock_;
         }
 
+        const Layer3D* get_layer() const
+        {
+            ringmesh_assert( layer_ != nullptr );
+            return layer_;
+        }
+
         virtual bool is_conformable_base() const = 0;
         virtual bool is_conformable_top() const = 0;
         virtual RELATION get_relation_base() const = 0;
@@ -199,6 +207,7 @@ namespace RINGMesh
     protected:
         std::string name_{};
         RockFeature rock_;
+        const Layer3D* layer_{ nullptr };
     };
 
     class geomodel_core_api UnsubdividedStratigraphicUnit
@@ -258,7 +267,6 @@ namespace RINGMesh
     private:
         const Interface3D* interface_top_;
         const Interface3D* interface_base_;
-        const Layer3D* layer_;
         RELATION relation_top_;
         RELATION relation_base_;
         double min_thick_;

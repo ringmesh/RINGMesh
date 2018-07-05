@@ -97,7 +97,7 @@ namespace RINGMesh
 {
     template < index_t DIMENSION >
     GeoModelBase< DIMENSION >::GeoModelBase( GeoModel< DIMENSION >& geomodel )
-        : mesh( geomodel )
+        : mesh( geomodel ), strati_column_{ nullptr }
     {
     }
 

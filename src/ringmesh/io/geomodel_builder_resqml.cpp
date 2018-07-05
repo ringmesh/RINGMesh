@@ -284,14 +284,18 @@ namespace RINGMesh
         for( auto column : stratiColumnSet )
         {
             showAllMetadata( column );
+
+            // TODO
+            ringmesh_assert(
+                column->getStratigraphicColumnRankInterpretationSet().size()
+                == 1 );
+
             for( auto rank_interp :
                 column->getStratigraphicColumnRankInterpretationSet() )
             {
                 std::cout << "\tCOLUMN RANK INTERP" << std::endl;
                 showAllMetadata( rank_interp );
                 ringmesh_assert( rank_interp->isAChronoStratiRank() );
-
-                RockFeature rock( "rock", ROCKTYPE::NONE );
 
                 for( auto unit :
                     rank_interp->getStratigraphicUnitInterpretationSet() )
@@ -337,67 +341,71 @@ namespace RINGMesh
                                 rank_interp->getHorizonInterpretationOfContact(
                                     contactIndex )];
                 }
+
+                // assign regions to layers
+                // TODO this is a workaround until the
+                // SealedVolumeFrameworkRepresentation
+                // is released in fesapi that tells us the layer information of
+                // a region
+                for( auto& region : geomodel_.regions() )
+                {
+                    gmge_id layer = find_layer( region );
+                    ringmesh_assert( layer.is_defined() );
+                    builder_.geology.add_parent_children_relation(
+                        layer, region.gmme() );
+                }
+
+                // build the stati column
+                RockFeature rock( "rock", ROCKTYPE::NONE );
+                std::vector< std::shared_ptr< const StratigraphicUnit > > units;
+
+                for( auto unit_key :
+                    rank_interp->getStratigraphicUnitInterpretationSet() )
+                {
+                    const UnitInfo& unit = unit_2_info_[unit_key];
+                    const Interface3D* top =
+                        unit.interface_top_.is_defined()
+                            ? dynamic_cast< const Interface3D* >(
+                                  &geomodel_.geological_entity(
+                                      Interface3D::type_name_static(),
+                                      unit.interface_top_.index() ) )
+                            : nullptr;
+                    const Interface3D* base =
+                        unit.interface_base_.is_defined()
+                            ? dynamic_cast< const Interface3D* >(
+                                  &geomodel_.geological_entity(
+                                      Interface3D::type_name_static(),
+                                      unit.interface_base_.index() ) )
+                            : nullptr;
+
+                    std::shared_ptr< const StratigraphicUnit > sunit(
+                        new UnsubdividedStratigraphicUnit( unit.name_, base,
+                            top,
+                            dynamic_cast< const Layer3D& >(
+                                geomodel_.geological_entity(
+                                    Layer3D::type_name_static(), 0 ) ),
+                            unit.relation_top_, unit.relation_base_, rock, 0,
+                            10 ) );
+
+                    units.push_back( sunit );
+
+                    std::cout << " relation base: " << (int) unit.relation_base_
+                              << std::endl;
+                    std::cout << " relation top: " << (int) unit.relation_top_
+                              << std::endl;
+                    std::cout
+                        << " interface base: " << unit.interface_base_.index()
+                        << std::endl;
+                    std::cout
+                        << " interface top: " << unit.interface_top_.index()
+                        << std::endl;
+                }
+
+                StratigraphicColumn* strati =
+                    new StratigraphicColumn( column->getTitle(), units,
+                        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
+                geomodel_.set_stratigraphic_column( strati );
             }
-
-            // assign regions to layers
-            // TODO this is a workaround until the
-            // SealedVolumeFrameworkRepresentation
-            // is released in fesapi that tells us the layer information of a
-            // region
-            for( auto& region : geomodel_.regions() )
-            {
-                gmge_id layer = find_layer( region );
-                ringmesh_assert( layer.is_defined() );
-                builder_.geology.add_parent_children_relation(
-                    layer, region.gmme() );
-            }
-
-            // build the stati column
-            RockFeature rock( "rock", ROCKTYPE::NONE );
-            std::vector< std::shared_ptr< const StratigraphicUnit > > units;
-
-            for( const auto& unit : unit_2_info_ )
-            {
-                const Interface3D* top =
-                    unit.second.interface_top_.is_defined()
-                        ? dynamic_cast< const Interface3D* >(
-                              &geomodel_.geological_entity(
-                                  Interface3D::type_name_static(),
-                                  unit.second.interface_top_.index() ) )
-                        : nullptr;
-                const Interface3D* base =
-                    unit.second.interface_base_.is_defined()
-                        ? dynamic_cast< const Interface3D* >(
-                              &geomodel_.geological_entity(
-                                  Interface3D::type_name_static(),
-                                  unit.second.interface_base_.index() ) )
-                        : nullptr;
-
-                std::shared_ptr< const StratigraphicUnit > sunit(
-                    new UnsubdividedStratigraphicUnit( unit.second.name_, top,
-                        base,
-                        dynamic_cast< const Layer3D& >(
-                            geomodel_.geological_entity(
-                                Layer3D::type_name_static(), 0 ) ),
-                        unit.second.relation_top_, unit.second.relation_base_,
-                        rock, 0, 10 ) );
-
-                units.push_back( sunit );
-
-                std::cout << " relation base: "
-                          << (int) unit.second.relation_base_ << std::endl;
-                std::cout << " relation top: "
-                          << (int) unit.second.relation_top_ << std::endl;
-                std::cout << " interface base: "
-                          << unit.second.interface_base_.index() << std::endl;
-                std::cout << " interface top: "
-                          << unit.second.interface_top_.index() << std::endl;
-            }
-
-            StratigraphicColumn* strati =
-                new StratigraphicColumn( column->getTitle(), units,
-                    STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
-            geomodel_.set_stratigraphic_column( strati );
         }
 
         if( stratiColumnSet.empty() )

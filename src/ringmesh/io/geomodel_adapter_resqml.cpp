@@ -36,11 +36,12 @@
 #include <geogram/basic/attributes.h>
 
 #include <ringmesh/basic/geometry.h>
-#include <ringmesh/geomodel/builder/geomodel_builder.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/geomodel/core/geomodel_geological_entity.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
+
 #include <ringmesh/io/geomodel_adapter_resqml.h>
 
 #include <ringmesh/mesh/mesh_index.h>
@@ -56,17 +57,21 @@
 #include <fesapi/resqml2_0_1/BoundaryFeature.h>
 #include <fesapi/resqml2_0_1/FrontierFeature.h>
 #include <fesapi/resqml2_0_1/Horizon.h>
+#include <fesapi/resqml2_0_1/HorizonInterpretation.h>
 #include <fesapi/resqml2_0_1/LocalDepth3dCrs.h>
 #include <fesapi/resqml2_0_1/LocalTime3dCrs.h>
+#include <fesapi/resqml2_0_1/StratigraphicColumn.h>
+#include <fesapi/resqml2_0_1/StratigraphicColumnRankInterpretation.h>
 #include <fesapi/resqml2_0_1/StratigraphicUnitFeature.h>
 #include <fesapi/resqml2_0_1/StratigraphicUnitInterpretation.h>
 #include <fesapi/resqml2_0_1/TectonicBoundaryFeature.h>
 #include <fesapi/resqml2_0_1/TriangulatedSetRepresentation.h>
 #include <fesapi/resqml2_0_1/UnstructuredGridRepresentation.h>
+
 #include <fesapi/tools/GuidTools.h>
 
 /*!
- * @brief Implementation of the class to build GeoModel from input
+ * @brief Implementation of the class to write GeoModel to
  * RESQML2 .epc file
  * @author Wan-Chiu Li
  */
@@ -88,8 +93,9 @@ namespace RINGMesh
         bool init();
         bool save_file();
         void serialize();
-        bool save_surfaces();
-        bool save_volumes();
+        bool write_surfaces();
+        bool write_volumes();
+        bool write_stratigraphic_column();
 
         AbstractFeature* find_or_create_feature( const GMGE& entity );
         AbstractFeatureInterpretation* find_or_create_interpretation(
@@ -246,7 +252,7 @@ namespace RINGMesh
         pck_->serialize();
     }
 
-    bool GeoModelAdapterRESQMLImpl::save_surfaces()
+    bool GeoModelAdapterRESQMLImpl::write_surfaces()
     {
         for( const auto& interface :
             geomodel_.geol_entities( Interface3D::type_name_static() ) )
@@ -311,7 +317,7 @@ namespace RINGMesh
         return true;
     }
 
-    bool GeoModelAdapterRESQMLImpl::save_volumes()
+    bool GeoModelAdapterRESQMLImpl::write_volumes()
     {
         for( const auto& layer :
             geomodel_.geol_entities( Layer3D::type_name_static() ) )
@@ -387,12 +393,102 @@ namespace RINGMesh
         return true;
     }
 
+    namespace
+    {
+        gsoap_resqml2_0_1::resqml2__ContactMode get_contact_mode(
+            RELATION relation )
+        {
+            switch( relation )
+            {
+            case RELATION::BASELAP:
+                return gsoap_resqml2_0_1::resqml2__ContactMode__baselap;
+            case RELATION::ERODED:
+                return gsoap_resqml2_0_1::resqml2__ContactMode__erosion;
+            case RELATION::CONFORMABLE:
+                return gsoap_resqml2_0_1::resqml2__ContactMode__proportional;
+            default:
+                ringmesh_assert_not_reached;
+                return gsoap_resqml2_0_1::resqml2__ContactMode__proportional;
+            }
+        }
+    } // namespace
+
+    bool GeoModelAdapterRESQMLImpl::write_stratigraphic_column()
+    {
+        const StratigraphicColumn* column = geomodel_.stratigraphic_column();
+        if( column == nullptr )
+        {
+            // nothing to do
+            return true;
+        }
+
+        RESQML2_0_1_NS::StratigraphicColumn* stratiColumn =
+            pck_->createStratigraphicColumn(
+                tools::GuidTools::generateUidAsString(),
+                "Stratigraphic column" );
+        OrganizationFeature* stratiModelFeature =
+            pck_->createStratigraphicModel(
+                tools::GuidTools::generateUidAsString(), "stratiModel" );
+        StratigraphicColumnRankInterpretation* stratiColumnRank =
+            pck_->createStratigraphicColumnRankInterpretationInApparentDepth(
+                stratiModelFeature, tools::GuidTools::generateUidAsString(),
+                "Stratigraphic column rank", 0 );
+        stratiColumn->pushBackStratiColumnRank( stratiColumnRank );
+
+        const std::vector< std::shared_ptr< const StratigraphicUnit > >& units =
+            column->get_all_units();
+
+        for( auto unit_index : range( units.size() ) )
+        {
+            AbstractFeature* unit_feature =
+                find_or_create_feature( *units[unit_index]->get_layer() );
+            StratigraphicUnitInterpretation* unit_interp =
+                dynamic_cast< StratigraphicUnitInterpretation* >(
+                    find_or_create_interpretation( *unit_feature ) );
+            ringmesh_assert( unit_interp != nullptr );
+
+            stratiColumnRank->pushBackStratiUnitInterpretation( unit_interp );
+
+            if( unit_index == ( units.size() - 1 ) )
+            {
+                break;
+            }
+
+            AbstractFeature* unit_below_feature =
+                find_or_create_feature( *units[unit_index + 1]->get_layer() );
+            StratigraphicUnitInterpretation* unit_below_interp =
+                dynamic_cast< StratigraphicUnitInterpretation* >(
+                    find_or_create_interpretation( *unit_below_feature ) );
+            ringmesh_assert( unit_below_interp != nullptr );
+
+            stratiColumnRank->pushBackStratiUnitInterpretation(
+                unit_below_interp );
+
+            ringmesh_assert(
+                units[unit_index]->get_interface_base() != nullptr );
+            AbstractFeature* horizon_feature = find_or_create_feature(
+                *units[unit_index]->get_interface_base() );
+            HorizonInterpretation* horizon_interp =
+                dynamic_cast< HorizonInterpretation* >(
+                    find_or_create_interpretation( *horizon_feature ) );
+            ringmesh_assert( horizon_interp != nullptr );
+
+            stratiColumnRank->pushBackStratigraphicBinaryContact( unit_interp,
+                get_contact_mode( units[unit_index]->get_relation_base() ),
+                unit_below_interp,
+                get_contact_mode( units[unit_index + 1]->get_relation_top() ),
+                horizon_interp );
+        }
+        return true;
+    }
+
     bool GeoModelAdapterRESQMLImpl::save_file()
     {
         try
         {
-            save_surfaces();
-            save_volumes();
+            write_surfaces();
+            write_volumes();
+            write_stratigraphic_column();
             serialize();
         }
         catch( const std::invalid_argument& Exp )

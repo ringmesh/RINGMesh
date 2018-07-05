@@ -38,12 +38,15 @@
 namespace RINGMesh
 {
     StratigraphicUnit::StratigraphicUnit()
-        : name_( "none" ), rock_( RockFeature( "none" ) )
+        : name_( "none" ), rock_( RockFeature( "none" ) ), layer_( nullptr )
     {
     }
 
-    StratigraphicUnit::StratigraphicUnit( std::string name, RockFeature rock )
-        : name_( std::move( name ) ), rock_( std::move( rock ) )
+    StratigraphicUnit::StratigraphicUnit(
+        std::string name, RockFeature rock, const Layer3D* layer )
+        : name_( std::move( name ) ),
+          rock_( std::move( rock ) ),
+          layer_( layer )
     {
     }
 
@@ -57,16 +60,14 @@ namespace RINGMesh
         RockFeature rock,
         double min_thick,
         double max_thick )
-        : StratigraphicUnit( std::move( name ), std::move( rock ) ),
+        : StratigraphicUnit( std::move( name ), std::move( rock ), &layer ),
           interface_top_( interface_top ),
           interface_base_( interface_base ),
-          layer_( &layer ),
           relation_top_( relation_top ),
           relation_base_( relation_base ),
           min_thick_( min_thick ),
           max_thick_( max_thick )
     {
-        ringmesh_unused( layer_ );
     }
 
     StratigraphicColumn::~StratigraphicColumn() {}
