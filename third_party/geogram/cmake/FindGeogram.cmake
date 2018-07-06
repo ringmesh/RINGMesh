@@ -5,7 +5,7 @@
 #
 # This module defines the following variables:
 #
-#   GEOGRAM_FOUND        - True if geogram has been found.
+#   Geogram_FOUND        - True if geogram has been found.
 #   Geogram::geogram     - Imported target for the main Geogram library.
 #   Geogram::geogram_gfx - Imported target for Geogram graphics library.
 #
@@ -53,7 +53,7 @@ find_library (GEOGRAM_GFX_LIBRARY
 # system search path since it may be already installed
 # in the system
 find_library (GEOGRAM_GLFW3_LIBRARY
-                NAMES glfw3 glfw geogram_glfw3 glfw3dll glfwdll
+                NAMES glfw3 glfw geogram_glfw3
                 PATHS ${GEOGRAM_SEARCH_PATHS} ${GEOGRAM_SEARCH_PATHS_SYSTEM}
                 PATH_SUFFIXES lib
 )
@@ -65,6 +65,9 @@ find_package_handle_standard_args(
 
 # Create an imported target for Geogram 
 If (GEOGRAM_FOUND)
+  
+        set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
+  
         if (NOT TARGET Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
 
@@ -99,6 +102,8 @@ If (GEOGRAM_FOUND)
                 )
                 
         endif ()
+
+        
 endif ()
 
 # Hide variables from the default CMake-Gui options

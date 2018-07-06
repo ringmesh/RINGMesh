@@ -50,6 +50,7 @@
 #include <cmath>
 #include <float.h>
 #include <limits.h>
+#include <algorithm> // for std::min / std::max
 
 // Visual C++ ver. < 2010 does not have C99 stdint.h,
 // using a fallback portable one.
@@ -232,34 +233,6 @@ namespace GEO {
     /************************************************************************/
 
     /**
-     * \brief Gets the largest of two values
-     * \details The function uses operator< to compare the values \p x1 and \p
-     * x2 and returns the largest. If both are equivalent, \p x1 is returned
-     * \param[in] x1 the first value of type \p T
-     * \param[in] x2 the second value of type \p T
-     * \tparam T the type of the values
-     * \return the largest of \p x1 and \p x2
-     */
-    template <class T>
-    inline T geo_max(T x1, T x2) {
-        return x1 < x2 ? x2 : x1;
-    }
-
-    /**
-     * \brief Gets the largest of two values
-     * \details The function uses operator< to compare the values \p x1 and \p
-     * x2 and returns the largest. If both are equivalent, \p x1 is returned
-     * \param[in] x1 the first value of type \p T
-     * \param[in] x2 the second value of type \p T
-     * \tparam T the type of the values
-     * \return the smallest of \p x1 and \p x2
-     */
-    template <class T>
-    inline T geo_min(T x1, T x2) {
-        return x2 < x1 ? x2 : x1;
-    }
-
-    /**
      * \brief Integer constants that represent the sign of a value
      */
     enum Sign {
@@ -275,7 +248,7 @@ namespace GEO {
      * \brief Gets the sign of a value
      * \details Returns -1, 0, or 1 whether value \p x is resp. negative, zero
      * or positive. The function uses operator<() and operator>() to compare
-     * the value agains to 0 (zero). The integer constant zero must make
+     * the value to 0 (zero). The integer constant zero must make
      * senses for the type of the value, or T must be constructible from
      * integer constant zero.
      * \param[in] x the value to test
@@ -288,21 +261,6 @@ namespace GEO {
         return (x > 0) ? POSITIVE : (
             (x < 0) ? NEGATIVE : ZERO
         );
-    }
-
-    /**
-     * \brief Gets the absolute value of a value
-     * \details The function uses operator< to compare the value againts 0
-     * (zero). The integer constant zero and unary minus operator must 
-     * both make sense for the type of the value, or T must be 
-     * constructible from integer constant zero.
-     * \param[in] x a value of type \p T
-     * \tparam T the type of the value
-     * \return -x if the value is negative, x otherwise
-     */
-    template <class T>
-    inline T geo_abs(T x) {
-        return (x < 0) ? -x : x;
     }
 
     /**
@@ -331,19 +289,6 @@ namespace GEO {
         } else if(x > max) {
             x = max;
         }
-    }
-
-    /**
-     * \brief Swaps two variables
-     * \details This exchanges the values of \p x and \p y.
-     * \param[in,out] x the first variable
-     * \param[in,out] y the second variable
-     */
-    template <class T>
-    inline void geo_swap(T& x, T& y) {
-        T z = x;
-        x = y;
-        y = z;
     }
 
     /**

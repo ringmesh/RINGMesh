@@ -47,7 +47,19 @@
 #define GEOGRAM_GFX_IMGUI_EXT
 
 #include <geogram_gfx/basic/common.h>
+
+#ifdef GEO_COMPILER_CLANG
+#pragma GCC diagnostic push
+#pragma GCC diagnostic ignored "-Wunknown-warning-option"
+#pragma GCC diagnostic ignored "-Wzero-as-null-pointer-constant"
+#endif
+
 #include <geogram_gfx/third_party/ImGui/imgui.h>
+
+#ifdef GEO_COMPILER_CLANG
+#pragma GCC diagnostic pop
+#endif
+
 
 /**
  * \file geogram_gfx/ImGui_ext/imgui_ext.h
@@ -105,6 +117,18 @@ namespace ImGui {
 	const char* label, float* color
     );
 
+    /**
+     * \brief Manages the GUI of a color editor.
+     * \details This creates a custom dialog with the color editor and
+     *  a default palette, as in ImGUI example.
+     * \param[in] label the label of the widget, passed to ImGUI
+     * \param[in,out] color a pointer to an array of 4 floats
+     * \retval true if the color was changed
+     * \retval false otherwise
+     */
+    bool GEOGRAM_GFX_API ColorEdit4WithPalette(
+	const char* label, float* color
+    );
 
     // extensions: ';'-separated list of extensions, whitout '.'
     void GEOGRAM_GFX_API OpenFileDialog(

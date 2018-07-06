@@ -285,8 +285,8 @@ namespace GEOGen {
          * \param[in] nb_arrays number of arrays
          */
         void set_size(index_t nb_arrays) {
-            keys_.assign(nb_arrays, nil);
-            values_.assign(nb_arrays, nil);
+            keys_.assign(nb_arrays, nullptr);
+            values_.assign(nb_arrays, nullptr);
             size_.assign(nb_arrays, 0);
         }
 
@@ -301,9 +301,9 @@ namespace GEOGen {
 
         /**
          * \brief Gets the capacity of one of the arrays.
-         * \details It corresponds with the power of two immediatly
+         * \details It corresponds with the power of two immediately
          *  greater than size. Unlike in std::vector, capacity is implicitly
-         * retreived from size (this saves one integer
+         * retrieved from size (this saves one integer
          * per seed).
          * \param[in] array index of the array
          * \pre array < nb_arrays()

@@ -60,9 +60,7 @@ namespace GEO {
     /**
      * \brief Determines the operating mode of mesh_repair().
      * The flags can be combined with the 'bitwise or' (|) operator.
-     * MESH_REPAIR_DEFAULT fits most uses. MESH_REPAIR_EVERYTHING
-     * activates more costly operations (i.e. optimal resolution of
-     * Moebius-strip-like configurations).
+     * MESH_REPAIR_DEFAULT fits most uses. 
      */
     enum MeshRepairMode {
         MESH_REPAIR_TOPOLOGY = 0,     
@@ -131,10 +129,10 @@ namespace GEO {
      * \param[out] moebius_facets a pointer to a vector. On exit,
      *  *moebius_facets[f] has a non-zero value if facet f is
      *  incident to an edge that could not be consistently oriented.
-     *  If nil, then this information is not returned.
+     *  If nullptr, then this information is not returned.
      */
     void GEOGRAM_API mesh_reorient(
-        Mesh& M, vector<index_t>* moebius_facets=nil
+        Mesh& M, vector<index_t>* moebius_facets=nullptr
     );
 
     /**

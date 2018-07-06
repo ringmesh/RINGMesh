@@ -54,11 +54,11 @@
 #include <vector>
 
 #ifdef GEO_OS_APPLE
-#  define GEO_USE_DEFAULT_SPINLOCK_ARRAY
-#  include <Availability.h>
-#  ifdef __MAC_10_12
-#    include <os/lock.h>
-#  endif
+# define GEO_USE_DEFAULT_SPINLOCK_ARRAY
+# include <AvailabilityMacros.h>
+# if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
+#   include <os/lock.h>
+# endif
 #endif
 
 #ifdef geo_debug_assert
@@ -135,7 +135,7 @@ namespace GEO {
 
 #elif defined(GEO_OS_APPLE)
 
-#ifdef __MAC_10_12
+#if defined(MAC_OS_X_VERSION_10_12) && MAC_OS_X_VERSION_MIN_REQUIRED >= MAC_OS_X_VERSION_10_12
         /** A lightweight synchronization structure. */
         typedef os_unfair_lock spinlock;
         
@@ -231,11 +231,7 @@ namespace GEO {
              * \param[in] size_in The desired new size.
              */
             void resize(index_t size_in) {
-#if defined(GEO_OS_APPLE) && defined(__MAC_10_12)
-                spinlocks_.assign(size_in, OS_UNFAIR_LOCK_INIT);
-#else
-                spinlocks_.assign(size_in, 0);
-#endif
+                spinlocks_.assign(size_in, GEOGRAM_SPINLOCK_INIT);
             }
 
             /**
@@ -265,7 +261,7 @@ namespace GEO {
 
             /**
              * \brief Releases a spinlock at a given index
-             * \details Makes spinlock at index \p i availabe to other threads.
+             * \details Makes spinlock at index \p i available to other threads.
              * \param[in] i index of the spinlock
              */
             void release_spinlock(index_t i) {
@@ -359,7 +355,7 @@ namespace GEO {
 
             /**
              * \brief Releases a spinlock at a given index
-             * \details Makes spinlock at index \p i availabe to other threads.
+             * \details Makes spinlock at index \p i available to other threads.
              * \param[in] i index of the spinlock
              */
             void release_spinlock(index_t i) {
@@ -449,7 +445,7 @@ namespace GEO {
                 geo_thread_sync_assert(i < size());
                 index_t w = i >> 5;
                 index_t b = i & 31;
-                while(atomic_bittestandset_x86(&spinlocks_[w], b)) {
+                while(atomic_bittestandset_x86(&spinlocks_[w], Numeric::uint32(b))) {
                     // Intel recommends to have a PAUSE asm instruction
                     // in the spinlock loop. It is generated using the
                     // following intrinsic function of GCC.
@@ -459,7 +455,7 @@ namespace GEO {
 
             /**
              * \brief Releases a spinlock at a given index
-             * \details Makes spinlock at index \p i availabe to other threads.
+             * \details Makes spinlock at index \p i available to other threads.
              * \param[in] i index of the spinlock
              */
             void release_spinlock(index_t i) {
@@ -468,7 +464,7 @@ namespace GEO {
                 index_t b = i & 31;
                 // Note: we need here to use a synchronized bit reset
                 // since &= is not atomic.
-                atomic_bittestandreset_x86(&spinlocks_[w], b);
+                atomic_bittestandreset_x86(&spinlocks_[w], Numeric::uint32(b));
             }
 
         private:
@@ -563,7 +559,7 @@ namespace GEO {
 
             /**
              * \brief Releases a spinlock at a given index
-             * \details Makes spinlock at index \p i availabe to other threads.
+             * \details Makes spinlock at index \p i available to other threads.
              * \param[in] i index of the spinlock
              */
             void release_spinlock(index_t i) {

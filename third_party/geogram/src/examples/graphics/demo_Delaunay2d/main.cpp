@@ -447,8 +447,8 @@ namespace {
     void overlay() {
         static int border_shape = 0;
         
-        ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiSetCond_Once);
-        ImGui::SetNextWindowSize(ImVec2(180, 320), ImGuiSetCond_Once);
+        ImGui::SetNextWindowPos(ImVec2(20, 20), ImGuiCond_Once);
+        ImGui::SetNextWindowSize(ImVec2(180, 320), ImGuiCond_Once);
 
         ImGui::Begin("Delaunay");
 
@@ -742,7 +742,7 @@ namespace {
             const vec2& p1 = clip[i] ;
             const vec2& p2 = clip[j] ;
             clip_polygon_by_half_plane(*src, p1, p2, *dst);
-            geo_swap(src, dst) ;
+	    std::swap(src, dst) ;
         }
         result = *src ;
     }

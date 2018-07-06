@@ -134,7 +134,7 @@ namespace {
          * for the property.
          * \param[in] name name of the property
          * \param[in] value value of the property
-         * \retval true if the property was sucessfully set
+         * \retval true if the property was successfully set
          * \retval false otherwise
          * \see Environment::set_value()
          */
@@ -256,7 +256,7 @@ namespace {
      *  to export thread local storage variables in 
      *  DLLs.
      */
-    GEO_THREAD_LOCAL Thread* geo_current_thread_ = nil;
+    GEO_THREAD_LOCAL Thread* geo_current_thread_ = nullptr;
 }
 
 namespace GEO {
@@ -328,7 +328,7 @@ namespace GEO {
         size_t os_max_used_memory();
         std::string os_executable_filename();
         
-        void initialize() {
+        void initialize(int flags) {
 
             Environment* env = Environment::instance();
             env->add_environment(new ProcessEnvironment);
@@ -347,12 +347,14 @@ namespace GEO {
 #endif
             }
 
-	    if(::getenv("GEO_NO_SIGNAL_HANDLER") == NULL) {
+	    if(
+		(::getenv("GEO_NO_SIGNAL_HANDLER") == nullptr) &&
+		(flags & GEOGRAM_INSTALL_HANDLERS) != 0
+	    ) {
 		os_install_signal_handlers();
 	    }
-
+	    
             // Initialize Process default values
-
             enable_multithreading(multithreading_enabled_);
             set_max_threads(number_of_cores());
             enable_FPE(fpe_enabled_);
@@ -476,7 +478,7 @@ namespace GEO {
                         << "Processor is not a multicore"
                         << std::endl;
                 }
-                if(thread_manager_ == nil) {
+                if(thread_manager_ == nullptr) {
                     Logger::warn("Process")
                         << "Missing multithreading manager"
                         << std::endl;
@@ -517,7 +519,7 @@ namespace GEO {
         }
 
         index_t maximum_concurrent_threads() {
-            if(!multithreading_enabled_ || thread_manager_ == nil) {
+            if(!multithreading_enabled_ || thread_manager_ == nullptr) {
                 return 1;
             }
             return max_threads_;

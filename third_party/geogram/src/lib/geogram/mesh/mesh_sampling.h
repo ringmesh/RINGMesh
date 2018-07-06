@@ -146,7 +146,7 @@ namespace GEO {
 
         typedef vecng<DIM, double> Point;
 
-        // To ensure reproducibility accross successive
+        // To ensure reproducibility accros successive
         // runs, reset the random number generator.
         Numeric::random_reset();
 
@@ -178,7 +178,7 @@ namespace GEO {
             if(first_t == -1) {
                 first_t = signed_index_t(cur_t);
             }
-            last_t = geo_max(last_t, signed_index_t(cur_t));
+            last_t = std::max(last_t, signed_index_t(cur_t));
 
             // TODO: take weights into account
             //  with a new random_point_in_triangle_weighted()
@@ -313,7 +313,7 @@ namespace GEO {
 
         typedef vecng<DIM, double> Point;
 
-        // To ensure reproducibility accross successive
+        // To ensure reproducibility accros successive
         // runs, reset the random number generator.
         Numeric::random_reset();
 
@@ -347,7 +347,7 @@ namespace GEO {
             if(first_t == -1) {
                 first_t = signed_index_t(cur_t);
             }
-            last_t = geo_max(last_t, signed_index_t(cur_t));
+            last_t = std::max(last_t, signed_index_t(cur_t));
 
             index_t v0 = mesh.cells.vertex(cur_t, 0);
             index_t v1 = mesh.cells.vertex(cur_t, 1);

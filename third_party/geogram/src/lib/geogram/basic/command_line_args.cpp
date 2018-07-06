@@ -352,6 +352,12 @@ namespace {
             "sys:stats", false,
             "Display statistics on exit"
         );
+#ifdef GEO_OS_WINDOWS
+	declare_arg(
+	    "sys:show_win32_console", false,
+	    "Display MSDOS window"
+	);
+#endif	
     }
 
     /**
@@ -503,7 +509,7 @@ namespace {
 	);
 	declare_arg(
 	    "poly:generate_ids", false,
-	    "generate unique ids for vertices and cells (saved in geogram and geogram_ascii file formats only)"
+	    "generate unique ids for vertices and cells (saved in geogram, geogram_ascii and ovm file formats only)"
 	);
 	declare_arg(
 	    "poly:embedding_dim", 0,
@@ -688,6 +694,14 @@ namespace {
             "one of auto, GLUP150, GLUP440, VanillaGL"
         );
         declare_arg("gfx:full_screen", false, "full screen mode");
+        declare_arg(
+	    "gfx:no_decoration", false,
+	    "no window decoration (full screen mode)"
+	);	
+	declare_arg(
+	    "gfx:transparent", false,
+	    "use transparent backgroung (desktop integration)"
+	);
         declare_arg(
             "gfx:GLSL_tesselation", true, "use tesselation shaders if available"
         );

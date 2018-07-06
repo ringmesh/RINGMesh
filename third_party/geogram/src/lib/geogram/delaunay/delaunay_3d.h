@@ -48,6 +48,7 @@
 
 #include <geogram/basic/common.h>
 #include <geogram/delaunay/delaunay.h>
+#include <geogram/delaunay/cavity.h>
 #include <geogram/numerics/predicates.h>
 #include <geogram/basic/geometry.h>
 
@@ -175,7 +176,7 @@ namespace GEO {
          *  used to protect the calls to random(), this is necessary
          *  if multiple threads use locate() simultaneously
          * \param[out] orient a pointer to an array of four Sign%s
-         *  or nil. If non-nil, returns the orientation with respect
+         *  or nullptr. If non-nullptr, returns the orientation with respect
          *  to the four facets of the tetrahedron that contains \p p.
          * \return the index of a tetrahedron that contains \p p.
          *  If the point is outside the convex hull of
@@ -187,7 +188,7 @@ namespace GEO {
          index_t locate(
             const double* p, index_t hint = NO_TETRAHEDRON,
             bool thread_safe = false,
-            Sign* orient = nil
+            Sign* orient = nullptr
          ) const;
          
         /**
@@ -272,6 +273,17 @@ namespace GEO {
              index_t& first, index_t& last
          );
 
+	 /**
+	  * \brief Creates a star of tetrahedra filling the conflict 
+	  *  zone.
+          * \param[in] v the index of the point to be inserted
+	  * \details This function is used when the Cavity computed 
+	  *  when traversing the conflict zone is OK, that is to say
+	  *  when its array sizes were not exceeded.
+          * \return the index of one the newly created tetrahedron
+	  */
+	 index_t stellate_cavity(index_t v);
+	 
          
          /**
           * \brief Creates a star of tetrahedra filling the conflict
@@ -775,7 +787,7 @@ namespace GEO {
          * \param[in] t1 index of the first tetrahedron
          * \param[in] lf1 local facet index (0,1,2 or 3) in t1
          * \param[in] t2 index of the tetrahedron
-         *  adjacent to \p t1 accross \p lf1
+         *  adjacent to \p t1 accros \p lf1
          */
         void set_tet_adjacent(index_t t1, index_t lf1, index_t t2) {
             geo_debug_assert(t1 < max_t());
@@ -785,7 +797,7 @@ namespace GEO {
         }
         
         /**
-         * \brief Finds the index of the facet accross which t1 is 
+         * \brief Finds the index of the facet accros which t1 is 
          *  adjacent to t2_in.
          * \param[in] t1 first tetrahedron
          * \param[in] t2_in second tetrahedron
@@ -949,14 +961,14 @@ namespace GEO {
             const double* pv[4];
             for(index_t i=0; i<4; ++i) {
                 signed_index_t v = tet_vertex(t,i);
-                pv[i] = (v == -1) ? nil : vertex_ptr(index_t(v));
+                pv[i] = (v == -1) ? nullptr : vertex_ptr(index_t(v));
             }
 
             // Check for virtual tetrahedra (then in_sphere()
             // is replaced with orient3d())
             for(index_t lf = 0; lf < 4; ++lf) {
 
-                if(pv[lf] == nil) {
+                if(pv[lf] == nullptr) {
 
                     // Facet of a virtual tetrahedron opposite to
                     // infinite vertex corresponds to
@@ -1021,7 +1033,7 @@ namespace GEO {
         /**
          * \brief Finds the index of an integer in an array of four integers.
          * \param[in] T a const pointer to an array of four integers
-         * \param[in] v the integer to retreive in \p T
+         * \param[in] v the integer to retrieve in \p T
          * \return the index (0,1,2 or 3) of \p v in \p T
          * \pre The four entries of \p T are different and one of them is
          *  equal to \p v.
@@ -1040,7 +1052,7 @@ namespace GEO {
             index_t result = index_t(
                 (T[1] == v) | ((T[2] == v) * 2) | ((T[3] == v) * 3)
             );
-            // Sanity check, important if it was T[0], not explicitely
+            // Sanity check, important if it was T[0], not explicitly
             // tested (detects input that does not meet the precondition).
             geo_debug_assert(T[result] == v);
             return result; 
@@ -1267,6 +1279,8 @@ namespace GEO {
          *   stellate_conflict_zone_iterative() function.
          */
         StellateConflictStack S2_;
+
+	Cavity cavity_;
     };
 
     /************************************************************************/

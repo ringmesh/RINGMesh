@@ -334,7 +334,7 @@ namespace GLUP {
          * ImmediateBuffer constructor.
          */
         ImmediateBuffer() :
-            data_(nil),
+            data_(nullptr),
             dimension_(0),
             is_enabled_(false),
             VBO_(0) {
@@ -482,7 +482,7 @@ namespace GLUP {
             current_[1] = rhs.current_[1];
             current_[2] = rhs.current_[2];
             current_[3] = rhs.current_[3];
-            geo_assert(data_ == nil);
+            geo_assert(data_ == nullptr);
         }
         
     private:
@@ -640,7 +640,7 @@ namespace GLUP {
         /**
          * \brief StateVariableBase default constructor.
          */
-        StateVariableBase() : address_(nil), context_(nil) {
+        StateVariableBase() : address_(nullptr), context_(nullptr) {
         }
 
         /**
@@ -939,7 +939,7 @@ namespace GLUP {
             VAO(0),
             elements_VBO(0),
             nb_elements_per_primitive(0),
-            primitive_elements(nil),
+            primitive_elements(nullptr),
             vertex_gather_mode(false),
             implemented(false) {
         }
@@ -967,11 +967,10 @@ namespace GLUP {
          * \details Deletes the programs and vertex array object if need be.
          */
         ~PrimitiveInfo() {
-	    for(std::map<ShaderKey, GLuint>::iterator it=shader_map.begin();
-		it != shader_map.end(); ++it) {
-		if(it->second != 0) {
-		    glDeleteProgram(it->second);
-		    it->second = 0;
+	    for(auto& it : shader_map) {
+		if(it.second != 0) {
+		    glDeleteProgram(it.second);
+		    it.second = 0;
 		}
 	    }
             if(elements_VBO != 0) {
@@ -988,8 +987,7 @@ namespace GLUP {
 	}
 
 	GLuint program(ShaderKey k) const {
-	    std::map<ShaderKey, GLuint>::const_iterator it =
-		shader_map.find(k);
+	    auto it = shader_map.find(k);
 	    return ((it == shader_map.end()) ? 0 : it->second);
 	}
 	
@@ -1414,6 +1412,31 @@ namespace GLUP {
         virtual void get_marching_cells_pseudo_file(
             std::vector<GLSL::Source>& sources
         );
+
+        /**
+         * \brief Sets the string that describes the settings of
+         *  the toggles for a given configuration.
+         * \param[in] toggles_state an unsigned integer, with its bits
+         *  corresponding to the state of each toggle
+         * \param[in] toggles_undetermined an unsigned integer, with its bits
+         *  set if the corresponding toggle state needs to be determined
+         *  dynamically from GLUP state
+         */
+        void setup_shaders_source_for_toggles(
+            GLUPbitfield toggles_state,
+            GLUPbitfield toggles_undetermined=0
+        );
+
+        /**
+         * \brief Sets the configurable GLSL sources for a given 
+         *  primitive type.
+         * \details This function needs to be called before compiling
+         *  the GLSL program.
+         * \param[in] primitive the GLUP primitive
+         */
+        virtual void setup_shaders_source_for_primitive(
+            GLUPprimitive primitive
+        );
         
     protected:
 
@@ -1644,31 +1667,6 @@ namespace GLUP {
          * \return a string with the GLSL declaration.
          */
         std::string primitive_declaration(GLUPprimitive prim) const;
-        
-        /**
-         * \brief Sets the string that describes the settings of
-         *  the toggles for a given configuration.
-         * \param[in] toggles_state an unsigned integer, with its bits
-         *  corresponding to the state of each toggle
-         * \param[in] toggles_undetermined an unsigned integer, with its bits
-         *  set if the corresponding toggle state needs to be determined
-         *  dynamically from GLUP state
-         */
-        void setup_shaders_source_for_toggles(
-            GLUPbitfield toggles_state,
-            GLUPbitfield toggles_undetermined=0
-        );
-
-        /**
-         * \brief Sets the configurable GLSL sources for a given 
-         *  primitive type.
-         * \details This function needs to be called before compiling
-         *  the GLSL program.
-         * \param[in] primitive the GLUP primitive
-         */
-        virtual void setup_shaders_source_for_primitive(
-            GLUPprimitive primitive
-        );
         
         /**
          * \brief Sets the string that describes the settings of

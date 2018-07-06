@@ -7,6 +7,9 @@ else()
   if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "GNU")
     add_definitions(-Wno-maybe-uninitialized)
   endif()
+  if("${CMAKE_CXX_COMPILER_ID}" STREQUAL "Clang")
+    add_definitions(-Wno-unknown-warning-option -Wno-zero-as-null-pointer-constant)
+  endif()
 endif()
 
 
@@ -32,7 +35,7 @@ aux_source_directories(SOURCES "Source Files\\rply"         rply)
 aux_source_directories(SOURCES "Source Files\\shewchuk"     shewchuk)
 aux_source_directories(SOURCES "Source Files\\zlib"         zlib)
 aux_source_directories(SOURCES "Source Files\\gzstream"     gzstream)
-# aux_source_directories(SOURCES "Source Files\\PoissonRecon" PoissonRecon)
+aux_source_directories(SOURCES "Source Files\\PoissonRecon" PoissonRecon)
 
 if(GEOGRAM_WITH_LUA)
    aux_source_directories(SOURCES "Source Files\\lua"          lua)

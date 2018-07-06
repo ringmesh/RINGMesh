@@ -53,9 +53,11 @@
 #include <geogram/basic/process.h>
 #include <geogram/basic/geofile.h>
 #include <geogram/basic/logger.h>
+
 #include <map>
 #include <typeinfo>
 #include <set>
+#include <type_traits>
 
 /**
  * \file geogram/basic/attributes.h
@@ -76,7 +78,9 @@ namespace GEO {
         /**
          * \brief Creates a new uninitialied AttributeStore.
          */
-        AttributeStoreObserver() : base_addr_(nil), size_(0), dimension_(0) {
+        AttributeStoreObserver() :
+	   base_addr_(nullptr), size_(0), dimension_(0),
+	   disconnected_(false) {
         }
 
         /**
@@ -120,21 +124,42 @@ namespace GEO {
             return size_ * dimension_;
         }
 
+	/**
+	 * \brief Registers this observer to an AttributeStore.
+	 * \param[in] store a pointer to the AttributeStore.
+	 */
         void register_me(AttributeStore* store);
-        
+
+	/**
+	 * \brief Unregisters this observer from an AttributeStore.
+	 * \param[in] store a pointer to the AttributeStore.
+	 */
         void unregister_me(AttributeStore* store);
 
-        
+	/**
+	 * \brief Disconnects this AttributeStoreObserver from its 
+	 *  AttributeStore.
+	 * \details This function is called whenever the AttributeManager is
+	 *  destroyed before the Attributes (can occur when using Lua scripting
+	 *  with Attribute wrapper objects).
+	 */
+	void disconnect() {
+	    base_addr_ = nullptr;
+	    size_ = 0;
+	    dimension_ = 0;
+	    disconnected_ = true;
+	}
+	
     protected:
         Memory::pointer base_addr_;
         index_t size_;
         index_t dimension_;
+	bool disconnected_;
     };
 
 
     /*********************************************************************/
 
-    class AttributeStore;
 
     /**
      * \brief Internal class for creating an AttributeStore
@@ -527,7 +552,7 @@ namespace GEO {
     /**
      * \brief Stores an array of elements of a given type, 
      *  and notifies a set of AttributeStoreObservers each time the
-     *  stored array changes size and/or base address.
+     *  storead array changes size and/or base address.
      */
     template <class T> class TypedAttributeStore : public AttributeStore {
     public:
@@ -545,7 +570,7 @@ namespace GEO {
         virtual void resize(index_t new_size) {
             store_.resize(new_size*dimension_);
             notify(
-                store_.empty() ? nil : Memory::pointer(store_.data()),
+                store_.empty() ? nullptr : Memory::pointer(store_.data()),
                 new_size,
                 dimension_
             );
@@ -557,7 +582,7 @@ namespace GEO {
             } else {
                 store_.clear();
             }
-            notify(nil, 0, dimension_);
+            notify(nullptr, 0, dimension_);
         }
 
         
@@ -566,7 +591,7 @@ namespace GEO {
                 return;
             }
             vector<T> new_store(size()*dim);
-            index_t copy_dim = GEO::geo_min(dim, dimension());
+            index_t copy_dim = std::min(dim, dimension());
             for(index_t i = 0; i < size(); ++i) {
                 for(index_t c = 0; c < copy_dim; ++c) {
                     new_store[dim * i + c] = store_[dimension_ * i + c];
@@ -574,7 +599,7 @@ namespace GEO {
             }
             store_.swap(new_store);
             notify(
-                store_.empty() ? nil : Memory::pointer(store_.data()),
+                store_.empty() ? nullptr : Memory::pointer(store_.data()),
                 size(),
                 dim
             );
@@ -669,7 +694,7 @@ namespace GEO {
     /*********************************************************************/    
     
     /**
-     * \brief Manages a set of attributes attached to
+     * \brief Managers a set of attributes attached to 
      *  an object.
      */
     class GEOGRAM_API AttributesManager {
@@ -737,7 +762,7 @@ namespace GEO {
         
         /**
          * \brief Binds an AttributeStore with the specified name.
-         *  Ownership of this AttributeStore is transfered to
+         *  Ownership of this AttributeStore is transferred to
          *  the AttributesManager.
          * \param[in] name the name 
          * \param[in] as a pointer to the AttributeStore to be bound
@@ -748,14 +773,14 @@ namespace GEO {
         /**
          * \brief Finds an AttributeStore by name.
          * \param[in] name the name under which the AttributeStore was bound
-         * \return a pointer to the attribute store or nil if is is undefined.
+         * \return a pointer to the attribute store or nullptr if is is undefined.
          */
         AttributeStore* find_attribute_store(const std::string& name);
 
         /**
          * \brief Finds an AttributeStore by name.
          * \param[in] name the name under which the AttributeStore was bound
-         * \return a const pointer to the attribute store or nil if is is 
+         * \return a const pointer to the attribute store or nullptr if is is 
          *  undefined.
          */
         const AttributeStore* find_attribute_store(
@@ -770,7 +795,7 @@ namespace GEO {
          * \retval false otherwise
          */
         bool is_defined(const std::string& name) {
-            return (find_attribute_store(name) != nil);
+            return (find_attribute_store(name) != nullptr);
         }
         
         /**
@@ -874,25 +899,25 @@ namespace GEO {
     public:
 
         /**
-         * \brief Creates an unitialized (unbound) Attribute.
+         * \brief Creates an uninitialized (unbound) Attribute.
          */
         AttributeBase() :
-            manager_(nil),
-            store_(nil) {
+            manager_(nullptr),
+            store_(nullptr) {
         }
         
         /**
-         * \brief Creates or retreives a persistent attribute attached to 
+         * \brief Creates or retrieves a persistent attribute attached to 
          *  a given AttributesManager.
          * \details If the attribute already exists with the specified 
-         *  name in the AttributesManager then it is retreived, else
+         *  name in the AttributesManager then it is retrieved, else
          *  it is created and bound to the name.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
          */
         AttributeBase(AttributesManager& manager, const std::string& name) :
-            manager_(nil),
-            store_(nil) {
+            manager_(nullptr),
+            store_(nullptr) {
             bind(manager, name);
         }
 
@@ -902,7 +927,7 @@ namespace GEO {
          * \retval false otherwise
          */
         bool is_bound() const {
-            return (store_ != nil);
+            return (store_ != nullptr && !disconnected_);
         }
 
         /**
@@ -911,15 +936,20 @@ namespace GEO {
          */
         void unbind() {
             geo_assert(is_bound());
-            unregister_me(store_);
-            manager_ = nil;
-            store_ = nil;
+	    // If the AttributeManager was destroyed before, do not
+	    // do anything. This can occur in Lua scripting when using
+	    // Attribute wrapper objects.
+	    if(!disconnected_) {
+		unregister_me(store_);
+	    }
+            manager_ = nullptr;
+            store_ = nullptr;
         }
 
         /**
          * \brief Binds this Attribute to an AttributesManager.
          * \details If the attribute already exists with the specified 
-         *  name in the AttributesManager then it is retreived, else
+         *  name in the AttributesManager then it is retrieved, else
          *  it is created and bound to the name.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
@@ -929,7 +959,7 @@ namespace GEO {
             geo_assert(!is_bound());
             manager_ = &manager;
             store_ = manager_->find_attribute_store(name);
-            if(store_ == nil) {
+            if(store_ == nullptr) {
                 store_ = new TypedAttributeStore<T>();
                 manager_->bind_attribute_store(name,store_);
             } else {
@@ -952,7 +982,7 @@ namespace GEO {
             geo_assert(!is_bound());
             manager_ = &manager;
             store_ = manager_->find_attribute_store(name);
-            if(store_ != nil) {
+            if(store_ != nullptr) {
                 geo_assert(store_->elements_type_matches(typeid(T).name()));
                 register_me(store_);                
             }
@@ -971,7 +1001,7 @@ namespace GEO {
         ) {
             geo_assert(!is_bound());
             manager_ = &manager;            
-            geo_assert(manager_->find_attribute_store(name) == nil);
+            geo_assert(manager_->find_attribute_store(name) == nullptr);
             store_ = new TypedAttributeStore<T>(dimension);
             manager_->bind_attribute_store(name,store_);
             register_me(store_);
@@ -987,8 +1017,8 @@ namespace GEO {
             geo_assert(is_bound());
             unregister_me(store_);
             manager_->delete_attribute_store(store_);
-            store_ = nil;
-            manager_ = nil;
+            store_ = nullptr;
+            manager_ = nullptr;
         }
 
         /**
@@ -1008,9 +1038,9 @@ namespace GEO {
         /**
          * \brief Attribute destructor
          * \details 
-         *  The attribute is not destroyed, it can be retreived later 
+         *  The attribute is not destroyed, it can be retrieved later 
          *  by binding with the same name. To destroy the attribute,
-         *  use detroy() instead.
+         *  use destroy() instead.
          */
         ~AttributeBase() {
             if(is_bound()) {
@@ -1032,7 +1062,7 @@ namespace GEO {
         ) {
             AttributeStore* store = manager.find_attribute_store(name);
             return (
-                store != nil &&
+                store != nullptr &&
                 store->elements_type_matches(typeid(T).name()) &&
                 ((dim == 0) || (store->dimension() == dim))
             );
@@ -1066,7 +1096,7 @@ namespace GEO {
          */
         bool can_get_vector() {
             return(
-                dynamic_cast<TypedAttributeStore<T>*>(store_) != nil
+                dynamic_cast<TypedAttributeStore<T>*>(store_) != nullptr
             );
         }
 
@@ -1083,7 +1113,7 @@ namespace GEO {
         vector<T>& get_vector() {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>(store_);
-            geo_assert(typed_store != nil);
+            geo_assert(typed_store != nullptr);
             return typed_store->get_vector();
         }
 
@@ -1096,7 +1126,7 @@ namespace GEO {
         const vector<T>& get_vector() const {
             TypedAttributeStore<T>* typed_store =
                 dynamic_cast<TypedAttributeStore<T>*>(store_);
-            geo_assert(typed_store != nil);
+            geo_assert(typed_store != nullptr);
             return typed_store->get_vector();
         }
 
@@ -1114,7 +1144,7 @@ namespace GEO {
     } ;
     
     /*********************************************************************/
-
+    
     /**
      * \brief Manages an attribute attached to a set of object.
      * \tparam T type of the attributes. Needs to be a basic type
@@ -1125,23 +1155,47 @@ namespace GEO {
     public:
         typedef AttributeBase<T> superclass;
 
+	/**
+	 * \brief Tests at compile time whether type can be used
+	 *  in an Attribute. If not the case generates a compile-time
+	 *  error.
+	 */
+	static void static_test_type() {
+	    // Attributes are only implemented for classes that
+	    // can be copied with memcpy() and read/written to
+	    // files using fread()/fwrite()
+#if __GNUG__ && __GNUC__ < 5
+	    static_assert(
+		__has_trivial_copy(T),
+		"Attribute only implemented for types that can be copied with memcpy()"
+	    );
+#else
+	    static_assert(
+		std::is_trivially_copyable<T>::value,
+		"Attribute only implemented for types that can be copied with memcpy()"
+	    );
+#endif	    
+	}
+	
         /**
-         * \brief Creates an unitialized (unbound) Attribute.
+         * \brief Creates an uninitialized (unbound) Attribute.
          */
         Attribute() : superclass() {
+	    static_test_type();
         }
         
         /**
-         * \brief Creates or retreives a persistent attribute attached to 
+         * \brief Creates or retrieves a persistent attribute attached to 
          *  a given AttributesManager.
          * \details If the attribute already exists with the specified 
-         *  name in the AttributesManager then it is retreived, else
+         *  name in the AttributesManager then it is retrieved, else
          *  it is created and bound to the name.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute
          */
         Attribute(AttributesManager& manager, const std::string& name) :
             superclass(manager, name) {
+	    static_test_type();
         }
 
         /**
@@ -1375,121 +1429,6 @@ namespace GEO {
         Attribute<bool>& operator=(const Attribute<bool>& rhs);
     } ;
  
-    /*********************************************************************/
-
-    /**
-     * \brief Base class to forbid some instanciations
-     *  of Attribute
-     */
-    class NotImplementedAttribute {
-    public:
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \details Throws an assertion failure
-         */
-        GEO_NORETURN_DECL NotImplementedAttribute() GEO_NORETURN {
-            geo_assert_not_reached;
-        }
-
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \param[in] manager the AttributesManager
-         * \param[in] name the name of the attribute
-         * \details Throws an assertion failure
-         */
-        GEO_NORETURN_DECL NotImplementedAttribute(
-            AttributesManager& manager, const std::string& name
-        ) GEO_NORETURN {
-            geo_argused(manager);
-            geo_argused(name);
-            geo_assert_not_reached;
-        }
-    };
-
-    /**
-     * \brief Forbids creation of Attribute of vectors.
-     * \details Attributes internal management uses
-     *   memcpy(), and cannot support types that do 
-     *   complicated memory management.
-     * \note We could use C++11's std::is_pod() instead.
-     */
-    template <class T> class Attribute< vector<T> > :
-        public NotImplementedAttribute {
-    public:
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \details Throws an assertion failure
-         */
-        Attribute() : NotImplementedAttribute() {
-        }
-
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \param[in] manager the AttributesManager
-         * \param[in] name the name of the attribute
-         * \details Throws an assertion failure
-         */
-        Attribute(AttributesManager& manager, const std::string& name) :
-            NotImplementedAttribute(manager,name) {
-        }
-    };
-
-    /**
-     * \brief Forbids creation of Attribute of vectors.
-     * \details Attributes internal management uses
-     *   memcpy(), and cannot support types that do 
-     *   complicated memory management.
-     * \note We could use C++11's std::is_pod() instead.
-     */
-    template <class T> class Attribute< std::vector<T> > :
-        public NotImplementedAttribute {
-    public:
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \details Throws an assertion failure
-         */
-        Attribute() : NotImplementedAttribute() {
-        }
-
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \param[in] manager the AttributesManager
-         * \param[in] name the name of the attribute
-         * \details Throws an assertion failure
-         */
-        Attribute(AttributesManager& manager, const std::string& name) :
-            NotImplementedAttribute(manager,name) {
-        }
-    };
-
-    /**
-     * \brief Forbids creation of Attribute of vectors.
-     * \details Attributes internal management uses
-     *   memcpy(), and cannot support types that do 
-     *   complicated memory management.
-     * \note We could use C++11's std::is_pod() instead.
-     */
-    template <> class Attribute< std::string > :
-        public NotImplementedAttribute {
-    public:
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \details Throws an assertion failure
-         */
-        Attribute() : NotImplementedAttribute() {
-        }
-
-        /**
-         * \brief NotImplementedAttribute constructor
-         * \param[in] manager the AttributesManager
-         * \param[in] name the name of the attribute
-         * \details Throws an assertion failure
-         */
-        Attribute(AttributesManager& manager, const std::string& name) :
-            NotImplementedAttribute(manager,name) {
-        }
-    };
-    
     /***********************************************************/
 
     /**
@@ -1519,15 +1458,15 @@ namespace GEO {
          * \brief ReadOnlyScalarAttributeAdapter constructor.
          */
         ReadOnlyScalarAttributeAdapter() :
-            manager_(nil),
-            store_(nil),
+            manager_(nullptr),
+            store_(nullptr),
             element_type_(ET_NONE),
             element_index_(index_t(-1)) {
         }
         
         /**
          * \brief ReadOnlyScalarAttributeAdapter constructor.
-         * \details Retreives a persistent attribute attached to 
+         * \details Retrieves a persistent attribute attached to 
          *  a given AttributesManager.
          * \param[in] manager a reference to the AttributesManager
          * \param[in] name name of the attribute with an optional index,
@@ -1537,8 +1476,8 @@ namespace GEO {
         ReadOnlyScalarAttributeAdapter(
             const AttributesManager& manager, const std::string& name
         ) :
-            manager_(nil),
-            store_(nil) {
+            manager_(nullptr),
+            store_(nullptr) {
             bind_if_is_defined(manager, name);
         }
 
@@ -1548,7 +1487,7 @@ namespace GEO {
          * \retval false otherwise
          */
         bool is_bound() const {
-            return (store_ != nil);
+            return (store_ != nullptr);
         }
 
         /**
@@ -1558,8 +1497,8 @@ namespace GEO {
         void unbind() {
             geo_assert(is_bound());
             unregister_me(const_cast<AttributeStore*>(store_));
-            manager_ = nil;
-            store_ = nil;
+            manager_ = nullptr;
+            store_ = nullptr;
             element_type_ = ET_NONE;
             element_index_ = index_t(-1);
         }
@@ -1580,9 +1519,9 @@ namespace GEO {
         /**
          * \brief ReadonlyScalarAttributeAdapter destructor
          * \details 
-         *  The attribute is not destroyed, it can be retreived later 
+         *  The attribute is not destroyed, it can be retrieved later 
          *  by binding with the same name. To destroy the attribute,
-         *  use detroy() instead.
+         *  use destroy() instead.
          */
         ~ReadOnlyScalarAttributeAdapter() {
             if(is_bound()) {
@@ -1608,7 +1547,7 @@ namespace GEO {
          * \return The number of items in this attribute.
          */
         index_t size() const {
-            return (store_ == nil) ? 0 : store_->size();
+            return (store_ == nullptr) ? 0 : store_->size();
         }
 
         /**
