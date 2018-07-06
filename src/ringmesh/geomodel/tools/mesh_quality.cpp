@@ -33,6 +33,8 @@
  *     FRANCE
  */
 
+#include <algorithm>
+
 #include <geogram/basic/attributes.h>
 #include <ringmesh/geomodel/core/geomodel.h>
 #include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
@@ -121,21 +123,19 @@ namespace
      * @param[in] v3 fourth vertex of the tetrahedron.
      * @return the maximum of the tetrahedron edge length.
      */
-    double max_tet_edge_length(
-        const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3 )
-    {
-        double l1 = ( v1 - v0 ).length();
-        double l2 = ( v2 - v0 ).length();
-        double l3 = ( v3 - v0 ).length();
-        double l4 = ( v2 - v1 ).length();
-        double l5 = ( v3 - v1 ).length();
-        double l6 = ( v3 - v2 ).length();
-        return GEO::geo_max(
-            GEO::geo_max(
-                GEO::geo_max( GEO::geo_max( GEO::geo_max( l1, l2 ), l3 ), l4 ),
-                l5 ),
-            l6 );
-    }
+	double max_tet_edge_length(
+		const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3)
+	{
+		std::initializer_list<double> edge_length{
+			(v1 - v0).length(),
+			(v2 - v0).length(),
+			(v3 - v0).length(),
+			(v2 - v1).length(),
+			(v3 - v1).length(),
+			(v3 - v2).length()
+		};
+		return std::max(edge_length);
+	}
 
     /*!
      * @brief Tetrahedron quality based on the insphere radius and the maximum
