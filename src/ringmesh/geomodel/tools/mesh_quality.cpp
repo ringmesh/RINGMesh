@@ -123,19 +123,14 @@ namespace
      * @param[in] v3 fourth vertex of the tetrahedron.
      * @return the maximum of the tetrahedron edge length.
      */
-	double max_tet_edge_length(
-		const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3)
-	{
-		std::initializer_list<double> edge_length{
-			(v1 - v0).length(),
-			(v2 - v0).length(),
-			(v3 - v0).length(),
-			(v2 - v1).length(),
-			(v3 - v1).length(),
-			(v3 - v2).length()
-		};
-		return std::max(edge_length);
-	}
+    double max_tet_edge_length(
+        const vec3& v0, const vec3& v1, const vec3& v2, const vec3& v3 )
+    {
+        std::initializer_list< double > edge_length{ ( v1 - v0 ).length(),
+            ( v2 - v0 ).length(), ( v3 - v0 ).length(), ( v2 - v1 ).length(),
+            ( v3 - v1 ).length(), ( v3 - v2 ).length() };
+        return std::max( edge_length );
+    }
 
     /*!
      * @brief Tetrahedron quality based on the insphere radius and the maximum
