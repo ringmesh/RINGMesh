@@ -105,20 +105,24 @@ namespace
         const std::string& geomodel_out_path )
     {
         std::cout << "in edit with interface id" << std::endl;
-        std::cout << "id " << interface_id << " new name " << interface_new_name << std::endl;
+        std::cout << "id " << interface_id << " new name " << interface_new_name
+                  << std::endl;
         GeoModel< DIMENSION > geomodel;
         geomodel_load( geomodel, geomodel_in_path );
         GeoModelBuilder< DIMENSION > builder( geomodel );
 
         for( const auto& ge_interface : geomodel.geol_entities(
-            Interface< DIMENSION >::type_name_static() ) ) {
-            if( ge_interface.gmge().index() == interface_id ) {
+                 Interface< DIMENSION >::type_name_static() ) )
+        {
+            if( ge_interface.gmge().index() == interface_id )
+            {
                 builder.info.set_geological_entity_name(
                     ge_interface.gmge(), interface_new_name );
             }
         }
-        
-        if( geomodel_out_path == geomodel_in_path ) {
+
+        if( geomodel_out_path == geomodel_in_path )
+        {
             GEO::FileSystem::delete_file( geomodel_in_path );
         }
         std::cout << "just before save " << std::endl;
@@ -153,7 +157,7 @@ int main( int argc, char** argv )
         GEO::CmdLine::declare_arg(
             "edit:interface_old_name", "", "Old Interface name" );
         GEO::CmdLine::declare_arg(
-            "edit:interface_index", double( NO_ID ), "Interface index");
+            "edit:interface_index", double( NO_ID ), "Interface index" );
         GEO::CmdLine::declare_arg(
             "edit:interface_new_name", "", "New Interface name" );
         if( argc == 1 )
@@ -185,12 +189,13 @@ int main( int argc, char** argv )
             GEO::CmdLine::get_arg( "edit:interface_index" ) );
         std::string interface_new_name =
             GEO::CmdLine::get_arg( "edit:interface_new_name" );
-        if( geomodel_new_name.empty() && interface_old_name.empty() && interface_id == NO_ID )
+        if( geomodel_new_name.empty() && interface_old_name.empty()
+            && interface_id == NO_ID )
         {
             throw RINGMeshException( "I/O",
                 "Give at least a new GeoModel name in edit:geomodel_name or a "
                 "Old Interface Name in edit:interface_old_name or an"
-                "Interface index in edit:interface_index");
+                "Interface index in edit:interface_index" );
         }
 
         std::string geomodel_out_file = GEO::CmdLine::get_arg( "out:geomodel" );
@@ -213,8 +218,9 @@ int main( int argc, char** argv )
                 edit_interface_name< 2 >( geomodel_in_file, interface_old_name,
                     interface_new_name, geomodel_out_file );
             }
-            if( interface_id != NO_ID ) {
-                edit_interface_name<2>( geomodel_in_file, interface_id,
+            if( interface_id != NO_ID )
+            {
+                edit_interface_name< 2 >( geomodel_in_file, interface_id,
                     interface_new_name, geomodel_out_file );
             }
         }
@@ -230,8 +236,9 @@ int main( int argc, char** argv )
                 edit_interface_name< 3 >( geomodel_in_file, interface_old_name,
                     interface_new_name, geomodel_out_file );
             }
-            if( interface_id != NO_ID ) {
-                edit_interface_name<3>( geomodel_in_file, interface_id,
+            if( interface_id != NO_ID )
+            {
+                edit_interface_name< 3 >( geomodel_in_file, interface_id,
                     interface_new_name, geomodel_out_file );
             }
         }
