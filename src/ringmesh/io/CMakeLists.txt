@@ -58,6 +58,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel/io_tetgen.hpp"
         "${lib_source_dir}/geomodel/io_tsolid.hpp"
         "${lib_source_dir}/geomodel/io_vtk.hpp"
+        "${lib_source_dir}/geomodel/io_vtu.hpp"
         "${lib_source_dir}/stratigraphic_column/io_xml.hpp"
         "${lib_source_dir}/well_group/io_smesh.hpp"
         "${lib_source_dir}/well_group/io_wl.hpp"

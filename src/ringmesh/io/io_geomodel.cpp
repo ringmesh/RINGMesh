@@ -88,6 +88,7 @@ namespace
 #include "geomodel/io_tetgen.hpp"
 #include "geomodel/io_tsolid.hpp"
 #include "geomodel/io_vtk.hpp"
+#include "geomodel/io_vtu.hpp"
 
     template < typename Class, typename Factory >
     std::unique_ptr< Class > create_handler( const std::string& format )
@@ -146,6 +147,8 @@ namespace RINGMesh
             "mail" );
         GeoModelOutputHandlerFactory3D::register_creator< VTKIOHandler >(
             "vtk" );
+        GeoModelOutputHandlerFactory3D::register_creator< VTUIOHandler >(
+            "vtu" );
         // todo GPRS export is not working for the moment [AB]
         //        GeoModelOutputHandlerFactory3D::register_creator<
         //        GPRSIOHandler >( "gprs" );
