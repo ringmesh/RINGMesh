@@ -33,26 +33,11 @@
  *     FRANCE
  */
 
+#include "common_vtk.h"
 #include <tinyxml2.h>
-#include<ringmesh/basic/common.h>
-#include<ringmesh/geomodel/core/geomodel.h>
-#include<ringmesh/io/io.h>
-#include<geogram/basic/attributes.h>
-using namespace RINGMesh;
+
 namespace
 {
-    /*!
-     * In VTU/VTK, edges, polygons and cells (in the RINGMesh vocbulary)
-     * are considered as... cells
-     */
-    index_t total_number_of_cells( const GeoModel3D& geomodel) {
-        /*
-        return geomodel.mesh.edges.nb() +
-            geomodel.mesh.polygons.nb() +
-            geomodel.mesh.cells.nb();
-            */
-        return geomodel.mesh.cells.nb();
-    }
     /*!
      * @brief IO for the vtu file format.
      * vtu is the replacement of the legacy vtk format for
@@ -61,76 +46,141 @@ namespace
     class VTUIOHandler final : public GeoModelOutputHandler3D
     {
     public:
+        VTUIOHandler() :
+            output_(){
+                // All nodes of the XML file initialization
+                init_all_nodes();
+                set_nodes_relations();
+            }
         void save(
             const GeoModel3D& geomodel, const std::string& filename ) final
         {
-            // Writer
-            tinyxml2::XMLDocument output;
-            
-            // Header
-            tinyxml2::XMLDeclaration * decl = output.NewDeclaration();
-            output.InsertFirstChild(decl);
-            
-            // Base node
-            tinyxml2::XMLElement * vtkfile = output.NewElement("VTKFile");
-            vtkfile->SetAttribute("type", "UnstructuredGrid" );
-            vtkfile->SetAttribute("version", "0.1" );
-            vtkfile->SetAttribute("byte_order", "LittleEndian" );
-            output.InsertEndChild( vtkfile);
+            write_header();
+            vtkfile_ = output_.NewElement("VTKFile");
 
-            tinyxml2::XMLElement * ugrid = output.NewElement("UnstructuredGrid");
+            // Not a vtup (p for parallel format) so one piece
+            write_piece( geomodel );
 
-            // Number of vertices and cells
-            tinyxml2::XMLElement * piece = output.NewElement("Piece");
-            piece->SetAttribute(
+            write_vertices_attributes( geomodel );
+
+            write_vertices( geomodel );
+
+            write_elements_and_regions( geomodel );
+
+            write_xml_file( filename);
+        }
+    private:
+        void init_all_nodes() {
+            vtkfile_ = output_.NewElement("VTKFile");
+            ugrid_ =output_.NewElement("UnstructuredGrid");
+            piece_ =output_.NewElement("Piece");
+            pdata_ =output_.NewElement("PointData");
+            points_ =output_.NewElement("Points");
+            cdata_ =output_.NewElement("CellData");
+            cells_ =output_.NewElement("Cells");
+        }
+        
+        void set_nodes_relations() {
+            output_.InsertFirstChild(vtkfile_);
+            vtkfile_->InsertEndChild(ugrid_);
+            ugrid_->InsertEndChild(piece_);
+            piece_->InsertEndChild(pdata_);
+            piece_->InsertEndChild(points_);
+            piece_->InsertEndChild(cdata_);
+            piece_->InsertEndChild(cells_);
+        }
+
+        /*!
+         * @brief set basic informations of the XML file
+         */
+        void write_header() {
+            auto * decl = output_.NewDeclaration();
+            output_.InsertFirstChild(decl);
+            vtkfile_->SetAttribute("type", "UnstructuredGrid" );
+            vtkfile_->SetAttribute("version", "0.1" );
+            vtkfile_->SetAttribute("byte_order", "LittleEndian" );
+        }
+
+        /*!
+         * @brief Write basic information of the mesh
+         * @details Write vertices and cells number
+         * @warning The number of cells is equal, in a RINGMesh
+         * point of view to the number of
+         * edges + the number of polygons + the number of cells
+         * @param[in] geomodel the GeoModel being exported
+         */
+        void write_piece(const GeoModel3D& geomodel ) {
+            piece_->SetAttribute(
                     "NumberOfPoints",
                     geomodel.mesh.vertices.nb() );
-            piece->SetAttribute(
+            piece_->SetAttribute(
                     "NumberOfCells",
-                    total_number_of_cells(geomodel) );
-            ugrid->InsertEndChild( piece);
+                    total_number_of_elements(geomodel) );
+        }
 
-            // Vertices attribute
-            tinyxml2::XMLElement * pdata = output.NewElement("PointData");
-            GEO::AttributesManager & vertices_attribute_manager =
+        /*!
+         * @brief Write the vertices attributes
+         * @details the attributes being written are the on present on the
+         * GeoModelMesh
+         * @param[in] geomodel the GeoModel being exported
+         */
+        void write_vertices_attributes( const GeoModel3D& geomodel ) {
+            auto & vertices_attribute_manager =
                 geomodel.mesh.vertices.attribute_manager();
-            GEO::vector< std::string > vertices_attribute_names;
-            vertices_attribute_manager.list_attribute_names(vertices_attribute_names);
-            for(auto attribute_index : range(vertices_attribute_manager.nb()) ){
-                std::string attribute_name = vertices_attribute_names[attribute_index];
-                if( GEO::AttributeBase< double >::is_defined(vertices_attribute_manager,
+            write_attributes( vertices_attribute_manager );
+        }
+
+        /*!
+         * @brief Write all the attributes in a attribute manager
+         * @details This method is used to write the attributes present
+         * ont the GeoModelMesh for edges, corners and cells.
+         */
+        void write_attributes( GEO::AttributesManager& attribute_manager) {
+            GEO::vector< std::string > attribute_names;
+            attribute_manager.list_attribute_names(attribute_names);
+            for(auto attribute_index : range(attribute_manager.nb()) ){
+                std::string attribute_name = attribute_names[attribute_index];
+                if( GEO::AttributeBase< double >::is_defined(attribute_manager,
                             attribute_name) ) {
-                    GEO::Attribute< double > cur_attribute( vertices_attribute_manager,
+                    GEO::Attribute< double > cur_attribute(attribute_manager,
                             attribute_name);
-                    index_t dimension = cur_attribute.dimension();
+                    auto dimension = cur_attribute.dimension();
 
                     // Creation of the Data Array
-                    tinyxml2::XMLElement * data_array = output.NewElement("DataArray");
+                    auto * data_array = output_.NewElement("DataArray");
                     set_data_array_attributes(data_array, attribute_name, dimension);
 
                     // Write the Data Array
-                    for( auto vertex_index : range( geomodel.mesh.vertices.nb() ) ) {
-                        tinyxml2::XMLText * to_write = output.NewText("");
+                    for( auto index : range( cur_attribute.size() ) ) {
+                        auto * to_write = output_.NewText("");
                         std::string attribute_string = "\n";
                         for(auto dim : range(dimension) ) {
                             attribute_string += std::to_string(
-                                    cur_attribute[vertex_index*dimension + dim]);
+                                    cur_attribute[index*dimension + dim]);
                             attribute_string += " ";
                         }
                         to_write->SetValue( attribute_string.c_str());
                         data_array->InsertEndChild(to_write);
                     }
-                    pdata->InsertEndChild(data_array);
+                    pdata_->InsertEndChild(data_array);
+                }
+                else {
+                    Logger::warn("I/O", "Attribute ", attribute_name, "is not a double ",
+                            "attribute and will not be exported");
                 }
             }
-            piece->InsertEndChild( pdata );
+        }
 
-            // Write the vertices
-            tinyxml2::XMLElement * points = output.NewElement("Points");
-            tinyxml2::XMLElement * vdata_array = output.NewElement("DataArray");
+        /*!
+         * @brief Write the vertices coordinates
+         * @details the coordinates are stored in a data array
+         * @param[in] geomodel the GeoModel being exported
+         */
+        void write_vertices( const GeoModel3D& geomodel ){
+            auto * vdata_array = output_.NewElement("DataArray");
             set_data_array_attributes( vdata_array, "Points", 3);
             for( auto v : range(geomodel.mesh.vertices.nb() )) {
-                tinyxml2::XMLText * to_write = output.NewText("");
+                auto * to_write = output_.NewText("");
                 std::string vertex_string = "\n";
                 std::ostringstream vertex_stream;
                 vertex_stream << geomodel.mesh.vertices.vertex( v );
@@ -138,107 +188,125 @@ namespace
                 to_write->SetValue( vertex_string.c_str());
                 vdata_array->InsertEndChild( to_write);
             }
-            points->InsertEndChild( vdata_array);
-            piece->InsertEndChild( points );
+            points_->InsertEndChild( vdata_array);
+        }
 
-            // Cell attribute
-            tinyxml2::XMLElement * cdata = output.NewElement("CellData");
-            GEO::AttributesManager & cells_attribute_manager =
-                geomodel.mesh.cells.attribute_manager();
-            GEO::vector< std::string > cells_attribute_names;
-            cells_attribute_manager.list_attribute_names(cells_attribute_names);
-            for(auto attribute_index : range(cells_attribute_manager.nb()) ){
-                std::cout << "Enter loop attribute" << std::endl;
-                std::string attribute_name = cells_attribute_names[attribute_index];
-                if( GEO::AttributeBase< double >::is_defined(cells_attribute_manager,
-                            attribute_name) ) {
-                    GEO::Attribute< double > cur_attribute( cells_attribute_manager,
-                            attribute_name);
-                    index_t dimension = cur_attribute.dimension();
-
-                    // Creation of the Data Array
-                    tinyxml2::XMLElement * data_array = output.NewElement("DataArray");
-                    set_data_array_attributes(data_array, attribute_name, dimension);
-
-                    // Write the Data Array
-                    for( auto cell_index : range( geomodel.mesh.cells.nb() ) ) {
-                        std::cout << "Enter cell loop" << std::endl;
-                        tinyxml2::XMLText * to_write = output.NewText("");
-                        std::string attribute_string = "\n";
-                        for(auto dim : range(dimension) ) {
-                            attribute_string += std::to_string(
-                                    cur_attribute[cell_index*dimension + dim]);
-                            attribute_string += " ";
-                        }
-                        to_write->SetValue( attribute_string.c_str());
-                        data_array->InsertEndChild(to_write);
-                    }
-                    cdata->InsertEndChild(data_array);
-                }
-            }
-            // Write the regions
-            tinyxml2::XMLElement * region_array = output.NewElement("DataArray");
-            set_data_array_attributes(region_array, "region", 1);
-            for( auto cell_index : range( geomodel.mesh.cells.nb() ) ) {
-                tinyxml2::XMLText * to_write = output.NewText("");
-                std::string region_string = "\n";
-                region_string += std::to_string(geomodel.mesh.cells.region( cell_index));
-                to_write->SetValue( region_string.c_str());
-                region_array->InsertEndChild(to_write);
-            }
-            cdata->InsertEndChild(region_array);
-
-            piece->InsertEndChild( cdata );
-
-            // Write the cells
-            tinyxml2::XMLElement * cells = output.NewElement("Cells");
-            tinyxml2::XMLElement * cconnectivity = output.NewElement("DataArray");
-            tinyxml2::XMLElement * coffsets = output.NewElement("DataArray");
-            tinyxml2::XMLElement * ctypes = output.NewElement("DataArray");
+        /*!
+         * @brief Write the elements information
+         * @details We write corner vertices, edges, polygons and cells
+         * in the RINGMesh point of view. In vtk, all these elements are "elements"
+         * An attribute region is also written, corresponding to the corner, the line
+         * the surface or the region which belong to the element.
+         * @param[in] geomodel the GeoModel being exported
+         */
+        void write_elements_and_regions( const GeoModel3D& geomodel ) {
+            auto * cregion = output_.NewElement("DataArray");
+            auto * cconnectivity = output_.NewElement("DataArray");
+            auto * coffsets = output_.NewElement("DataArray");
+            auto * ctypes = output_.NewElement("DataArray");
+            set_data_array_attributes( cregion, "region", "UInt64");
             set_data_array_attributes( cconnectivity, "connectivity", "UInt64");
             set_data_array_attributes( coffsets, "offsets", "UInt64");
             set_data_array_attributes( ctypes, "types", "UInt8");
             index_t offset = 0;
-            for( auto cell_index :range( geomodel.mesh.cells.nb() ) ) {
-                tinyxml2::XMLText * to_write_connectivity = output.NewText("");
-                tinyxml2::XMLText * to_write_offsets = output.NewText("");
-                tinyxml2::XMLText * to_write_types = output.NewText("");
+            for( auto &corner : geomodel.corners() ) {
+                write_entity_elements(
+                        corner,
+                        ringmesh2vtk_vertex,
+                        cregion, cconnectivity, coffsets, ctypes,
+                        offset );
+            }
+
+            for( auto &line : geomodel.lines() ) {
+                write_entity_elements(
+                        line,
+                        ringmesh2vtk_edges,
+                        cregion, cconnectivity, coffsets, ctypes,
+                        offset );
+            }
+
+            for( auto &surface : geomodel.surfaces() ) {
+                write_entity_elements(
+                        surface,
+                        ringmesh2vtk_polygons,
+                        cregion, cconnectivity, coffsets, ctypes,
+                        offset );
+            }
+
+            for( auto &region : geomodel.regions() ) {
+                write_entity_elements(
+                        region,
+                        ringmesh2vtk_cells,
+                        cregion, cconnectivity, coffsets, ctypes,
+                        offset );
+            }
+            cdata_->InsertEndChild( cregion );
+            cells_->InsertEndChild( cconnectivity );
+            cells_->InsertEndChild( coffsets );
+            cells_->InsertEndChild( ctypes );
+        }
+
+
+        /*!
+         * @brief write all the elements of a mesh entity
+         * @param[in] geomodel_mesh_entity the entity being written,
+         * @param[in] descriptor one structure which contains information
+         * on the elements of the entity (i.e. the vtk type and the vtk connectivity
+         * @param[in] region_array one element of the XML file containing the region index
+         * @param[in] cconnectivity one element of the XML file containing the element
+         * connectivity
+         * @param[in] coffsets one element of the XML file containing the offsets,
+         * i.e. a value which is incremented by the number of vertices of the elements
+         * alreay written
+         * @param[in] ctypes one element of the XML file containing the types of the elements
+         * @param[in,out] offset the offset (i.e. the cumulated number of vertices
+         * of elements already written)
+         */
+        void write_entity_elements( const GeoModelMeshEntity3D& geomodel_mesh_entity,
+                RINGMesh2VTK* descriptor[],
+                tinyxml2::XMLElement * region_array,
+                tinyxml2::XMLElement * cconnectivity,
+                tinyxml2::XMLElement * coffsets,
+                tinyxml2::XMLElement * ctypes,
+                index_t& offset) {
+            const GeoModel3D& geomodel = geomodel_mesh_entity.geomodel();
+            for( auto element : range( geomodel_mesh_entity.nb_mesh_elements() )) {
+                auto * to_write_region = output_.NewText("");
+                auto * to_write_connectivity = output_.NewText("");
+                auto * to_write_offsets = output_.NewText("");
+                auto * to_write_types = output_.NewText("");
+                std::string region_string = "\n";
                 std::string connectivity_string = "\n";
                 std::string offsets_string = "\n";
                 std::string types_string = "\n";
-                const auto& descriptor =
-                    *cell_type_to_cell_descriptor_vtk[to_underlying_type(
-                       geomodel. mesh.cells.type( cell_index ) )];
-                for( auto local_vertex_index :
-                        range( geomodel.mesh.cells.nb_vertices( cell_index ) ) ) {
-                    connectivity_string +=
-                        std::to_string(
-                                geomodel.mesh.cells.vertex(
-                                    {cell_index, local_vertex_index }));
+                auto nb_vertices =
+                    geomodel_mesh_entity.nb_mesh_element_vertices( element );
+                for( auto local_vertex_index : range( nb_vertices ) ){
+                    auto vertex_index_vtk =
+                        geomodel.mesh.vertices.geomodel_vertex_id(
+                                geomodel_mesh_entity.gmme(),
+                                geomodel_mesh_entity.mesh_element_vertex_index(
+                                    {element, descriptor[nb_vertices]
+                                    ->vertices[local_vertex_index]}));
+                    connectivity_string += std::to_string( vertex_index_vtk );
                     connectivity_string += " ";
                 }
-                offset +=geomodel.mesh.cells.nb_vertices( cell_index );
-                types_string += std::to_string(descriptor.entity_type);
+                region_string += std::to_string(geomodel_mesh_entity.index());
+                types_string += std::to_string(descriptor[nb_vertices]->entity_type);
+                offset += nb_vertices;
                 offsets_string +=
                     std::to_string(offset);
                 to_write_connectivity->SetValue( connectivity_string.c_str());
                 to_write_offsets->SetValue( offsets_string.c_str());
                 to_write_types->SetValue( types_string.c_str());
+                to_write_region->SetValue( region_string.c_str());
+                region_array->InsertEndChild(to_write_region);
                 cconnectivity->InsertEndChild(to_write_connectivity);
                 coffsets->InsertEndChild(to_write_offsets);
                 ctypes->InsertEndChild(to_write_types);
             }
-                cells->InsertEndChild(cconnectivity);
-                cells->InsertEndChild(coffsets);
-                cells->InsertEndChild(ctypes);
-            piece->InsertEndChild( cells );
-
-            vtkfile->InsertEndChild(ugrid);
-
-
-            output.SaveFile( filename.c_str() );
         }
-    private:
+
         void set_data_array_attributes( 
                 tinyxml2::XMLElement * xml_element,
                 const std::string& name,
@@ -264,5 +332,35 @@ namespace
                     dimension);
         }
 
+        void write_xml_file(const std::string& filename) {
+            output_.SaveFile( filename.c_str() );
+        }
+    private:
+        /// main file of tinyxml2
+        tinyxml2::XMLDocument output_;
+
+        /// Pointer to the main node of the XML file
+        tinyxml2::XMLElement * vtkfile_;
+
+        /// Pointer to the unstructured grid node
+        tinyxml2::XMLElement * ugrid_;
+        
+        /// Pointer to the only piece of this mesh (see vtup file for more than one pieces)
+        tinyxml2::XMLElement* piece_;
+
+        /// Pointer to the node which contains the point data
+        tinyxml2::XMLElement* pdata_;
+
+        /// Pointer ot the node which contains the point coordinates
+        tinyxml2::XMLElement* points_;
+
+        /// Pointer to the node which contains the cell data
+        /// Warning : Here cells are edges, polygons and cells (in RINGMesh sense)
+        tinyxml2::XMLElement* cdata_;
+
+        /// Pointer ot the node which contains the point coordinates
+        /// Warning : Here cells are edges, polygons and cells (in RINGMesh sense)
+        tinyxml2::XMLElement* cells_;
     };
 }
+
