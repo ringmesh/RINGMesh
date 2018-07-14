@@ -53,11 +53,13 @@ option(RINGMESH_WITH_UTILITIES "Compile utility executables" OFF)
 option(RINGMESH_WITH_TUTORIALS "Compile API trainings and tuturials" OFF)
 option(RINGMESH_WITH_TESTS "Compile test projects" OFF)
 option(RINGMESH_WITH_GUI "Compile GUI bindings" OFF)
+option(RINGMESH_WITH_METIS "Unse RINGmesh with METIS for GeoModel partitionning" OFF)
 
 # Optional custom steps 
 option(BUILD_GEOGRAM_WITHOUT_EXE "Compile geogram without tests and executables" ON)
 option(USE_SUPERBUILD "Whether or not a superbuild should be invoked" ON)
-mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE USE_SUPERBUILD RINGMESH_WITH_GUI)
+option(EXPORT_COMPILE_COMMANDS "Whether or not to build the compile commands in a json file" ON)
+mark_as_advanced(BUILD_GEOGRAM_WITHOUT_EXE USE_SUPERBUILD RINGMESH_WITH_GUI RINGMESH_WITH_METIS)
 
 # Select Available Mesher 
 # Each selected mesher will increase the RINGMesh functionalities.

@@ -55,6 +55,34 @@ find_package(ZLIB REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 
+# RINGMesh can optionnaly depend on METIS for GeoModel mesh partitionning
+if(RINGMESH_WITH_METIS)
+    message(STATUS "Configure RINGMesh with METIS")
+    message(STATUS "${METIS_INCLUDE_DIR}")
+    message(STATUS "${METIS_LIBARY}")
+    message(STATUS ENV)
+    find_path(METIS_INCLUDE_DIR metis.h
+        PATH_SUFFIXES include
+        DOC "Directory where the METIS header files are located"
+    )
+    find_library(METIS_LIBRARY
+        NAMES metis
+        PATH_SUFFIXES lib
+        DOC "Directory where the METIS library is located"
+)
+    if(METIS_INCLUDE_DIR)
+        message(STATUS "METIS include directory found at ${METIS_INCLUDE_DIR}")
+    else(METIS_INCLUDE_DIR)
+        message(FATAL_ERROR "METIS include directory not found, did you install it ?")
+    endif(METIS_INCLUDE_DIR)
+
+    if(METIS_LIBRARY)
+        message(STATUS "METIS lib directory found at ${METIS_LIBRARY}")
+    else(METIS_LIBRARY)
+        message(FATAL_ERROR "METIS lib directory not found, did you install it ?")
+    endif(METIS_LIBRARY)
+endif(RINGMESH_WITH_METIS)
+
 install(
     DIRECTORY
         ${TINYXML2_INSTALL_PREFIX}/
