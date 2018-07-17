@@ -158,8 +158,6 @@ namespace RINGMesh
         GeoModelBuilderRESQML& builder_;
         GeoModel3D& geomodel_;
 
-        std::map< gmge_id, AbstractFeatureInterpretation* >
-            geo_entity_2_interp_;
         std::map< AbstractFeatureInterpretation*, gmge_id >
             interp_2_geo_entity_;
         std::map< AbstractFeatureInterpretation*, UnitInfo > unit_2_info_;
@@ -284,12 +282,14 @@ namespace RINGMesh
     {
         const std::vector< RESQML2_0_1_NS::StratigraphicColumn* >
             stratiColumnSet = pck.getStratigraphicColumnSet();
+        // TODO only one column for the moment
         ringmesh_assert( stratiColumnSet.size() <= 1 );
+
         for( auto column : stratiColumnSet )
         {
             showAllMetadata( column );
 
-            // TODO
+            // TODO now we read only rank 0
             ringmesh_assert(
                 column->getStratigraphicColumnRankInterpretationSet().size()
                 == 1 );
@@ -297,8 +297,8 @@ namespace RINGMesh
             for( auto rank_interp :
                 column->getStratigraphicColumnRankInterpretationSet() )
             {
-                std::cout << "\tCOLUMN RANK INTERP" << std::endl;
                 showAllMetadata( rank_interp );
+                // TODO only chronostrati
                 ringmesh_assert( rank_interp->isAChronoStratiRank() );
 
                 for( auto unit :
@@ -311,7 +311,6 @@ namespace RINGMesh
                     builder_.geology.set_geological_entity_geol_feature(
                         layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
 
-                    geo_entity_2_interp_[layer] = unit;
                     interp_2_geo_entity_[unit] = layer;
 
                     unit_2_info_[unit].layer_ = layer;
@@ -394,6 +393,7 @@ namespace RINGMesh
 
                     units.push_back( sunit );
 
+#ifdef RINGMESH_DEBUG
                     std::cout << " relation base: " << (int) unit.relation_base_
                               << std::endl;
                     std::cout << " relation top: " << (int) unit.relation_top_
@@ -404,6 +404,7 @@ namespace RINGMesh
                     std::cout
                         << " interface top: " << unit.interface_top_.index()
                         << std::endl;
+#endif
                 }
 
                 StratigraphicColumn* strati =
@@ -543,8 +544,6 @@ namespace RINGMesh
 
                 interp_2_geo_entity_[tri_set->getInterpretation()] =
                     interface_id;
-                geo_entity_2_interp_[interface_id] =
-                    tri_set->getInterpretation();
             }
 
             ULONG64 global_point_count = 0;
@@ -553,9 +552,6 @@ namespace RINGMesh
                 const ULONG64 pointCount =
                     tri_set->getXyzPointCountOfPatch( patch );
 
-                std::cout << "point Count " << pointCount << std::endl;
-
-                std::cout << "TRI REP GEOMETRY" << std::endl;
                 std::unique_ptr< double[] > xyzPoints(
                     new double[pointCount * 3] );
                 tri_set->getXyzPointsOfPatch( patch, &xyzPoints[0] );
@@ -569,7 +565,6 @@ namespace RINGMesh
 
                 const unsigned int triangleCount =
                     tri_set->getTriangleCountOfPatch( patch );
-                std::cout << "triangle Count " << triangleCount << std::endl;
 
                 std::vector< index_t > trgls( triangleCount * 3, 0 );
 
@@ -736,10 +731,6 @@ namespace RINGMesh
         {
             return true;
         }
-
-        std::cout << std::endl
-                  << "UNSTRUCTURED GRID REP: " << unstructuredGridRepSet.size()
-                  << std::endl;
 
         for( auto unstructured_grid : unstructuredGridRepSet )
         {

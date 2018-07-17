@@ -107,7 +107,6 @@ namespace RINGMesh
         std::unique_ptr< EpcDocument > pck_;
         AbstractHdfProxy* hdf_proxy_;
         LocalDepth3dCrs* local_3d_crs_;
-        LocalTime3dCrs* local_time_3d_crs_;
 
         std::map< gmge_id, AbstractFeature* > geo_entity_2_feature_;
         std::map< AbstractFeature*, AbstractFeatureInterpretation* >
@@ -120,8 +119,7 @@ namespace RINGMesh
           filename_( filename ),
           pck_( nullptr ),
           hdf_proxy_( nullptr ),
-          local_3d_crs_( nullptr ),
-          local_time_3d_crs_( nullptr )
+          local_3d_crs_( nullptr )
     {
         ringmesh_assert( init() );
     }
@@ -138,11 +136,6 @@ namespace RINGMesh
             .0, .0, .0, .0, gsoap_resqml2_0_1::eml20__LengthUom__m, 23031,
             gsoap_resqml2_0_1::eml20__LengthUom__m, "Unknown", false );
 
-        local_time_3d_crs_ =
-            pck_->createLocalTime3dCrs( "", "Default local time CRS", 1.0, 0.1,
-                15, .0, gsoap_resqml2_0_1::eml20__LengthUom__m, 23031,
-                gsoap_resqml2_0_1::eml20__TimeUom__s,
-                gsoap_resqml2_0_1::eml20__LengthUom__m, "Unknown", false );
         return true;
     }
 
@@ -435,6 +428,7 @@ namespace RINGMesh
                 "Stratigraphic column rank", 0 );
         stratiColumn->pushBackStratiColumnRank( stratiColumnRank );
 
+        // TODO: get_all_units should take a parameter of rank
         const std::vector< std::shared_ptr< const StratigraphicUnit > >& units =
             column->get_all_units();
 
