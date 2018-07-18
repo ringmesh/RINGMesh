@@ -54,7 +54,6 @@
 #include <fesapi/common/EpcDocument.h>
 #include <fesapi/common/HdfProxy.h>
 #include <fesapi/resqml2/AbstractFeatureInterpretation.h>
-#include <fesapi/resqml2_0_1/CategoricalProperty.h>
 #include <fesapi/resqml2_0_1/ContinuousProperty.h>
 #include <fesapi/resqml2_0_1/DiscreteProperty.h>
 #include <fesapi/resqml2_0_1/FrontierFeature.h>

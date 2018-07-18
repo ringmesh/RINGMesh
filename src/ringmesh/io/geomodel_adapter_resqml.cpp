@@ -55,6 +55,8 @@
 #include <fesapi/common/HdfProxy.h>
 #include <fesapi/resqml2/AbstractFeature.h>
 #include <fesapi/resqml2_0_1/BoundaryFeature.h>
+#include <fesapi/resqml2_0_1/ContinuousProperty.h>
+#include <fesapi/resqml2_0_1/DiscreteProperty.h>
 #include <fesapi/resqml2_0_1/FrontierFeature.h>
 #include <fesapi/resqml2_0_1/Horizon.h>
 #include <fesapi/resqml2_0_1/HorizonInterpretation.h>
@@ -95,11 +97,19 @@ namespace RINGMesh
         void serialize();
         bool write_surfaces();
         bool write_volumes();
+
+        bool write_property( bool first_patch,
+            std::vector< AbstractValuesProperty* >& properties,
+            GEO::AttributesManager& attri_manager,
+            gsoap_resqml2_0_1::resqml2__IndexableElements attachement,
+            AbstractRepresentation& rep );
         bool write_stratigraphic_column();
 
         AbstractFeature* find_or_create_feature( const GMGE& entity );
         AbstractFeatureInterpretation* find_or_create_interpretation(
             AbstractFeature& feature );
+        PropertyKind* find_or_create_property_kind(
+            const std::string& element_type );
 
     private:
         const GeoModel3D& geomodel_;
@@ -111,6 +121,7 @@ namespace RINGMesh
         std::map< gmge_id, AbstractFeature* > geo_entity_2_feature_;
         std::map< AbstractFeature*, AbstractFeatureInterpretation* >
             feature_2_interp_;
+        std::map< std::string, PropertyKind* > type_2_property_kind_;
     };
 
     GeoModelAdapterRESQMLImpl::GeoModelAdapterRESQMLImpl(
@@ -245,6 +256,133 @@ namespace RINGMesh
         pck_->serialize();
     }
 
+    PropertyKind* GeoModelAdapterRESQMLImpl::find_or_create_property_kind(
+        const std::string& element_type )
+    {
+        auto result = type_2_property_kind_.find( element_type );
+        if( result != type_2_property_kind_.end() )
+        {
+            return result->second;
+        }
+
+        PropertyKind* kind = nullptr;
+        if( element_type == "double" )
+        {
+            kind = pck_->createPropertyKind(
+                tools::GuidTools::generateUidAsString(), element_type, "",
+                gsoap_resqml2_0_1::resqml2__ResqmlUom__Euc,
+                gsoap_resqml2_0_1::resqml2__ResqmlPropertyKind__continuous );
+        }
+        else if( element_type == "int" )
+        {
+            kind = pck_->createPropertyKind(
+                tools::GuidTools::generateUidAsString(), element_type, "",
+                gsoap_resqml2_0_1::resqml2__ResqmlUom__Euc,
+                gsoap_resqml2_0_1::resqml2__ResqmlPropertyKind__discrete );
+        }
+        else
+        {
+            return nullptr;
+        }
+        type_2_property_kind_[element_type] = kind;
+        return kind;
+    }
+
+    bool GeoModelAdapterRESQMLImpl::write_property( bool first_patch,
+        std::vector< AbstractValuesProperty* >& properties,
+        GEO::AttributesManager& attri_manager,
+        gsoap_resqml2_0_1::resqml2__IndexableElements attachment,
+        AbstractRepresentation& rep )
+    {
+        GEO::vector< std::string > attribute_names;
+        attri_manager.list_attribute_names( attribute_names );
+        if( attribute_names.size() == 0 )
+        {
+            return true;
+        }
+
+        if( first_patch )
+        {
+            properties.resize( attribute_names.size(), nullptr );
+
+            for( auto i : range( attribute_names.size() ) )
+            {
+                if( attribute_names[i] == "point" )
+                {
+                    properties[i] = nullptr;
+                    continue;
+                }
+
+                GEO::AttributeStore* store =
+                    attri_manager.find_attribute_store( attribute_names[i] );
+                std::string element_type = GEO::AttributeStore::
+                    element_type_name_by_element_typeid_name(
+                        store->element_typeid_name() );
+                if( !GEO::AttributeStore::element_typeid_name_is_known(
+                        element_type ) )
+                {
+                    Logger::warn( "I/O",
+                        "Skipping attribute: ", attribute_names[i],
+                        " of type: ", element_type );
+                    properties[i] = nullptr;
+                    continue;
+                }
+
+                std::string guid( tools::GuidTools::generateUidAsString() );
+                if( element_type == "double" )
+                {
+                    properties[i] = pck_->createContinuousProperty( &rep, guid,
+                        attribute_names[i], store->dimension(), attachment,
+                        "unitless",
+                        gsoap_resqml2_0_1::
+                            resqml2__ResqmlPropertyKind__continuous );
+                }
+                else if( element_type == "int" )
+                {
+                    properties[i] = pck_->createDiscreteProperty( &rep, guid,
+                        attribute_names[i], store->dimension(), attachment,
+                        gsoap_resqml2_0_1::
+                            resqml2__ResqmlPropertyKind__discrete );
+                }
+            }
+        }
+
+        for( auto i : range( attribute_names.size() ) )
+        {
+            if( properties[i] == nullptr )
+            {
+                continue;
+            }
+            GEO::AttributeStore* store =
+                attri_manager.find_attribute_store( attribute_names[i] );
+
+            if( dynamic_cast< ContinuousProperty* >( properties[i] )
+                != nullptr )
+            {
+                ContinuousProperty* continuous =
+                    static_cast< ContinuousProperty* >( properties[i] );
+
+                continuous->pushBackDoubleHdf5Array1dOfValues(
+                    (double*) store->data(), store->size() * store->dimension(),
+                    hdf_proxy_ );
+            }
+            else if( dynamic_cast< DiscreteProperty* >( properties[i] )
+                     != nullptr )
+            {
+                DiscreteProperty* discrete =
+                    static_cast< DiscreteProperty* >( properties[i] );
+
+                discrete->pushBackIntHdf5Array1dOfValues( (int*) store->data(),
+                    store->size() * store->dimension(), hdf_proxy_, -99999 );
+            }
+            else
+            {
+                ringmesh_assert_not_reached;
+            }
+        }
+        return true;
+    }
+
     bool GeoModelAdapterRESQMLImpl::write_surfaces()
     {
         for( const auto& interface :
@@ -267,7 +405,7 @@ namespace RINGMesh
             std::string guid( tools::GuidTools::generateUidAsString() );
             TriangulatedSetRepresentation* rep =
                 pck_->createTriangulatedSetRepresentation(
-                    interp, local_3d_crs_, guid, "nimp" );
+                    interp, local_3d_crs_, guid, "triangulated_set" );
 
             unsigned int interface_vertex_count = 0;
             for( auto i : range( interface.nb_children() ) )
@@ -305,8 +443,29 @@ namespace RINGMesh
 
                 interface_vertex_count += surface.nb_vertices();
             }
-        }
 
+            if( interface_vertex_count == 0 )
+            {
+                return true;
+            }
+
+            std::vector< AbstractValuesProperty* > vertex_properties;
+            std::vector< AbstractValuesProperty* > polygon_properties;
+            for( auto i : range( interface.nb_children() ) )
+            {
+                const Surface3D& surface =
+                    static_cast< const Surface3D& >( interface.child( i ) );
+
+                write_property( i == 0, vertex_properties,
+                    surface.vertex_attribute_manager(),
+                    gsoap_resqml2_0_1::resqml2__IndexableElements__nodes,
+                    *rep );
+                write_property( i == 0, polygon_properties,
+                    surface.polygon_attribute_manager(),
+                    gsoap_resqml2_0_1::resqml2__IndexableElements__cells,
+                    *rep );
+            }
+        }
         return true;
     }
 
@@ -324,6 +483,7 @@ namespace RINGMesh
             // TODO: I do not understand why the interp is not needed...
             ringmesh_unused( interp );
 
+            std::vector< UnstructuredGridRepresentation* > reps;
             for( auto i : range( layer.nb_children() ) )
             {
                 const Region3D& region =
@@ -333,6 +493,7 @@ namespace RINGMesh
                 UnstructuredGridRepresentation* rep =
                     pck_->createUnstructuredGridRepresentation( local_3d_crs_,
                         guid, "tetra grid", region.nb_mesh_elements() );
+                reps.push_back( rep );
 
                 std::unique_ptr< double[] > points(
                     new double[region.nb_vertices() * 3] );
@@ -380,6 +541,24 @@ namespace RINGMesh
                     &points[0], region.nb_vertices(),
                     region.nb_mesh_elements() * 4, hdf_proxy_,
                     &face_indices_per_cell[0], &node_indices_per_face[0] );
+            }
+
+            for( auto i : range( layer.nb_children() ) )
+            {
+                const Region3D& region =
+                    static_cast< const Region3D& >( layer.child( i ) );
+
+                std::vector< AbstractValuesProperty* > vertex_properties;
+                std::vector< AbstractValuesProperty* > cell_properties;
+
+                write_property( true, vertex_properties,
+                    region.vertex_attribute_manager(),
+                    gsoap_resqml2_0_1::resqml2__IndexableElements__nodes,
+                    *reps[i] );
+                write_property( true, cell_properties,
+                    region.cell_attribute_manager(),
+                    gsoap_resqml2_0_1::resqml2__IndexableElements__cells,
+                    *reps[i] );
             }
         }
 
