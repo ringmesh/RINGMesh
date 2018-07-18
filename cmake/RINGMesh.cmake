@@ -61,15 +61,17 @@ if(RINGMESH_WITH_METIS)
     message(STATUS "${METIS_INCLUDE_DIR}")
     message(STATUS "${METIS_LIBARY}")
     message(STATUS ENV)
-    find_path(METIS_INCLUDE_DIR metis.h
-        PATH_SUFFIXES include
-        DOC "Directory where the METIS header files are located"
-    )
-    find_library(METIS_LIBRARY
-        NAMES metis
-        PATH_SUFFIXES lib
-        DOC "Directory where the METIS library is located"
-)
+    #    find_path(METIS_INCLUDE_DIR metis.h
+    #    PATH_SUFFIXES include
+    #    DOC "Directory where the METIS header files are located"
+    # )
+    #  find_library(METIS_LIBRARY
+    #    NAMES metis
+    #    PATH_SUFFIXES lib
+    #    DOC "Directory where the METIS library is located"
+    #)
+    set(METIS_INCLUDE_DIR "/home/amazuyer/apps/metis/include")
+    set(METIS_LIBRARY "/home/amazuyer/apps/metis/build/Linux-x86_64/libmetis/libmetis.so")
     if(METIS_INCLUDE_DIR)
         message(STATUS "METIS include directory found at ${METIS_INCLUDE_DIR}")
     else(METIS_INCLUDE_DIR)
@@ -217,7 +219,8 @@ if(RINGMESH_WITH_UTILITIES)
     # Get the paths of the utility files
     file(GLOB utility_sources "${binary_source_dir}/utilities/*.cpp")
     foreach(utility_src ${utility_sources})
-        add_ringmesh_binary(${utility_src} geomodel_tools io)
+        MESSAGE(STATUS "${METIS_LIBRARY}")
+        add_ringmesh_binary(${utility_src} geomodel_tools io ${METIS_LIBRARY})
     endforeach()
     copy_for_all_ringmesh_dlls(${PROJECT_BINARY_DIR}/bin)
 endif()

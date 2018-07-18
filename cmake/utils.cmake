@@ -161,6 +161,7 @@ macro(add_ringmesh_executable exe_path folder_name)
     # Set the target as an executable
     add_executable(${exe_name} ${exe_path})    
     foreach(dependency ${ARGN})
+        MESSAGE(STATUS "dependency ${dependency}")
         target_link_libraries(${exe_name} PRIVATE ${dependency})
     endforeach()
     
