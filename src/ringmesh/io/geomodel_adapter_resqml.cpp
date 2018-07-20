@@ -551,6 +551,8 @@ namespace RINGMesh
                 std::vector< AbstractValuesProperty* > vertex_properties;
                 std::vector< AbstractValuesProperty* > cell_properties;
 
+                // first_patch is always true because fesapi only support
+                // UnstructuredGrid with only one patch
                 write_property( true, vertex_properties,
                     region.vertex_attribute_manager(),
                     gsoap_resqml2_0_1::resqml2__IndexableElements__nodes,
