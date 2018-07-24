@@ -31,6 +31,7 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
+add_ringmesh_test(test-geomodel-resqml2-round-trip io)
 add_ringmesh_test(test-load-geomodel.cpp io)
 add_ringmesh_test(test-save-geomodel.cpp io)
 add_ringmesh_test(test-io-initialize.cpp io)

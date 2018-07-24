@@ -199,8 +199,14 @@ void check_output_by_model(
         geomodel1.entity_type_manager().mesh_entity_manager.mesh_entity_types();
     for( const auto& cur_entity_type : all_mesh_entity_types )
     {
-        ringmesh_assert( geomodel1.nb_mesh_entities( cur_entity_type )
-                         == geomodel2.nb_mesh_entities( cur_entity_type ) );
+        if( geomodel1.nb_mesh_entities( cur_entity_type )
+            != geomodel2.nb_mesh_entities( cur_entity_type ) )
+        {
+            throw RINGMeshException( "TEST", "Number of entities of type ",
+                cur_entity_type.string(), " of two GeoModels not equal: ",
+                geomodel1.nb_mesh_entities( cur_entity_type ), " ",
+                geomodel2.nb_mesh_entities( cur_entity_type ) );
+        }
     }
 
     const auto& all_geological_entity_types =
@@ -209,9 +215,14 @@ void check_output_by_model(
 
     for( const auto& cur_entity_type : all_geological_entity_types )
     {
-        ringmesh_assert(
-            geomodel1.nb_geological_entities( cur_entity_type )
-            == geomodel2.nb_geological_entities( cur_entity_type ) );
+        if( geomodel1.nb_geological_entities( cur_entity_type )
+            != geomodel2.nb_geological_entities( cur_entity_type ) )
+        {
+            throw RINGMeshException( "TEST", "Number of entities of type ",
+                cur_entity_type.string(), " of two GeoModels not equal: ",
+                geomodel1.nb_geological_entities( cur_entity_type ), " ",
+                geomodel2.nb_geological_entities( cur_entity_type ) );
+        }
     }
 }
 
