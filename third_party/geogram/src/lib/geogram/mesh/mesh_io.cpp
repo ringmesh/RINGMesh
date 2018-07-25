@@ -4561,7 +4561,6 @@ namespace GEO {
 
 namespace GEO {
 	
-	GEO::Process::spinlock lock = {0}; 
 
     MeshIOFlags::MeshIOFlags() {
         dimension_ = 3;
