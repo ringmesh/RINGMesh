@@ -373,11 +373,13 @@ namespace GEO {
         return instance_;
     }
 
-    std::ostream& Logger::div(const std::string& title) {
-	std::ostream& result = is_initialized() ?
-            instance()->div_stream(title) :
-            (std::cerr << "=====" << title << std::endl);
-	return result;
+    std::ostream& Logger::div( const std::string& title )
+    {
+        std::ostream& result =
+            ( is_initialized() && !Process::is_running_threads() ) ?
+            instance()->div_stream( title ) :
+            ( std::cerr << "=====" << title << std::endl );
+        return result;
     }
 
     std::ostream& Logger::out(const std::string& feature) {

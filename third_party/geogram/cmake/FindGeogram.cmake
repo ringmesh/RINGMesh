@@ -66,7 +66,6 @@ find_package_handle_standard_args(
 # Create an imported target for Geogram 
 If (GEOGRAM_FOUND)
   
-        set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
   
         if (NOT TARGET Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
