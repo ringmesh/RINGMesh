@@ -108,8 +108,6 @@ namespace RINGMesh
         AbstractFeature* find_or_create_feature( const GMGE& entity );
         AbstractFeatureInterpretation* find_or_create_interpretation(
             AbstractFeature& feature );
-        PropertyKind* find_or_create_property_kind(
-            const std::string& element_type );
 
     private:
         const GeoModel3D& geomodel_;
@@ -161,24 +159,23 @@ namespace RINGMesh
             std::string guid( tools::GuidTools::generateUidAsString() );
             if( GMGE::is_fault( geo_feat ) )
             {
-                feature = pck_->createFault( guid, "FAULT" );
+                feature = pck_->createFault( guid, entity.name() );
             }
             else if( GMGE::is_stratigraphic_limit( geo_feat ) )
             {
-                feature = pck_->createHorizon( guid, "HORIZON" );
+                feature = pck_->createHorizon( guid, entity.name() );
             }
             else if( GMGE::GEOL_FEATURE::VOI == geo_feat )
             {
-                feature = pck_->createFrontier( guid, "VOI" );
+                feature = pck_->createFrontier( guid, entity.name() );
             }
             else if( GMGE::GEOL_FEATURE::STRATI_UNIT == geo_feat )
             {
-                feature = pck_->createStratigraphicUnit( guid, "STRATI_UNIT" );
+                feature = pck_->createStratigraphicUnit( guid, entity.name() );
             }
             else
             {
-                feature =
-                    pck_->createBoundaryFeature( guid, "BOUNDARYFEATURE" );
+                feature = pck_->createBoundaryFeature( guid, entity.name() );
             }
             geo_entity_2_feature_[entity.gmge()] = feature;
         }
@@ -201,37 +198,36 @@ namespace RINGMesh
             if( dynamic_cast< TectonicBoundaryFeature* >( &feature )
                 != nullptr )
             {
-                interp = (AbstractFeatureInterpretation*)
-                             pck_->createFaultInterpretation(
-                                 (TectonicBoundaryFeature*) &feature, guid,
-                                 "Fault" );
+                interp =
+                    (AbstractFeatureInterpretation*)
+                        pck_->createFaultInterpretation(
+                            (TectonicBoundaryFeature*) &feature, guid, guid );
             }
             else if( dynamic_cast< Horizon* >( &feature ) != nullptr )
             {
                 interp = (AbstractFeatureInterpretation*)
                              pck_->createHorizonInterpretation(
-                                 (Horizon*) &feature, guid, "Horizon" );
+                                 (Horizon*) &feature, guid, guid );
             }
             else if( dynamic_cast< FrontierFeature* >( &feature ) != nullptr )
             {
                 interp = (AbstractFeatureInterpretation*)
                              pck_->createGenericFeatureInterpretation(
-                                 &feature, guid, "VOI" );
+                                 &feature, guid, guid );
             }
             else if( dynamic_cast< StratigraphicUnitFeature* >( &feature )
                      != nullptr )
             {
-                interp = (AbstractFeatureInterpretation*)
-                             pck_->createStratigraphicUnitInterpretation(
-                                 (StratigraphicUnitFeature*) &feature, guid,
-                                 "STRATI_UNIT" );
+                interp =
+                    (AbstractFeatureInterpretation*)
+                        pck_->createStratigraphicUnitInterpretation(
+                            (StratigraphicUnitFeature*) &feature, guid, guid );
             }
             else
             {
                 interp = (AbstractFeatureInterpretation*)
                              pck_->createBoundaryFeatureInterpretation(
-                                 (BoundaryFeature*) &feature, guid,
-                                 "BOUNDARYFEATURE" );
+                                 (BoundaryFeature*) &feature, guid, guid );
             }
 
             feature_2_interp_[&feature] = interp;
@@ -254,38 +250,6 @@ namespace RINGMesh
                   << std::endl;
 
         pck_->serialize();
-    }
-
-    PropertyKind* GeoModelAdapterRESQMLImpl::find_or_create_property_kind(
-        const std::string& element_type )
-    {
-        auto result = type_2_property_kind_.find( element_type );
-        if( result != type_2_property_kind_.end() )
-        {
-            return result->second;
-        }
-
-        PropertyKind* kind = nullptr;
-        if( element_type == "double" )
-        {
-            kind = pck_->createPropertyKind(
-                tools::GuidTools::generateUidAsString(), element_type, "",
-                gsoap_resqml2_0_1::resqml2__ResqmlUom__Euc,
-                gsoap_resqml2_0_1::resqml2__ResqmlPropertyKind__continuous );
-        }
-        else if( element_type == "int" )
-        {
-            kind = pck_->createPropertyKind(
-                tools::GuidTools::generateUidAsString(), element_type, "",
-                gsoap_resqml2_0_1::resqml2__ResqmlUom__Euc,
-                gsoap_resqml2_0_1::resqml2__ResqmlPropertyKind__discrete );
-        }
-        else
-        {
-            return nullptr;
-        }
-        type_2_property_kind_[element_type] = kind;
-        return kind;
     }
 
     bool GeoModelAdapterRESQMLImpl::write_property( bool first_patch,
@@ -405,7 +369,7 @@ namespace RINGMesh
             std::string guid( tools::GuidTools::generateUidAsString() );
             TriangulatedSetRepresentation* rep =
                 pck_->createTriangulatedSetRepresentation(
-                    interp, local_3d_crs_, guid, "triangulated_set" );
+                    interp, local_3d_crs_, guid, feature->getTitle() );
 
             unsigned int interface_vertex_count = 0;
             for( auto i : range( interface.nb_children() ) )
@@ -491,8 +455,8 @@ namespace RINGMesh
 
                 std::string guid( tools::GuidTools::generateUidAsString() );
                 UnstructuredGridRepresentation* rep =
-                    pck_->createUnstructuredGridRepresentation( local_3d_crs_,
-                        guid, "tetra grid", region.nb_mesh_elements() );
+                    pck_->createUnstructuredGridRepresentation(
+                        local_3d_crs_, guid, guid, region.nb_mesh_elements() );
                 reps.push_back( rep );
 
                 std::unique_ptr< double[] > points(
@@ -598,8 +562,7 @@ namespace RINGMesh
 
         RESQML2_0_1_NS::StratigraphicColumn* stratiColumn =
             pck_->createStratigraphicColumn(
-                tools::GuidTools::generateUidAsString(),
-                "Stratigraphic column" );
+                tools::GuidTools::generateUidAsString(), column->get_name() );
         OrganizationFeature* stratiModelFeature =
             pck_->createStratigraphicModel(
                 tools::GuidTools::generateUidAsString(), "stratiModel" );

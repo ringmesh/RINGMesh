@@ -112,6 +112,14 @@ void compare_geomodels(
     std::vector< std::shared_ptr< const StratigraphicUnit > > all_units2 =
         column2->get_all_units();
 
+    if( column1->get_name() != column2->get_name() )
+    {
+        throw RINGMeshException( "TEST",
+            "Names of the stratigraphic column of the two GeoModels "
+            "not equal: ",
+            column1->get_name(), " vs ", column2->get_name() );
+    }
+
     if( all_units1.size() != all_units2.size() )
     {
         throw RINGMeshException( "TEST",
@@ -131,6 +139,33 @@ void compare_geomodels(
                    != all_units2[unit_index]->get_relation_base()
             || all_units1[unit_index]->get_relation_top()
                    != all_units2[unit_index]->get_relation_top() )
+        {
+            identical = false;
+            break;
+        }
+
+        std::string feat_name_base1 =
+            ( all_units1[unit_index]->get_interface_base() != nullptr )
+                ? all_units1[unit_index]->get_interface_base()->name()
+                : "";
+
+        std::string feat_name_base2 =
+            ( all_units2[unit_index]->get_interface_base() != nullptr )
+                ? all_units2[unit_index]->get_interface_base()->name()
+                : "";
+
+        std::string feat_name_top1 =
+            ( all_units1[unit_index]->get_interface_top() != nullptr )
+                ? all_units1[unit_index]->get_interface_top()->name()
+                : "";
+
+        std::string feat_name_top2 =
+            ( all_units2[unit_index]->get_interface_top() != nullptr )
+                ? all_units2[unit_index]->get_interface_top()->name()
+                : "";
+
+        if( feat_name_base1 != feat_name_base2
+            || feat_name_top1 != feat_name_top2 )
         {
             identical = false;
             break;
@@ -164,15 +199,18 @@ void compare_geomodels(
                       ->geological_feature()
                 : GMGE::GEOL_FEATURE::NO_GEOL;
 
-        if( all_units1[unit_index]->get_layer() == nullptr
-            || all_units2[unit_index]->get_layer() == nullptr )
+        if( geo_feat_base1 != geo_feat_base2 || geo_feat_top1 != geo_feat_top2 )
         {
             identical = false;
             break;
         }
 
-        if( all_units1[unit_index]->get_layer()->geological_feature()
-            != all_units2[unit_index]->get_layer()->geological_feature() )
+        if( all_units1[unit_index]->get_layer() == nullptr
+            || all_units2[unit_index]->get_layer() == nullptr
+            || all_units1[unit_index]->get_layer()->geological_feature()
+                   != all_units2[unit_index]->get_layer()->geological_feature()
+            || all_units1[unit_index]->get_layer()->name()
+                   != all_units2[unit_index]->get_layer()->name() )
         {
             identical = false;
             break;

@@ -80,6 +80,11 @@ namespace RINGMesh
             return id_;
         }
 
+        void set_name( const std::string& name )
+        {
+            name_ = name;
+        }
+
     protected:
         /*!
          * @details Client code should only create GeoModelEntities through
@@ -101,6 +106,7 @@ namespace RINGMesh
         {
             name_ = from.name_;
         }
+
         virtual bool is_index_valid() const = 0;
 
     protected:

@@ -317,7 +317,17 @@ namespace RINGMesh
                     interp_2_geo_entity_[unit] = layer;
 
                     unit_2_info_[unit].layer_ = layer;
-                    unit_2_info_[unit].name_ = unit->getTitle();
+                    if( unit->getInterpretedFeature() != nullptr )
+                    {
+                        const Layer3D& layer3d = static_cast< const Layer3D& >(
+                            geomodel_.geological_entity(
+                                GeologicalEntityType( "Layer" ),
+                                layer.index() ) );
+                        const_cast< Layer3D& >( layer3d ).set_name(
+                            unit->getInterpretedFeature()->getTitle() );
+                        unit_2_info_[unit].name_ =
+                            unit->getInterpretedFeature()->getTitle();
+                    }
                 }
 
                 for( auto contactIndex :
@@ -357,6 +367,12 @@ namespace RINGMesh
                 {
                     gmge_id layer = find_layer( region );
                     ringmesh_assert( layer.is_defined() );
+                    const Layer3D& layer3d = static_cast< const Layer3D& >(
+                        geomodel_.geological_entity(
+                            GeologicalEntityType( "Layer" ), layer.index() ) );
+                    const_cast< Region3D& >( region ).set_name(
+                        layer3d.name() );
+
                     builder_.geology.add_parent_children_relation(
                         layer, region.gmme() );
                 }
@@ -387,7 +403,7 @@ namespace RINGMesh
                     std::shared_ptr< const StratigraphicUnit > sunit(
                         new UnsubdividedStratigraphicUnit( unit.name_, base,
                             top,
-                            dynamic_cast< const Layer3D& >(
+                            static_cast< const Layer3D& >(
                                 geomodel_.geological_entity(
                                     Layer3D::type_name_static(),
                                     unit.layer_.index() ) ),
@@ -864,6 +880,14 @@ namespace RINGMesh
 
             if( feature != nullptr )
             {
+                const Interface3D& interface =
+                    static_cast< const Interface3D& >(
+                        geomodel_.geological_entity(
+                            GeologicalEntityType( "Interface" ),
+                            interface_id.index() ) );
+                const_cast< Interface3D& >( interface )
+                    .set_name( feature->getTitle() );
+
                 if( dynamic_cast< TectonicBoundaryFeature* >( feature )
                     != nullptr )
                 {
@@ -1125,6 +1149,7 @@ namespace RINGMesh
             {
                 Logger::err(
                     "Attempted to read partial or empty UnstructuredGrid" );
+                continue;
             }
 
             auto mesh = VolumeMesh3D::create_mesh();
