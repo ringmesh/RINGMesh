@@ -1,17 +1,32 @@
 New Features:
+ * 
+
+Bug fix:
+ * Fix geomodel_copy in 2D
+
+Improvements:
+ *
+
+
+#### Release: 5.1.0 ####
+
+New Features:
  * New (command-line) executable to edit GeoModel name.
  * Possibility to toggle off each validity check.
  * New executable to tetrahedralize an input GeoModel
  * Add new colormaps
  * Split IO GeoModel factories in two disctint factories:
      * one to register extensions that can be loaded
-     * one to register extensions that can be saved  
+     * one to register extensions that can be saved 
+ * Addition of fully operational Cartesian grids (with Attributes)
 
 Bug fix:
- * 
+ * In the computation of lines and corners from surfaces
 
 Improvements:
  * Change default colormap for attributes
+ * Reorganize CMake architecture (using SuperProject)
+ * Add new geometrical tests 
 
 #### Release: 5.0.0 ####
 
