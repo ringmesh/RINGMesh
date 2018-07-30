@@ -778,8 +778,7 @@ namespace RINGMesh
         bool is_meshed() const;
 
     private:
-        void copy_mesh_entity(
-            const GeoModelMeshEntity< 2 >& from ) final
+        void copy_mesh_entity( const GeoModelMeshEntity< 2 >& from ) final
         {
             const auto& region_from =
                 dynamic_cast< const Surface< 2 >& >( from );
