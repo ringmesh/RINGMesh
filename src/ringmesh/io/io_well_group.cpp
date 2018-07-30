@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,12 +37,13 @@
 
 #include <geogram/basic/file_system.h>
 #include <geogram/basic/line_stream.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/well.h>
 
-#include <ringmesh/geomodel/geomodel.h>
-
-#include <ringmesh/mesh/geogram_mesh.h>
 #include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/well.h>
+#include <ringmesh/mesh/mesh_index.h>
+
+#include <ringmesh/mesh/line_mesh.h>
 
 /*!
  * @file Implements the input - output of WellGroup
@@ -53,8 +54,8 @@ namespace
 {
     using namespace RINGMesh;
 
-#include "well_group/io_smesh.cpp"
-#include "well_group/io_wl.cpp"
+#include "well_group/io_smesh.hpp"
+#include "well_group/io_wl.hpp"
 }
 
 namespace RINGMesh

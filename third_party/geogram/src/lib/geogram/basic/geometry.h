@@ -76,6 +76,27 @@ namespace GEO {
      */
     typedef vecng<4, Numeric::float64> vec4;
 
+    /**
+     * \brief Represents points and vectors in 2d with
+     *  single-precision coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<2, Numeric::float32> vec2f;
+
+    /**
+     * \brief Represents points and vectors in 3d with
+     *  single-precision coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<3, Numeric::float32> vec3f;
+
+    /**
+     * \brief Represents points and vectors in 4d with
+     *  single-precision coordinates.
+     * \details Syntax is (mostly) compatible with GLSL.
+     */
+    typedef vecng<4, Numeric::float32> vec4f;
+
    
     /**
      * \brief Represents points and vectors in 2d with
@@ -301,6 +322,24 @@ namespace GEO {
          * \param[in] p1 first vertex of the triangle
          * \param[in] p2 second vertex of the triangle
          * \param[in] p3 third vertex of the triangle
+         * \return the signed area of the 2D triangle (\p p1, \p p2, \p p3),
+         *  positive if the triangle is oriented clockwise, negative otherwise.
+         */
+        inline double triangle_signed_area_2d(
+            const double* p1, const double* p2, const double* p3
+        ) {
+	    double a = p2[0]-p1[0];
+	    double b = p3[0]-p1[0];
+	    double c = p2[1]-p1[1];
+	    double d = p3[1]-p1[1];
+	    return 0.5*(a*d-b*c);
+        }
+	
+        /**
+         * \brief Computes the area of a 2d triangle
+         * \param[in] p1 first vertex of the triangle
+         * \param[in] p2 second vertex of the triangle
+         * \param[in] p3 third vertex of the triangle
          * \return the signed area of the triangle (\p p1, \p p2, \p p3),
          *  positive if the triangle is oriented clockwise, negative otherwise.
          */
@@ -323,6 +362,19 @@ namespace GEO {
             return ::fabs(triangle_signed_area(p1, p2, p3));
         }
 
+        /**
+         * \brief Computes the area of a 2d triangle
+         * \param[in] p1 first vertex of the triangle
+         * \param[in] p2 second vertex of the triangle
+         * \param[in] p3 third vertex of the triangle
+         * \return the area of the triangle (\p p1, \p p2, \p p3).
+         */
+        inline double triangle_area_2d(
+            const double* p1, const double* p2, const double* p3
+        ) {
+	    return ::fabs(triangle_signed_area_2d(p1,p2,p3));
+	}
+	
         /**
          * \brief Computes the center of the circumscribed circle of
          *   a 2d triangle.

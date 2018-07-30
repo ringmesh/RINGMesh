@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/io/common.h>
 
 #include <memory>
 
@@ -74,8 +74,7 @@ namespace RINGMesh
      * @param[in] f2 the second filename
      * @return return True if the files are identical
      */
-    bool RINGMESH_API compare_files(
-        const std::string& f1, const std::string& f2 );
+    bool io_api compare_files( const std::string& f1, const std::string& f2 );
     /*!
      * Loads a GeoModel from a file
      * @param[out] geomodel the geomodel to fill
@@ -97,32 +96,28 @@ namespace RINGMesh
      * @param[in] filename the file to load
      * @param][in,out] wells the wells to fill
      */
-    void RINGMESH_API well_load(
-        const std::string& filename, WellGroup3D& wells );
+    void io_api well_load( const std::string& filename, WellGroup3D& wells );
 
     /*!
      * Returns the dimension of the GeoModel in the \p filename
      */
-    index_t RINGMESH_API find_geomodel_dimension( const std::string& filename );
+    index_t io_api find_geomodel_dimension( const std::string& filename );
 
     template < index_t DIMENSION >
-    class GeoModelIOHandler
+    class io_api GeoModelInputHandler
     {
-        ringmesh_disable_copy_and_move( GeoModelIOHandler );
+        ringmesh_disable_copy_and_move( GeoModelInputHandler );
 
     public:
-        virtual ~GeoModelIOHandler() = default;
+        virtual ~GeoModelInputHandler() = default;
 
         static void initialize();
 
-        static std::unique_ptr< GeoModelIOHandler< DIMENSION > > get_handler(
+        static std::unique_ptr< GeoModelInputHandler< DIMENSION > > get_handler(
             const std::string& filename );
 
         bool load_geomodel(
             const std::string& filename, GeoModel< DIMENSION >& geomodel );
-
-        void save_geomodel( const GeoModel< DIMENSION >& geomodel,
-            const std::string& filename );
 
         virtual index_t dimension( const std::string& filename ) const
         {
@@ -131,28 +126,51 @@ namespace RINGMesh
         }
 
     protected:
-        GeoModelIOHandler() = default;
+        GeoModelInputHandler() = default;
         virtual void load(
             const std::string& filename, GeoModel< DIMENSION >& geomodel ) = 0;
-
-        virtual void save( const GeoModel< DIMENSION >& geomodel,
-            const std::string& filename ) = 0;
-
-    private:
-        static std::unique_ptr< GeoModelIOHandler > create(
-            const std::string& format );
     };
 
-    ALIAS_2D_AND_3D( GeoModelIOHandler );
+    ALIAS_2D_AND_3D( GeoModelInputHandler );
 
     template < index_t DIMENSION >
-    using GeoModelIOHandlerFactory =
-        Factory< std::string, GeoModelIOHandler< DIMENSION > >;
+    using GeoModelInputHandlerFactory =
+        Factory< std::string, GeoModelInputHandler< DIMENSION > >;
 
-    ALIAS_2D_AND_3D( GeoModelIOHandlerFactory );
+    ALIAS_2D_AND_3D( GeoModelInputHandlerFactory );
+
+    template < index_t DIMENSION >
+    class io_api GeoModelOutputHandler
+    {
+        ringmesh_disable_copy_and_move( GeoModelOutputHandler );
+
+    public:
+        virtual ~GeoModelOutputHandler() = default;
+
+        static void initialize();
+
+        static std::unique_ptr< GeoModelOutputHandler< DIMENSION > >
+            get_handler( const std::string& filename );
+
+        void save_geomodel( const GeoModel< DIMENSION >& geomodel,
+            const std::string& filename );
+
+    protected:
+        GeoModelOutputHandler() = default;
+        virtual void save( const GeoModel< DIMENSION >& geomodel,
+            const std::string& filename ) = 0;
+    };
+
+    ALIAS_2D_AND_3D( GeoModelOutputHandler );
+
+    template < index_t DIMENSION >
+    using GeoModelOutputHandlerFactory =
+        Factory< std::string, GeoModelOutputHandler< DIMENSION > >;
+
+    ALIAS_2D_AND_3D( GeoModelOutputHandlerFactory );
 
     /***************************************************************************/
-    class RINGMESH_API WellGroupIOHandler
+    class io_api WellGroupIOHandler
     {
         ringmesh_disable_copy_and_move( WellGroupIOHandler );
 
@@ -181,10 +199,10 @@ namespace RINGMesh
 
     /***************************************************************************/
 
-    void RINGMESH_API mesh_initialize();
+    void io_api mesh_initialize();
 
     /*********************************************************************************************/
-    class RINGMESH_API StratigraphicColumnIOHandler
+    class io_api StratigraphicColumnIOHandler
     {
         ringmesh_disable_copy_and_move( StratigraphicColumnIOHandler );
 

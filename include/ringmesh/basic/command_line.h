@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,7 +41,7 @@ namespace RINGMesh
 {
     namespace CmdLine
     {
-        bool RINGMESH_API import_arg_group( const std::string& name );
+        bool basic_api import_arg_group( const std::string& name );
 
     } // namespace CmdLine
 } // namespace RINGMesh

@@ -1,32 +1,85 @@
-version: 1.0.{build}
+environment:  
+  GITHUB_TOKEN:
+    secure: 5JPgkWrjzetioB0LX9ZmMUV+5gk2/4vtkhgvaMVmkoOCNwxaraKuHGYjr6CkD8hR
+  MSBUILD_FLAGS: /verbosity:minimal /maxcpucount /nologo
+  nodejs_version: "8"
+  matrix:
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2013
+    GENERATOR: "Visual Studio 12 2013 Win64"
+    RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2013
+    CMAKE_OPTIONS: -DRINGMESH_WITH_GUI:BOOL=OFF
+  - APPVEYOR_BUILD_WORKER_IMAGE: Visual Studio 2015
+    GENERATOR: "Visual Studio 14 2015 Win64"
+    RINGMESH_PACKAGE: RINGMesh-master-Win64-vs2015
+    CMAKE_OPTIONS: -DRINGMESH_WITH_GUI:BOOL=ON
 
-image: Visual Studio 2013
+platform: x64
 
-environment:
-  password:
-    secure: 61164urZVvsMrnw+6P+GBQ==
+matrix:
+  fast_finish: true
+  
+install:
+  - ps: Install-Product node $env:nodejs_version
+  
+cache:
+  - node_modules  
+  
+for:
+-
+  branches:
+    only:
+      - master
+      
+  notifications:
+    - provider: Slack
+      incoming_webhook:
+        secure: nhWXvD92AwG2//akSuMqEDraFcdaz8WcLR0Ndw+7HCGw18j1TAcTnCutfevAo5INztTFTC6NLMEroQTyy5cbm3yNkQ0Imb/ira3cL1XspEY=
+      on_build_success: false
+      on_build_failure: true
+      on_build_status_changed: true
     
-build:
-  parallel: true
- 
-build_script:
- - cmd: >-
-    mkdir build
-    
-    cd build
-    
-    mkdir ringmesh
-    
-    cd ringmesh
-    
-    cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DBUILD_RINGMESH_VIEW:BOOL=ON -DRINGMESH_TEST_GRAPHICS:BOOL=OFF -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ../..
-    
-    cmake --build . --config Debug
-    
-test_script:
- - cmd: cmake --build . --target RUN_TESTS --config Debug
+  configuration:
+    - Debug
+    - RelWithDebInfo
 
-on_success:
- - IF "%APPVEYOR_REPO_BRANCH%"=="default" (
-     C:\projects\ringmesh\launch_coverage.cmd
-   )
+  build_script:
+   - mkdir build
+   - cd build
+   - if %configuration% == RelWithDebInfo (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=%RINGMESH_PACKAGE% %CMAKE_OPTIONS% ..
+     ) else (
+     cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON %CMAKE_OPTIONS% ..
+     )
+   - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  test_script:
+   - if %configuration% == Debug (
+     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+     )
+
+  deploy_script:
+   - if %configuration% == RelWithDebInfo (
+     cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+     && git clone -b master https://github.com/ringmesh/web
+     && cd web
+     && copy ..\ringmesh\%RINGMESH_PACKAGE%.zip download\
+     && git config --global user.email "appveyor@fake.email"
+     && git config --global user.name "AppVeyor"
+     && git add download\%RINGMESH_PACKAGE%.zip
+     && git commit -m "Update Windows master release"
+     && git pull origin master
+     && git push https://BotellaA:%GITHUB_TOKEN%@github.com/ringmesh/web master
+     )
+-
+  configuration: Debug
+
+  build_script:
+   - mkdir build
+   - cd build
+   - cmake -G "%GENERATOR%" -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON %CMAKE_OPTIONS% ..
+   - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
+
+  test_script:
+   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+   - cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+   

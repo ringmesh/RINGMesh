@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,19 +35,21 @@
 
 /*!
  * This file is generated at project configuration by CMake
- * Do not modify it directly but modify the doc/tutorial/src/ringmesh_tutorials_config.h.in file 
+ * Do not modify it directly but modify the
+ * doc/tutorial/src/ringmesh_tutorials_config.h.in file
  * and re-run the project configuration
  */
- 
+
 #pragma once
- 
+
 #include <string>
 
-namespace RINGMesh {
- 
+namespace RINGMesh
+{
     /* Absolute path to data storage for the tutorials */
-    static const std::string ringmesh_tutorials_data_path = "@TUTORIALS_DATA_INPUT_DIRECTORY@/" ;
+    static const std::string ringmesh_tutorials_data_path =
+        "@TUTORIALS_DATA_INPUT_DIRECTORY@/";
 
-    static const std::string ringmesh_tutorials_output_path = "@TUTORIALS_DATA_OUTPUT_DIRECTORY@/" ;
-
+    static const std::string ringmesh_tutorials_output_path =
+        "@TUTORIALS_DATA_OUTPUT_DIRECTORY@/";
 }

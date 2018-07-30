@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -49,9 +49,11 @@ namespace RINGMesh
     template < typename T >
     class PImpl
     {
+        ringmesh_disable_copy_and_move( PImpl );
+
     public:
         template < typename... Args >
-        PImpl( Args&&... );
+        explicit PImpl( Args&&... );
         ~PImpl();
         T* operator->();
         const T* operator->() const;
@@ -65,7 +67,5 @@ namespace RINGMesh
 #define IMPLEMENTATION_MEMBER( impl )                                          \
     class Impl;                                                                \
     PImpl< Impl > impl
-
-#define EXPORT_IMPLEMENTATION( Class ) PImpl< Class::Impl >
 
 } // namespace RINGMesh

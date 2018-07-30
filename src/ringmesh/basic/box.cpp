@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -54,6 +54,42 @@ namespace
 namespace RINGMesh
 {
     template < index_t DIMENSION >
+    bool Box< DIMENSION >::initialized() const
+    {
+        return initialized_;
+    }
+
+    template < index_t DIMENSION >
+    void Box< DIMENSION >::clear()
+    {
+        initialized_ = false;
+    }
+
+    template < index_t DIMENSION >
+    const vecn< DIMENSION >& Box< DIMENSION >::min() const
+    {
+        return min_;
+    }
+
+    template < index_t DIMENSION >
+    const vecn< DIMENSION >& Box< DIMENSION >::max() const
+    {
+        return max_;
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > Box< DIMENSION >::center() const
+    {
+        return 0.5 * ( min() + max() );
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > Box< DIMENSION >::diagonal() const
+    {
+        return max() - min();
+    }
+
+    template < index_t DIMENSION >
     void Box< DIMENSION >::add_point( const vecn< DIMENSION >& p )
     {
         if( !initialized_ )
@@ -70,6 +106,81 @@ namespace RINGMesh
                 max_[i] = std::max( max_[i], p[i] );
             }
         }
+    }
+
+    template < index_t DIMENSION >
+    void Box< DIMENSION >::add_box( const Box< DIMENSION >& b )
+    {
+        if( b.initialized() )
+        {
+            add_point( b.min() );
+            add_point( b.max() );
+        }
+    }
+
+    template < index_t DIMENSION >
+    bool Box< DIMENSION >::bboxes_overlap( const Box< DIMENSION >& B ) const
+    {
+        for( auto c : range( DIMENSION ) )
+        {
+            if( max()[c] < B.min()[c] )
+            {
+                return false;
+            }
+            if( min()[c] > B.max()[c] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION >
+    Box< DIMENSION > Box< DIMENSION >::bbox_union(
+        const Box< DIMENSION >& B ) const
+    {
+        Box< DIMENSION > result{ *this };
+        result.add_box( B );
+        return result;
+    }
+
+    template < index_t DIMENSION >
+    std::tuple< bool, Box< DIMENSION > > Box< DIMENSION >::bbox_intersection(
+        const Box< DIMENSION >& B ) const
+    {
+        if( !bboxes_overlap( B ) )
+        {
+            return std::make_tuple( false, Box() );
+        }
+
+        Box< DIMENSION > result;
+        vecn< DIMENSION > minimal_max;
+        vecn< DIMENSION > maximal_min;
+        for( auto c : range( DIMENSION ) )
+        {
+            minimal_max[c] = std::min( this->max()[c], B.max()[c] );
+            maximal_min[c] = std::max( this->min()[c], B.min()[c] );
+        }
+        result.add_point( maximal_min );
+        result.add_point( minimal_max );
+        return std::make_tuple( true, result );
+    }
+
+    template < index_t DIMENSION >
+    bool Box< DIMENSION >::contains( const vecn< DIMENSION >& b ) const
+    {
+        for( auto c : range( DIMENSION ) )
+        {
+            if( b[c] < min()[c] )
+            {
+                return false;
+            }
+            if( b[c] > max()[c] )
+            {
+                return false;
+            }
+        }
+        return true;
     }
 
     template < index_t DIMENSION >
@@ -117,7 +228,7 @@ namespace RINGMesh
         return result;
     }
 
-    template class RINGMESH_API Box< 2 >;
-    template class RINGMESH_API Box< 3 >;
+    template class basic_api Box< 2 >;
+    template class basic_api Box< 3 >;
 
 } // namespace RINGMesh

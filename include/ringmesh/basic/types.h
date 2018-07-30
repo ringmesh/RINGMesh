@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,26 +39,18 @@
 #include <geogram/basic/numeric.h>
 
 /*!
- * @file Re-defintions of basic types similar to those of Geogram
+ * @file Re-definitions of basic types similar to those of Geogram
  */
-
 namespace RINGMesh
 {
-    /* If you need interger of 8bits of any other one
-     * it is sufficient to write using GEO::Numeric::uint8 in your file.
-     *
-     * Dummy variables were removed, the pollute the namespace and
-     * it is quite easy to do without them.
-     */
-
     // Basic types used in RINGMesh
     // Using definitions of Geogram/basic/numeric.h
     using GEO::Numeric::float32;
     using GEO::Numeric::float64;
 
     using GEO::Numeric::max_float32;
-    using GEO::Numeric::min_float32;
     using GEO::Numeric::max_float64;
+    using GEO::Numeric::min_float32;
     using GEO::Numeric::min_float64;
 
     static const double global_epsilon = 1E-8;
@@ -74,11 +66,64 @@ namespace RINGMesh
     using vecn = GEO::vecng< DIMENSION, double >;
     // This is an array of 3 doubles
     using vec3 = vecn< 3 >;
-    // This is an array of 3 doubles
+    // This is an array of 2 doubles
     using vec2 = vecn< 2 >;
+    // This is an array template of unsigned integers
+    template < index_t DIMENSION >
+    using ivecn = GEO::vecng< DIMENSION, index_t >;
+    // This is an array of 3 unsigned integers
+    using ivec3 = ivecn< 3 >;
+    // This is an array of 2 unsigned integers
+    using ivec2 = ivecn< 2 >;
+    // This is an array template of signed integers
+    template < index_t DIMENSION >
+    using sivecn = GEO::vecng< DIMENSION, signed_index_t >;
+    // This is an array of 3 signed integers
+    using sivec3 = sivecn< 3 >;
+    // This is an array of 2 signed integers
+    using sivec2 = sivecn< 2 >;
+
+    template < index_t DIMENSION, class type >
+    bool operator==( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
+    {
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            if( u[i] != v[i] )
+            {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    template < index_t DIMENSION, class type >
+    bool operator!=( const GEO::vecng< DIMENSION, type >& u,
+        const GEO::vecng< DIMENSION, type >& v )
+    {
+        return !( u == v );
+    }
+
+    template < index_t DIMENSION >
+    bool inexact_equal( const vecn< DIMENSION >& v1,
+        const vecn< DIMENSION >& v2,
+        double epsilon )
+    {
+        double square_length{ 0. };
+        for( index_t i = 0; i < DIMENSION; i++ )
+        {
+            square_length += ( v2[i] - v1[i] ) * ( v2[i] - v1[i] );
+        }
+        return square_length < epsilon * epsilon;
+    }
+
+    template < index_t DIMENSION >
+    vecn< DIMENSION > basic_api initialize_vecn_coordinates( double value );
 
     // This is the value used in RINGMesh for a invalid index
     static const index_t NO_ID = index_t( -1 );
+
+    using MeshType = std::string;
 
     /*! enum defining the type of cell in region
      *  * CellType::UNCLASSIFIED may be either a connector or more complex cell
@@ -97,11 +142,11 @@ namespace RINGMesh
     };
 
     /*! enum defining the type of polygon in surface.
-    *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
-    * that is not specified.
-    *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
-    * used.
-    */
+     *  * UNCLASSIFIED_POLYGON may be either a connector or more complex polygon
+     * that is not specified.
+     *  * UNDEFINED_POLYGON means that the polygon is not defined and cannot be
+     * used.
+     */
     enum struct PolygonType : index_t
     {
         TRIANGLE = 0,
@@ -151,6 +196,15 @@ namespace RINGMesh
         using underlying = typename std::underlying_type< Enum >::type;
         return static_cast< Enum >( static_cast< underlying >( lhs )
                                     ^ static_cast< underlying >( rhs ) );
+    }
+
+    template < typename Enum >
+    typename std::enable_if< EnableBitMaskOperators< Enum >::enable,
+        Enum >::type
+        operator~( Enum lhs )
+    {
+        using underlying = typename std::underlying_type< Enum >::type;
+        return static_cast< Enum >( ~static_cast< underlying >( lhs ) );
     }
 
     template < typename Enum >

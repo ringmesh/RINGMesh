@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -56,7 +56,7 @@ namespace RINGMesh
         explicit NNSearch( const std::vector< vecn< DIMENSION > >& vertices,
             bool copy = true );
 
-        ~NNSearch() = default;
+        ~NNSearch();
 
         /*!
          * @brief Gets the \p index_map that link all the duplicated points

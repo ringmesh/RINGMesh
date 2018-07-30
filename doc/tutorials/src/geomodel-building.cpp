@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,9 +39,10 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -102,11 +103,6 @@ int main()
 
     try
     {
-        // This line stands for the initialization
-        // of Geogram and the factories of RINGMesh
-        // IT IS MANDATORY
-        default_configure();
-
         // Say Hello
         print_header_information();
         Logger::div( "RINGMesh Training" );
@@ -420,327 +416,243 @@ int main()
         // Region are bounded by Surfaces
 
         // For corner 0
-        gmme_id corner0( Corner3D::type_name_static(), 0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 0 ), corner0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 13 ), corner0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 3 ), corner0 );
+        // Corner 0 is a boundary of the lines: 0, 3, and 13.
+        builder.topology.add_line_corner_boundary_relation( 0, 0 );
+        builder.topology.add_line_corner_boundary_relation( 3, 0 );
+        builder.topology.add_line_corner_boundary_relation( 13, 0 );
 
         // For corner 1
-        gmme_id corner1( Corner3D::type_name_static(), 1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 2 ), corner1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 3 ), corner1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 17 ), corner1 );
+        // Corner 1 is a boundary of the lines: 2, 3, and 17.
+        builder.topology.add_line_corner_boundary_relation( 2, 1 );
+        builder.topology.add_line_corner_boundary_relation( 3, 1 );
+        builder.topology.add_line_corner_boundary_relation( 17, 1 );
 
         // For corner 2
-        gmme_id corner2( Corner3D::type_name_static(), 2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 2 ), corner2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 19 ), corner2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 1 ), corner2 );
+        // Corner 2 is a boundary of the lines: 1, 2, and 19.
+        builder.topology.add_line_corner_boundary_relation( 1, 2 );
+        builder.topology.add_line_corner_boundary_relation( 2, 2 );
+        builder.topology.add_line_corner_boundary_relation( 19, 2 );
 
         // For corner 3
-        gmme_id corner3( Corner3D::type_name_static(), 3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 0 ), corner3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 1 ), corner3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 15 ), corner3 );
+        // Corner 3 is a boundary of the lines: 0, 1, and 15.
+        builder.topology.add_line_corner_boundary_relation( 0, 3 );
+        builder.topology.add_line_corner_boundary_relation( 1, 3 );
+        builder.topology.add_line_corner_boundary_relation( 15, 3 );
 
         // For corner 4
-        gmme_id corner4( Corner3D::type_name_static(), 4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 12 ), corner4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 8 ), corner4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 11 ), corner4 );
+        // Corner 4 is a boundary of the lines: 8, 11, and 12.
+        builder.topology.add_line_corner_boundary_relation( 8, 4 );
+        builder.topology.add_line_corner_boundary_relation( 11, 4 );
+        builder.topology.add_line_corner_boundary_relation( 12, 4 );
 
         // For corner 5
-        gmme_id corner5( Corner3D::type_name_static(), 5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 10 ), corner5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 16 ), corner5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 11 ), corner5 );
+        // Corner 5 is a boundary of the lines: 10, 11, and 16.
+        builder.topology.add_line_corner_boundary_relation( 10, 5 );
+        builder.topology.add_line_corner_boundary_relation( 11, 5 );
+        builder.topology.add_line_corner_boundary_relation( 16, 5 );
 
         // For corner 6
-        gmme_id corner6( Corner3D::type_name_static(), 6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 10 ), corner6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 18 ), corner6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 9 ), corner6 );
+        // Corner 6 is a boundary of the lines: 9, 10, and 18.
+        builder.topology.add_line_corner_boundary_relation( 9, 6 );
+        builder.topology.add_line_corner_boundary_relation( 10, 6 );
+        builder.topology.add_line_corner_boundary_relation( 18, 6 );
 
         // For corner 7
-        gmme_id corner7( Corner3D::type_name_static(), 7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 8 ), corner7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 9 ), corner7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 14 ), corner7 );
+        // Corner 7 is a boundary of the lines: 8, 9, and 14.
+        builder.topology.add_line_corner_boundary_relation( 8, 7 );
+        builder.topology.add_line_corner_boundary_relation( 9, 7 );
+        builder.topology.add_line_corner_boundary_relation( 14, 7 );
 
         // For corner 8
-        gmme_id corner8( Corner3D::type_name_static(), 8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 12 ), corner8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 13 ), corner8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 7 ), corner8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 4 ), corner8 );
+        // Corner 8 is a boundary of the lines: 4, 7, 12, and 13.
+        builder.topology.add_line_corner_boundary_relation( 4, 8 );
+        builder.topology.add_line_corner_boundary_relation( 7, 8 );
+        builder.topology.add_line_corner_boundary_relation( 12, 8 );
+        builder.topology.add_line_corner_boundary_relation( 13, 8 );
 
         // For corner 9
-        gmme_id corner9( Corner3D::type_name_static(), 9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 16 ), corner9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 17 ), corner9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 6 ), corner9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 7 ), corner9 );
+        // Corner 9 is a boundary of the lines: 6, 7, 16, and 17.
+        builder.topology.add_line_corner_boundary_relation( 6, 9 );
+        builder.topology.add_line_corner_boundary_relation( 7, 9 );
+        builder.topology.add_line_corner_boundary_relation( 16, 9 );
+        builder.topology.add_line_corner_boundary_relation( 17, 9 );
 
         // For corner 10
-        gmme_id corner10( Corner3D::type_name_static(), 10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 6 ), corner10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 18 ), corner10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 19 ), corner10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 5 ), corner10 );
+        // Corner 10 is a boundary of the lines: 5, 6, 18, and 19.
+        builder.topology.add_line_corner_boundary_relation( 5, 10 );
+        builder.topology.add_line_corner_boundary_relation( 6, 10 );
+        builder.topology.add_line_corner_boundary_relation( 18, 10 );
+        builder.topology.add_line_corner_boundary_relation( 19, 10 );
 
         // For corner 11
-        gmme_id corner11( Corner3D::type_name_static(), 11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 4 ), corner11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 14 ), corner11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 15 ), corner11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Line3D::type_name_static(), 5 ), corner11 );
+        // Corner 11 is a boundary of the lines: 4, 5, 14, and 15.
+        builder.topology.add_line_corner_boundary_relation( 4, 11 );
+        builder.topology.add_line_corner_boundary_relation( 5, 11 );
+        builder.topology.add_line_corner_boundary_relation( 14, 11 );
+        builder.topology.add_line_corner_boundary_relation( 15, 11 );
 
         /////////////////////////////////////////////////////////
 
         // For line 0
-        gmme_id line0( Line3D::type_name_static(), 0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 0 ), line0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 4 ), line0 );
+        // Line 0 is a boundary of the surfaces: 0 and 4.
+        builder.topology.add_surface_line_boundary_relation( 0, 0 );
+        builder.topology.add_surface_line_boundary_relation( 4, 0 );
 
         // For line 1
-        gmme_id line1( Line3D::type_name_static(), 1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 0 ), line1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 10 ), line1 );
+        // Line 1 is a boundary of the surfaces: 0 and 10.
+        builder.topology.add_surface_line_boundary_relation( 0, 1 );
+        builder.topology.add_surface_line_boundary_relation( 10, 1 );
 
         // For line 2
-        gmme_id line2( Line3D::type_name_static(), 2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 0 ), line2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 6 ), line2 );
+        // Line 2 is a boundary of the surfaces: 0 and 6.
+        builder.topology.add_surface_line_boundary_relation( 0, 2 );
+        builder.topology.add_surface_line_boundary_relation( 6, 2 );
 
         // For line 3
-        gmme_id line3( Line3D::type_name_static(), 3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 0 ), line3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 8 ), line3 );
+        // Line 3 is a boundary of the surfaces: 0 and 8.
+        builder.topology.add_surface_line_boundary_relation( 0, 3 );
+        builder.topology.add_surface_line_boundary_relation( 8, 3 );
 
         // For line 4
-        gmme_id line4( Line3D::type_name_static(), 4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 1 ), line4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 4 ), line4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 3 ), line4 );
+        // Line 4 is a boundary of the surfaces: 1, 3 and 4.
+        builder.topology.add_surface_line_boundary_relation( 1, 4 );
+        builder.topology.add_surface_line_boundary_relation( 3, 4 );
+        builder.topology.add_surface_line_boundary_relation( 4, 4 );
 
         // For line 5
-        gmme_id line5( Line3D::type_name_static(), 5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 1 ), line5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 9 ), line5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 10 ), line5 );
+        // Line 5 is a boundary of the surfaces: 1, 9 and 10.
+        builder.topology.add_surface_line_boundary_relation( 1, 5 );
+        builder.topology.add_surface_line_boundary_relation( 9, 5 );
+        builder.topology.add_surface_line_boundary_relation( 10, 5 );
 
         // For line 6
-        gmme_id line6( Line3D::type_name_static(), 6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 1 ), line6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 6 ), line6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 5 ), line6 );
+        // Line 6 is a boundary of the surfaces: 1, 5 and 6.
+        builder.topology.add_surface_line_boundary_relation( 1, 6 );
+        builder.topology.add_surface_line_boundary_relation( 5, 6 );
+        builder.topology.add_surface_line_boundary_relation( 6, 6 );
 
         // For line 7
-        gmme_id line7( Line3D::type_name_static(), 7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 1 ), line7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 7 ), line7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 8 ), line7 );
+        // Line 7 is a boundary of the surfaces: 1, 7 and 8.
+        builder.topology.add_surface_line_boundary_relation( 1, 7 );
+        builder.topology.add_surface_line_boundary_relation( 7, 7 );
+        builder.topology.add_surface_line_boundary_relation( 8, 7 );
 
         // For line 8
-        gmme_id line8( Line3D::type_name_static(), 8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 2 ), line8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 3 ), line8 );
+        // Line 8 is a boundary of the surfaces: 2 and 3.
+        builder.topology.add_surface_line_boundary_relation( 2, 8 );
+        builder.topology.add_surface_line_boundary_relation( 3, 8 );
 
         // For line 9
-        gmme_id line9( Line3D::type_name_static(), 9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 2 ), line9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 9 ), line9 );
+        // Line 9 is a boundary of the surfaces: 2 and 9.
+        builder.topology.add_surface_line_boundary_relation( 2, 9 );
+        builder.topology.add_surface_line_boundary_relation( 9, 9 );
 
         // For line 10
-        gmme_id line10( Line3D::type_name_static(), 10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 2 ), line10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 5 ), line10 );
+        // Line 10 is a boundary of the surfaces: 2 and 5.
+        builder.topology.add_surface_line_boundary_relation( 2, 10 );
+        builder.topology.add_surface_line_boundary_relation( 5, 10 );
 
         // For line 11
-        gmme_id line11( Line3D::type_name_static(), 11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 2 ), line11 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 7 ), line11 );
+        // Line 11 is a boundary of the surfaces: 2 and 7.
+        builder.topology.add_surface_line_boundary_relation( 2, 11 );
+        builder.topology.add_surface_line_boundary_relation( 7, 11 );
 
         // For line 12
-        gmme_id line12( Line3D::type_name_static(), 12 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 3 ), line12 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 7 ), line12 );
+        // Line 12 is a boundary of the surfaces: 3 and 7.
+        builder.topology.add_surface_line_boundary_relation( 3, 12 );
+        builder.topology.add_surface_line_boundary_relation( 7, 12 );
 
         // For line 13
-        gmme_id line13( Line3D::type_name_static(), 13 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 8 ), line13 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 4 ), line13 );
+        // Line 13 is a boundary of the surfaces: 4 and 8.
+        builder.topology.add_surface_line_boundary_relation( 4, 13 );
+        builder.topology.add_surface_line_boundary_relation( 8, 13 );
 
         // For line 14
-        gmme_id line14( Line3D::type_name_static(), 14 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 3 ), line14 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 9 ), line14 );
+        // Line 14 is a boundary of the surfaces: 3 and 9.
+        builder.topology.add_surface_line_boundary_relation( 3, 14 );
+        builder.topology.add_surface_line_boundary_relation( 9, 14 );
 
         // For line 15
-        gmme_id line15( Line3D::type_name_static(), 15 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 4 ), line15 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 10 ), line15 );
+        // Line 15 is a boundary of the surfaces: 4 and 10.
+        builder.topology.add_surface_line_boundary_relation( 4, 15 );
+        builder.topology.add_surface_line_boundary_relation( 10, 15 );
 
         // For line 16
-        gmme_id line16( Line3D::type_name_static(), 16 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 7 ), line16 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 5 ), line16 );
+        // Line 16 is a boundary of the surfaces: 5 and 7.
+        builder.topology.add_surface_line_boundary_relation( 5, 16 );
+        builder.topology.add_surface_line_boundary_relation( 7, 16 );
 
         // For line 17
-        gmme_id line17( Line3D::type_name_static(), 17 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 8 ), line17 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 6 ), line17 );
+        // Line 17 is a boundary of the surfaces: 6 and 8.
+        builder.topology.add_surface_line_boundary_relation( 6, 17 );
+        builder.topology.add_surface_line_boundary_relation( 8, 17 );
 
         // For line 18
-        gmme_id line18( Line3D::type_name_static(), 18 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 5 ), line18 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 9 ), line18 );
+        // Line 18 is a boundary of the surfaces: 5 and 9.
+        builder.topology.add_surface_line_boundary_relation( 5, 18 );
+        builder.topology.add_surface_line_boundary_relation( 9, 18 );
 
         // For line 19
-        gmme_id line19( Line3D::type_name_static(), 19 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 6 ), line19 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Surface3D::type_name_static(), 10 ), line19 );
+        // Line 19 is a boundary of the surfaces: 6 and 10.
+        builder.topology.add_surface_line_boundary_relation( 6, 19 );
+        builder.topology.add_surface_line_boundary_relation( 10, 19 );
 
         /////////////////////////////////////////////////////////
 
         // For surface 0
-        gmme_id surface0( Surface3D::type_name_static(), 0 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface0 );
+        // Surface 0 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 0, false ); // TODO side ????
 
         // For surface 1
-        gmme_id surface1( Surface3D::type_name_static(), 1 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface1 );
+        // Surface 1 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 1, false ); // TODO side ????
 
         // For surface 2
-        gmme_id surface2( Surface3D::type_name_static(), 2 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 1 ), surface2 );
+        // Surface 2 is a boundary of the region 1.
+        builder.topology.add_region_surface_boundary_relation(
+            1, 2, false ); // TODO side ????
 
         // For surface 3
-        gmme_id surface3( Surface3D::type_name_static(), 3 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 1 ), surface3 );
+        // Surface 3 is a boundary of the region 1.
+        builder.topology.add_region_surface_boundary_relation(
+            1, 3, false ); // TODO side ????
 
         // For surface 4
-        gmme_id surface4( Surface3D::type_name_static(), 4 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface4 );
+        // Surface 4 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 4, false ); // TODO side ????
 
         // For surface 5
-        gmme_id surface5( Surface3D::type_name_static(), 5 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 1 ), surface5 );
+        // Surface 5 is a boundary of the region 1.
+        builder.topology.add_region_surface_boundary_relation(
+            1, 5, false ); // TODO side ????
 
         // For surface 6
-        gmme_id surface6( Surface3D::type_name_static(), 6 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface6 );
+        // Surface 6 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 6, false ); // TODO side ????
 
         // For surface 7
-        gmme_id surface7( Surface3D::type_name_static(), 7 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 1 ), surface7 );
+        // Surface 7 is a boundary of the region 1.
+        builder.topology.add_region_surface_boundary_relation(
+            1, 7, false ); // TODO side ????
 
         // For surface 8
-        gmme_id surface8( Surface3D::type_name_static(), 8 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface8 );
+        // Surface 8 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 8, false ); // TODO side ????
 
         // For surface 9
-        gmme_id surface9( Surface3D::type_name_static(), 9 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 1 ), surface9 );
+        // Surface 9 is a boundary of the region 1.
+        builder.topology.add_region_surface_boundary_relation(
+            1, 9, false ); // TODO side ????
 
         // For surface 10
-        gmme_id surface10( Surface3D::type_name_static(), 10 );
-        builder.topology.add_mesh_entity_boundary_relation(
-            gmme_id( Region3D::type_name_static(), 0 ), surface10 );
+        // Surface 10 is a boundary of the region 0.
+        builder.topology.add_region_surface_boundary_relation(
+            0, 10, false ); // TODO side ????
 
         //#####################################
         // Setting the parent/child relations #

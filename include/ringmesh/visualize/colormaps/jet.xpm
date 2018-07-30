@@ -1,0 +1,13 @@
+/* XPM */
+static const char *jet_xpm[] = {
+    /* columns rows colors chars-per-pixel */
+    "32 1 32 1 ", "  c #890000", ". c #AA0000", "X c #CA0000", "o c #EA0000",
+    "O c #FF0B00", "+ c #FF2C00", "@ c #FF4D00", "# c #FF6D00", "$ c #00D323",
+    "% c #42D100", "& c #00E065", "* c #FF8D00", "= c #FFAD00", "- c #8DDF00",
+    "; c #FFCD00", ": c #C0EC00", "> c #FFED00", ", c #ECF900", "< c #000087",
+    "1 c #0000A8", "2 c #0000C8", "3 c #0000E8", "4 c #0009FF", "5 c #002AFF",
+    "6 c #004BFF", "7 c #006BFF", "8 c #00EDA5", "9 c #008BFF", "0 c #00ABFF",
+    "q c #00CBFF", "w c #00FAE5", "e c #00EBFF",
+    /* pixels */
+    "<123456790qew8&$%-:,>;=*#@+OoX. "
+};

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -48,33 +48,33 @@
 
 namespace RINGMesh
 {
-    class RINGMESH_API Logger
+    class basic_api Logger
     {
     public:
         static void div( const std::string& title )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             GEO::Logger::div( title );
         }
 
         template < typename... Args >
         static void out( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::out( feature ), args... );
         }
 
         template < typename... Args >
         static void err( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::err( feature ), args... );
         }
 
         template < typename... Args >
         static void warn( const std::string& feature, const Args&... args )
         {
-            std::lock_guard< std::mutex > lock( lock_ );
+            std::lock_guard< std::mutex > locking( lock() );
             log( GEO::Logger::warn( feature ), args... );
         }
 
@@ -96,8 +96,52 @@ namespace RINGMesh
             log( os, args... );
         }
 
+        static std::mutex& lock()
+        {
+            static std::mutex lock;
+            return lock;
+        }
+    };
+
+    class basic_api ThreadSafeConsoleLogger : public GEO::ConsoleLogger
+    {
+        using base_class = GEO::ConsoleLogger;
+
+    public:
+        void div( const std::string& title )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::div( title );
+        }
+
+        void out( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::out( str );
+        }
+
+        void warn( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::warn( str );
+        }
+
+        void err( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::err( str );
+        }
+
+        void status( const std::string& str )
+        {
+            std::lock_guard< std::mutex > lock( lock_ );
+            base_class::status( str );
+        }
+
     private:
-        static std::mutex lock_;
+        std::mutex lock_{};
     };
 
 } // namespace RINGMesh
+
+#define DEBUG( a ) RINGMesh::Logger::out( "Debug", #a, " = ", a )

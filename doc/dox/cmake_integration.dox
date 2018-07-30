@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,54 +36,50 @@
 
 /*!
 
-\page ringmesh_cmake_integration How to integrate RINGMesh in anther cmake project
+\page ringmesh_cmake_integration How to integrate RINGMesh in another cmake project
 
-This page explain how to complete a CMakeLists.txt of a project using RINGMesh as dependency.
+This page explains how to complete a CMakeLists.txt of a project using RINGMesh as dependency.
 
 
-Define a user-defined variable to get RINGMesh directory path
+Define a user-defined variable to get RINGMesh install directory path
 -------------------------------------------------------------
-The code below define a variable RINGMesh_HOME containing the path to the RINGMesh directory.
+The code below defines a variable RINGMesh_INSTALL_PREFIX containing the path to the RINGMesh install directory.
 The user can change the default value (parent directory of the current cmake project).
+This directory must contain a RINGMeshConfig.cmake file.
+If you compiled RINGMesh using Unix Makefiles, RINGMeshConfig.cmake is in build/Debug directory in debug mode
+(build/Release in release mode, and build/RelWithDebInfo in release with debug information mode).
+If you compiled RINGMesh using a project-based IDE (i.e., Visual Studio and Xcode), RINGMeshConfig.cmake is in the build
+directory.
 
+Example with RINGMesh compiled thanks to Unix Makefiles:
 \code
-SET(RINGMesh_HOME "${PROJECT_SOURCE_DIR}/../RINGMesh" CACHE PATH "Path to RINGMesh project (mandatory dependency)")
+set(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh/build/Release" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
+\endcode
+
+Example with RINGMesh compiled thanks to Visual Studio or Xcode:
+\code
+set(RINGMesh_INSTALL_PREFIX "${PROJECT_SOURCE_DIR}/../RINGMesh/build" CACHE PATH "Path to RINGMesh install directory (mandatory dependency)")
 \endcode
 
 
 Find the RINGMesh cmake configuration file
 ------------------------------------------
-The code below finds the RINGMesh cmake configuration file from the variable RINGMesh_HOME.
-Several variables are defined toward RINGMesh, geogram, zlib and tinyxml2 includes, and RINGMesh and geogram libraries.
-There are some variations between Linux and Windows. All RINGMesh includes are added to the current
-project includes. The RINGMesh libraries are added to a variable EXTRA_LIBS in which all the
-libraries, used in the current cmake project, i.e., not only RINGMesh, are added.
-All this steps are defined in the cmake/RINGMeshConfig.cmake file.
+The code below finds the RINGMesh cmake configuration file from the variable RINGMesh_INSTALL_PREFIX
+and imports RINGMesh targets in your cmake script.
 
 \code
-message(STATUS "Using RINGMesh directory = ${RINGMesh_HOME}")
+message(STATUS "Using RINGMesh install directory = ${RINGMesh_INSTALL_PREFIX}")
 
-find_package(RINGMesh REQUIRED PATHS ${RINGMesh_HOME}/cmake)
-set_ringmesh_includes_and_libs(EXTRA_LIBS)
+find_package(RINGMesh REQUIRED PATHS ${RINGMesh_INSTALL_PREFIX})
 
 \endcode
 
 
-Link your code with RINGMesh
-----------------------------
-Add this line to link your library (called MyLib) with RINGMesh:
+Using RINGMesh with your code
+-----------------------------
+Add this line to link your library (called MyLib) with RINGMesh libraries (in this example: geomodel_core and geomodel_tools):
 \code
-target_link_libraries(MyLib ${EXTRA_LIBS})
-\endcode
-As said previously, EXTRA_LIBS may contain other libraries than the ones of RINGMesh.
-
-To link your binaries (e.g., MyBin) with RINGMesh, you can use the following line:
-\code
-target_link_libraries(MyBin MyLib ${EXTRA_LIBS})
-\endcode
-or potentially:
-\code
-target_link_libraries(MyBin MyLib ${RINGMesh_LIBRARIES})
+target_link_libraries(MyLib RINGMesh::geomodel_core RINGMesh::geomodel_tools)
 \endcode
 
 */

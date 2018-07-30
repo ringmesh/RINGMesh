@@ -47,6 +47,7 @@
 #define OPENNL_H
 
 #include "nl_linkage.h"
+#include <stdio.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -293,7 +294,7 @@ typedef double          NLdouble;
  *  NL_FUNC_PRECONDITIONER,
  *  NL_FUNC_PROGRESS      
  */
-typedef void(*NLfunc)();
+typedef void(*NLfunc)(void);
 
 /**
  * \brief An OpenNL context.
@@ -1277,6 +1278,8 @@ typedef void* NLContext;
  * \param[in] k the index of the buffer. If type = NL_VARIABLES_BUFFER, this
  *   corresponds to the index of the linear system (0 if there is a single
  *   linear system).
+ * \param[in] addr the address of the array to be bound.
+ * \param[in] stride number of bytes between two consecutive elements.
  */
     NLAPI void NLAPIENTRY nlBindBuffer(
 	NLenum buffer, NLuint k, void* addr, NLuint stride
@@ -1375,6 +1378,28 @@ NLAPI void NLAPIENTRY nlMatrixMode(NLenum matrix);
  * \return the \p i th eigenvalue.
  */
     NLAPI double NLAPIENTRY nlGetEigenValue(NLuint i);
+
+/**
+ * @}
+ * \name Logging and messages
+ * @{
+ */    
+
+    /**
+     * \brief Function pointer type for user printf function.
+     */
+    typedef int (*NLprintfFunc)(const char* format, ...);
+
+    /**
+     * \brief Function pointer type for user fprintf function.
+     */
+    typedef int (*NLfprintfFunc)(FILE* out, const char* format, ...);
+    
+    /**
+     * \brief Specifies user functions for printing messages.
+     */
+    NLAPI void NLAPIENTRY nlPrintfFuncs(NLprintfFunc f1, NLfprintfFunc f2);
+    
     
 /**
  * @}

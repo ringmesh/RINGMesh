@@ -1,0 +1,13 @@
+/* XPM */
+static const char *lgbt_xpm[] = {
+    /* columns rows colors chars-per-pixel */
+    "32 1 32 1 ", "  c #E71700", ". c #EA4C00", "X c #ED7500", "o c #ED007A",
+    "O c #14E700", "+ c #44EA00", "@ c #6CED00", "# c #00ED50", "$ c #F09800",
+    "% c #F4B600", "& c #8EF000", "* c #ADF300", "= c #F7CE00", "- c #C8F700",
+    "; c #DFFA00", ": c #FAE400", "> c #FDF700", ", c #F5FD00", "< c #0112FF",
+    "1 c #004AFF", "2 c #0079FF", "3 c #8700FF", "4 c #A000FF", "5 c #B700FF",
+    "6 c #CD00FF", "7 c #FA00E6", "8 c #E100FF", "9 c #F300FF", "0 c #00A3FF",
+    "q c #00FACF", "w c #00C9FF", "e c #00EBFF",
+    /* pixels */
+    "<120weq#O+@&*-;,>:=%$X. o7986543"
+};

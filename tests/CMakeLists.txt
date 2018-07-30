@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,14 +31,10 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-# CMakeLists for RINGMesh tests
-# This file is included by the root CMakeList of the RINGMesh project
-# Author Jeanne Pellerin
-
-if(NOT IS_DIRECTORY ${TEST_DATA_INPUT_DIRECTORY})
-    message(STATUS "Defined data directory for tests does not exists, using default tests/data")
-    set(TEST_DATA_INPUT_DIRECTORY "${TEST_DIRECTORY}/data" FORCE)
-endif()
+set(TEST_DIRECTORY ${CMAKE_SOURCE_DIR}/tests)
+set(TEST_DATA_INPUT_DIRECTORY "${CMAKE_SOURCE_DIR}/data")
+set(TEST_DATA_OUTPUT_DIRECTORY "${PROJECT_BINARY_DIR}/tests/output")
+set(CTEST_OUTPUT_ON_FAILURE ON)
 
 # Create the directory for the outputs of the tests
 # It is output in the configuration file as well as the test input data directory
@@ -46,18 +42,15 @@ file(MAKE_DIRECTORY ${TEST_DATA_OUTPUT_DIRECTORY})
 
 # Configure a header file to pass some of the CMake settings
 # to the source code
-set(test_config_file_in ${TEST_SOURCE_DIRECTORY}/ringmesh_tests_config.h.in)
+set(test_config_file_in ${TEST_DIRECTORY}/ringmesh_tests_config.h.in)
 set(test_config_file ${PROJECT_BINARY_DIR}/ringmesh/ringmesh_tests_config.h)
 configure_file(${test_config_file_in} ${test_config_file})
 
-# Get the name of the test files
-file(GLOB TESTS "${TEST_SOURCE_DIRECTORY}/*.cpp")
-# ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
-# This line is for clang utilities.
-set(ringmesh_files ${ringmesh_files} ${TESTS} PARENT_SCOPE)
-
-# For all the test files found
-foreach(testsourcefile ${TESTS})
-    add_ringmesh_test(${testsourcefile} "Tests")
-endforeach(testsourcefile ${TESTS})
-
+add_subdirectory(basic)
+add_subdirectory(geogram_extension)
+add_subdirectory(geomodel/builder)
+add_subdirectory(geomodel/core)
+add_subdirectory(geomodel/tools)
+add_subdirectory(io)
+add_subdirectory(mesh)
+add_subdirectory(tetrahedralize)

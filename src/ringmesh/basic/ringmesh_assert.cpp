@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -46,7 +46,7 @@ namespace RINGMesh
     void ringmesh_assertion_failed(
         const std::string& condition_string, const std::string& file, int line )
     {
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
         DebugBreak();
 #endif
         GEO::geo_assertion_failed( condition_string, file, line );
@@ -54,7 +54,7 @@ namespace RINGMesh
 
     void ringmesh_should_not_have_reached( const std::string& file, int line )
     {
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
         DebugBreak();
 #endif
         GEO::geo_should_not_have_reached( file, line );

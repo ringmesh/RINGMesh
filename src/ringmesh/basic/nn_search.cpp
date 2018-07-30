@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -41,8 +41,8 @@
  */
 
 #include <ringmesh/basic/nn_search.h>
-
 #include <ringmesh/basic/pimpl_impl.h>
+#include <ringmesh/basic/task_handler.h>
 
 #include <geogram/points/kd_tree.h>
 
@@ -139,6 +139,11 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    NNSearch< DIMENSION >::~NNSearch()
+    {
+    }
+
+    template < index_t DIMENSION >
     vecn< DIMENSION > NNSearch< DIMENSION >::point( index_t v ) const
     {
         return impl_->point( v );
@@ -188,7 +193,7 @@ namespace RINGMesh
         {
             if( index_map[p] == p )
             {
-                unique_points.push_back( point( p ) );
+                unique_points.emplace_back( point( p ) );
                 index_map[p] = p - offset;
             }
             else
@@ -219,9 +224,6 @@ namespace RINGMesh
         return impl_->get_neighbors( v, nb_neighbors );
     }
 
-    template class RINGMESH_API NNSearch< 2 >;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 2 > );
-
-    template class RINGMESH_API NNSearch< 3 >;
-    template class RINGMESH_API EXPORT_IMPLEMENTATION( NNSearch< 3 > );
+    template class basic_api NNSearch< 2 >;
+    template class basic_api NNSearch< 3 >;
 } // namespace RINGMesh

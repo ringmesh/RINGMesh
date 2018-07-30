@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -33,10 +33,10 @@
 
 # CMakeList for RINGMesh tutorials
 
-if(NOT IS_DIRECTORY ${TUTORIALS_DATA_INPUT_DIRECTORY})
-    message(STATUS "Defined data directory for tutorials does not exists, using default doc/tutorials/data")
-    set(TUTORIALS_DATA_INPUT_DIRECTORY "${TUTORIALS_DIRECTORY}/data" FORCE)
-endif()
+set(TUTORIALS_DIRECTORY ${CMAKE_SOURCE_DIR}/doc/tutorials)
+set(TUTORIALS_SOURCE_DIRECTORY ${TUTORIALS_DIRECTORY}/src)
+set(TUTORIALS_DATA_INPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/data)
+set(TUTORIALS_DATA_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/tutorials/output)
 
 # Create the directory for the outputs of the tests
 # It is output in the configuration file as well as the input data for tutorials
@@ -56,7 +56,7 @@ set(ringmesh_files ${ringmesh_files} ${TUTORIALS} PARENT_SCOPE)
 
 # For all the test files found
 foreach(tutorialsourcefile ${TUTORIALS})
-    add_ringmesh_test(${tutorialsourcefile} "Tutorials")
+    add_ringmesh_tutorial(${tutorialsourcefile} geomodel_tools io)
 endforeach(tutorialsourcefile ${TUTORIALS})
 
 

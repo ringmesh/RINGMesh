@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,10 +40,10 @@
 #include <geogram/mesh/mesh_io.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
-#include <ringmesh/geomodel/geomodel_validity.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -85,7 +85,7 @@ namespace
     {
         Logger::div( "Example" );
         Logger::out( "",
-            "ringmeshconvert in:geomodel=path/to/input/geomodel.ext ",
+            "ringmesh-convert in:geomodel=path/to/input/geomodel.ext ",
             "out:geomodel=path/to/output/geomodel.ext" );
     }
 }
@@ -108,8 +108,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
-
         print_header_information();
         Logger::div( "RINGMesh-Convert" );
         Logger::out( "", "Welcome to RINGMesh-Convert !" );

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,8 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_builder.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_repair.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -80,10 +80,7 @@ namespace
         geomodel_load( geomodel, in_model_file_name );
 
         index_t repair_mode = GEO::CmdLine::get_arg_uint( "repair:mode" );
-        GeoModelBuilder< DIMENSION > builder( geomodel );
-        builder.repair.repair( static_cast<
-            typename GeoModelBuilderRepair< DIMENSION >::RepairMode >(
-            repair_mode ) );
+        repair_geomodel( geomodel, static_cast< RepairMode >( repair_mode ) );
 
         std::string out_model_file_name =
             GEO::CmdLine::get_arg( "out:geomodel" );
@@ -124,7 +121,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
         hello();
         import_arg_groups();
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -40,27 +40,32 @@
  include/ringmesh/config_ringmesh.h.in file.
  File is in RINGMESH_BIN/ringmesh directory.
  */
+#include <ringmesh/basic/export.h>
 #include <ringmesh/ringmesh_config.h>
-#include <ringmesh/ringmesh_export.h>
 
 #if defined( _WIN32 )
-#ifndef WIN32
-#define WIN32
+#define RINGMESH_WINDOWS
+#else
+#if defined( __linux__ )
+#define RINGMESH_LINUX
+#else
+#if defined( __APPLE__ )
+#define RINGMESH_APPLE
+#endif
 #endif
 #endif
 
 #ifndef NDEBUG
 #define RINGMESH_DEBUG
-#else
-#undef RINGMESH_DEBUG
 #endif
 
-#ifdef WIN32
+#ifdef RINGMESH_WINDOWS
 #pragma warning(                                                               \
     disable : 4267 ) // conversion between long unsigned int and unsigned int
 #pragma warning( disable : 4250 ) // warning about diamond inheritance
 #pragma warning( disable : 4251 ) // dll interface warnings
 #pragma warning( disable : 4275 ) // let's pray we have no issues
+#pragma warning( disable : 4661 ) // template alias before implementation
 #endif
 
 #define ringmesh_disable_copy( Class )                                         \
@@ -107,31 +112,16 @@ void ringmesh_unused( const T& /*unused*/ )
 }
 
 #include <future>
+#include <sstream>
+#include <stdexcept>
 
-#include <ringmesh/basic/logger.h>
+#include <ringmesh/basic/range.h>
 #include <ringmesh/basic/ringmesh_assert.h>
 #include <ringmesh/basic/types.h>
 
-#include <geogram/basic/string.h>
-
-#define DEBUG( a ) Logger::out( "Debug", #a, " = ", a )
-
-#include <stdexcept>
-
 namespace RINGMesh
 {
-    /*!
-     * This function configures geogram by setting some geogram options.
-     * \pre This function should be call after GEO::initialize().
-     */
-    void RINGMESH_API configure_geogram();
-    /*!
-     * This function configures RINGMesh by initializing its factories.
-     */
-    void RINGMESH_API configure_ringmesh();
-    void RINGMESH_API default_configure();
-
-    void RINGMESH_API print_header_information();
+    void basic_api print_header_information();
 
     /*!
      * RINGMesh exception class.
@@ -148,7 +138,7 @@ namespace RINGMesh
      *          Logger::err( "Exception", e.what() );
      *       }
      */
-    class RINGMESH_API RINGMeshException : public std::runtime_error
+    class basic_api RINGMeshException : public std::runtime_error
     {
     public:
         template < typename... Args >
@@ -158,9 +148,7 @@ namespace RINGMesh
               category_( std::move( category ) )
         {
         }
-        virtual ~RINGMeshException() throw()
-        {
-        }
+        virtual ~RINGMeshException() throw() {}
 
         const std::string& category() const
         {
@@ -171,106 +159,19 @@ namespace RINGMesh
         template < typename A0 >
         std::string string_concatener( const A0& a0 )
         {
-            return GEO::String::to_string( a0 );
+            std::ostringstream out;
+            out << a0;
+            return out.str();
         }
 
         template < typename A0, typename A1, typename... Args >
         std::string string_concatener(
             const A0& a0, const A1& a1, const Args&... args )
         {
-            return GEO::String::to_string( a0 )
-                   + string_concatener( a1, args... );
+            return string_concatener( a0 ) + string_concatener( a1, args... );
         }
 
     protected:
         std::string category_{};
     };
-
-    /*!
-     * This class can be used to iterate over integer loop.
-     * Example:
-     *              = C++98 loop =
-     *    for( index_t i = 0; i < n; i++ ) {
-     *      // do something
-     *    }
-     *
-     *            = C++11-like loop =
-     *    for( index_t i : range( n ) ) {
-     *      // do something
-     *    }
-     */
-    class RINGMESH_API range
-    {
-    public:
-        template < typename T1, typename T2 >
-        range( T1 begin, T2 end )
-            : iter_( static_cast< index_t >( begin ) ),
-              last_( static_cast< index_t >( end ) )
-        {
-        }
-        template < typename T >
-        explicit range( T end ) : last_( static_cast< index_t >( end ) )
-        {
-        }
-        // Iterable functions
-        const range& begin() const
-        {
-            return *this;
-        }
-        const range& end() const
-        {
-            return *this;
-        }
-        // Iterator functions
-        bool operator!=( const range& /*unused*/ ) const
-        {
-            return iter_ < last_;
-        }
-        void operator++()
-        {
-            ++iter_;
-        }
-        index_t operator*() const
-        {
-            return iter_;
-        }
-
-    protected:
-        index_t iter_{ 0 };
-        index_t last_{ 0 };
-    };
-
-    template < typename ACTION >
-    void parallel_for( index_t size, const ACTION& action )
-    {
-        if( size == 0 )
-        {
-            return;
-        }
-        index_t nb_threads{ std::min(
-            size, std::thread::hardware_concurrency() ) };
-        std::vector< std::future< void > > futures;
-        futures.reserve( nb_threads );
-        index_t start{ 0 };
-        auto action_per_thread = [&action]( index_t start, index_t end ) {
-            for( auto i : range( start, end ) )
-            {
-                action( i );
-            }
-        };
-        index_t nb_tasks_per_thread{ size / nb_threads };
-        for( auto thread : range( nb_threads - 1 ) )
-        {
-            ringmesh_unused( thread );
-            futures.emplace_back( std::async( std::launch::async,
-                action_per_thread, start, start + nb_tasks_per_thread ) );
-            start += nb_tasks_per_thread;
-        }
-        futures.emplace_back(
-            std::async( std::launch::async, action_per_thread, start, size ) );
-        for( auto& future : futures )
-        {
-            future.get();
-        }
-    }
 } // namespace RINGMesh

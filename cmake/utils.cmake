@@ -1,4 +1,4 @@
-# Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+# Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
 # Applications (ASGA). All rights reserved.
 #
 # Redistribution and use in source and binary forms, with or without
@@ -31,94 +31,172 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-function(source_file_directory var directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/*.cpp")
-    source_group("Source Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+function(add_ringmesh_library directory)
+    string(REPLACE "/" "_" target_name ${directory})
+    add_library(${target_name} SHARED "")
+    set_target_properties(${target_name} 
+        PROPERTIES 
+            OUTPUT_NAME RINGMesh_${target_name}
+            FOLDER "Libraries"
+    )
+    target_include_directories(${target_name} 
+        PUBLIC   
+            $<BUILD_INTERFACE:${PROJECT_SOURCE_DIR}/include>
+            $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
+            $<INSTALL_INTERFACE:include>
+    )
+    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    if(WIN32)
+        target_compile_definitions(${target_name} 
+            PUBLIC 
+                -DGEO_DYNAMIC_LIBS 
+                # Following are meant for geogram
+                -D_CRT_SECURE_NO_WARNINGS
+        )
+        add_dependencies(copy_dll ${target_name})
+    endif()
+    set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
+    set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
+    include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
+    
+    export(TARGETS ${target_name} 
+        NAMESPACE RINGMesh:: 
+        FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
+    )
+    generate_export_header(${target_name} 
+        EXPORT_MACRO_NAME ${target_name}_api 
+        EXPORT_FILE_NAME ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+    )
+    install(FILES ${PROJECT_BINARY_DIR}/ringmesh/${directory}/export.h
+        DESTINATION include/ringmesh/${directory}
+    )
+    install(TARGETS ${target_name} 
+        EXPORT ${target_name}
+        RUNTIME DESTINATION bin
+        LIBRARY DESTINATION lib
+        ARCHIVE DESTINATION lib
+    )
+    install(EXPORT ${target_name}
+        FILE RINGMesh_${target_name}_target.cmake
+        NAMESPACE RINGMesh::
+        DESTINATION lib/cmake/RINGMesh
+    )
 endfunction()
 
-function(include_file_directory var directory)
-    file(GLOB sources "${PROJECT_SOURCE_DIR}/include/ringmesh/${directory}/*.h")
-    source_group("Header Files\\${directory}" FILES ${sources})
-    set(${var} ${${var}} ${sources} PARENT_SCOPE)
+function(add_js_target target src)
+    if(NOT RINGMESH_WITH_GUI)
+        return()
+    endif()
+    set(js_target ${target}_js)
+    set(NBIND_FILE ${NBIND_DIR}/src/v8/Binding.cc)
+    add_nodejs_module(${js_target} ${src} ${NBIND_FILE})
+    set(target_node_name ${target})
+    set(output_directory ${PROJECT_BINARY_DIR}/node/ringmesh)
+    configure_file(${NBIND_DIR}/nbind.js.in
+        ${output_directory}/${target_node_name}.js)
+    set_target_properties(${js_target}
+        PROPERTIES 
+            OUTPUT_NAME ${target_node_name}
+          	RUNTIME_OUTPUT_DIRECTORY ${output_directory}
+          	LIBRARY_OUTPUT_DIRECTORY ${output_directory}
+          	ARCHIVE_OUTPUT_DIRECTORY ${output_directory}
+    )
+    target_link_libraries(${js_target} ${target} nbind)
 endfunction()
 
-function(copy_for_windows)
-if(WIN32)
+macro(copy_deps_dll_window)
+
     # On windows, without proper installation steps, we need to
-    # copy of Geogram dll and pdb information to RINGMesh
-    # to be able to launch RINGMesh utilities and tests from the debugger
-
-    # The dll and debug info of RINGMesh are in
+    # copy of dlls of all third parties and pdb information.
+    # This dlls are put in the RINGMesh dll directory:
     # build/ringmesh/Debug or build/ringmesh/Release.
-    add_custom_command(TARGET RINGMesh POST_BUILD
+
+if(WIN32)
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${GEOGRAM_INSTALL_PREFIX}/lib"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy geogram visualization libraries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${ZLIB_ROOT}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy zlib binaries")
+    add_custom_command(TARGET copy_dll PRE_BUILD
+        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+            "${TINYXML2_INSTALL_PREFIX}/bin"
+            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+            COMMENT "Copy tinyxml2 binaries")
+endif(WIN32)
+endmacro()
+
+macro(copy_for_all_ringmesh_dlls directory)
+
+    # On windows, without proper installation steps, we need to
+    # copy of all dlls and pdb information from RINGMesh and its 
+    # third parties to binary folder. 
+    
+    # All third parties informations
+    # have already been copied to the RINGMesh dll folder 
+    # (copy_deps_dll_window()). We only need to copy it to 
+    # the needed directory.
+
+if(WIN32)
+    add_custom_command(TARGET copy_dll POST_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
+            "${directory}/$<CONFIGURATION>"
             COMMENT "Copy RINGMesh dll")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_PATH_BIN}/bin/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-            COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${ZLIB_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-            COMMENT "Copy zlib binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${TINYXML2_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-            COMMENT "Copy tinyxml2 binaries")
-    add_custom_command(TARGET RINGMesh POST_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${MINIZIP_PATH_BIN}/$<CONFIGURATION>"
-            "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-            COMMENT "Copy minizip binaries")
-    if(RINGMESH_WITH_GEOLOGYJS)
-        add_custom_command(TARGET RINGMesh POST_BUILD
-            COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-                "${GEOLOGY_JS_PATH_BIN}/bin/$<CONFIGURATION>"
-                "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/$<CONFIGURATION>"
-                COMMENT "Copy geology js binaries")
-    endif(RINGMESH_WITH_GEOLOGYJS)
 endif(WIN32)
-endfunction()
+endmacro()
+
+macro(add_ringmesh_executable exe_path folder_name)
+    get_filename_component(exe_name ${exe_path} NAME_WE)
+
+    # Set the target as an executable
+    add_executable(${exe_name} ${exe_path})    
+    foreach(dependency ${ARGN})
+        target_link_libraries(${exe_name} PRIVATE ${dependency})
+    endforeach()
+    
+    # Add the project to a folder of projects for the tests
+    if(APPLE)
+        set(OS_RPATH "@executable_path")
+    else()
+        set(OS_RPATH "$ORIGIN")
+    endif()
+    set_target_properties(${exe_name} 
+        PROPERTIES 
+            FOLDER ${folder_name}
+            INSTALL_RPATH "${OS_RPATH}/../lib"
+    )
+endmacro()
 
 function(add_ringmesh_binary bin_path)
-    get_filename_component(bin_name ${bin_path} NAME_WE)
-    # Set the target as an executable
-    add_executable(${bin_name} ${bin_path})
-
-    set(BINARY_DEPENDANCIES RINGMesh geogram)
-    foreach(arg ${ARGN})
-        set(BINARY_DEPENDANCIES ${BINARY_DEPENDANCIES} ${arg})
-    endforeach()
-    target_link_libraries(${bin_name} ${BINARY_DEPENDANCIES})
-
-    # Add the project to a folder of projects for the tests
-    set_property(TARGET ${bin_name} PROPERTY FOLDER "Utilities")
-
-    # ringmesh_files is defined in the root RINGMesh CMakeLists.txt.
-    # This line is for clang utilities.
-    set(ringmesh_files ${ringmesh_files} ${bin_path} PARENT_SCOPE)
+    add_ringmesh_executable(${bin_path} "Utilities" ${ARGN})
+    install(TARGETS ${exe_name} RUNTIME DESTINATION bin)
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin)
 endfunction()
 
-function(add_ringmesh_test cpp_file_path folder_name)
-    get_filename_component(cpp_file_name ${cpp_file_path} NAME_WE)
-
-    # Add the target for that file
-    add_executable(${cpp_file_name} ${cpp_file_path})
-
-    # Link RINGMesh Make sure YourLib is linked to each app
-    target_link_libraries(${cpp_file_name} geogram RINGMesh)
-
-    add_dependencies(${cpp_file_name} RINGMesh)
-
-    # Add the project to a folder of projects for the tests
-    set_property(TARGET ${cpp_file_name} PROPERTY FOLDER ${folder_name})
-
+function(add_ringmesh_test cpp_file_path)
+    add_ringmesh_executable(${cpp_file_path} "Tests" ${ARGN})
     # Add the test to CTest
-    add_test(NAME ${cpp_file_name} COMMAND ${cpp_file_name})
+    add_test(NAME ${exe_name} COMMAND ${exe_name})
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tests)
+endfunction()
+
+
+function(add_ringmesh_tutorial cpp_file_path)
+    add_ringmesh_executable(${cpp_file_path} "Tutorials" ${ARGN})
+    # Add the test to CTest
+    add_test(NAME ${exe_name} COMMAND ${exe_name})
+    set_target_properties(${exe_name} PROPERTIES 
+        RUNTIME_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/bin/tutorials)
 endfunction()

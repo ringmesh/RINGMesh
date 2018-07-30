@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/io/common.h>
 
 #include <ringmesh/basic/pimpl.h>
 
@@ -46,10 +46,10 @@
 
 namespace RINGMesh
 {
-    class RINGMESH_API ZipFile
+    class io_api ZipFile
     {
     public:
-        ZipFile( const std::string& filename );
+        explicit ZipFile( const std::string& filename );
         ~ZipFile();
 
         void add_file( const std::string& filename );
@@ -58,18 +58,19 @@ namespace RINGMesh
         IMPLEMENTATION_MEMBER( impl_ );
     };
 
-    class RINGMESH_API UnZipFile
+    class io_api UnZipFile
     {
     public:
-        UnZipFile( const std::string& filename );
+        explicit UnZipFile(
+            const std::string& filename, std::string directory_to_unzip = "." );
         ~UnZipFile();
 
         void start_extract();
-        void get_current_file();
+        std::string get_current_file();
         std::string get_current_filename();
         bool next_file();
 
-        void get_file( const std::string& filename );
+        std::string get_file( const std::string& filename );
 
     private:
         IMPLEMENTATION_MEMBER( impl_ );

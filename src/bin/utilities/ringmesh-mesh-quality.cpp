@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,10 +39,11 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_mesh_entity.h>
-#include <ringmesh/geomodel/mesh_quality.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_mesh_entity.h>
+#include <ringmesh/geomodel/tools/mesh_quality.h>
 #include <ringmesh/io/io.h>
+#include <ringmesh/mesh/mesh_set.h>
 
 /*!
  * @author Benjamin Chauvin
@@ -63,6 +64,10 @@ namespace
     {
         GEO::CmdLine::declare_arg_group( "quality", "Mesh quality" );
         GEO::CmdLine::declare_arg( "quality:mode", 0, "Mesh quality mode" );
+        GEO::CmdLine::declare_arg( "quality:min_value", 0.01,
+            "Cell quality is defined as low if below this minimum value" );
+        GEO::CmdLine::declare_arg( "quality:output", "",
+            "Output filename for a mesh containing low quality tetrahedra" );
     }
 
     void import_arg_groups()
@@ -72,8 +77,7 @@ namespace
         CmdLine::import_arg_group( "out" );
     }
 
-    void check_geomodel_is_3d_meshed_by_simplexes(
-        const GeoModel< 3 >& geomodel )
+    void check_geomodel_is_3d_meshed_by_simplexes( const GeoModel3D& geomodel )
     {
         if( geomodel.nb_regions() == 0 )
         {
@@ -99,7 +103,7 @@ namespace
     {
         GEO::Stopwatch total( "Total time" );
 
-        std::string geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
+        auto geomodel_in_name = GEO::CmdLine::get_arg( "in:geomodel" );
         if( geomodel_in_name.empty() )
         {
             throw RINGMeshException(
@@ -109,11 +113,25 @@ namespace
         geomodel_load( geomodel, geomodel_in_name );
         check_geomodel_is_3d_meshed_by_simplexes( geomodel );
 
-        index_t quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
+        auto quality_mode = GEO::CmdLine::get_arg_uint( "quality:mode" );
         compute_prop_tet_mesh_quality(
             static_cast< MeshQualityMode >( quality_mode ), geomodel );
 
-        std::string geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
+        auto min_quality_out_name = GEO::CmdLine::get_arg( "quality:output" );
+        if( !min_quality_out_name.empty() )
+        {
+            auto min_quality =
+                GEO::CmdLine::get_arg_double( "quality:min_value" );
+            auto output_mesh = VolumeMesh3D::create_mesh();
+            double min_cell_quality{ fill_mesh_with_low_quality_cells(
+                static_cast< MeshQualityMode >( quality_mode ), min_quality,
+                geomodel, *output_mesh ) };
+            Logger::out( "Quality", "The minimal value for cell quality is ",
+                min_cell_quality );
+            output_mesh->save_mesh( min_quality_out_name );
+        }
+
+        auto geomodel_out_name = GEO::CmdLine::get_arg( "out:geomodel" );
         if( geomodel_out_name.empty() )
         {
             throw RINGMeshException(
@@ -129,7 +147,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
         hello();
         import_arg_groups();
         if( argc == 1 )

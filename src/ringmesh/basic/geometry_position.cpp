@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -65,8 +65,16 @@ namespace
         return s1 == ZERO || s2 == ZERO || s1 != s2;
     }
 
-    bool point_inside_segment_approx(
-        const Geometry::Point3D& point, const Geometry::Segment3D& segment )
+    bool point_inside_segment_exact(
+        const Geometry::Point2D& point, const Geometry::Segment2D& segment )
+    {
+        return sign( GEO::PCK::orient_2d( segment.p0, segment.p1, point ) )
+               == ZERO;
+    }
+
+    template < index_t DIMENSION >
+    bool point_inside_segment_approx( const Geometry::Point< DIMENSION >& point,
+        const Geometry::Segment< DIMENSION >& segment )
     {
         double distance;
         std::tie( distance, std::ignore ) =
@@ -76,7 +84,7 @@ namespace
             return false;
         }
         double half_length{ segment.length() / 2. };
-        vec3 segment_center{ segment.barycenter() };
+        vecn< DIMENSION > segment_center{ segment.barycenter() };
         double point_distance{ length( point - segment_center ) };
         if( point_distance < half_length - global_epsilon )
         {
@@ -239,15 +247,9 @@ namespace
         for( auto f : range( 4 ) )
         {
             signs[f] = sign( GEO::PCK::orient_3d( p.data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]]
-                    .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]]
-                    .data(),
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]]
-                    .data() ) );
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]].data(),
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]].data(),
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]].data() ) );
         }
         return ( signs[0] >= 0 && signs[1] >= 0 && signs[2] >= 0
                    && signs[3] >= 0 )
@@ -262,12 +264,9 @@ namespace
         for( const index_t f : range( 4 ) )
         {
             double volume{ GEO::Geom::tetra_signed_volume( p,
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][0]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][1]],
-                vertices[GEO::MeshCellDescriptors::tet_descriptor
-                             .facet_vertex[f][2]] ) };
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] ) };
             if( is_almost_zero( volume ) )
             {
                 return point_inside_tetra_exact( p, vertices );
@@ -300,8 +299,9 @@ namespace RINGMesh
             return point_inside_triangle_approx( point, triangle );
         }
 
-        bool point_inside_segment(
-            const Geometry::Point3D& point, const Geometry::Segment3D& segment )
+        template < index_t DIMENSION >
+        bool point_inside_segment( const Geometry::Point< DIMENSION >& point,
+            const Geometry::Segment< DIMENSION >& segment )
         {
             return point_inside_segment_approx( point, segment );
         }
@@ -346,20 +346,43 @@ namespace RINGMesh
 
             vec3 p0{ projected_point + distance * u };
             vec3 p1{ projected_point
-                     + distance * ( std::cos( 2 * M_PI / 3 ) * u
-                                      - std::sin( 2 * M_PI / 3 ) * v ) };
+                     + distance
+                           * ( std::cos( 2 * M_PI / 3 ) * u
+                                 - std::sin( 2 * M_PI / 3 ) * v ) };
             vec3 p2{ projected_point
-                     + distance * ( std::cos( 2 * M_PI / 3 ) * u
-                                      + std::sin( 2 * M_PI / 3 ) * v ) };
+                     + distance
+                           * ( std::cos( 2 * M_PI / 3 ) * u
+                                 + std::sin( 2 * M_PI / 3 ) * v ) };
 
             return sign( GEO::PCK::orient_3d(
                 point.data(), p0.data(), p1.data(), p2.data() ) );
         }
 
-        template bool RINGMESH_API point_inside_triangle(
+        double basic_api segment_angle( const Geometry::Segment2D& segment1,
+            const Geometry::Segment2D& segment2 )
+        {
+            vec2 seg1{ segment1.direction() };
+            vec2 seg2{ segment2.direction() };
+            double angle_between_pi_and_minus_pi{
+                std::atan2( seg1.y, seg1.x ) - std::atan2( seg2.y, seg2.x )
+            };
+            if( angle_between_pi_and_minus_pi < 0 )
+            {
+                return angle_between_pi_and_minus_pi + 2 * M_PI;
+            }
+            return angle_between_pi_and_minus_pi;
+        }
+
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
-        template bool RINGMESH_API point_inside_triangle(
+        template bool basic_api point_inside_segment(
+            const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
+
+        template bool basic_api point_inside_triangle(
             const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
+
+        template bool basic_api point_inside_segment(
+            const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
     } // namespace Position
 } // namespace RINGMesh

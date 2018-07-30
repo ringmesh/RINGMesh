@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,8 +39,8 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/tools/geomodel_tools.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -61,7 +61,7 @@ namespace
     void import_arg_group_translation()
     {
         GEO::CmdLine::declare_arg_group(
-            "translation", "Options to rotate a GeoModel" );
+            "translation", "Options to translate a GeoModel" );
         GEO::CmdLine::declare_arg( "translation:vector", "0 0 0",
             "Translation vector to be written between quotation marks" );
     }
@@ -148,7 +148,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
         hello();
         import_arg_groups();
 

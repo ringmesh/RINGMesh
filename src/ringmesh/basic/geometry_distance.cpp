@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -163,7 +163,10 @@ namespace RINGMesh
             }
             else
             {
-                double tmp0, tmp1, numer, denom;
+                double tmp0;
+                double tmp1;
+                double numer;
+                double denom;
 
                 if( s < 0.0 )
                 { // region 2
@@ -392,19 +395,15 @@ namespace RINGMesh
                 tetra.p3 } };
             double dist{ max_float64() };
             vec3 nearest_p;
-            for( auto f :
-                range( GEO::MeshCellDescriptors::tet_descriptor.nb_facets ) )
+            for( auto f : range( 4 ) )
             {
                 double distance{ max_float64() };
                 vec3 cur_p;
-                std::tie( distance, cur_p ) = point_to_triangle(
-                    point, Geometry::Triangle3D{
-                               vertices[GEO::MeshCellDescriptors::tet_descriptor
-                                            .facet_vertex[f][0]],
-                               vertices[GEO::MeshCellDescriptors::tet_descriptor
-                                            .facet_vertex[f][1]],
-                               vertices[GEO::MeshCellDescriptors::tet_descriptor
-                                            .facet_vertex[f][2]] } );
+                std::tie( distance, cur_p ) = point_to_triangle( point,
+                    Geometry::Triangle3D{
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][0]],
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][1]],
+                        vertices[Geometry::Tetra::tetra_facet_vertex[f][2]] } );
                 if( distance < dist )
                 {
                     dist = distance;
@@ -445,14 +444,14 @@ namespace RINGMesh
             return std::make_tuple( distance, projected_p );
         }
 
-        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_segment(
+        template std::tuple< double, vecn< 2 > > basic_api point_to_segment(
             const Geometry::Point< 2 >&, const Geometry::Segment< 2 >& );
-        template std::tuple< double, vecn< 2 > > RINGMESH_API point_to_triangle(
+        template std::tuple< double, vecn< 2 > > basic_api point_to_triangle(
             const Geometry::Point< 2 >&, const Geometry::Triangle< 2 >& );
 
-        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_segment(
+        template std::tuple< double, vecn< 3 > > basic_api point_to_segment(
             const Geometry::Point< 3 >&, const Geometry::Segment< 3 >& );
-        template std::tuple< double, vecn< 3 > > RINGMESH_API point_to_triangle(
+        template std::tuple< double, vecn< 3 > > basic_api point_to_triangle(
             const Geometry::Point< 3 >&, const Geometry::Triangle< 3 >& );
     } // namespace Distance
 } // namespace RINGMesh

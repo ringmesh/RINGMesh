@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,13 +33,17 @@
  *     FRANCE
  */
 
+#include <ringmesh/basic/task_handler.h>
+
 #include <ringmesh/tetrahedralize/tetgen_mesher.h>
 
 #include <cstring>
 
 #include <geogram/mesh/mesh.h>
-#include <ringmesh/mesh/mesh.h>
+
 #include <ringmesh/mesh/mesh_builder.h>
+
+#include <ringmesh/mesh/volume_mesh.h>
 
 #ifdef RINGMESH_WITH_TETGEN
 /*!
@@ -120,7 +124,6 @@ namespace RINGMesh
                     "  the message above, your input data set, and the exact" );
                 Logger::err( "Tetgen",
                     "  command line you used to run this program, thank you" );
-                ;
                 break;
             case 3:
                 Logger::err( "Tetgen",
@@ -143,6 +146,10 @@ namespace RINGMesh
             case 10:
                 Logger::err(
                     "Tetgen", "An input error was detected. Program stopped." );
+                break;
+            default:
+                Logger::err(
+                    "Tetgen", "An exception was thrown. Program stopped." );
                 break;
             }
         }

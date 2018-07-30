@@ -44,7 +44,7 @@
  *
  * MODYFIED BY:
  *
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -83,7 +83,7 @@
 
 #include <geogram/basic/logger.h>
 
-#include <ringmesh/visualization/gfx_application.h>
+#include <ringmesh/visualize/gfx_application.h>
 
 int main( int argc, char** argv )
 {

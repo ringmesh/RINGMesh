@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/tetrahedralize/common.h>
 
 #include <memory>
 
@@ -43,9 +43,7 @@
 
 #include <ringmesh/basic/factory.h>
 
-#include <ringmesh/geomodel/geomodel_builder.h>
-
-#include <ringmesh/mesh/mesh.h>
+#include <ringmesh/geomodel/builder/geomodel_builder.h>
 
 /*!
  * @file ringmesh/tetragen.h
@@ -72,7 +70,7 @@ namespace RINGMesh
 
 namespace RINGMesh
 {
-    class RINGMESH_API TetraGen
+    class tetrahedralize_api TetraGen
     {
         ringmesh_disable_copy_and_move( TetraGen );
 

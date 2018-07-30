@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -39,11 +39,9 @@
 #include <geogram/basic/stopwatch.h>
 
 #include <ringmesh/basic/command_line.h>
-
-#include <ringmesh/geomodel/entity_type_manager.h>
-#include <ringmesh/geomodel/geomodel.h>
-#include <ringmesh/geomodel/geomodel_api.h>
-
+#include <ringmesh/geomodel/core/entity_type_manager.h>
+#include <ringmesh/geomodel/core/geomodel.h>
+#include <ringmesh/geomodel/core/geomodel_api.h>
 #include <ringmesh/io/io.h>
 
 /*!
@@ -94,8 +92,6 @@ int main( int argc, char** argv )
 
     try
     {
-        default_configure();
-
         print_header_information();
         Logger::div( "RINGMesh-Stats" );
         Logger::out( "", "Welcome to RINGMesh-Stats !" );

@@ -1,0 +1,9 @@
+Corner 20
+Line 36
+Surface 21
+Region 4
+Vertex 3602
+Polygon 7932
+Cell 0
+Interface 9
+Contact 24

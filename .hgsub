@@ -1,3 +1,0 @@
-third_party/zlib = [git]https://github.com/madler/zlib.git
-third_party/minizip = [git]https://github.com/nmoinvaz/minizip.git
-third_party/tinyxml2 = [git]https://github.com/leethomason/tinyxml2.git

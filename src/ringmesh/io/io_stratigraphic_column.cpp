@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -36,15 +36,14 @@
 #include <ringmesh/io/io.h>
 
 #include <geogram/basic/file_system.h>
-
-#include <ringmesh/geomodel/stratigraphic_column.h>
-#include <ringmesh/geomodel/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel/builder/stratigraphic_column_builder.h>
+#include <ringmesh/geomodel/core/stratigraphic_column.h>
 
 namespace
 {
     using namespace RINGMesh;
 
-#include "stratigraphic_column/io_xml.cpp"
+#include "stratigraphic_column/io_xml.hpp"
 }
 
 namespace RINGMesh
@@ -72,7 +71,7 @@ namespace RINGMesh
      */
     void StratigraphicColumnIOHandler::initialize()
     {
-        StratigraphicColumnIOHandlerFactory::
-            register_creator< XMLStratigraphicColumnIOHandler >( "xml" );
+        StratigraphicColumnIOHandlerFactory::register_creator<
+            XMLStratigraphicColumnIOHandler >( "xml" );
     }
 } // namespace RINGMesh

@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2017, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -35,7 +35,7 @@
 
 #pragma once
 
-#include <ringmesh/basic/common.h>
+#include <ringmesh/geogram_extension/common.h>
 
 #include <mutex>
 
@@ -50,7 +50,7 @@
 namespace GEO
 {
     class Mesh;
-}
+} // namespace GEO
 
 namespace RINGMesh
 {
@@ -92,7 +92,7 @@ namespace RINGMesh
 
     /*! @brief complement the available MeshIOHandler
      */
-    void RINGMESH_API ringmesh_mesh_io_initialize();
+    void geogram_extension_api ringmesh_geogram_mesh_io_initialize();
 
     /******************************************************************/
     /* Operations on a GEO::Mesh                                      */
@@ -103,7 +103,7 @@ namespace RINGMesh
      * @param[in] c the cell index
      * @return the signed volume of the cell
      */
-    double RINGMESH_API mesh_cell_signed_volume(
+    double geogram_extension_api mesh_cell_signed_volume(
         const GEO::Mesh& M, index_t c );
     /*!
      * Computes the volume of a Mesh cell
@@ -111,7 +111,8 @@ namespace RINGMesh
      * @param[in] c the cell index
      * @return the volume of the cell
      */
-    double RINGMESH_API mesh_cell_volume( const GEO::Mesh& M, index_t c );
+    double geogram_extension_api mesh_cell_volume(
+        const GEO::Mesh& M, index_t c );
 
     /*!
      * Computes the Mesh cell facet barycenter
@@ -120,7 +121,7 @@ namespace RINGMesh
      * @param[in] f the facet index in the cell
      * @return the cell facet center
      */
-    vec3 RINGMESH_API mesh_cell_facet_barycenter(
+    vec3 geogram_extension_api mesh_cell_facet_barycenter(
         const GEO::Mesh& M, index_t cell, index_t f );
 
     /*!
@@ -130,7 +131,8 @@ namespace RINGMesh
      * @param[in] cell the cell index
      * @return the cell center
      */
-    vec3 RINGMESH_API mesh_cell_barycenter( const GEO::Mesh& M, index_t cell );
+    vec3 geogram_extension_api mesh_cell_barycenter(
+        const GEO::Mesh& M, index_t cell );
 
     /*!
      * @brief Vector of pointers to Geogram attributes
@@ -194,44 +196,4 @@ namespace RINGMesh
         }
     };
 
-    void RINGMESH_API print_bounded_attributes( const GEO::Mesh& M );
-
-    class RINGMESH_API ThreadSafeConsoleLogger : public GEO::ConsoleLogger
-    {
-        using base_class = GEO::ConsoleLogger;
-
-    public:
-        void div( const std::string& title )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            base_class::div( title );
-        }
-
-        void out( const std::string& str )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            base_class::out( str );
-        }
-
-        void warn( const std::string& str )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            base_class::warn( str );
-        }
-
-        void err( const std::string& str )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            base_class::err( str );
-        }
-
-        void status( const std::string& str )
-        {
-            std::lock_guard< std::mutex > lock( lock_ );
-            base_class::status( str );
-        }
-
-    private:
-        std::mutex lock_{};
-    };
 } // namespace RINGMesh
