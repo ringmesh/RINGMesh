@@ -237,8 +237,9 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     RINGMesh::Logger::out( "StratigraphicColumn",
         "Second building with a vector of StratigraphicUnit" );
 
-    StratigraphicColumn test2(
-        "test 2", STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
+    StratigraphicColumn test2( "test 2",
+        NestedStratigraphicUnit::StratigraphicUnits(),
+        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
 
     test2.insert_top_unit( one );
     if( test2.get_top_unit()->get_name() != "one" )
@@ -273,7 +274,7 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
     sub_units.push_back( four );
 
     std::shared_ptr< const StratigraphicUnit > subdivided_unit(
-        new SubdividedStratigraphicUnit( "subdivided", rocks, sub_units ) );
+        new NestedStratigraphicUnit( "subdivided", rocks, sub_units ) );
     mixed.push_back( subdivided_unit );
 
     StratigraphicColumn mix(
@@ -302,13 +303,13 @@ void test_stratigraphic_column_building( const GeoModel3D& in )
             "Failed when testing StratigraphicColumn::get_relation_top()" );
     }
 
-    if( mix.get_column_min_thick() != 0 )
+    if( mix.get_min_thick() != 0 )
     {
         throw RINGMeshException( "Test",
             "Failed when testing StratigraphicColumn::get_column_min_thick()" );
     }
 
-    if( mix.get_column_max_thick() != 100 )
+    if( mix.get_max_thick() != 100 )
     {
         throw RINGMeshException( "Test",
             "Failed when testing StratigraphicColumn::get_column_max_thick()" );
@@ -363,7 +364,9 @@ void test_load_from_gocad_xml_file()
     std::string input_column_file_name( RINGMesh::ringmesh_test_data_path );
     input_column_file_name += "CloudSpin.xml";
 
-    StratigraphicColumn column( "test", STRATIGRAPHIC_PARADIGM::UNSPECIFIED );
+    StratigraphicColumn column( "test",
+        NestedStratigraphicUnit::StratigraphicUnits(),
+        STRATIGRAPHIC_PARADIGM::UNSPECIFIED );
 
     StratigraphicColumnBuilderXML sc_builder(
         column, in, input_column_file_name );

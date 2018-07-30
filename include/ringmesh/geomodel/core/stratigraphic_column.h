@@ -138,7 +138,7 @@ namespace RINGMesh
      */
     class geomodel_core_api StratigraphicUnit
     {
-        ringmesh_disable_copy_and_move( StratigraphicUnit );
+        // ringmesh_disable_copy_and_move( StratigraphicUnit );
 
     public:
         /*!
@@ -273,18 +273,91 @@ namespace RINGMesh
         double max_thick_;
     };
 
-    class geomodel_core_api SubdividedStratigraphicUnit
-        : public StratigraphicUnit
+    class geomodel_core_api NestedStratigraphicUnit : public StratigraphicUnit
     {
     public:
-        SubdividedStratigraphicUnit( std::string name,
+        using StratigraphicUnits =
+            std::vector< std::shared_ptr< const StratigraphicUnit > >;
+        using RankedUnits = std::vector< const StratigraphicUnit* >;
+
+        NestedStratigraphicUnit( std::string name,
             RockFeature rock,
-            const std::vector< std::shared_ptr< const StratigraphicUnit > >&
-                sub_units )
+            const StratigraphicUnits& sub_units )
             : StratigraphicUnit( std::move( name ), std::move( rock ) ),
               units_( sub_units )
         {
         }
+
+        /*!
+         * \name Stratigraphic Unit edition
+         * @{
+         */
+
+        /*!
+         * @param[in] above Reference unit, the new unit will be added below it
+         * @param[in] unit_to_add Unit you want to add to the column
+         */
+        void insert_unit_below( const StratigraphicUnit& above,
+            std::shared_ptr< const StratigraphicUnit > unit_to_add );
+        /*!
+         * @param[in] to_add Unit to add at the top of the column
+         */
+        void insert_top_unit(
+            std::shared_ptr< const StratigraphicUnit > to_add );
+        /*!
+         * @param[in] to_add Unit to add at the bottom of the column
+         */
+        void insert_base_unit(
+            std::shared_ptr< const StratigraphicUnit > to_add );
+
+        void remove_unit( const StratigraphicUnit& unit );
+
+        /*! @}
+         * \name Get units
+         * @{
+         */
+
+        /*!
+         * @return the top unit of the nested unit
+         */
+        const StratigraphicUnit* get_top_unit() const
+        {
+            return units_.front().get();
+        }
+
+        /*!
+         * @return the bottom unit of the nested unit
+         */
+        const StratigraphicUnit* get_base_unit() const
+        {
+            return units_.back().get();
+        }
+
+        /*!
+         * @param[in] unit Reference unit
+         * @return the StratigraphicUnit which position in the
+         * StratigraphicColumn
+         * is just above the reference unit
+         */
+        const StratigraphicUnit* get_unit_above(
+            const StratigraphicUnit& unit ) const;
+        /*!
+         * @param[in] unit Reference unit
+         * @return the StratigraphicUnit which position in the
+         * StratigraphicColumn
+         * is just below the reference unit
+         */
+        const StratigraphicUnit* get_unit_below(
+            const StratigraphicUnit& unit ) const;
+
+        const StratigraphicUnit* get_unit( const index_t index ) const
+        {
+            return units_[index].get();
+        }
+
+        const StratigraphicUnit* get_unit( const std::string& name ) const;
+
+        index_t get_index( const std::string& unit_name ) const;
 
         bool is_conformable_base() const final
         {
@@ -336,14 +409,17 @@ namespace RINGMesh
             return sum_max_thick;
         }
 
-        const std::vector< std::shared_ptr< const StratigraphicUnit > >&
-            get_all_units() const
+        const StratigraphicUnits& get_units() const
         {
             return units_;
         }
 
+        unsigned int get_max_rank() const;
+
+        RankedUnits get_units_with_rank( unsigned int rank ) const;
+
     private:
-        std::vector< std::shared_ptr< const StratigraphicUnit > > units_{};
+        StratigraphicUnits units_{};
     };
 
     enum struct STRATIGRAPHIC_PARADIGM
@@ -357,7 +433,7 @@ namespace RINGMesh
     /*!
      * @brief A stratigraphic column is composed of several stratigraphic units
      */
-    class geomodel_core_api StratigraphicColumn
+    class geomodel_core_api StratigraphicColumn : public NestedStratigraphicUnit
     {
     public:
         /*!
@@ -369,197 +445,22 @@ namespace RINGMesh
          * Biostratigraphic
          */
         StratigraphicColumn( std::string name,
-            const std::vector< std::shared_ptr< const StratigraphicUnit > >&
-                units,
+            const NestedStratigraphicUnit::StratigraphicUnits& units,
             STRATIGRAPHIC_PARADIGM type )
-            : name_( std::move( name ) ), units_( units ), type_( type )
+            : NestedStratigraphicUnit(
+                  name, RockFeature( "", ROCKTYPE::NONE ), units ),
+              type_( type )
         {
         }
 
-        /*!
-         * @brief Simple Constructor of StratigraphicColumn
-         * @param[in] name Name of the unit
-         */
-        StratigraphicColumn(
-            std::string name, const STRATIGRAPHIC_PARADIGM type )
-            : StratigraphicColumn( std::move( name ), {}, type )
-        {
-        }
-
-        ~StratigraphicColumn();
-
-        /*!
-         * \name Stratigraphic Column edition
-         * @{
-         */
-
-        /*!
-         * @param[in] above Reference unit, the new unit will be added below it
-         * @param[in] unit_to_add Unit you want to add to the column
-         */
-        void insert_unit_below( const StratigraphicUnit& above,
-            std::shared_ptr< const StratigraphicUnit > unit_to_add );
-        /*!
-         * @param[in] to_add Unit to add at the top of the column
-         */
-        void insert_top_unit(
-            std::shared_ptr< const StratigraphicUnit > to_add );
-        /*!
-         * @param[in] to_add Unit to add at the bottom of the column
-         */
-        void insert_base_unit(
-            std::shared_ptr< const StratigraphicUnit > to_add );
-
-        void remove_unit( const StratigraphicUnit& unit );
-
-        /*! @}
-         * \name Get column units
-         * @{
-         */
-
-        /*!
-         * @return the top unit of the column
-         */
-        const StratigraphicUnit* get_top_unit() const
-        {
-            return units_.front().get();
-        }
-
-        /*!
-         * @return the bottom unit of the column
-         */
-        const StratigraphicUnit* get_base_unit() const
-        {
-            return units_.back().get();
-        }
-
-        /*!
-         * @param[in] unit Reference unit
-         * @return the StratigraphicUnit which position in the
-         * StratigraphicColumn
-         * is just above the reference unit
-         */
-        const StratigraphicUnit* get_unit_above(
-            const StratigraphicUnit& unit ) const;
-        /*!
-         * @param[in] unit Reference unit
-         * @return the StratigraphicUnit which position in the
-         * StratigraphicColumn
-         * is just below the reference unit
-         */
-        const StratigraphicUnit* get_unit_below(
-            const StratigraphicUnit& unit ) const;
-
-        const StratigraphicUnit* get_unit( const index_t index ) const
-        {
-            return units_[index].get();
-        }
-
-        const StratigraphicUnit* get_unit( const std::string& name ) const;
-
-        /*!
-         * @return a vector of all the units of the column
-         */
-        const std::vector< std::shared_ptr< const StratigraphicUnit > >&
-            get_all_units() const
-        {
-            return units_;
-        }
-
-        /*! @}
-         * \name Others
-         * @{
-         */
+        ~StratigraphicColumn() = default;
 
         STRATIGRAPHIC_PARADIGM get_paradigm() const
         {
             return type_;
         }
 
-        /*!
-         * @brief is_conformable_base for the Stratigraphic Column
-         * @return true if the base of the last unit of the Stratigraphic Column
-         * is conformable
-         */
-        bool is_conformable_base() const
-        {
-            return ( units_.back()->is_conformable_base() );
-        }
-        /*!
-         * @brief is_conformable_top for the Stratigraphic Column
-         * @return true if the top of the first unit of the Stratigraphic Column
-         * is conformable
-         */
-        bool is_conformable_top() const
-        {
-            return ( units_.front()->is_conformable_top() );
-        }
-
-        /*!
-         * @brief get_relation_base for the Stratigraphic Column
-         * @return the relation of the base of the first unit of the
-         * StratigraphicColumn
-         */
-        RELATION get_relation_base()
-        {
-            return ( units_.back()->get_relation_base() );
-        }
-        /*!
-         * @brief get_relation_top for the Stratigraphic Column
-         * @return the relation of the top of the first unit of the
-         * StratigraphicColumn
-         */
-        RELATION get_relation_top()
-        {
-            return ( units_.front()->get_relation_top() );
-        }
-
-        /*!
-         * @brief get_interface_base for the Stratigraphic Column
-         * @return the base interface of the last unit in the Stratigraphic
-         * Column
-         */
-        const Interface3D* get_interface_base() const
-        {
-            return ( units_.back()->get_interface_base() );
-        }
-        /*!
-         * @brief get_interface_top for the Stratigraphic Column
-         * @return the top interface of the first unit in the Stratigraphic
-         * Column
-         */
-        const Interface3D* get_interface_top() const
-        {
-            return ( units_.front()->get_interface_top() );
-        }
-
-        /*!
-         * @return the minimum thickness for the whole Column (i.e sum on units)
-         */
-        double get_column_min_thick() const;
-        /*!
-         * @return the maximum thickness for the whole Column (i.e sum on units)
-         */
-        double get_column_max_thick() const;
-
-        const std::string& get_name() const
-        {
-            return name_;
-        }
-
-        /*! @}
-         */
-
     private:
-        /*!
-         * @param[in] unit_name of the unit to find
-         * @return the position of a unit in the stratigraphic column
-         */
-        index_t get_index( const std::string& unit_name ) const;
-
-    private:
-        std::string name_{};
-        std::vector< std::shared_ptr< const StratigraphicUnit > > units_{};
         STRATIGRAPHIC_PARADIGM type_{ STRATIGRAPHIC_PARADIGM::UNSPECIFIED };
     };
 } // namespace RINGMesh

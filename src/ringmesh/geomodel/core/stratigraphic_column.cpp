@@ -70,8 +70,8 @@ namespace RINGMesh
     {
     }
 
-    StratigraphicColumn::~StratigraphicColumn() {}
-    void StratigraphicColumn::insert_unit_below( const StratigraphicUnit& above,
+    void NestedStratigraphicUnit::insert_unit_below(
+        const StratigraphicUnit& above,
         std::shared_ptr< const StratigraphicUnit > unit_to_add )
     {
         index_t index = get_index( above.get_name() );
@@ -79,26 +79,26 @@ namespace RINGMesh
         units_.insert( units_.begin() + index + 1, unit_to_add );
     }
 
-    void StratigraphicColumn::insert_top_unit(
+    void NestedStratigraphicUnit::insert_top_unit(
         std::shared_ptr< const StratigraphicUnit > to_add )
     {
         units_.insert( units_.begin(), to_add );
     }
 
-    void StratigraphicColumn::insert_base_unit(
+    void NestedStratigraphicUnit::insert_base_unit(
         std::shared_ptr< const StratigraphicUnit > to_add )
     {
         units_.push_back( to_add );
     }
 
-    void StratigraphicColumn::remove_unit( const StratigraphicUnit& unit )
+    void NestedStratigraphicUnit::remove_unit( const StratigraphicUnit& unit )
     {
         index_t index = get_index( unit.get_name() );
         ringmesh_assert( index != NO_ID );
         units_.erase( units_.begin() + index );
     }
 
-    const StratigraphicUnit* StratigraphicColumn::get_unit_above(
+    const StratigraphicUnit* NestedStratigraphicUnit::get_unit_above(
         const StratigraphicUnit& unit ) const
     {
         index_t index = get_index( unit.get_name() );
@@ -106,7 +106,7 @@ namespace RINGMesh
         return units_[index - 1].get();
     }
 
-    const StratigraphicUnit* StratigraphicColumn::get_unit_below(
+    const StratigraphicUnit* NestedStratigraphicUnit::get_unit_below(
         const StratigraphicUnit& unit ) const
     {
         index_t index = get_index( unit.get_name() );
@@ -114,7 +114,7 @@ namespace RINGMesh
         return units_[index + 1].get();
     }
 
-    const StratigraphicUnit* StratigraphicColumn::get_unit(
+    const StratigraphicUnit* NestedStratigraphicUnit::get_unit(
         const std::string& name ) const
     {
         index_t index = get_index( name );
@@ -122,27 +122,8 @@ namespace RINGMesh
         return units_[index].get();
     }
 
-    double StratigraphicColumn::get_column_min_thick() const
-    {
-        double sum = 0;
-        for( auto unit : units_ )
-        {
-            sum += unit->get_min_thick();
-        }
-        return sum;
-    }
-
-    double StratigraphicColumn::get_column_max_thick() const
-    {
-        double sum = 0;
-        for( auto unit : units_ )
-        {
-            sum += unit->get_max_thick();
-        }
-        return sum;
-    }
-
-    index_t StratigraphicColumn::get_index( const std::string& unit_name ) const
+    index_t NestedStratigraphicUnit::get_index(
+        const std::string& unit_name ) const
     {
         for( auto i : range( units_.size() ) )
         {
@@ -153,5 +134,57 @@ namespace RINGMesh
         }
         ringmesh_assert_not_reached;
         return NO_ID;
+    }
+
+    unsigned int NestedStratigraphicUnit::get_max_rank() const
+    {
+        unsigned int max_rank = 0;
+        for( const auto& unit : units_ )
+        {
+            const NestedStratigraphicUnit* nested_unit =
+                dynamic_cast< const NestedStratigraphicUnit* >( unit.get() );
+            if( nested_unit == nullptr )
+            {
+                continue;
+            }
+            ringmesh_assert( nested_unit->get_units().size() > 1 );
+
+            std::max( max_rank, nested_unit->get_max_rank() );
+        }
+        return ( max_rank > 0 ) ? ( 1 + max_rank ) : 0;
+    }
+
+    /*!
+     * @return a vector of the ranked units.
+     */
+    NestedStratigraphicUnit::RankedUnits
+        NestedStratigraphicUnit::get_units_with_rank( unsigned int rank ) const
+    {
+        RankedUnits units;
+
+        const unsigned int max_rank = get_max_rank();
+        if( rank > max_rank )
+        {
+            rank = max_rank;
+        }
+
+        for( const auto& unit : units_ )
+        {
+            const NestedStratigraphicUnit* nested_unit =
+                dynamic_cast< const NestedStratigraphicUnit* >( unit.get() );
+            if( nested_unit == nullptr || rank == 0 )
+            {
+                units.push_back( unit.get() );
+            }
+            else
+            {
+                RankedUnits nested_units =
+                    nested_unit->get_units_with_rank( rank - 1 );
+                units.insert(
+                    units.end(), nested_units.begin(), nested_units.end() );
+            }
+        }
+
+        return units;
     }
 } // namespace RINGMesh

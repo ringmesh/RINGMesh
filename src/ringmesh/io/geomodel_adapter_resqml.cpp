@@ -455,8 +455,8 @@ namespace RINGMesh
 
                 std::string guid( tools::GuidTools::generateUidAsString() );
                 UnstructuredGridRepresentation* rep =
-                    pck_->createUnstructuredGridRepresentation(
-                        local_3d_crs_, guid, guid, region.nb_mesh_elements() );
+                    pck_->createUnstructuredGridRepresentation( local_3d_crs_,
+                        guid, region.name(), region.nb_mesh_elements() );
                 reps.push_back( rep );
 
                 std::unique_ptr< double[] > points(
@@ -572,9 +572,8 @@ namespace RINGMesh
                 "Stratigraphic column rank", 0 );
         stratiColumn->pushBackStratiColumnRank( stratiColumnRank );
 
-        // TODO: get_all_units should take a parameter of rank
-        const std::vector< std::shared_ptr< const StratigraphicUnit > >& units =
-            column->get_all_units();
+        const NestedStratigraphicUnit::RankedUnits units =
+            column->get_units_with_rank( 0 );
 
         for( auto unit_index : range( units.size() ) )
         {

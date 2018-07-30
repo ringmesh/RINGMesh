@@ -51,9 +51,6 @@
 using namespace RINGMesh;
 using GMGE = GeoModelGeologicalEntity< 3 >;
 
-const std::string ringmesh_test_save_path =
-    ringmesh_test_path + "io/data/save/";
-
 void load_geomodel( GeoModel3D& geomodel, const std::string& file )
 {
     bool loaded_model_is_valid = geomodel_load( geomodel, file );
@@ -107,10 +104,13 @@ void compare_geomodels(
     const StratigraphicColumn* column1 = geomodel1.stratigraphic_column();
     const StratigraphicColumn* column2 = geomodel2.stratigraphic_column();
 
-    std::vector< std::shared_ptr< const StratigraphicUnit > > all_units1 =
-        column1->get_all_units();
-    std::vector< std::shared_ptr< const StratigraphicUnit > > all_units2 =
-        column2->get_all_units();
+    if( column1->get_max_rank() != column2->get_max_rank() )
+    {
+        throw RINGMeshException( "TEST",
+            "Max ranks of the stratigraphic column of the two GeoModels "
+            "not equal: ",
+            column1->get_max_rank(), " vs ", column2->get_max_rank() );
+    }
 
     if( column1->get_name() != column2->get_name() )
     {
@@ -120,6 +120,11 @@ void compare_geomodels(
             column1->get_name(), " vs ", column2->get_name() );
     }
 
+    NestedStratigraphicUnit::StratigraphicUnits all_units1 =
+        column1->get_units();
+    NestedStratigraphicUnit::StratigraphicUnits all_units2 =
+        column2->get_units();
+
     if( all_units1.size() != all_units2.size() )
     {
         throw RINGMeshException( "TEST",
@@ -128,6 +133,7 @@ void compare_geomodels(
             all_units1.size(), " vs ", all_units2.size() );
     }
 
+    // TODO for the moment, we check names, better with uid
     bool identical = true;
     for( auto unit_index : range( all_units1.size() ) )
     {
