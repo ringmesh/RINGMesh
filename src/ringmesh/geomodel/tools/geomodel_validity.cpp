@@ -802,6 +802,8 @@ namespace
             if( !valid[i] )
             {
                 Logger::warn( "Validity", " Vertex ", i, " is not valid." );
+                Logger::warn( "Validity", " Vertex ", i, " : ",
+                    geomodel.mesh.vertices.vertex( i ) );
             }
         }
         auto nb_invalid = std::count( valid.begin(), valid.end(), false );
