@@ -40,8 +40,8 @@
 #include <geogram/basic/command_line.h>
 
 #include <ringmesh/geomodel/core/geomodel.h>
-#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/geomodel/tools/geomodel_tools.h>
+#include <ringmesh/geomodel/tools/geomodel_validity.h>
 #include <ringmesh/io/io.h>
 
 /*! Tests the GeoModel copy API function.
@@ -53,25 +53,28 @@ using namespace RINGMesh;
 
 int main()
 {
-    try {
+    try
+    {
         // 3D
         GeoModel3D input;
         std::string input_filename( ringmesh_test_data_path );
         input_filename += "modelA1_version2.gm";
         bool is_valid = geomodel_load( input, input_filename );
 
-        if( !is_valid ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Input 3D GeoModel must be valid." );
+        if( !is_valid )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Input 3D GeoModel must be valid." );
         }
 
-        //Copy it
+        // Copy it
         GeoModel3D copy;
         copy_geomodel( input, copy );
 
-        if( !is_geomodel_valid( copy ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Copied 3D GeoModel is not valid." );
+        if( !is_geomodel_valid( copy ) )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Copied 3D GeoModel is not valid." );
         }
 
         std::string output_filename( ringmesh_test_output_path );
@@ -84,27 +87,33 @@ int main()
         input2d_filename += "model_2d_version2.gm";
         bool is_valid2d = geomodel_load( input2d, input2d_filename );
 
-        if( !is_valid2d ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Input 2D GeoModel must be valid." );
+        if( !is_valid2d )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Input 2D GeoModel must be valid." );
         }
 
-        //Copy it
+        // Copy it
         GeoModel2D copy2d;
         copy_geomodel( input2d, copy2d );
 
-        if( !is_geomodel_valid( copy2d ) ) {
-            throw RINGMeshException( "RINGMesh Test",
-                "Copied 2D GeoModel is not valid." );
+        if( !is_geomodel_valid( copy2d ) )
+        {
+            throw RINGMeshException(
+                "RINGMesh Test", "Copied 2D GeoModel is not valid." );
         }
 
         std::string output2d_filename( ringmesh_test_output_path );
         output2d_filename += "copied_geomodel2D.gm";
         geomodel_save( copy2d, output2d_filename );
-    } catch( const RINGMeshException& e ) {
+    }
+    catch( const RINGMeshException& e )
+    {
         Logger::err( e.category(), e.what() );
         return 1;
-    } catch( const std::exception& e ) {
+    }
+    catch( const std::exception& e )
+    {
         Logger::err( "Exception", e.what() );
         return 1;
     }
