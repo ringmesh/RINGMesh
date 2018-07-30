@@ -33,6 +33,7 @@
 
 add_ringmesh_test(test-geomodel-from-surface.cpp geomodel_tools io)
 add_ringmesh_test(test-geomodel-vertices.cpp geomodel_core io)
+add_ringmesh_test(test-geomodel-build.cpp geomodel_core io)
 add_ringmesh_test(test-get-dependent-entities.cpp geomodel_tools io)
 add_ringmesh_test(test-stratigraphic-column.cpp geomodel_tools io)
 add_ringmesh_test(test-transfer-attributes-gm-gmm.cpp geomodel_core io)
