@@ -780,10 +780,10 @@ namespace RINGMesh
     private:
         void copy_mesh_entity( const GeoModelMeshEntity< 2 >& from ) final
         {
-            const auto& region_from =
+            const auto& surface_from =
                 dynamic_cast< const Surface< 2 >& >( from );
             GeoModelMeshEntity< 2 >::copy_mesh_entity( from );
-            sides_ = region_from.sides_;
+            sides_ = surface_from.sides_;
         }
 
     private:
