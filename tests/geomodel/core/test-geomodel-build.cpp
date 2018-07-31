@@ -223,11 +223,18 @@ bool build_geomodel( GeoModel3D& geomodel )
     cur_coor_line[1] = corners_table[3];
     builder.geometry.set_line( 0, cur_coor_line );
 
-    const GeoModelMeshEntity3D& line =
+    const GeoModelMeshEntity3D& mesh_entity1 =
         geomodel.mesh_entity( line_type_name_static(), 0 );
 
-    if( line.vertex( 0 ) != cur_coor_line[0]
-        || line.vertex( 1 ) != cur_coor_line[1] )
+    // being paranoid
+    const Line3D* line = dynamic_cast< const Line3D* >( &mesh_entity1 );
+    if( line == nullptr )
+    {
+        throw RINGMeshException( "RINGMesh Test", "Mesh entity is not a Line" );
+    }
+
+    if( line->vertex( 0 ) != cur_coor_line[0]
+        || line->vertex( 1 ) != cur_coor_line[1] )
     {
         throw RINGMeshException(
             "RINGMesh Test", "The line's corners are not equal" );
