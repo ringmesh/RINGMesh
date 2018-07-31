@@ -1,6 +1,18 @@
 #### Release: 5.1.0 ####
 
 New Features:
+ * 
+
+Bug fix:
+ * Fix geomodel_copy in 2D
+
+Improvements:
+ *
+
+
+#### Release: 5.1.0 ####
+
+New Features:
  * New (command-line) executable to edit GeoModel name.
  * Possibility to toggle off each validity check.
  * New executable to tetrahedralize an input GeoModel
