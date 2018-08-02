@@ -167,7 +167,7 @@ void build_geomodel( GeoModel3D& geomodel )
     }
     /*       builder.geology.create_geological_entity(
                Contact3D::type_name_static() );
-               */       // the static method type_name_static() is available for each
+               */ // the static method type_name_static() is available for each
     // GeoModelEntity. It returns an EntityType which is a string
     // corresponding to the Type of the entity.
 
