@@ -9,9 +9,9 @@ set_property(GLOBAL PROPERTY USE_FOLDERS ON)
 
 # Define version number
 # It is then exported to the configuration file
-set(RINGMesh_VERSION_MAJOR 5)
-set(RINGMesh_VERSION_MINOR 0)
-set(RINGMesh_VERSION_PATCH 0)
+set (RINGMesh_VERSION_MAJOR 5)
+set (RINGMesh_VERSION_MINOR 1)
+set (RINGMesh_VERSION_PATCH 0)
 set(RINGMesh_VERSION ${RINGMesh_VERSION_MAJOR}.${RINGMesh_VERSION_MINOR}.${RINGMesh_VERSION_PATCH})
 
 message(STATUS "RINGMesh binary directory is: ${PROJECT_BINARY_DIR}")
