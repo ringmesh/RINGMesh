@@ -128,7 +128,7 @@ namespace GEO {
         ) {
             return create(
                 delaunay, mesh,
-                (mesh->vertices.nb() > 0) ? mesh->vertices.point_ptr(0) : nil,
+                (mesh->vertices.nb() > 0) ? mesh->vertices.point_ptr(0) : nullptr,
                 mesh->vertices.dimension()
             );
         }
@@ -505,7 +505,7 @@ namespace GEO {
             vector<double>& embedding,
             RDTMode mode = RDTMode(RDT_RVC_CENTROIDS | RDT_PREFER_SEEDS),
             const vector<bool>& seed_is_locked = vector<bool>(),
-            MeshFacetsAABB* AABB = nil
+            MeshFacetsAABB* AABB = nullptr
         ) = 0;
 
         /**
@@ -526,7 +526,7 @@ namespace GEO {
             Mesh& RDT,
             RDTMode mode = RDTMode(RDT_RVC_CENTROIDS | RDT_PREFER_SEEDS),
             const vector<bool>& seed_is_locked = vector<bool>(),
-            MeshFacetsAABB* AABB=nil
+            MeshFacetsAABB* AABB=nullptr
         );
 
         /**
@@ -593,7 +593,7 @@ namespace GEO {
 	 *  vertices
 	 * \param[in] connected_comp_priority if true, generate polyhedron 
 	 *  intersections associated with the same Voronoi seed in order.
-	 * \param[in] parallel if true, tentatively parallize computation.
+	 * \param[in] parallel if true, tentatively parallelize computation.
 	 */
 	virtual void for_each_polyhedron(
 	    RVDPolyhedronCallback& callback,
@@ -613,7 +613,7 @@ namespace GEO {
 	 *  vertices
 	 * \param[in] connected_comp_priority if true, generate polyhedron 
 	 *  intersections associated with the same Voronoi seed in order.
-	 * \param[in] parallel if true, tentatively parallize computation.
+	 * \param[in] parallel if true, tentatively parallelize computation.
 	 */
 	virtual void for_each_polygon(
 	    RVDPolygonCallback& callback,
@@ -681,7 +681,7 @@ namespace GEO {
          */
         const vec3& R3_embedding(index_t v) const {
             geo_debug_assert(v < mesh_->vertices.nb());
-            return *(vec3*) (R3_embedding_base_ + v * R3_embedding_stride_);
+            return *(const vec3*) (R3_embedding_base_ + v * R3_embedding_stride_);
         }
 
         /**

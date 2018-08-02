@@ -87,12 +87,14 @@ namespace {
 		L, "'require()' invalid number of arguments"
 	    );
 	}
-	std::map<std::string, const char*>::iterator it;
-	{
-	    std::string k =
-		std::string("lib/") + std::string(lua_tostring(L,1)) + ".lua";
-	    it = embedded_files.find(k);
+	if(!lua_isstring(L,1)) {
+	    return luaL_error(
+		L, "'require()' argument is not a string"
+	    );
 	}
+	auto it = embedded_files.find(
+	    std::string("lib/") + std::string(lua_tostring(L,1)) + ".lua"
+	);
 	if(it == embedded_files.end()) {
 	    return call_lua_require(L);
 	}
@@ -123,7 +125,7 @@ namespace {
     }
 
     inline void append(std::string& s, const char* c) {
-	s += (c==nil) ? "nil" : c;
+	s += (c==nullptr) ? "nil" : c;
     }
     
     int tostring(lua_State* L) {
@@ -190,7 +192,7 @@ namespace {
 	    lua_pushvalue(L, i);   // value to print. 
 	    lua_call(L, 1, 1);
 	    s = lua_tolstring(L, -1, &l);  // get result.
-	    if (s == NULL) {
+	    if (s == nullptr) {
 		return luaL_error(
 		    L, "'tostring' must return a string to 'print'"
 		);
@@ -204,7 +206,7 @@ namespace {
 	Logger::out("LUA") << out.str() << std::endl;
 	return 0;
     }
-    
+
     namespace LUAFileSystemImpl {
 
 	// These three functions needed adaptation, because in the FileSystem
@@ -236,6 +238,22 @@ namespace {
 	    FileSystem::get_subdirectories(path,result);
 	    return result;
 	}
+
+	static const char* os_name() {
+	    const char* result = "unknown";
+#if defined(GEO_OS_LINUX)
+	    result = "Linux";
+#elif defined(GEO_OS_APPLE)
+	    result = "Apple";
+#elif defined(GEO_OS_WINDOWS)
+	    result = "Windows";
+#elif defined(GEO_OS_ANDROID)
+	    result = "Android";
+#elif defined(GEO_OS_UNIX)
+	    result = "Generic Unix";
+#endif
+	    return result;
+	}
 	
     }
 }
@@ -251,19 +269,16 @@ void list_embedded_lua_files(
     std::vector<std::string>& filenames
 ) {
     filenames.clear();
-    for(std::map<std::string, const char*>::iterator it =
-	    embedded_files.begin();
-	it != embedded_files.end(); ++it) {
-	filenames.push_back(it->first);
+    for(auto& it : embedded_files) {
+	filenames.push_back(it.first);
     }
 }
 
 void get_embedded_lua_file(
     const char* filename, const char** data
 ) {
-    std::map<std::string, const char*>::iterator it =
-	embedded_files.find(filename);
-    *data = (it == embedded_files.end()) ? nil : it->second;
+    auto it = embedded_files.find(filename);
+    *data = (it == embedded_files.end()) ? nullptr : it->second;
 }
     
 void init_lua_io(lua_State* L) {
@@ -292,11 +307,14 @@ void init_lua_io(lua_State* L) {
     lua_bindwrapper(L, FileSystem::set_executable_flag);
     lua_bindwrapper(L, FileSystem::touch);
     lua_bindwrapper(L, FileSystem::normalized_path);		
-    lua_bindwrapper(L, FileSystem::home_directory);	
+    lua_bindwrapper(L, FileSystem::home_directory);
+    lua_bindwrapper(L, FileSystem::documents_directory);	    
     
     lua_bindwrapper(L, LUAFileSystemImpl::get_directory_entries);
     lua_bindwrapper(L, LUAFileSystemImpl::get_files);
     lua_bindwrapper(L, LUAFileSystemImpl::get_subdirectories);		
+
+    lua_bindwrapper(L, LUAFileSystemImpl::os_name);		
     
     lua_setglobal(L, "FileSystem");
     

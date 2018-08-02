@@ -65,7 +65,7 @@
  * Level 1: RestrictedVoronoiDiagram is the abstract API seen from client code
  * Level 2: RVD_Nd_Impl<DIM> implements RestrictedVoronoiDiagram
  * Level 3: RVD_Nd_Impl<DIM>::GenRestrictedVoronoiDiagram is
- *  an instanciation of GEOGen::RestrictedVoronoiDiagram (from generic_RVD.h)
+ *  an instantiation of GEOGen::RestrictedVoronoiDiagram (from generic_RVD.h)
  *
  * Warning: there are approx. 1000 lines of boring code ahead.
  */
@@ -78,7 +78,7 @@ namespace {
      * \brief Generic implementation of RestrictedVoronoiDiagram.
      * \tparam DIM dimension
      */
-    template <int DIM>
+    template <unsigned int DIM>
     class RVD_Nd_Impl : public GEO::RestrictedVoronoiDiagram {
 
         /** \brief This class type */
@@ -144,20 +144,20 @@ namespace {
             RVD_(delaunay, mesh) {
             use_exact_projection_ = false;
             is_slave_ = false;
-            master_ = nil;
+            master_ = nullptr;
             has_weights_ = false;
             if(mesh->vertices.attributes().is_defined("weight")) {
                 vertex_weight_.bind(mesh->vertices.attributes(), "weight");
                 has_weights_ = true;
             }
-            parts_ = nil;
+            parts_ = nullptr;
             nb_parts_ = 0;
             funcval_ = 0.0;
-            simplex_func_ = nil;
-	    polygon_callback_ = nil;
-	    polyhedron_callback_ = nil;
-            arg_vectors_ = nil;
-            arg_scalars_ = nil;
+            simplex_func_ = nullptr;
+	    polygon_callback_ = nullptr;
+	    polyhedron_callback_ = nullptr;
+            arg_vectors_ = nullptr;
+            arg_scalars_ = nullptr;
             thread_mode_ = MT_NONE;
             nb_triangles_ = 0;
         }
@@ -166,22 +166,22 @@ namespace {
          * \brief Constructor for parts, used in multithreading mode.
          */
         RVD_Nd_Impl() :
-            RestrictedVoronoiDiagram(nil, nil, nil, 0),
-            RVD_(nil, nil) {
+            RestrictedVoronoiDiagram(nullptr, nullptr, nullptr, 0),
+            RVD_(nullptr, nullptr) {
             use_exact_projection_ = false;
             is_slave_ = true;
-            master_ = nil;
-            mesh_ = nil;
-            parts_ = nil;
+            master_ = nullptr;
+            mesh_ = nullptr;
+            parts_ = nullptr;
             nb_parts_ = 0;
             facets_begin_ = -1;
             facets_end_ = -1;
             funcval_ = 0.0;
-            simplex_func_ = nil;
-	    polygon_callback_ = nil;
-	    polyhedron_callback_ = nil;
-            arg_vectors_ = nil;
-            arg_scalars_ = nil;
+            simplex_func_ = nullptr;
+	    polygon_callback_ = nullptr;
+	    polyhedron_callback_ = nullptr;
+            arg_vectors_ = nullptr;
+            arg_scalars_ = nullptr;
             thread_mode_ = MT_NONE;
             nb_triangles_ = 0;
         }
@@ -377,7 +377,7 @@ namespace {
         virtual void compute_centroids_on_surface(double* mg, double* m) {
             create_threads();
             if(nb_parts() == 0) {
-                if(master_ != nil) {
+                if(master_ != nullptr) {
                     if(has_weights_) {
                         RVD_.for_each_triangle(
                             ComputeCentroidsWeighted<Process::SpinLockArray>(
@@ -458,12 +458,12 @@ namespace {
              * \brief The callback called for each integration simplex.
              * \param[in] v index of current center vertex
              * \param[in] v_adj (unused here) is the index of the Voronoi cell
-             *  adjacent to t accross facet (\p v1, \p v2, \p v3) or
+             *  adjacent to t accros facet (\p v1, \p v2, \p v3) or
              *  -1 if it does not exists
              *  \param[in] t (unused here) is the index of the current
              *   tetrahedron
              *  \param[in] t_adj (unused here) is the index of the
-             *   tetrahedron adjacent to t accross facet (\p v1, \p v2, \p v3)
+             *   tetrahedron adjacent to t accros facet (\p v1, \p v2, \p v3)
              *   or -1 if it does not exists
              * \param[in] p0 first vertex of current integration simplex
              * \param[in] p1 second vertex of current integration simplex
@@ -506,7 +506,7 @@ namespace {
         virtual void compute_centroids_in_volume(double* mg, double* m) {
             create_threads();
             if(nb_parts() == 0) {
-                if(master_ != nil) {
+                if(master_ != nullptr) {
                     RVD_.for_each_tetrahedron(
                         ComputeCentroidsVolumetric<Process::SpinLockArray>(
                             mg, m, RVD_.delaunay(), master_->spinlocks_
@@ -732,7 +732,7 @@ namespace {
         virtual void compute_CVT_func_grad_on_surface(double& f, double* g) {
             create_threads();
             if(nb_parts() == 0) {
-                if(master_ != nil) {
+                if(master_ != nullptr) {
                     if(has_weights_) {
                         RVD_.for_each_triangle(
                             ComputeCVTFuncGradWeighted<Process::SpinLockArray>(
@@ -823,12 +823,12 @@ namespace {
              * \brief The callback called for each integration simplex.
              * \param[in] v index of current center vertex
              * \param[in] v_adj (unused here) is the index of the Voronoi cell
-             *  adjacent to t accross facet (\p v1, \p v2, \p v3) or
+             *  adjacent to t accros facet (\p v1, \p v2, \p v3) or
              *  -1 if it does not exists
              *  \param[in] t (unused here) is the index of the current
              *   tetrahedron
              *  \param[in] t_adj (unused here) is the index of the
-             *   tetrahedron adjacent to t accross facet (\p v1, \p v2, \p v3)
+             *   tetrahedron adjacent to t accros facet (\p v1, \p v2, \p v3)
              *   or -1 if it does not exists
              * \param[in] p1 first vertex of current integration simplex
              * \param[in] p2 second vertex of current integration simplex
@@ -884,7 +884,7 @@ namespace {
         virtual void compute_CVT_func_grad_in_volume(double& f, double* g) {
             create_threads();
             if(nb_parts() == 0) {
-                if(master_ != nil) {
+                if(master_ != nullptr) {
                     RVD_.for_each_volumetric_integration_simplex(
                         ComputeCVTFuncGradVolumetric<Process::SpinLockArray>(
                             RVD_, f, g, master_->spinlocks_
@@ -963,10 +963,10 @@ namespace {
              * \brief The callback called for each volumetric
              *   integration simplex.
              * \param[in] v index of current center vertex
-             * \param[in] v_adj index of the Voronoi cell adjacent to t accross
+             * \param[in] v_adj index of the Voronoi cell adjacent to t accros
              *    facet (\p v1, \p v2, \p v3) or -1 if it does not exists
              * \param[in] t index of the current tetrahedron
-             * \param[in] t_adj index of the tetrahedron adjacent to t accross
+             * \param[in] t_adj index of the tetrahedron adjacent to t accros
              *    facet (\p v1, \p v2, \p v3) or -1 if it does not exists
              * \param[in] v1 first vertex of current integration simplex
              * \param[in] v2 second vertex of current integration simplex
@@ -1007,7 +1007,7 @@ namespace {
         ) {
             create_threads();
             if(nb_parts() == 0) {
-                if(master_ == nil) {
+                if(master_ == nullptr) {
                     F->set_points_and_gradient(
                         delaunay()->dimension(),
                         delaunay()->nb_vertices(), 
@@ -1066,7 +1066,7 @@ namespace {
         /**
          * \brief Adapter class used internally to implement for_each_polygon()
          * \details Gets the current triangle from the RVD and passes it back
-	 *  to the callback. It is needed becase GenericRVD::for_each_polygon()
+	 *  to the callback. It is needed because GenericRVD::for_each_polygon()
 	 *  does not pass the current triangle.
          */
 	// TODO: pass it through all the callbacks, because it is ridiculous:
@@ -1130,7 +1130,7 @@ namespace {
                     parallel_for_member_callback(this, &thisclass::run_thread),
                     0, nb_parts()
                 );
-		polygon_callback_->set_spinlocks(nil);
+		polygon_callback_->set_spinlocks(nullptr);
             }
         } 
 	
@@ -1157,7 +1157,7 @@ namespace {
                     parallel_for_member_callback(this, &thisclass::run_thread),
                     0, nb_parts()
                 );
-		polyhedron_callback_->set_spinlocks(nil);
+		polyhedron_callback_->set_spinlocks(nullptr);
             }
         } 
 
@@ -1309,12 +1309,12 @@ namespace {
              * \brief The callback called for each integration simplex.
              * \param[in] v index of current center vertex
              * \param[in] v_adj (unused here) is the index of the Voronoi cell
-             *  adjacent to t accross facet (\p v1, \p v2, \p v3) or
+             *  adjacent to t accros facet (\p v1, \p v2, \p v3) or
              *  -1 if it does not exists
              *  \param[in] t (unused here) is the index of the current
              *   tetrahedron
              *  \param[in] t_adj (unused here) is the index of the
-             *   tetrahedron adjacent to t accross facet (\p v1, \p v2, \p v3)
+             *   tetrahedron adjacent to t accros facet (\p v1, \p v2, \p v3)
              *   or -1 if it does not exists
              * \param[in] v1 first vertex of current integration simplex
              * \param[in] v2 second vertex of current integration simplex
@@ -1365,12 +1365,12 @@ namespace {
              * \brief The callback called for each tetrahedron
              * \param[in] v index of current center vertex
              * \param[in] v_adj (unused here) is the index of the Voronoi cell
-             *  adjacent to t accross facet (\p v1, \p v2, \p v3) or
+             *  adjacent to t accros facet (\p v1, \p v2, \p v3) or
              *  -1 if it does not exists
              *  \param[in] t (unused here) is the index of the current
              *   tetrahedron
              *  \param[in] t_adj (unused here) is the index of the
-             *   tetrahedron adjacent to t accross facet (\p v1, \p v2, \p v3)
+             *   tetrahedron adjacent to t accros facet (\p v1, \p v2, \p v3)
              *   or -1 if it does not exists
              * \param[in] v1 first vertex of current tetrahedron
              * \param[in] v2 second vertex of current tetrahedron
@@ -1411,7 +1411,7 @@ namespace {
 
         protected:
             /**
-             * \brief Retreives the index of a vertex given its symbolic
+             * \brief Retrieves the index of a vertex given its symbolic
              * representation.
              * \param[in] center_vertex_id index of current Voronoi seed
              * \param[in] v symbolic and geometric representation of the vertex
@@ -1711,7 +1711,7 @@ namespace {
          * stores the vertices in a KdTree.
          */
         void prepare_projection() {
-            if(!mesh_vertices_.is_nil()) {
+            if(!mesh_vertices_.is_null()) {
                 return;
             }
 
@@ -1940,7 +1940,7 @@ namespace {
                 coord_index_t dimension,
                 RDTMode mode,
                 const std::vector<bool>& seed_is_locked,
-                MeshFacetsAABB* AABB = nil
+                MeshFacetsAABB* AABB = nullptr
             ) :
                 RVD_(RVD),
                 dimension_(dimension),
@@ -2051,7 +2051,7 @@ namespace {
 
                 bool owns_AABB = false;
                 if(select_nearest_ || project_on_surface_) {
-                    if(AABB_ == nil) {
+                    if(AABB_ == nullptr) {
                         // Construct an axis-aligned bounding box tree,
                         // do not reorder the mesh (needs to be pre-reordered)
                         AABB_ = new MeshFacetsAABB(
@@ -2178,7 +2178,7 @@ namespace {
 
                 if(owns_AABB) {
                     delete AABB_;
-                    AABB_ = nil;
+                    AABB_ = nullptr;
                 }
             }
 
@@ -2330,7 +2330,7 @@ namespace {
                     const double*
 			p4 = delaunay()->vertex_ptr(simplices[4 * t + 3]);
                     if(PCK::orient_3d(p1, p2, p3, p4) < 0) {
-                        geo_swap(simplices[4 * t], simplices[4 * t + 1]);
+                        std::swap(simplices[4 * t], simplices[4 * t + 1]);
                     }
                 }
                 embedding.clear();
@@ -2451,7 +2451,7 @@ namespace {
 
         virtual void delete_threads() {
             delete[] parts_;
-            parts_ = nil;
+            parts_ = nullptr;
             nb_parts_ = 0;
         }
 
@@ -2553,8 +2553,8 @@ namespace GEO {
 	geo_cite("DBLP:journals/cad/Levy16");
 	
         delaunay->set_stores_neighbors(true);
-        RestrictedVoronoiDiagram* result = nil;
-        geo_assert(delaunay != nil);
+        RestrictedVoronoiDiagram* result = nullptr;
+        geo_assert(delaunay != nullptr);
         coord_index_t dim = delaunay->dimension();
         switch(dim) {
             case 2:
@@ -2593,7 +2593,7 @@ namespace GEO {
 
     void RestrictedVoronoiDiagram::set_delaunay(Delaunay* delaunay) {
         delaunay_ = delaunay;
-        if(delaunay_ != nil) {
+        if(delaunay_ != nullptr) {
             dimension_ = delaunay->dimension();
         } else {
             dimension_ = 0;

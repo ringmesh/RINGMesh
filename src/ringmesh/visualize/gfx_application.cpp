@@ -1175,9 +1175,9 @@ namespace RINGMesh
                 for( auto i : range( subelements.nb() ) )
                 {
                     attribute_min_ =
-                        GEO::geo_min( attribute_min_, float( attribute[i] ) );
+                        std::min( attribute_min_, float( attribute[i] ) );
                     attribute_max_ =
-                        GEO::geo_max( attribute_max_, float( attribute[i] ) );
+                        std::max( attribute_max_, float( attribute[i] ) );
                 }
             }
         }

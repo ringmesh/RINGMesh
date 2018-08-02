@@ -63,14 +63,6 @@ install(
     DESTINATION
         .
 )
-if(WIN32)
-    install(
-        FILES
-            ${GEOGRAM_INSTALL_PREFIX}/lib/glfw3.dll
-        DESTINATION
-            bin
-    )
-endif()
 
 include(GenerateExportHeader)
 

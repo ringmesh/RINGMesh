@@ -55,10 +55,6 @@
 #include <geogram/numerics/multi_precision.h>
 #include <geogram/basic/process.h>
 
-#if defined(GEO_OS_APPLE) && defined(__MAC_10_12)
-#include <os/lock.h>
-#endif
-
 namespace {
 
     using namespace GEO;
@@ -106,7 +102,7 @@ namespace {
         /**
          * \brief Creates a new Pools object
          */
-        Pools() : pools_(1024,static_cast<void*>(0)) {
+        Pools() : pools_(1024,nullptr) {
             chunks_.reserve(1024);
         }
 
@@ -130,7 +126,7 @@ namespace {
             if(size >= pools_.size()) {
                 return ::malloc(size);
             }
-            if(pools_[size] == nil) {
+            if(pools_[size] == nullptr) {
                 new_chunk(size);
             }
             void* result = pools_[size];
@@ -633,7 +629,7 @@ namespace {
      * \brief Computes the difference of two expansions, eliminating zero
      *  components from the output expansion
      * \param[in] e first expansion
-     * \param[in] f second expansion to be substracted from e
+     * \param[in] f second expansion to be subtracted from e
      * \param[out] h the result \p e - \p f
      * \details Sets \p h = (\p e - \p f). \p h cannot be \p e or \p f.
      *  This function is adapted from Jonathan Shewchuk's code.

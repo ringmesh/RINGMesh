@@ -70,7 +70,7 @@ namespace GEO {
  *   with a constant value.
  */
 
-#if defined(GEO_COMPILER_GCC) || defined(GEO_COMPILER_CLANG)
+#if defined(GEO_COMPILER_GCC_FAMILY) 
 #define GEO_THREAD_LOCAL __thread
 #elif defined(GEO_COMPILER_MSVC) || defined(GEO_COMPILER_INTEL)
 #define GEO_THREAD_LOCAL __declspec(thread)
@@ -130,7 +130,7 @@ namespace GEO {
 
     private:
         /**
-         * \brief Sets the indentifier of this thread.
+         * \brief Sets the identifier of this thread.
          * \details This function is meant to be called
          *  by the thread manager for each created thread.
          * \param[in] id_in the identifier of this thread.
@@ -142,7 +142,7 @@ namespace GEO {
         /**
          * \brief Specifies the current instance, used by current().
          * \details Stores the specified thread in the thread-local-storage
-         *   static variable so that current() can retreive it. 
+         *   static variable so that current() can retrieve it. 
          *   Should be called by the ThreadManager right before launching 
          *   the threads.
          * \param[in] thread a pointer to the thread currently executed
@@ -306,7 +306,7 @@ namespace GEO {
         /**
          * \brief Specifies the current instance, used by current().
          * \details Stores the specified thread in the thread-local-storage
-         *   static variable so that current() can retreive it. 
+         *   static variable so that current() can retrieve it. 
          *   Should be called by the ThreadManager right before launching 
          *   the threads.
          * \param[in] thread a pointer to the thread currently executed
@@ -367,10 +367,11 @@ namespace GEO {
 
         /**
          * \brief Initializes GeogramLib
+	 * \param[in] flags the flags passed to GEO::initialize()
          * \details This function must be called once before using
          * any functionality of GeogramLib.
          */
-        void GEOGRAM_API initialize();
+        void GEOGRAM_API initialize(int flags);
 
         /**
          * \brief Terminates GeogramLib
@@ -646,12 +647,12 @@ namespace GEO {
         threads_per_core = 1;
 #endif
 
-        index_t nb_threads = geo_min(
+        index_t nb_threads = std::min(
             to - from,
             Process::maximum_concurrent_threads() * threads_per_core
         );
 
-	nb_threads = geo_max(1u, nb_threads);
+	nb_threads = std::max(index_t(1), nb_threads);
 	
         index_t batch_size = (to - from) / nb_threads;
         if(Process::is_running_threads() || nb_threads == 1) {

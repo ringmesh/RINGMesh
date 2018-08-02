@@ -50,8 +50,8 @@
 #include <geogram/basic/permutation.h>
 #include <geogram/basic/process.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/algorithm.h>
 #include <geogram/bibliography/bibliography.h>
-#include <algorithm>
 
 namespace {
 
@@ -729,7 +729,7 @@ namespace {
          * \param[in] M the mesh in which the elements reside
          * \param[in] begin an iterator that points to the
          *  first element of the sequence
-         * \param[in] end an interator that points one position past the
+         * \param[in] end an iterator that points one position past the
          *  last element of the sequence
          * \param[in] limit subsequences smaller than limit are left unsorted
          * \tparam COORDX the first coordinate, can be 0,1 or 2. The second
@@ -775,8 +775,8 @@ namespace {
          *  of indices that refer to the elements is sorted. 
          *  This function uses a multithreaded implementation.
          * \param[in] M the mesh in which the elements to sort reside
-         * \param[in] b an interator to the first index to be sorted
-         * \param[in] e an interator one position past the last index 
+         * \param[in] b an iterator to the first index to be sorted
+         * \param[in] e an iterator one position past the last index 
          *  to be sorted
          * \param[in] limit subsequences smaller than limit are left unsorted
          */
@@ -909,7 +909,7 @@ namespace {
          * \param[in] M the mesh in which the elements reside
          * \param[in] begin an iterator that points to the
          *  first element of the sequence
-         * \param[in] end an interator that points one position past the
+         * \param[in] end an iterator that points one position past the
          *  last element of the sequence
          * \param[in] limit subsequences smaller than limit are left unsorted
          * \tparam COORDX the first coordinate, can be 0,1 or 2. The second
@@ -946,8 +946,8 @@ namespace {
          *  of indices that refer to the elements is sorted. 
          *  This function uses a multithreaded implementation.
          * \param[in] M the mesh in which the elements to sort reside
-         * \param[in] b an interator to the first index to be sorted
-         * \param[in] e an interator one position past the last index 
+         * \param[in] b an iterator to the first index to be sorted
+         * \param[in] e an iterator one position past the last index 
          *  to be sorted
          * \param[in] limit subsequences smaller than limit are left unsorted
          */
@@ -1178,7 +1178,7 @@ namespace {
 	    geo_assert_not_reached;
 	}
 
-        if(levels != nil) {
+        if(levels != nullptr) {
             levels->push_back(index_t(e - sorted_indices.begin()));
         }
     }
@@ -1276,7 +1276,7 @@ namespace GEO {
         double ratio,
         vector<index_t>* levels
     ) {
-        if(levels != nil) {
+        if(levels != nullptr) {
             levels->clear();
             levels->push_back(0);
         }

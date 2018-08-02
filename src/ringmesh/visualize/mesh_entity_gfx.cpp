@@ -70,8 +70,8 @@ namespace
             for( auto i : range( attribute.size() ) )
             {
                 double value = attribute[i];
-                min = GEO::geo_min( min, value );
-                max = GEO::geo_max( max, value );
+                min = std::min( min, value );
+                max = std::max( max, value );
             }
         }
     }

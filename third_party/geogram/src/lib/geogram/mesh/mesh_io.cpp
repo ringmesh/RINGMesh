@@ -45,6 +45,7 @@
 
 #include <geogram/mesh/mesh_io.h>
 #include <geogram/mesh/mesh.h>
+#include <geogram/mesh/index.h>
 #include <geogram/points/colocate.h>
 #include <geogram/basic/line_stream.h>
 #include <geogram/basic/b_stream.h>
@@ -205,7 +206,10 @@ namespace GEO {
 			}
 			
 			if(!ignore_tex_coords) {
-			    if(in.nb_fields() != 3) {
+			    if(
+				in.nb_fields() != 3 &&
+				in.nb_fields() != 4  // TODO: read 3D UVs ?
+			    ) {
                                 Logger::err("I/O")
                                     << "Line " << in.line_number()
                                     << " malformed texture vertex"
@@ -237,11 +241,11 @@ namespace GEO {
 			facet_tex_vertices.resize(0);
                         
                         for(index_t i = 1; i < in.nb_fields(); i++) {
-			    char* tex_vertex_str = nil;
+			    char* tex_vertex_str = nullptr;
                             for(char* ptr = in.field(i); *ptr != '\0'; ptr++) {
                                 if(*ptr == '/') {
 				    if(!ignore_tex_coords &&
-				       tex_vertex_str == nil) {
+				       tex_vertex_str == nullptr) {
 					tex_vertex_str = ptr+1;
 				    }
                                     *ptr = '\0';
@@ -276,7 +280,7 @@ namespace GEO {
                             }
                             facet_vertices.push_back(vertex_index-1);
 
-			    if(tex_vertex_str != nil &&
+			    if(tex_vertex_str != nullptr &&
 			       tex_vertex_str[0] != '\0' &&
 			       tex_vertex_str[0] != '/' 
 			    ) {
@@ -796,8 +800,8 @@ namespace GEO {
                         // account for differences in the indexing
                         // convetions in .mesh/.meshb files w.r.t.
                         // geogram internal conventions.
-                        geo_swap(v[0], v[1]);
-                        geo_swap(v[4], v[5]);
+                        std::swap(v[0], v[1]);
+                        std::swap(v[4], v[5]);
                         
                         for(index_t lv=0; lv<8; ++lv) {
                             M.cells.set_vertex(
@@ -1249,7 +1253,7 @@ namespace GEO {
                 color_mult_(1.0),
                 current_color_(max_index_t()),
                 tristrip_index_(0),
-                load_colors_(false) {
+                load_colors_(true) {
             }
 
             /**
@@ -1264,9 +1268,9 @@ namespace GEO {
              * \return true on success, false otherwise
              */
             bool load() {
-                p_ply ply = ply_open(filename_.c_str(), nil, 0, nil);
+                p_ply ply = ply_open(filename_.c_str(), nullptr, 0, nullptr);
 
-                if(ply == nil) {
+                if(ply == nullptr) {
                     Logger::err("I/O")
                         << "Could not open file: " << filename_
                         << std::endl;
@@ -1334,7 +1338,7 @@ namespace GEO {
                 
                 if(!ply_read(ply)) {
                     Logger::err("I/O")
-                        << "Problem occured while parsing PLY file"
+                        << "Problem occurred while parsing PLY file"
                         << std::endl;
                     ply_close(ply);
                     return false;
@@ -1368,7 +1372,7 @@ namespace GEO {
              * \param[in] ply the p_ply handle to the file
              */
             void check_for_colors(p_ply ply) {
-                p_ply_element element = nil;
+                p_ply_element element = nullptr;
 
                 bool has_r = false;
                 bool has_g = false;
@@ -1380,22 +1384,22 @@ namespace GEO {
 
                 for(;;) {
                     element = ply_get_next_element(ply, element);
-                    if(element == nil) {
+                    if(element == nullptr) {
                         break;
                     }
-                    const char* elt_name = nil;
-                    ply_get_element_info(element, &elt_name, nil);
+                    const char* elt_name = nullptr;
+                    ply_get_element_info(element, &elt_name, nullptr);
 
                     if(!strcmp(elt_name, "vertex")) {
-                        p_ply_property property = nil;
+                        p_ply_property property = nullptr;
                         for(;;) {
                             property = ply_get_next_property(element, property);
-                            if(property == nil) {
+                            if(property == nullptr) {
                                 break;
                             }
-                            const char* prop_name = nil;
+                            const char* prop_name = nullptr;
                             ply_get_property_info(
-                                property, &prop_name, nil, nil, nil
+                                property, &prop_name, nullptr, nullptr, nullptr
                             );
                             has_r = has_r || !strcmp(prop_name, "r");
                             has_g = has_g || !strcmp(prop_name, "g");
@@ -1437,6 +1441,31 @@ namespace GEO {
                 } else {
                     has_colors_ = false;
                 }
+
+		if(!has_colors_) {
+		    return;
+		}
+		
+		vertex_color_.bind_if_is_defined(
+		    mesh_.vertices.attributes(), "color"
+		);
+		if(vertex_color_.is_bound() &&
+		   vertex_color_.dimension() != 3
+		) {
+		    Logger::warn("PLY")
+			<< "Mesh already has a color attribute "
+			<< "that is not of dimension 3"
+			<< std::endl;
+		    has_colors_ = false;
+		    return;
+		}
+		if(!vertex_color_.is_bound()) {
+		    vertex_color_.create_vector_attribute(
+			mesh_.vertices.attributes(),
+			"color",
+			3
+		    );
+		}
             }
 
             /**
@@ -1447,9 +1476,11 @@ namespace GEO {
              * \return the PlyLoader associated with \p argument
              */
             static PlyLoader* loader(p_ply_argument argument) {
-                PlyLoader* result = nil;
-                ply_get_argument_user_data(argument, (void**) (&result), nil);
-                geo_debug_assert(result != nil);
+                PlyLoader* result = nullptr;
+                ply_get_argument_user_data(
+		    argument, (void**) (&result), nullptr
+		);
+                geo_debug_assert(result != nullptr);
                 return result;
             }
 
@@ -1457,7 +1488,7 @@ namespace GEO {
              * \brief The vertex callback, called for each vertex 
              *  of the input file.
              * \param[in] argument the generic opaque argument 
-             *  (from which this PlyLoader is retreived).
+             *  (from which this PlyLoader is retrieved).
              * \return callback status code, zero for errors, 
              *  non-zero for success.
              */
@@ -1469,7 +1500,7 @@ namespace GEO {
              * \brief The facet callback, called for each facet 
              *  of the input file.
              * \param[in] argument the generic opaque argument 
-             *  (from which this PlyLoader is retreived).
+             *  (from which this PlyLoader is retrieved).
              * \return callback status code, zero for errors, 
              *  non-zero for success.
              */
@@ -1481,7 +1512,7 @@ namespace GEO {
              * \brief The triangle strip callback, 
              *  called for each triangle strip of the input file.
              * \param[in] argument the generic opaque argument 
-             *  (from which this PlyLoader is retreived).
+             *  (from which this PlyLoader is retrieved).
              * \return callback status code, zero for errors, 
              *  non-zero for success.
              */
@@ -1493,7 +1524,7 @@ namespace GEO {
              * \brief The color callback, called for 
              *  each color data of the input file.
              * \param[in] argument the generic opaque argument 
-             *  (from which this PlyLoader is retreived).
+             *  (from which this PlyLoader is retrieved).
              * \return callback status code, zero for errors, 
              *  non-zero for success.
              */
@@ -1509,7 +1540,7 @@ namespace GEO {
              */
             int add_vertex_data(p_ply_argument argument) {
                 long coord;
-                ply_get_argument_user_data(argument, nil, &coord);
+                ply_get_argument_user_data(argument, nullptr, &coord);
                 if(coord == 0) {
                     geo_debug_assert(mesh_.vertices.dimension() >= 3);
                     if(
@@ -1553,7 +1584,9 @@ namespace GEO {
              */
             int add_face_data(p_ply_argument argument) {
                 long length, value_index;
-                ply_get_argument_property(argument, nil, &length, &value_index);
+                ply_get_argument_property(
+		    argument, nullptr, &length, &value_index
+		);
                 if(value_index < 0) {
                     // Ignore negative values -
                     // this is not an error! (facet markers)
@@ -1591,7 +1624,9 @@ namespace GEO {
              */
             int add_tristrip_data(p_ply_argument argument) {
                 long length, value_index;
-                ply_get_argument_property(argument, nil, &length, &value_index);
+                ply_get_argument_property(
+		    argument, nullptr, &length, &value_index
+		);
                 if(value_index < 0) {
                     // Ignore negative values - this is not an error!
                     return 1;
@@ -1693,7 +1728,7 @@ namespace GEO {
              */
             int add_color_data(p_ply_argument argument) {
                 long coord;
-                ply_get_argument_user_data(argument, nil, &coord);
+                ply_get_argument_user_data(argument, nullptr, &coord);
                 if(coord == 0) {
                     geo_debug_assert(mesh_.vertices.dimension() >= 9);
                     if(current_color_ >= mesh_.vertices.nb()) {
@@ -1707,12 +1742,9 @@ namespace GEO {
 
                 if(coord == 0 || coord == 1 || coord == 2) {
                     double value =
-                        double(ply_get_argument_value(argument)) *
-                        color_mult_;
-                    geo_argused(value);
-                    // TODO: copy color into mesh
-                    // (note: use current_color_ - 1 since
-                    //  it was incremented before)
+                        double(ply_get_argument_value(argument)) * color_mult_;
+                    // (note: current_color_ - 1 because it was incremented before)
+		    vertex_color_[3*(current_color_ - 1) + index_t(coord)] = value;
                     return 1;
                 }
 
@@ -1740,6 +1772,8 @@ namespace GEO {
             bool load_colors_;
 
             vector<index_t> facet_vertices_;
+
+	    Attribute<double> vertex_color_;
         };
 
 
@@ -1756,26 +1790,43 @@ namespace GEO {
             const MeshIOFlags& ioflags
         ) {
             p_ply oply = ply_create(
-                filename.c_str(), PLY_LITTLE_ENDIAN, NULL, 0, NULL
+                filename.c_str(), PLY_LITTLE_ENDIAN, nullptr, 0, nullptr
             );
 
-            if(oply == nil) {
+            if(oply == nullptr) {
                 return false;
             }
 
+	    Attribute<double> vertex_color;
+	    vertex_color.bind_if_is_defined(
+		M.vertices.attributes(), "color"
+	    );
+	    if(vertex_color.is_bound() && vertex_color.dimension() != 3) {
+		Logger::warn("IO")
+		    << "Mesh has vertex colors but attribut dim is not 3 (ignoring them)"
+		    << std::endl;
+		vertex_color.unbind();
+	    }
+
             // Create element and properties for vertices
             e_ply_type coord_type = PLY_FLOAT;
+	    e_ply_type color_type = PLY_UINT8;
             ply_add_element(oply, "vertex", long(M.vertices.nb()));
             ply_add_property(oply, "x", coord_type, coord_type, coord_type);
             ply_add_property(oply, "y", coord_type, coord_type, coord_type);
             ply_add_property(oply, "z", coord_type, coord_type, coord_type);
+	    if(vertex_color.is_bound()) {
+		ply_add_property(oply, "red",   color_type, color_type, color_type);
+		ply_add_property(oply, "green", color_type, color_type, color_type);
+		ply_add_property(oply, "blue",  color_type, color_type, color_type);
+	    }
 
             if(ioflags.has_element(MESH_FACETS)) {
                 // Create element and properties for facets
                 // (determine best index types)
                 index_t max_facet_size = 0;
                 for(index_t f = 0; f < M.facets.nb(); ++f) {
-                    max_facet_size = geo_max(
+                    max_facet_size = std::max(
                         max_facet_size, M.facets.nb_vertices(f)
                     );
                 }
@@ -1812,6 +1863,12 @@ namespace GEO {
                 for(index_t coord = 0; coord < 3; coord++) {
                     ply_write(oply, xyz[coord]);
                 }
+		if(vertex_color.is_bound()) {
+		    const double* rgb = &vertex_color[v*3];
+		    for(index_t coord = 0; coord < 3; coord++) {
+			ply_write(oply, Numeric::uint8(255.0*rgb[coord]));
+		    }
+		}
             }
 
             if(ioflags.has_element(MESH_FACETS)) {
@@ -2234,7 +2291,7 @@ namespace GEO {
             const MeshIOFlags& ioflags
         ) {
             FILE* F = fopen(filename.c_str(), "rb");
-            if(F == nil) {
+            if(F == nullptr) {
                 return false;
             }
 
@@ -2958,12 +3015,14 @@ namespace GEO {
 		if(!M.cells.are_simplices()) {
 		    M.cells.cell_ptr_[M.cells.nb()] = M.cell_corners.nb();
 		}
-		
-                if(chunk_class == "SPTR") {
-                    Logger::out("GeoFile")
-                        << "File may contain several objects"
-                        << std::endl;
-                }
+
+//  This warning when loading a single mesh from a file that may
+// contain several meshes -> deactivated for now.	       
+//                if(chunk_class == "SPTR") {
+//                    Logger::out("GeoFile")
+//                        << "File may contain several objects"
+//                        << std::endl;
+//                }
 		
             } catch(const GeoFileException& exc) {
                 Logger::err("I/O") << exc.what() << std::endl;
@@ -3496,6 +3555,8 @@ namespace GEO {
         }
     };
 
+    /************************************************************************/
+    
     /**
      * \brief IO handler for graphite files.
      * \details Graphite files with a single object can be directly read
@@ -3520,6 +3581,7 @@ namespace GEO {
         }
     };
 
+    /************************************************************************/
    
     /**
      * \brief IO handler for PDB (Protein DataBase) files.
@@ -3606,15 +3668,900 @@ namespace GEO {
 	    return String::to_double(s);
 	}
     };
-   
-   
+
+    /************************************************************************/
+
+    /**
+     * \brief Mesh IO Handler for OpenVolumeMesh file format.
+     * \details Saves a polyhedral mesh stored in a surfacic mesh that
+     *  has all cell boundaries and a vertex_id vertex attribute and cell_id
+     *  facet attribute. Note: the implementation is pretty inefficient (uses
+     *  tables).
+     */
+    class OVMIOHandler : public MeshIOHandler {
+    public:
+	/**
+	 * \copydoc MeshIOHandler::load()
+	 */
+        virtual bool load(
+            const std::string& filename, Mesh& M,
+            const MeshIOFlags& ioflags
+        ) {
+	    geo_argused(ioflags);
+	    M.clear();
+	    M.vertices.set_dimension(3);
+            LineInput in(filename);
+            if(!in.OK()) {
+                return false;
+            }
+	    
+	    in.get_line();
+	    in.get_fields();
+	    if(
+		in.nb_fields() != 2 ||
+		strcmp(in.field(0),"OVM") ||
+		strcmp(in.field(1),"ASCII")
+	    ) {
+		Logger::err("OVM") << "Invalid file header" << std::endl;
+		return false;
+	    }
+
+
+	    Attribute<int> vertex_id(M.vertices.attributes(), "vertex_id");
+	    Attribute<int> cell_id(M.facets.attributes(), "cell_id");
+
+	    index_t nb_vertices = 0;
+	    vector<double> vertices;
+	    vector<index_t> ovm_to_vertex_id;
+
+	    index_t nb_edges = 0;
+	    vector<index_t> edges;
+
+	    index_t nb_facets = 0;
+	    vector<index_t> facet_ptr;
+	    vector<index_t> facet_edge;
+
+	    index_t nb_cells = 0;
+
+	    try {
+		while(!in.eof()) {
+		    std::string kw = get_keyword(in);
+		    if(kw == "Vertices") {
+			nb_vertices = get_number(in);
+			vertices.resize(nb_vertices*3);
+			ovm_to_vertex_id.assign(nb_vertices*3, index_t(-1));
+			FOR(v, nb_vertices) {
+			    in.get_line();
+			    in.get_fields();
+			    if(in.nb_fields() != 3) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid vertex, expected 3 coordinates"
+				);
+			    }
+			    vertices[3*v]   = in.field_as_double(0);
+			    vertices[3*v+1] = in.field_as_double(1);
+			    vertices[3*v+2] = in.field_as_double(2);		
+			}
+		    } else if(kw == "Edges") {
+			nb_edges = get_number(in);
+			edges.resize(nb_edges*2);
+			FOR(e, nb_edges) {
+			    in.get_line();
+			    in.get_fields();
+			    if(in.nb_fields() != 2) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid edge, expected 2 indices"
+				);
+			    }
+			    edges[2*e]   = in.field_as_uint(0);
+			    edges[2*e+1] = in.field_as_uint(1);
+			    if(
+				edges[2*e] >= nb_vertices ||
+				edges[2*e+1] >= nb_vertices) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid vertex id in edge"
+				);
+			    }
+			}
+		    } else if(kw == "Faces") {
+			nb_facets = get_number(in);
+			facet_ptr.resize(nb_facets+1);
+			facet_ptr[0] = 0;
+			FOR(f, nb_facets) {
+			    in.get_line();
+			    in.get_fields();
+			    if(in.nb_fields() == 0) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid facet, empty line"
+				);
+			    }
+			    index_t facet_size = in.field_as_uint(0);
+			    facet_ptr[f+1] = facet_ptr[f] + facet_size;
+			    if(in.nb_fields() != facet_size+1) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid facet, wrong number of elements"
+				);
+			    }
+			    FOR(lf, facet_size) {
+				index_t ie = in.field_as_uint(1+lf);
+				if((ie/2) >= nb_edges) {
+				    throw(
+					"Line: " +
+					String::to_string(in.line_number()) +
+					":Invalid edge id in facet"
+				    );
+				}
+				facet_edge.push_back(ie);
+			    }
+			}
+		    } else if(kw == "Polyhedra") {
+			nb_cells = get_number(in);
+			FOR(c, nb_cells) {
+			    in.get_line();
+			    in.get_fields();
+			    if(in.nb_fields() == 0) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid cell, empty line"
+				);
+			    }
+			    index_t cell_size = in.field_as_uint(0);
+			    if(in.nb_fields() != cell_size + 1) {
+				throw(
+				    "Line: " +
+				    String::to_string(in.line_number()) +
+				    ":Invalid cell, wrong number of elements"
+				);
+			    }
+			    vector<index_t> cell_facets;
+			    FOR(lf, cell_size) {
+				index_t f = in.field_as_uint(lf+1);
+				if((f/2) >= nb_facets) {
+				    throw(
+					"Line: " +
+					String::to_string(in.line_number()) +
+					":Invalid facet id in cell"
+				    );
+				}
+				cell_facets.push_back(f);
+			    }
+			    
+			    // Clear vertex ids
+			    FOR(lf, cell_size) {
+				index_t f = cell_facets[lf];		    
+				bool inverse_f = (f & 1) != 0;		    
+				f /= 2;
+				for(index_t ee = facet_ptr[f]; ee<facet_ptr[f+1]; ++ee) {
+				    index_t e = facet_edge[ee];
+				    if(inverse_f) {
+					e = e ^ index_t(1);
+				    }
+				    // Vertex index is directly obtained from edge[]
+				    // (edge2vertices) table, and rule for orientation
+				    // (2*e for direct edge, 2*e+1 for inversed edge)
+				    // directly gives the index of the origin vertex.
+				    // If the facet is inversed, then the edge is inversed
+				    // (by inverting its least significant bit, with the
+				    // XOR e ^(index_t(1)) operation).
+				    index_t ovm_v = edges[e];			
+				    ovm_to_vertex_id[ ovm_v ] = index_t(-1);
+				}
+			    }
+			    
+			    // Create vertices
+			    FOR(lf, cell_size) {
+				index_t f = cell_facets[lf];
+				bool inverse_f = (f & 1) != 0;		    
+				f /= 2;
+				for(index_t ee = facet_ptr[f]; ee<facet_ptr[f+1]; ++ee) {
+				    index_t e = facet_edge[ee];
+				    if(inverse_f) {
+					e = e ^ index_t(1);
+				    }
+				    index_t ovm_v = edges[e];
+				    if(ovm_to_vertex_id[ovm_v] == index_t(-1)) {
+					const double* p = &(vertices[ ovm_v*3 ]);
+					index_t new_v = M.vertices.create_vertex();
+					set_mesh_point(M, new_v, p, 3);
+					ovm_to_vertex_id[ovm_v] = new_v;
+					vertex_id[new_v] = int(ovm_v);
+				    }
+				}		    
+			    }
+			    
+			    // Create facets
+			    FOR(lf, cell_size) {
+				index_t f = cell_facets[lf];
+				bool inverse_f = (f & 1) != 0;
+				f /= 2;
+				index_t facet_size = facet_ptr[f+1] - facet_ptr[f];
+				index_t new_f = M.facets.create_polygon(facet_size);
+				cell_id[new_f] = int(c);
+				FOR(le, facet_size) {
+				    index_t ee = inverse_f ?
+					(facet_ptr[f+1] - le - 1) :
+					(facet_ptr[f] + le);
+				    index_t e = facet_edge[ee];
+				    if(inverse_f) {
+					e = e ^ index_t(1);
+				    }
+				    index_t ovm_v = edges[e];
+				    index_t geo_v = ovm_to_vertex_id[ovm_v];
+				    M.facets.set_vertex(new_f, le, geo_v);
+				}
+			    }
+			}
+		    } else if(kw == "Vertex_Property") {
+			skip_property(in,nb_vertices);
+		    } else if(kw == "Edge_Property") {
+			skip_property(in,nb_edges);
+		    } else if(kw == "HalfEdge_Property") {
+			skip_property(in,nb_edges*2);
+		    } else if(kw == "Face_Property") {
+			skip_property(in,nb_facets);
+		    } else if(kw == "HalfFace_Property") {
+			skip_property(in,nb_facets*2);		    
+		    } else if(kw == "Polyhedron_Property") {
+			skip_property(in,nb_cells);
+		    } 
+		}
+	    } catch(const std::string& what) {
+                Logger::err("I/O") << what << std::endl;
+		return false;
+	    } catch(const std::exception& ex) {
+                Logger::err("I/O") << ex.what() << std::endl;
+		return false;
+            } catch(...) {
+                Logger::err("I/O") << "Caught exception" << std::endl;
+		return false;
+	    }
+
+	    M.facets.connect();
+	    
+	    return true;
+	}
+	
+	/**
+	 * \copydoc MeshIOHandler::save()
+	 */
+	virtual bool save(
+            const Mesh& M, const std::string& filename,
+            const MeshIOFlags& ioflags = MeshIOFlags()
+	) {
+	    geo_argused(ioflags);
+	    
+	    Attribute<int> vertex_id;
+	    vertex_id.bind_if_is_defined(M.vertices.attributes(), "vertex_id");
+	    Attribute<int> cell_id;
+	    cell_id.bind_if_is_defined(M.facets.attributes(), "cell_id");
+
+	    if(!vertex_id.is_bound()) {
+		Logger::err("OVM") << "Missing vertex ids" << std::endl;
+		return false;
+	    }
+
+	    if(!cell_id.is_bound()) {
+		Logger::err("OVM") << "Missing cell ids" << std::endl;
+		return false;
+	    }
+
+	    std::ofstream out(filename.c_str());
+	    if(!out) {
+		return false;
+	    }
+
+	    out << "OVM ASCII" << std::endl;
+
+	    // Output the vertices
+	    {
+		index_t nb_vertices = 0;
+		FOR(v, M.vertices.nb()) {
+		    nb_vertices = std::max(nb_vertices, index_t(vertex_id[v]));
+		}
+		++nb_vertices;
+		vector<index_t> vid_to_v(nb_vertices);
+		FOR(v, M.vertices.nb()) {
+		    vid_to_v[vertex_id[v]] = v;
+		}
+		out << "Vertices" << std::endl;
+		out << nb_vertices << std::endl;
+		FOR(vid, nb_vertices) {
+		    const double* p = M.vertices.point_ptr(vid_to_v[vid]);
+		    FOR(d, M.vertices.dimension()) {
+			out << std::setprecision(17) << p[d] << " ";
+		    }
+		    out << std::endl;
+		}
+	    }
+
+	    std::map<bindex, index_t> edge_to_id;
+	    vector<bindex> edges;
+	    index_t nb_edges = 0;
+	    
+	    // Construct edge table and output edges
+	    {
+		FOR(f, M.facets.nb()) {
+		    for(
+			index_t c1=M.facets.corners_begin(f);
+			c1<M.facets.corners_end(f); ++c1
+		    ) {
+			index_t c2 = M.facets.next_corner_around_facet(f,c1);
+			index_t iv1 =
+			    index_t(vertex_id[M.facet_corners.vertex(c1)]);
+			index_t iv2 =
+			    index_t(vertex_id[M.facet_corners.vertex(c2)]);
+			bindex K(iv1, iv2);
+			if(edge_to_id.find(K) == edge_to_id.end()) {
+			    edge_to_id[K] = nb_edges;
+			    edges.push_back(K);
+			    ++nb_edges;
+			}
+		    }
+		}
+		out << "Edges" << std::endl;
+		out << nb_edges << std::endl;
+		FOR(e, nb_edges) {
+		    out << edges[e].indices[0] << " "
+			<< edges[e].indices[1] << std::endl;
+		}
+	    }
+
+	    std::map<trindex, index_t> facet_to_id;
+	    vector<index_t> facets;
+	    index_t nb_facets = 0;
+
+	    // Construct facet table and output facets
+	    {
+		FOR(f, M.facets.nb()) {
+		    trindex K    = facet_key(M, f, vertex_id, false);
+		    trindex Kinv = facet_key(M, f, vertex_id, true);		    
+		    if(
+			facet_to_id.find(K) == facet_to_id.end() &&
+			facet_to_id.find(Kinv) == facet_to_id.end()
+		    ) {
+			facet_to_id[K]    = 2*nb_facets;
+			facet_to_id[Kinv] = 2*nb_facets + 1;			
+			++nb_facets;
+			facets.push_back(f);
+		    }
+		}
+		out << "Faces" << std::endl;
+		out << nb_facets << std::endl;
+		FOR(fi, nb_facets) {
+		    index_t f = facets[fi];
+		    out << M.facets.nb_vertices(f) << " ";
+		    for(
+			index_t c1=M.facets.corners_begin(f);
+			c1<M.facets.corners_end(f); ++c1
+		    ) {
+			index_t c2 = M.facets.next_corner_around_facet(f,c1);
+			index_t iv1 =
+			    index_t(vertex_id[M.facet_corners.vertex(c1)]);
+			index_t iv2 =
+			    index_t(vertex_id[M.facet_corners.vertex(c2)]);
+			bindex K(iv1, iv2, bindex::KEEP_ORDER);
+			index_t ie = index_t(-1);
+			auto it = edge_to_id.find(K);
+			if(it == edge_to_id.end()) {
+			    ie = 2*edge_to_id[bindex(iv1,iv2)]+1;
+			} else {
+			    ie = 2*it->second;
+			}
+			out << ie << " ";
+		    }
+		    out << std::endl;
+		}
+	    }
+
+	    // Construct cell table and output cells
+	    
+	    index_t nb_cells = 0;
+	    FOR(f, M.facets.nb()) {
+		nb_cells = std::max(nb_cells, index_t(cell_id[f]));
+	    }
+	    ++nb_cells;
+	    
+	    // Ugly ! One could use compressed row storage instead.
+	    // ... but anyway we got all these tables indexed by bindexes
+	    // and trindexes that eat much memory, no need to optimize that
+	    // for now since tables storage probably dominate...
+	    vector< vector<index_t> >cell_to_f(nb_cells);
+	    FOR(f, M.facets.nb()) {
+		cell_to_f[cell_id[f]].push_back(f);
+	    }
+
+	    out << "Polyhedra" << std::endl;
+	    out << nb_cells << std::endl;
+	    
+	    FOR(ci, nb_cells) {
+		out << cell_to_f[ci].size() << " ";
+		FOR(lf, cell_to_f[ci].size()) {
+		    index_t f = cell_to_f[ci][lf];
+		    trindex K = facet_key(M, f, vertex_id);
+		    out << facet_to_id[K] << " ";
+		}
+		out << std::endl;
+	    }
+
+	    vertex_id.unbind();
+	    cell_id.unbind();
+	    
+	    return true;
+	}
+
+    private:
+
+	/**
+	 * \brief Gets one keyword from the next line.
+	 * \param[in] in a reference to the line input stream.
+	 * \details Throws an exception if the line has
+	 *  not exactly one keyword.
+	 */
+	std::string get_keyword(LineInput& in) {
+	    in.get_line();
+	    in.get_fields();
+	    if(in.nb_fields() == 0 && in.eof()) {
+		return std::string("");
+	    }
+	    if(in.nb_fields() < 1) {
+		throw("Expected one keyword");
+	    }
+	    return std::string(in.field(0));
+	}
+
+	/**
+	 * \brief Gets one unsigned integer from the next
+	 *  line.
+	 * \param[in] in a reference to the line input stream.
+	 * \details Throws an exception if the next line
+	 *  has not exactly one unsigned integer.
+	 */
+	index_t get_number(LineInput& in) {
+	    in.get_line();
+	    in.get_fields();
+	    if(in.nb_fields() != 1) {
+		throw("Expected one number");
+	    }
+	    index_t result = in.field_as_uint(0);
+	    return result;
+	}
+
+	/*
+	 * \brief Skips property.
+	 * \param[in] in a reference to the line input stream.
+	 * \param[in] nb_elements number of elements to be skipped
+	 */
+	void skip_property(LineInput& in, index_t nb_elements) {
+	    // +1 because there is the type of the property
+	    FOR(i, nb_elements+1) {
+		in.get_line();
+	    }
+	}
+	
+	/**
+	 * \brief Gets a key to be able to retrieve facet indices.
+	 * \param[in] M a reference to a mesh
+	 * \param[in] f a facet of the mesh
+	 * \param[in] vertex_id an Id attribute attached to the vertices
+	 * \param[in] invert if true, invert the order of the vertices
+	 *  of the facet.
+	 * \return a trindex composed of the ids of three corners of the
+	 *  facet, formed by the id of the vertex with the lowest id, 
+	 *  and the ids of its predecessor and successor around the facet.
+	 */
+
+	static trindex facet_key(
+	    const Mesh& M, index_t f, const Attribute<int>& vertex_id,
+	    bool invert=false
+	) {
+	    index_t min_iv = index_t(-1);
+	    index_t min_corner = index_t(-1);
+	    for(
+		index_t c=M.facets.corners_begin(f);
+		c<M.facets.corners_end(f); ++c
+	    ) {
+		index_t iv = index_t(vertex_id[M.facet_corners.vertex(c)]);
+		if(min_iv == index_t(-1) || iv < min_iv) {
+		    min_corner = c;
+		    min_iv = iv;
+		}
+	    }
+	    index_t c1 = min_corner;
+	    index_t c2 = invert ?
+		M.facets.prev_corner_around_facet(f,c1) :
+		M.facets.next_corner_around_facet(f,c1) ;
+	    index_t c3 = invert ?
+		M.facets.prev_corner_around_facet(f,c2) :
+		M.facets.next_corner_around_facet(f,c2) ;
+	    index_t iv1 = index_t(vertex_id[M.facet_corners.vertex(c1)]);
+	    index_t iv2 = index_t(vertex_id[M.facet_corners.vertex(c2)]);
+	    index_t iv3 = index_t(vertex_id[M.facet_corners.vertex(c3)]);
+	    return trindex(iv1,iv2,iv3,trindex::KEEP_ORDER);
+	}
+	
+    };
+
+/****************************************************************************/
+
+    const index_t id_offset_msh = 1;
+    const index_t msh2geo_hex[8] = {1, 3, 7, 5, 0, 2, 6, 4 };
+    const index_t msh2geo_def[8] = {0, 1, 2, 3, 4, 5, 6, 7 };
+    const index_t celltype_geo2msh[5] = {4, 5, 6, 7}; 
+
+    /**
+     * \brief Support for GMSH file format.
+     * \details By Maxence Reberol.
+     */
+    class GEOGRAM_API MSHIOHandler : public MeshIOHandler {
+      public:
+	MSHIOHandler() {
+	}
+
+	bool verify_file_format(const std::string& filename) {
+	    LineInput in(filename);
+	    if (!in.OK()) return false;
+	    in.get_line();
+	    in.get_fields();
+	    if (in.field_matches(0, "$MeshFormat")) {
+		in.get_line();
+		in.get_fields();
+		if (in.field_as_double(0) == 2.2
+		    && in.field_as_uint(1) == 0
+		    && in.field_as_uint(2) == 8
+		) return true;
+	    }
+	    return false;
+	}
+
+	bool read_vertices(const std::string& filename, Mesh& M) {
+	    LineInput in(filename);
+	    while (in.get_line()) {
+		in.get_fields();
+		if (in.field_matches(0, "$Nodes")) {
+		    in.get_line();
+		    in.get_fields();
+		    geo_assert(in.nb_fields() == 1);
+		    M.vertices.create_vertices(in.field_as_uint(0));
+		    for (index_t v = 0; v < M.vertices.nb(); ++v){
+			in.get_line();
+			in.get_fields();
+			geo_assert(in.nb_fields() == 4);
+			double pt[4] = {
+			    in.field_as_double(1),
+			    in.field_as_double(2),
+			    in.field_as_double(3)
+			};
+			set_mesh_point(M, v, pt, 3);
+		    }
+		} else if (in.field_matches(0, "$EndNodes"))  {
+		    return true; 
+		}
+	    }
+	    return false;
+	}
+	bool read_elements(const std::string& filename, Mesh& M) {
+	    index_t nb_elements = 0;
+	    index_t nb_edges = 0;
+	    index_t nb_tri = 0;
+	    index_t nb_quad = 0;
+	    index_t nb_tet = 0;
+	    index_t nb_hex = 0;
+	    index_t nb_pyr = 0;
+	    index_t nb_pri = 0;
+	    index_t nb_oth = 0;
+	    { /* First pass to get the number of each element type */
+		LineInput in(filename);
+		while (in.get_line()) {
+		    in.get_fields();
+		    if (in.field_matches(0, "$Elements")) {
+			in.get_line();
+			in.get_fields();
+			geo_assert(in.nb_fields() == 1);
+			nb_elements = in.field_as_uint(0);
+			for (index_t e = 0; e < nb_elements; ++e){
+			    in.get_line();
+			    in.get_fields();
+			    if      (in.field_as_uint(1) == 1) nb_edges += 1;
+			    else if (in.field_as_uint(1) == 2) nb_tri += 1;
+			    else if (in.field_as_uint(1) == 3) nb_quad += 1;
+			    else if (in.field_as_uint(1) == 4) nb_tet += 1;
+			    else if (in.field_as_uint(1) == 5) nb_hex += 1;
+			    else if (in.field_as_uint(1) == 6) nb_pri += 1;
+			    else if (in.field_as_uint(1) == 7) nb_pyr += 1;
+			    else { nb_oth += 1; }
+			}
+			if (nb_oth > 0) {
+			    Logger::warn("I/O")
+				<< nb_oth
+				<< " elements with type unsupported"
+				<< std::endl;
+			}
+		    }
+		}
+		M.edges.create_edges(nb_edges);
+		M.facets.create_triangles(nb_tri);
+		M.facets.create_quads(nb_quad);
+		M.cells.create_tets(nb_tet);
+		M.cells.create_hexes(nb_hex);
+		M.cells.create_pyramids(nb_pyr);
+		M.cells.create_prisms(nb_pri);
+	    }
+	    { /* Second pass to fill the content of the mesh */
+		/* Re-use the number of elts as counters */
+		nb_edges = 0;
+		index_t nb_facets = 0;
+		index_t nb_cells = 0;
+		LineInput in(filename);
+		while (in.get_line()) {
+		    in.get_fields();
+		    if (in.field_matches(0, "$Elements")) {
+			in.get_line();
+			in.get_fields();
+			geo_assert(in.field_as_uint(0) == nb_elements);
+			for (index_t e = 0; e < nb_elements; ++e){
+			    in.get_line();
+			    in.get_fields();
+			    index_t nb_tags = in.field_as_uint(2);
+			    index_t offset = 3 + nb_tags;
+			    if (in.field_as_uint(1) == 1) {
+				index_t nbv = 2;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.edges.set_vertex(
+					nb_edges, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_edges += 1;
+			    } else if (in.field_as_uint(1) == 2) {
+				index_t nbv = 3;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.facets.set_vertex(
+					nb_facets, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_facets += 1;
+			    } else if (in.field_as_uint(1) == 3) {
+				index_t nbv = 4;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.facets.set_vertex(
+					nb_facets, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_facets += 1;
+			    } else if (in.field_as_uint(1) == 4) {
+				index_t nbv = 4;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.cells.set_vertex(
+					nb_cells, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_cells += 1;
+			    } else if (in.field_as_uint(1) == 5) {
+				index_t nbv = 8;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.cells.set_vertex(
+					nb_cells, msh2geo_hex[j],
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_cells += 1;
+			    } else if (in.field_as_uint(1) == 6) {
+				index_t nbv = 6;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.cells.set_vertex(
+					nb_cells, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_cells += 1;
+			    } else if (in.field_as_uint(1) == 7) {
+				index_t nbv = 5;
+				geo_debug_assert(
+				    in.nb_fields() == offset + nbv
+				);
+				for (index_t j = 0; j < nbv; ++j) {
+				    M.cells.set_vertex(
+					nb_cells, j,
+					in.field_as_uint(offset + j) - 1
+				    );
+				}
+				nb_cells += 1;
+			    }
+			}
+		    }
+		}
+	    }
+	    return true;
+	}
+
+	virtual bool load(
+	    const std::string& filename, Mesh& M,
+	    const MeshIOFlags& ioflags
+	) {
+	    geo_argused(ioflags);
+	    M.clear();
+	    M.vertices.set_dimension(3);
+	    try {
+		if (!verify_file_format(filename)) {
+		    Logger::err("I/O")
+			<< "$MeshFormat not supported" << std::endl;
+		    return false;
+		}
+		if (!read_vertices(filename, M)) {
+		    Logger::err("I/O")
+			<< "failed to read vertices" << std::endl;
+		    return false;
+		}
+		if (!read_elements(filename, M)) {
+		    Logger::err("I/O")
+			<< "failed to read elements" << std::endl;
+		    return false;
+		}
+	    } catch(const std::string& what) {
+		Logger::err("I/O") << what << std::endl;
+		return false;
+	    } catch(const std::exception& ex) {
+		Logger::err("I/O") << ex.what() << std::endl;
+		return false;
+	    } catch(...) {
+		Logger::err("I/O") << "Caught exception" << std::endl;
+		return false;
+	    }
+	    return true;
+	}
+
+	virtual bool save(
+	    const Mesh& M_in, const std::string& filename, 
+	    const MeshIOFlags& ioflags
+	    ) {
+
+	    Mesh M(M_in.vertices.dimension());
+	    M.copy(M_in, true);
+
+	    M.vertices.remove_isolated();
+
+	    Attribute<int> region;
+	    Attribute<int> bdr_region;
+	    if (M.cells.attributes().is_defined("region")) {
+		region.bind(M.cells.attributes(), "region");
+	    }
+	    if (M.facets.attributes().is_defined("bdr_region")) {
+		bdr_region.bind(M.facets.attributes(), "bdr_region");
+	    }
+
+	    std::ofstream out( filename.c_str() ) ;
+	    out.precision( 16 ) ;
+
+	    /* Header */
+	    out << "$MeshFormat\n";
+	    out << "2.2 0 " << sizeof(double) << std::endl;
+	    out << "$EndMeshFormat\n";
+
+	    /* Vertices */
+	    out << "$Nodes" << std::endl ;
+	    out << M.vertices.nb() << std::endl ;
+	    for( index_t v = 0; v < M.vertices.nb(); v++ ) {
+		out << v + id_offset_msh << " "
+		    << M.vertices.point_ptr(v)[0] << " "
+		    << M.vertices.point_ptr(v)[1] << " "
+		    << M.vertices.point_ptr(v)[2] << '\n' ;
+	    }
+	    out << "$EndNodes" << std::endl ;
+
+	    /* Elements */
+	    index_t nb_tet = 0;
+	    index_t nb_hex = 0;
+	    index_t nb_pyr = 0;
+	    index_t nb_pri = 0;
+	    for(index_t c = 0; c != M.cells.nb(); ++c){
+		if(M.cells.type(c) == GEO::MESH_TET){
+		    ++nb_tet;
+		} else if(M.cells.type(c) == GEO::MESH_HEX){
+		    ++nb_hex;
+		} else if(M.cells.type(c) == GEO::MESH_PYRAMID){
+		    ++nb_pyr;
+		} else if(M.cells.type(c) == GEO::MESH_PRISM){
+		    ++nb_pri;
+		}
+	    }
+	    index_t nb_elt = nb_tet + nb_hex + nb_pyr + nb_pri;
+	    if (ioflags.has_element(MESH_FACETS)) nb_elt += M.facets.nb();
+
+	    out << "$Elements" << std::endl ;
+	    out << nb_elt << std::endl ;
+	    index_t elt_id = 0; /* starts at 1, common for faces and cells */
+	    if (ioflags.has_element(MESH_FACETS)) {
+		for (index_t f = 0; f < M.facets.nb(); ++f) {
+		    int attr_value = 0;
+		    if (bdr_region.is_bound()){
+			attr_value = bdr_region[f];
+		    }
+		    int type = -1;
+		    if (M.facets.nb_vertices(f) == 3) {
+			type = 2;
+		    } else if (M.facets.nb_vertices(f) == 4) {
+			type = 3;
+		    } else {
+			geo_assert_not_reached
+			    }
+		    elt_id += 1;
+		    out << elt_id << " " << type << " " << "2" << " "
+			<< attr_value << " " << attr_value << " ";
+		    for (index_t li = 0; li < M.facets.nb_vertices(f); ++li) {
+			out << M.facets.vertex(f, li) + id_offset_msh << " ";
+		    }
+		    out << std::endl;
+		}
+	    }
+	    for (index_t c = 0; c < M.cells.nb(); ++c) {
+		if (M.cells.type(c) == GEO::MESH_CONNECTOR) {
+		    continue;
+		}
+		int attr_value = 0;
+		if (region.is_bound()) attr_value = region[c];
+		const index_t* msh2geo =
+		    (M.cells.type(c) == GEO::MESH_HEX) ?
+		    msh2geo_hex : msh2geo_def;
+		elt_id += 1;
+
+		/* Write to file, format is:
+		 *   elm-number elm-type number-of-tags < tag > ...
+		 *   node-number-list
+		 */
+		out << elt_id << " " << celltype_geo2msh[M.cells.type(c)]
+		    << " " << "1" << " " << attr_value << " ";
+		for (index_t li = 0; li < M.cells.nb_vertices(c); ++li) {
+		    out << M.cells.vertex(c, msh2geo[li]) + id_offset_msh
+			<< " ";
+		}
+		out << std::endl;
+	    }
+	    out << "$EndElements" << std::endl;
+	    
+	    out.close();
+	    return true;
+	}
+    };
+    
 }
 
 /****************************************************************************/
 
 namespace GEO {
-
-    GEO::Process::spinlock lock = {0};
+	
+	GEO::Process::spinlock lock = {0}; 
 
     MeshIOFlags::MeshIOFlags() {
         dimension_ = 3;
@@ -3638,7 +4585,7 @@ namespace GEO {
 
         bool result = false;
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
-        if(handler != nil) {
+        if(handler != nullptr) {
             try {
                 result = handler->load(filename, M, ioflags);
             }
@@ -3700,7 +4647,7 @@ namespace GEO {
         GEO::Process::release_spinlock( lock );
 
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
-        if(handler != nil && handler->save(M, filename, ioflags)) {
+        if(handler != nullptr && handler->save(M, filename, ioflags)) {
             return true;
         }
 
@@ -3717,14 +4664,14 @@ namespace GEO {
         MeshIOHandler* handler = MeshIOHandlerFactory::create_object(
             format
         );
-        if(handler != nil) {
+        if(handler != nullptr) {
             return handler;
         }
 
         Logger::err("I/O")
             << "Unsupported file format: " << format
             << std::endl;
-        return nil;
+        return nullptr;
     }
 
     MeshIOHandler* MeshIOHandler::get_handler(
@@ -3802,7 +4749,9 @@ namespace GEO {
         geo_register_MeshIOHandler_creator(GeogramIOHandler, "geogram_ascii");
         geo_register_MeshIOHandler_creator(GraphiteIOHandler, "graphite");
         geo_register_MeshIOHandler_creator(PDBIOHandler, "pdb");
-        geo_register_MeshIOHandler_creator(PDBIOHandler, "pdb1");		
+        geo_register_MeshIOHandler_creator(PDBIOHandler, "pdb1");
+        geo_register_MeshIOHandler_creator(OVMIOHandler, "ovm");
+        geo_register_MeshIOHandler_creator(MSHIOHandler, "msh");	
     }
 
     

@@ -687,6 +687,22 @@ typedef void* NLContext;
  */
 #define NL_VERBOSE         0x401
 
+
+/**
+ * \brief Symbolic constant for nlEnable() / nlDisable()
+ *  to enable or disable variables indirection.
+ * \details Usage:
+ * \code
+ *   nlEnable(NL_NO_VARIABLES_INDIRECTION)
+ * \endcode
+ * or
+ * \code
+ *   nlDisable(NL_NO_VARIABLES_INDIRECTION)
+ * \endcode
+ * \see nlEnable(), nlDisable(), nlIsEnabled()
+ */
+#define NL_NO_VARIABLES_INDIRECTION 0x402
+    
 /**
  * @}
  * \name Context management
@@ -733,7 +749,7 @@ typedef void* NLContext;
  *  alternative solvers, such as SuperLU (sparse direct solver) and CNC 
  *  (iterative solver on the GPU). This function tests whether an extension 
  *  is supported, and initializes what needs to be initialized in the extention.
- * \retval NL_TRUE if the extension is supported and could be sucessfully 
+ * \retval NL_TRUE if the extension is supported and could be successfully 
  *   initialized
  * \retval NL_FALSE otherwise
  */
@@ -1064,6 +1080,14 @@ typedef void* NLContext;
 #define NL_ROW     0x2
 
 /**
+ * \brief Symbolic constant for nlBegin() / nlEnd(), to
+ *  be used to start creating / finalizing a row.
+ * \details 
+ * \see nlBegin(), nlEnd()
+ */
+#define NL_MATRIX_PATTERN  0x3
+
+/**
  * \brief Begins a new primitive
  * \details nlBegin() / nlEnd() calls should be properly nested, as
  *  follows (otherwise an assertion failure is triggered):
@@ -1101,6 +1125,16 @@ typedef void* NLContext;
  */
     NLAPI void NLAPIENTRY nlEnd(NLenum primitive);
 
+
+/**
+ * \brief Specifies the length of a row of the matrix.
+ * \details Should be called between nlBegin(NL_MATRIX_PATTERN) and
+ *  nlEnd(NL_MATRIX_PATTERN).
+ * \param[in] i the index of the row.
+ * \param[in] n the length of the row.
+ */
+    NLAPI void NLAPIENTRY nlSetRowLength(NLuint i, NLuint n);
+    
 /**
  * \brief Appends a coefficient to the current row.
  * \details This function should be called between a

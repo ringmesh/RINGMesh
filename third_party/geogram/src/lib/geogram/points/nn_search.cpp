@@ -58,10 +58,25 @@ namespace GEO {
         dimension_(dimension),
         nb_points_(0),
         stride_(0),
-        points_(nil),
+        points_(nullptr),
         exact_(true) {
     }
 
+    void NearestNeighborSearch::get_nearest_neighbors(
+	index_t nb_neighbors,
+	const double* query_point,
+	index_t* neighbors,
+	double* neighbors_sq_dist,
+	KeepInitialValues
+    ) const {
+	get_nearest_neighbors(
+	    nb_neighbors,
+	    query_point,
+	    neighbors,
+	    neighbors_sq_dist
+	);
+    }
+    
     void NearestNeighborSearch::get_nearest_neighbors(
         index_t nb_neighbors,
         index_t query_point,
@@ -112,9 +127,13 @@ namespace GEO {
         coord_index_t dimension, const std::string& name_in
     ) {
         geo_register_NearestNeighborSearch_creator(
-            KdTree, "BNN"
+            BalancedKdTree, "BNN"
         );
 
+        geo_register_NearestNeighborSearch_creator(
+            AdaptiveKdTree, "CNN"
+        );
+	
         std::string name = name_in;
         if(name == "default") {
             name = CmdLine::get_arg("algo:nn_search");
@@ -122,7 +141,7 @@ namespace GEO {
 
         NearestNeighborSearch* nns =
             NearestNeighborSearchFactory::create_object(name, dimension);
-        if(nns != nil) {
+        if(nns != nullptr) {
             return nns;
         }
 
@@ -132,7 +151,7 @@ namespace GEO {
             << "Falling back to BNN"
             << std::endl;
 
-        return new KdTree(dimension);
+        return new BalancedKdTree(dimension);
     }
 }
 
