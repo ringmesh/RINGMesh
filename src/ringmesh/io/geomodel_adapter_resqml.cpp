@@ -352,6 +352,21 @@ namespace RINGMesh
         for( const auto& interface :
             geomodel_.geol_entities( Interface3D::type_name_static() ) )
         {
+            for( auto i : range( interface.nb_children() ) )
+            {
+                const Surface3D& surface =
+                    static_cast< const Surface3D& >( interface.child( i ) );
+                if( !surface.is_simplicial() )
+                {
+                    Logger::err( "", surface.gmme(),
+                        "Non simplicial surfaces are not supported" );
+                }
+            }
+        }
+
+        for( const auto& interface :
+            geomodel_.geol_entities( Interface3D::type_name_static() ) )
+        {
             GMGE::GEOL_FEATURE geo_feat = interface.geological_feature();
             if( !interface.has_geological_feature()
                 || !( GMGE::is_fault( geo_feat )
@@ -471,16 +486,15 @@ namespace RINGMesh
                     points[v * 3 + 2] = p[2];
                 }
 
-                std::unique_ptr< ULONG64[] > face_indices_per_cell(
-                    new ULONG64[region.nb_mesh_elements() * 4] );
-                for( auto f : range( region.nb_mesh_elements() * 4 ) )
-                {
-                    face_indices_per_cell[f] = f;
-                }
+                std::unique_ptr< ULONG64[] > cumul_faces_cells(
+                    new ULONG64[region.nb_mesh_elements()] );
 
-                index_t node_count = 0;
-                std::unique_ptr< ULONG64[] > node_indices_per_face(
-                    new ULONG64[region.nb_mesh_elements() * 4 * 3] );
+                std::vector< ULONG64 > face_indices_per_cell;
+                std::vector< ULONG64 > cumul_vertices_face;
+                std::vector< ULONG64 > node_indices_per_face;
+                std::vector< unsigned char > face_righthandness;
+
+                index_t facet_count = 0;
                 for( auto t : range( region.nb_mesh_elements() ) )
                 {
                     for( auto f : range( region.nb_cell_facets( t ) ) )
@@ -488,23 +502,24 @@ namespace RINGMesh
                         for( auto v :
                             range( region.nb_cell_facet_vertices( t, f ) ) )
                         {
-                            node_indices_per_face[node_count++] =
-                                region.cell_facet_vertex_index( t, f, v );
+                            node_indices_per_face.push_back(
+                                region.cell_facet_vertex_index( t, f, v ) );
                         }
+                        face_indices_per_cell.push_back( facet_count++ );
+
+                        // TODO compute real face righthandness
+                        face_righthandness.push_back( 1 );
+                        cumul_vertices_face.push_back(
+                            node_indices_per_face.size() );
                     }
+                    cumul_faces_cells[t] = facet_count;
                 }
 
-                std::unique_ptr< unsigned char[] > face_righthandness(
-                    new unsigned char[region.nb_mesh_elements() * 4] );
-                for( auto f : range( region.nb_mesh_elements() * 4 ) )
-                {
-                    face_righthandness[f] = 1;
-                }
-
-                rep->setTetrahedraOnlyGeometry( &face_righthandness[0],
-                    &points[0], region.nb_vertices(),
-                    region.nb_mesh_elements() * 4, hdf_proxy_,
-                    &face_indices_per_cell[0], &node_indices_per_face[0] );
+                rep->setGeometry( &face_righthandness[0], &points[0],
+                    region.nb_vertices(), hdf_proxy_, &face_indices_per_cell[0],
+                    &cumul_faces_cells[0], face_righthandness.size(),
+                    &node_indices_per_face[0], &cumul_vertices_face[0],
+                    gsoap_resqml2_0_1::resqml2__CellShape__polyhedral );
             }
 
             for( auto i : range( layer.nb_children() ) )

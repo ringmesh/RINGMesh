@@ -1196,7 +1196,8 @@ namespace RINGMesh
             {
                 if( !geomodel_.entity_type_manager()
                          .mesh_entity_manager.is_valid_type(
-                             Region3D::type_name_static() ) )
+                             Region3D::type_name_static() )
+                    || unstructuredGridRepSet.size() > 1 )
                 {
                     return false;
                 }
