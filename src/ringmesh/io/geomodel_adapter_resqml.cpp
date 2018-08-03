@@ -360,6 +360,7 @@ namespace RINGMesh
                 {
                     Logger::err( "", surface.gmme(),
                         "Non simplicial surfaces are not supported" );
+                    return false;
                 }
             }
         }
