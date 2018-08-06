@@ -161,63 +161,49 @@ void build_geomodel( GeoModel3D& geomodel )
 
     // We first create the GeoModelGeoglogicalEntity
     // Create the contacts
-    for( index_t contact = 0; contact < nb_contacts; contact++ )
+    for( auto contact_itr : range( nb_contacts ) )
     {
         create_geology_entity( Contact3D::type_name_static(), builder );
     }
-    /*       builder.geology.create_geological_entity(
-               Contact3D::type_name_static() );
-               */ // the static method type_name_static() is available for each
+    // the static method type_name_static() is available for each
     // GeoModelEntity. It returns an EntityType which is a string
     // corresponding to the Type of the entity.
 
     // Create the Interfaces
-    for( index_t interface_itr = 0; interface_itr < nb_interfaces;
-         interface_itr++ )
+    for( auto iterface_itr : range( nb_interfaces ) )
     {
         create_geology_entity( Interface3D::type_name_static(), builder );
-        // builder.geology.create_geological_entity(
-        //    Interface3D::type_name_static() );
     }
 
     // Create the Layers
-    for( index_t layer = 0; layer < nb_layers; layer++ )
+    for( auto layer_itr : range( nb_layers ) )
     {
         create_geology_entity( Layer3D::type_name_static(), builder );
-        /*builder.geology.create_geological_entity( Layer3D::type_name_static()
-         * );*/
     }
 
     // Then we create the GeoModelMeshEntity
     // Create the Corners
-    for( index_t corner = 0; corner < nb_corners; corner++ )
+    for( auto corner_itr : range( nb_corners ) )
     {
         create_topology_entity( Corner3D::type_name_static(), builder );
-        /*   builder.topology.create_mesh_entity( Corner3D::type_name_static()
-         * );*/
     }
 
     // Create the Lines
-    for( index_t lines = 0; lines < nb_lines; lines++ )
+    for( auto line_itr : range( nb_lines ) )
     {
         create_topology_entity( Line3D::type_name_static(), builder );
-        /* builder.topology.create_mesh_entity( Line3D::type_name_static() );*/
     }
 
     // Create the Surfaces
-    for( index_t surface = 0; surface < nb_surfaces; surface++ )
+    for( auto surface_itr : range( nb_surfaces ) )
     {
         create_topology_entity( Surface3D::type_name_static(), builder );
-        /* builder.topology.create_mesh_entity( Surface3D::type_name_static()
-         * );*/
     }
 
     // Create the Regions
-    for( index_t region = 0; region < nb_regions; region++ )
+    for( auto region_itr : range( nb_regions ) )
     {
         create_topology_entity( Region3D::type_name_static(), builder );
-        /* builder.topology.create_mesh_entity( Region3D::type_name_static()
-         * );*/
     }
 
     //#############################
@@ -247,11 +233,11 @@ void build_geomodel( GeoModel3D& geomodel )
     cur_coor_line[1] = corners_table[3];
     builder.geometry.set_line( 0, cur_coor_line );
 
-    const GeoModelMeshEntity3D& mesh_entity1 =
+    const GeoModelMeshEntity3D& line0 =
         geomodel.mesh_entity( line_type_name_static(), 0 );
 
-    // being paranoid
-    const Line3D* line = dynamic_cast< const Line3D* >( &mesh_entity1 );
+    // this test controls the values of the vertices of the line created
+    const Line3D* line = dynamic_cast< const Line3D* >( &line0 );
     if( line == nullptr )
     {
         throw RINGMeshException( "RINGMesh Test", "Mesh entity is not a Line" );
@@ -316,15 +302,15 @@ void build_geomodel( GeoModel3D& geomodel )
     builder.geometry.set_surface_geometry(
         0, cur_coor_surface, facet, facet_ptr );
 
-    const GeoModelMeshEntity3D& surface =
+    const GeoModelMeshEntity3D& surface0 =
         geomodel.mesh_entity( surface_type_name_static(), 0 );
 
-    if( surface.vertex( 0 ) != cur_coor_surface[0]
-        || surface.vertex( 1 ) != cur_coor_surface[1]
-        || surface.vertex( 2 ) != cur_coor_surface[2] )
+    if( surface0.vertex( 0 ) != cur_coor_surface[0]
+        || surface0.vertex( 1 ) != cur_coor_surface[1]
+        || surface0.vertex( 2 ) != cur_coor_surface[2] )
     {
         throw RINGMeshException(
-            "RINGMesh Test", "The surface's corners are not equal" );
+            "RINGMesh Test", "The surface corners are not equal" );
     }
 
     cur_coor_surface[0] = corners_table[3];
@@ -377,34 +363,34 @@ void build_geomodel( GeoModel3D& geomodel )
     // Region are bounded by Surfaces
 
     // For corner 0
-    // Corner 0 is a boundary of the lines: 0, 3, and 13.
+    // Corner 0 is a boundary of the lines: 0, 3,5 and 8.
     builder.topology.add_line_corner_boundary_relation( 0, 0 );
     builder.topology.add_line_corner_boundary_relation( 3, 0 );
     builder.topology.add_line_corner_boundary_relation( 5, 0 );
     builder.topology.add_line_corner_boundary_relation( 8, 0 );
 
     // For corner 1
-    // Corner 1 is a boundary of the lines: 2, 3, and 17.
+    // Corner 1 is a boundary of the lines: 2, 3,4 and 6.
     builder.topology.add_line_corner_boundary_relation( 2, 1 );
     builder.topology.add_line_corner_boundary_relation( 3, 1 );
     builder.topology.add_line_corner_boundary_relation( 4, 1 );
     builder.topology.add_line_corner_boundary_relation( 6, 1 );
 
     // For corner 2
-    // Corner 2 is a boundary of the lines: 1, 2, and 19.
+    // Corner 2 is a boundary of the lines: 1, 2,7 and 8.
     builder.topology.add_line_corner_boundary_relation( 1, 2 );
     builder.topology.add_line_corner_boundary_relation( 2, 2 );
     builder.topology.add_line_corner_boundary_relation( 7, 2 );
     builder.topology.add_line_corner_boundary_relation( 8, 2 );
 
     // For corner 3
-    // Corner 3 is a boundary of the lines: 0, 1, and 15.
+    // Corner 3 is a boundary of the lines: 0, 1, and 6.
     builder.topology.add_line_corner_boundary_relation( 0, 3 );
     builder.topology.add_line_corner_boundary_relation( 1, 3 );
     builder.topology.add_line_corner_boundary_relation( 6, 3 );
 
     // For corner 4
-    // Corner 4 is a boundary of the lines: 8, 11, and 12.
+    // Corner 4 is a boundary of the lines: 4, 5, and 7.
     builder.topology.add_line_corner_boundary_relation( 4, 4 );
     builder.topology.add_line_corner_boundary_relation( 5, 4 );
     builder.topology.add_line_corner_boundary_relation( 7, 4 );
@@ -412,49 +398,49 @@ void build_geomodel( GeoModel3D& geomodel )
     /////////////////////////////////////////////////////////
 
     // For line 0
-    // Line 0 is a boundary of the surfaces: 0 and 4.
+    // Line 0 is a boundary of the surfaces: 2 and 3.
     builder.topology.add_surface_line_boundary_relation( 2, 0 );
     builder.topology.add_surface_line_boundary_relation( 3, 0 );
 
     // For line 1
-    // Line 1 is a boundary of the surfaces: 0 and 10.
+    // Line 1 is a boundary of the surfaces: 1 and 3.
     builder.topology.add_surface_line_boundary_relation( 1, 1 );
     builder.topology.add_surface_line_boundary_relation( 3, 1 );
 
     // For line 2
-    // Line 2 is a boundary of the surfaces: 0 and 6.
+    // Line 2 is a boundary of the surfaces: 0,1 and 6.
     builder.topology.add_surface_line_boundary_relation( 0, 2 );
     builder.topology.add_surface_line_boundary_relation( 1, 2 );
     builder.topology.add_surface_line_boundary_relation( 6, 2 );
 
     // For line 3
-    // Line 3 is a boundary of the surfaces: 0 and 8.
+    // Line 3 is a boundary of the surfaces: 0,2 and 4.
     builder.topology.add_surface_line_boundary_relation( 0, 3 );
     builder.topology.add_surface_line_boundary_relation( 2, 3 );
     builder.topology.add_surface_line_boundary_relation( 4, 3 );
 
     // For line 4
-    // Line 4 is a boundary of the surfaces: 1, 3 and 4.
+    // Line 4 is a boundary of the surfaces: 4 and 6.
     builder.topology.add_surface_line_boundary_relation( 4, 4 );
     builder.topology.add_surface_line_boundary_relation( 6, 4 );
 
     // For line 5
-    // Line 5 is a boundary of the surfaces: 1, 9 and 10.
+    // Line 5 is a boundary of the surfaces: 4 and 5.
     builder.topology.add_surface_line_boundary_relation( 4, 5 );
     builder.topology.add_surface_line_boundary_relation( 5, 5 );
 
     // For line 6
-    // Line 6 is a boundary of the surfaces: 1, 5 and 6.
+    // Line 6 is a boundary of the surfaces: 1 and 2.
     builder.topology.add_surface_line_boundary_relation( 1, 6 );
     builder.topology.add_surface_line_boundary_relation( 2, 6 );
 
     // For line 7
-    // Line 7 is a boundary of the surfaces: 1, 7 and 8.
+    // Line 7 is a boundary of the surfaces: 5 and 6.
     builder.topology.add_surface_line_boundary_relation( 5, 7 );
     builder.topology.add_surface_line_boundary_relation( 6, 7 );
 
     // For line 8
-    // Line 8 is a boundary of the surfaces: 2 and 3.
+    // Line 8 is a boundary of the surfaces: 0,3 and 5.
     builder.topology.add_surface_line_boundary_relation( 0, 8 );
     builder.topology.add_surface_line_boundary_relation( 3, 8 );
     builder.topology.add_surface_line_boundary_relation( 5, 8 );
@@ -472,17 +458,17 @@ void build_geomodel( GeoModel3D& geomodel )
         0, 1, false ); // TODO side ????
 
     // For surface 2
-    // Surface 2 is a boundary of the region 1.
+    // Surface 2 is a boundary of the region 0.
     builder.topology.add_region_surface_boundary_relation(
         0, 2, false ); // TODO side ????
 
     // For surface 3
-    // Surface 3 is a boundary of the region 1.
+    // Surface 3 is a boundary of the region 0.
     builder.topology.add_region_surface_boundary_relation(
         0, 3, false ); // TODO side ????
 
     // For surface 4
-    // Surface 4 is a boundary of the region 0.
+    // Surface 4 is a boundary of the region 1.
     builder.topology.add_region_surface_boundary_relation(
         1, 4, false ); // TODO side ????
 
@@ -492,7 +478,7 @@ void build_geomodel( GeoModel3D& geomodel )
         1, 5, false ); // TODO side ????
 
     // For surface 6
-    // Surface 6 is a boundary of the region 0.
+    // Surface 6 is a boundary of the region 1.
     builder.topology.add_region_surface_boundary_relation(
         1, 6, false ); // TODO side ????
 
@@ -511,48 +497,48 @@ void build_geomodel( GeoModel3D& geomodel )
 
     // For Contact 0
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 0 ),
-        gmme_id( Line3D::type_name_static(), 0 ) );
+        { Contact3D::type_name_static(), 0 },
+        { Line3D::type_name_static(), 0 } );
 
     // For Contact 1
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 1 ),
-        gmme_id( Line3D::type_name_static(), 1 ) );
+        { Contact3D::type_name_static(), 1 },
+        { Line3D::type_name_static(), 1 } );
 
     // For Contact 2
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 2 ),
-        gmme_id( Line3D::type_name_static(), 2 ) );
+        { Contact3D::type_name_static(), 2 },
+        { Line3D::type_name_static(), 2 } );
 
     // For Contact 3
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 3 ),
-        gmme_id( Line3D::type_name_static(), 3 ) );
+        { Contact3D::type_name_static(), 3 },
+        { Line3D::type_name_static(), 3 } );
 
     // For Contact 4
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 4 ),
-        gmme_id( Line3D::type_name_static(), 4 ) );
+        { Contact3D::type_name_static(), 4 },
+        { Line3D::type_name_static(), 4 } );
 
     // For Contact 5
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 5 ),
-        gmme_id( Line3D::type_name_static(), 5 ) );
+        { Contact3D::type_name_static(), 5 },
+        { Line3D::type_name_static(), 5 } );
 
     // For Contact 6
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 6 ),
-        gmme_id( Line3D::type_name_static(), 6 ) );
+        { Contact3D::type_name_static(), 6 },
+        { Line3D::type_name_static(), 6 } );
 
     // For Contact 7
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 7 ),
-        gmme_id( Line3D::type_name_static(), 7 ) );
+        { Contact3D::type_name_static(), 7 },
+        { Line3D::type_name_static(), 7 } );
 
     // For Contact 8
     builder.geology.add_parent_children_relation(
-        gmge_id( Contact3D::type_name_static(), 8 ),
-        gmme_id( Line3D::type_name_static(), 8 ) );
+        { Contact3D::type_name_static(), 8 },
+        { Line3D::type_name_static(), 8 } );
 
     /////////////////////////////////////////////////
 
@@ -624,7 +610,7 @@ int main()
         build_geomodel( in );
         test_build_geomodel( in );
 
-        geomodel_save( in, "builded_model.gm" );
+        geomodel_save( in, "build_model.gm" );
     }
     catch( const RINGMeshException& e )
     {
