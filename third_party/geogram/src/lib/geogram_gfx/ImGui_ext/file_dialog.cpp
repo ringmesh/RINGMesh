@@ -554,7 +554,7 @@ namespace GEO {
 	}
 	std::string ext = FileSystem::extension(filename);
 	for(size_t i=0; i<extensions_.size(); ++i) {
-	    if(extensions_[i] == ext) {
+	    if(extensions_[i] == ext || extensions_[i] == "*") {
 		return true;
 	    }
 	}
