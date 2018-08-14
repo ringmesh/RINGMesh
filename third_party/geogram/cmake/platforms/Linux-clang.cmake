@@ -5,8 +5,8 @@
 include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Set the Clang compilers
-set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
-set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
+#set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
+#set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
 
 # Warning flags
 set(NORMAL_WARNINGS -Wall -Wextra)
@@ -37,8 +37,8 @@ add_flags(CMAKE_CXX_FLAGS -Wno-unknown-warning-option)
 add_flags(CMAKE_C_FLAGS -Wno-unknown-warning-option)
 
 # Add static and dynamic bounds checks (optimization required)
-#add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
-#add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+add_flags(CMAKE_CXX_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
+add_flags(CMAKE_C_FLAGS_RELEASE -D_FORTIFY_SOURCE=2)
 
 # Enable SSE3 instruction set
 add_flags(CMAKE_CXX_FLAGS -msse3)
