@@ -208,6 +208,7 @@ namespace GEO {
 #  define GEO_COMPILER_INTEL
 #elif defined(__clang__)
 #  define GEO_COMPILER_CLANG
+#  undef GEO_OPENMP
 #elif defined(__GNUC__)
 #  define GEO_COMPILER_GCC
 #else
