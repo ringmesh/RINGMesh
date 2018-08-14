@@ -94,6 +94,7 @@ jobs:
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
+            - libiomp-dev
       script:
         - mkdir build
         - cd build
