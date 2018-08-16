@@ -62,9 +62,9 @@ add_flags(CMAKE_CXX_FLAGS -Qunused-arguments -std=c++11 -Wno-c++98-compat)
 
 
 # Compile and link with OpenMP ** NOT YET SUPPORTED in clang 3 **
-SET(USE_OPENMP FALSE)
-#add_flags(CMAKE_CXX_FLAGS -fopenmp)
-#add_flags(CMAKE_C_FLAGS -fopenmp)
+#SET(USE_OPENMP FALSE)
+add_flags(CMAKE_CXX_FLAGS -fopenmp=libiomp5)
+add_flags(CMAKE_C_FLAGS -fopenmp=libiomp5)
 
 
 # Profiler compilation flags
