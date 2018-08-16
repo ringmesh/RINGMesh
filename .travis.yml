@@ -95,7 +95,7 @@ jobs:
             - libxcursor-dev
             - libxi-dev
       install:
-	    - export LD_LIBRARY_PATH=/usr/lib:/usr/local/lib:/usr/lib/x86_64-linux-gnu
+        - export LD_LIBRARY_PATH=/usr/libc:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       script:
         - mkdir build
         - cd build
