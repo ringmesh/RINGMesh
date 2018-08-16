@@ -102,8 +102,8 @@ jobs:
         - cd build
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Debug
-        - cmake --build . -- -j2 -fopenmp=libiomp5
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2 -fopenmp=libiomp5
+        - cmake --build . -- -j2
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
