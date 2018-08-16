@@ -94,15 +94,16 @@ jobs:
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
+            - libiomp5-dev
       install:
-        - export LD_LIBRARY_PATH=/usr/libc:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
+        - export LD_LIBRARY_PATH=/usr/lib:/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
       script:
         - mkdir build
         - cd build
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
         - cd Debug
-        - cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
+        - cmake --build . -- -j2 -fopenmp=libiomp5
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2 -fopenmp=libiomp5
         - cmake --build ringmesh --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
