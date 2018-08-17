@@ -1032,7 +1032,7 @@ namespace RINGMesh
         VolumeMesh< DIMENSION >& >;
 
     using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
-    
+
     template class mesh_api MeshBaseBuilder< 2 >;
     template class mesh_api PointSetMeshBuilder< 2 >;
     template class mesh_api LineMeshBuilder< 2 >;
