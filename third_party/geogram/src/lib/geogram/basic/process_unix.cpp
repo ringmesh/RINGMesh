@@ -157,12 +157,12 @@ namespace {
         }
 
         /** \copydoc GEO::ThreadManager::maximum_concurrent_threads() */
-        virtual index_t maximum_concurrent_threads() {
+        index_t maximum_concurrent_threads() override {
             return Process::number_of_cores();
         }
 
         /** \copydoc GEO::ThreadManager::enter_critical_section() */
-        virtual void enter_critical_section() {
+	void enter_critical_section() override {
 #ifdef GEO_OS_ANDROID
             lock_mutex_arm(&mutex_);
 #else
@@ -171,7 +171,7 @@ namespace {
         }
 
         /** \copydoc GEO::ThreadManager::leave_critical_section() */
-        virtual void leave_critical_section() {
+	void leave_critical_section() override {
 #ifdef GEO_OS_ANDROID
             unlock_mutex_arm(&mutex_);
 #else
@@ -181,7 +181,7 @@ namespace {
 
     protected:
         /** \brief PThreadManager destructor */
-        virtual ~PThreadManager() {
+	~PThreadManager() override {
             pthread_attr_destroy(&attr_);
 #ifndef GEO_OS_ANDROID
             pthread_mutex_destroy(&mutex_);
@@ -206,9 +206,9 @@ namespace {
         }
 
         /** \copydoc GEO::ThreadManager::run_concurrent_threads() */
-        virtual void run_concurrent_threads(
+	void run_concurrent_threads (
             ThreadGroup& threads, index_t max_threads
-        ) {
+        ) override {
             // TODO: take max_threads into account
             geo_argused(max_threads);
 
