@@ -45,7 +45,7 @@ function(add_ringmesh_library directory)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
             $<INSTALL_INTERFACE:include>
     )
-    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    target_link_libraries(${target_name} PUBLIC geogram)
     if(WIN32)
         target_compile_definitions(${target_name} 
             PUBLIC 

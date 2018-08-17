@@ -51,5 +51,6 @@ ExternalProject_Add(ringmesh_ext
     BINARY_DIR ${RINGMesh_PATH_BIN}
     BUILD_ALWAYS 1
     INSTALL_COMMAND ""
-    DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+#    DEPENDS geogram_ext tinyxml2_ext zlib_ext minizip_ext
+    DEPENDS tinyxml2_ext zlib_ext minizip_ext
 )

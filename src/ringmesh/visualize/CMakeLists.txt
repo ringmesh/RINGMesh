@@ -55,5 +55,5 @@ target_link_libraries(${target_name}
         geogram_extension
         geomodel_core 
         io 
-        Geogram::geogram_gfx
+        geogram_gfx
 )

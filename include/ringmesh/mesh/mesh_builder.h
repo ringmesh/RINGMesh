@@ -37,6 +37,12 @@
 
 #include <ringmesh/mesh/common.h>
 
+#include <ringmesh/mesh/line_mesh.h>
+#include <ringmesh/mesh/mesh_index.h>
+#include <ringmesh/mesh/point_set_mesh.h>
+#include <ringmesh/mesh/surface_mesh.h>
+#include <ringmesh/mesh/volume_mesh.h>
+
 #include <memory>
 #include <numeric>
 
@@ -63,7 +69,7 @@ namespace RINGMesh
 namespace RINGMesh
 {
     template < index_t DIMENSION >
-    class MeshBaseBuilder
+    class mesh_api MeshBaseBuilder
     {
         ringmesh_disable_copy_and_move( MeshBaseBuilder );
         ringmesh_template_assert_2d_or_3d( DIMENSION );
@@ -242,7 +248,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( MeshBaseBuilder );
 
     template < index_t DIMENSION >
-    class PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api PointSetMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< PointSetMeshBuilder< DIMENSION > >
@@ -279,7 +285,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( PointSetMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api LineMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< LineMeshBuilder > create_builder(
@@ -423,7 +429,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( LineMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api SurfaceMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
     public:
         static std::unique_ptr< SurfaceMeshBuilder< DIMENSION > >
@@ -778,7 +784,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBuilderFactory );
 
     template < index_t DIMENSION >
-    class VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
+    class mesh_api VolumeMeshBuilder : public MeshBaseBuilder< DIMENSION >
     {
         static_assert( DIMENSION == 3, "DIMENSION template should be 3" );
 
@@ -1026,4 +1032,15 @@ namespace RINGMesh
         VolumeMesh< DIMENSION >& >;
 
     using VolumeMeshBuilderFactory3D = VolumeMeshBuilderFactory< 3 >;
+    
+    template class mesh_api MeshBaseBuilder< 2 >;
+    template class mesh_api PointSetMeshBuilder< 2 >;
+    template class mesh_api LineMeshBuilder< 2 >;
+    template class mesh_api SurfaceMeshBuilder< 2 >;
+
+    template class mesh_api MeshBaseBuilder< 3 >;
+    template class mesh_api PointSetMeshBuilder< 3 >;
+    template class mesh_api LineMeshBuilder< 3 >;
+    template class mesh_api SurfaceMeshBuilder< 3 >;
+    template class mesh_api VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

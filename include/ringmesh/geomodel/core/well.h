@@ -245,7 +245,7 @@ namespace RINGMesh
     // --------------------------------------------------------------------------
 
     template < index_t DIMENSION >
-    class Well
+    class geomodel_core_api Well
     {
         ringmesh_disable_copy_and_move( Well );
 
@@ -406,7 +406,7 @@ namespace RINGMesh
      * Set of wells associated to a GeoModel
      */
     template < index_t DIMENSION >
-    class WellGroup
+    class geomodel_core_api WellGroup
     {
         ringmesh_disable_copy_and_move( WellGroup );
 

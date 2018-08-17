@@ -67,7 +67,7 @@ namespace RINGMesh
      * class for encapsulating surface mesh component
      */
     template < index_t DIMENSION >
-    class SurfaceMeshBase : public MeshBase< DIMENSION >
+    class mesh_api SurfaceMeshBase : public MeshBase< DIMENSION >
     {
         friend class SurfaceMeshBuilder< DIMENSION >;
 
@@ -360,7 +360,7 @@ namespace RINGMesh
     ALIAS_2D_AND_3D( SurfaceMeshBase );
 
     template < index_t DIMENSION >
-    class SurfaceMesh : public SurfaceMeshBase< DIMENSION >
+    class mesh_api SurfaceMesh : public SurfaceMeshBase< DIMENSION >
     {
     };
 

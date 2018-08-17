@@ -101,7 +101,7 @@ project(SUPERBUILD)
 # Additional cmake modules
 include(ExternalProject)
 
-include(${PROJECT_SOURCE_DIR}/cmake/CompileGeogram.cmake)
+#include(${PROJECT_SOURCE_DIR}/cmake/CompileGeogram.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileTinyxml2.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileZlib.cmake)
 include(${PROJECT_SOURCE_DIR}/cmake/CompileMinizip.cmake)

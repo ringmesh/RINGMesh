@@ -64,7 +64,6 @@ namespace RINGMesh
 
     class GeologicalEntityType;
     class MeshEntityType;
-    ;
     struct gmge_id;
     struct gmme_id;
 } // namespace RINGMesh
@@ -110,7 +109,7 @@ namespace RINGMesh
     };
 
     template < index_t DIMENSION >
-    class GeoModelMeshEntityAccess
+    class geomodel_builder_api GeoModelMeshEntityAccess
     {
         ringmesh_disable_copy_and_move( GeoModelMeshEntityAccess );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

@@ -65,7 +65,7 @@ namespace RINGMesh
      * @note For now, we encapsulate the GEO::Mesh class.
      */
     template < index_t DIMENSION >
-    class MeshBase
+    class mesh_api MeshBase
     {
         ringmesh_disable_copy_and_move( MeshBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

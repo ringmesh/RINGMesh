@@ -35,12 +35,8 @@
 
 /*! \author Francois Bonneau */
 
-#include <ringmesh/mesh/line_mesh.h>
+
 #include <ringmesh/mesh/mesh_builder.h>
-#include <ringmesh/mesh/mesh_index.h>
-#include <ringmesh/mesh/point_set_mesh.h>
-#include <ringmesh/mesh/surface_mesh.h>
-#include <ringmesh/mesh/volume_mesh.h>
 
 namespace
 {
@@ -396,14 +392,14 @@ namespace RINGMesh
         volume_mesh_.cell_aabb_.reset();
     }
 
-    template class mesh_api MeshBaseBuilder< 2 >;
-    template class mesh_api PointSetMeshBuilder< 2 >;
-    template class mesh_api LineMeshBuilder< 2 >;
-    template class mesh_api SurfaceMeshBuilder< 2 >;
-
-    template class mesh_api MeshBaseBuilder< 3 >;
-    template class mesh_api PointSetMeshBuilder< 3 >;
-    template class mesh_api LineMeshBuilder< 3 >;
-    template class mesh_api SurfaceMeshBuilder< 3 >;
-    template class mesh_api VolumeMeshBuilder< 3 >;
+//     template class mesh_api MeshBaseBuilder< 2 >;
+//     template class mesh_api PointSetMeshBuilder< 2 >;
+//     template class mesh_api LineMeshBuilder< 2 >;
+//     template class mesh_api SurfaceMeshBuilder< 2 >;
+// 
+//     template class mesh_api MeshBaseBuilder< 3 >;
+//     template class mesh_api PointSetMeshBuilder< 3 >;
+//     template class mesh_api LineMeshBuilder< 3 >;
+//     template class mesh_api SurfaceMeshBuilder< 3 >;
+//     template class mesh_api VolumeMeshBuilder< 3 >;
 } // namespace RINGMesh

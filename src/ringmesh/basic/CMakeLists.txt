@@ -66,7 +66,7 @@ target_sources(${target_name}
         "${lib_include_dir}/types.h"
 )
 if(RINGMESH_WITH_GRAPHICS)
-    target_link_libraries(${target_name} PRIVATE Geogram::geogram_gfx)
+    target_link_libraries(${target_name} PRIVATE geogram_gfx dl)
 endif(RINGMESH_WITH_GRAPHICS)
 
 add_js_target(${target_name} "${lib_source_dir}/basic_js.cpp")

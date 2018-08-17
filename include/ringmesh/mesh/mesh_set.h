@@ -66,7 +66,7 @@ namespace RINGMesh
      * class composed of meshes from all the dimensions
      */
     template < index_t DIMENSION >
-    class MeshSetBase
+    class mesh_api MeshSetBase
     {
         ringmesh_disable_copy_and_move( MeshSetBase );
         ringmesh_template_assert_2d_or_3d( DIMENSION );

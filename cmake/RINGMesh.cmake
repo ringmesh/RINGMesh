@@ -48,9 +48,36 @@ else(UNIX)
 endif(UNIX)
 
 # RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
-list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+
+#list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+#set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
+#find_package(Geogram REQUIRED)
+
+
+# already done in RINGMeshConfig.cmake.in
+# Path to geogram
+#################
+
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
-find_package(Geogram REQUIRED)
+
+if(IS_DIRECTORY ${CMAKE_SOURCE_DIR}/geogram/)
+   set(
+      GEOGRAM_SOURCE_DIR "${CMAKE_SOURCE_DIR}/geogram/"
+      CACHE PATH "full path to the Geogram (or Vorpaline) installation"
+   )
+   set(USE_BUILTIN_GEOGRAM TRUE)
+else()
+   set(
+      GEOGRAM_SOURCE_DIR "${CMAKE_SOURCE_DIR}/../geogram/"
+      CACHE PATH "full path to the Geogram (or Vorpaline) installation"
+   )
+   set(USE_BUILTIN_GEOGRAM FALSE)
+endif()
+
+message(STATUS "GEOGRAM Path ${GEOGRAM_SOURCE_DIR}")
+include(${GEOGRAM_SOURCE_DIR}/cmake/geogram.cmake)
+
+
 find_package(ZLIB REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
@@ -59,7 +86,7 @@ install(
     DIRECTORY
         ${TINYXML2_INSTALL_PREFIX}/
         ${ZLIB_ROOT}/
-        ${GEOGRAM_INSTALL_PREFIX}/
+#        ${GEOGRAM_INSTALL_PREFIX}/
     DESTINATION
         .
 )
