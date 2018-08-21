@@ -375,7 +375,7 @@ namespace RINGMesh
                        || GMGE::GEOL_FEATURE::VOI == geo_feat ) )
             {
                 Logger::warn( "", interface.gmge(),
-                    "geological feature is empty or not supported" );
+                    " geological feature is empty or not recognized" );
             }
 
             AbstractFeature* feature = find_or_create_feature( interface );
@@ -454,11 +454,18 @@ namespace RINGMesh
         for( const auto& layer :
             geomodel_.geol_entities( Layer3D::type_name_static() ) )
         {
-            ringmesh_assert( layer.has_geological_feature() );
-
-            AbstractFeature* feature = find_or_create_feature( layer );
-            AbstractFeatureInterpretation* interp =
-                find_or_create_interpretation( *feature );
+            AbstractFeatureInterpretation* interp = nullptr;
+            if( layer.has_geological_feature() )
+            {
+                AbstractFeature* feature = find_or_create_feature( layer );
+                AbstractFeatureInterpretation* interp =
+                    find_or_create_interpretation( *feature );
+            }
+            else
+            {
+                Logger::warn( "", layer.gmge(),
+                    " geological feature is empty or not recognized" );
+            }
 
             // TODO: I do not understand why the interp is not needed...
             ringmesh_unused( interp );

@@ -65,6 +65,56 @@ void load_geomodel( GeoModel3D& geomodel, const std::string& file )
     }
 }
 
+/*
+The unstructured grid in the following .epc is built with the code below
+UnstructuredGridMixedElementsRepresentationTest.epc
+
+const ULONG64 nodesCount = 10;
+double pts[] = { 0, 0, 300, 700, 0, 350, 0, 150, 300, 700, 150, 350, 0, 0, 500,
+    700, 0, 550, 0, 150, 500, 700, 150, 550, 50, 50, 800, 900, 80, 900 };
+
+// getting the local depth 3d crs
+LocalDepth3dCrsTest* crsTest = new LocalDepth3dCrsTest( this->epcDoc, true );
+RESQML2_0_1_NS::LocalDepth3dCrs* crs =
+    epcDoc->getResqmlAbstractObjectByUuid< RESQML2_0_1_NS::LocalDepth3dCrs >(
+        LocalDepth3dCrsTest::defaultUuid );
+
+// getting the hdf proxy
+AbstractHdfProxy* hdfProxy = this->epcDoc->getHdfProxySet()[0];
+
+// creating the ijk grid
+RESQML2_0_1_NS::UnstructuredGridRepresentation* rep =
+    this->epcDoc->createUnstructuredGridRepresentation( crs, uuid, title, 3 );
+
+REQUIRE( rep != nullptr );
+
+ULONG64 face_indices_per_cell[15] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12,
+    13, 14 };
+ULONG64 faceIndicesCumulativeCountPerCell[3] = { 6, 11, 15 };
+ULONG64 nodeIndicesCumulativeCountPerFace[15] = { 4, 8, 12, 16, 20, 24, 28, 31,
+    34, 37, 40, 43, 46, 49, 52 };
+ULONG64 node_indices_per_face[52] = { 0, 1, 3, 2, 4, 5, 7, 6, 0, 1, 5, 4, 1, 3,
+    7, 5, 3, 2, 6, 7, 0, 4, 6, 2, 4, 5, 7, 6, 8, 4, 5, 4, 8, 6, 6, 8, 7, 5, 7,
+    8, 5, 8, 7, 9, 5, 7, 9, 7, 8, 9, 8, 5 };
+
+unsigned char face_righthandness[15] = { 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1,
+    1, 1 };
+
+rep->setGeometry( face_righthandness,
+    pts,
+    nodesCount,
+    this->epcDoc->getHdfProxySet()[0],
+    face_indices_per_cell,
+    faceIndicesCumulativeCountPerCell,
+    15,
+    node_indices_per_face,
+    nodeIndicesCumulativeCountPerFace,
+    gsoap_resqml2_0_1::resqml2__CellShape::resqml2__CellShape__polyhedral );
+// cleaning
+delete crsTest;
+
+*/
+
 void do_test()
 {
     GeoModel3D origin_geomodel;
