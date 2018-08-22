@@ -156,7 +156,7 @@ namespace RINGMesh
         if( result == geo_entity_2_feature_.end() )
         {
             GMGE::GEOL_FEATURE geo_feat = entity.geological_feature();
-            std::string guid( tools::GuidTools::generateUidAsString() );
+            std::string guid( GuidTools::generateUidAsString() );
             if( GMGE::is_fault( geo_feat ) )
             {
                 feature = pck_->createFault( guid, entity.name() );
@@ -194,7 +194,7 @@ namespace RINGMesh
         auto result = feature_2_interp_.find( &feature );
         if( result == feature_2_interp_.end() )
         {
-            std::string guid( tools::GuidTools::generateUidAsString() );
+            std::string guid( GuidTools::generateUidAsString() );
             if( dynamic_cast< TectonicBoundaryFeature* >( &feature )
                 != nullptr )
             {
@@ -292,7 +292,7 @@ namespace RINGMesh
                     continue;
                 }
 
-                std::string guid( tools::GuidTools::generateUidAsString() );
+                std::string guid( GuidTools::generateUidAsString() );
                 if( element_type == "double" )
                 {
                     properties[i] = pck_->createContinuousProperty( &rep, guid,
@@ -382,7 +382,7 @@ namespace RINGMesh
             AbstractFeatureInterpretation* interp =
                 find_or_create_interpretation( *feature );
 
-            std::string guid( tools::GuidTools::generateUidAsString() );
+            std::string guid( GuidTools::generateUidAsString() );
             TriangulatedSetRepresentation* rep =
                 pck_->createTriangulatedSetRepresentation(
                     interp, local_3d_crs_, guid, feature->getTitle() );
@@ -476,7 +476,7 @@ namespace RINGMesh
                 const Region3D& region =
                     static_cast< const Region3D& >( layer.child( i ) );
 
-                std::string guid( tools::GuidTools::generateUidAsString() );
+                std::string guid( GuidTools::generateUidAsString() );
                 UnstructuredGridRepresentation* rep =
                     pck_->createUnstructuredGridRepresentation( local_3d_crs_,
                         guid, region.name(), region.nb_mesh_elements() );
@@ -585,13 +585,13 @@ namespace RINGMesh
 
         RESQML2_0_1_NS::StratigraphicColumn* stratiColumn =
             pck_->createStratigraphicColumn(
-                tools::GuidTools::generateUidAsString(), column->get_name() );
+                GuidTools::generateUidAsString(), column->get_name() );
         OrganizationFeature* stratiModelFeature =
             pck_->createStratigraphicModel(
-                tools::GuidTools::generateUidAsString(), "stratiModel" );
+                GuidTools::generateUidAsString(), "stratiModel" );
         StratigraphicColumnRankInterpretation* stratiColumnRank =
             pck_->createStratigraphicColumnRankInterpretationInAge(
-                stratiModelFeature, tools::GuidTools::generateUidAsString(),
+                stratiModelFeature, GuidTools::generateUidAsString(),
                 "Stratigraphic column rank", 0 );
         stratiColumn->pushBackStratiColumnRank( stratiColumnRank );
 
