@@ -36,6 +36,8 @@ SET(FESAPI_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/fesapi)
 SET(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
     CACHE INTERNAL "Fesapi install directory")
 
+
+
 IF (WIN32)
 	FIND_PROGRAM(ZIP_EXECUTABLE 7z PATHS "$ENV{ProgramFiles}/7-Zip")
 	FIND_PROGRAM(MSIEXEC_EXECUTABLE msiexec)
@@ -48,12 +50,14 @@ IF (WIN32)
 ENDIF()
 
 #### HDF5
-SET (HDF5_ZIP_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/hdf5")
+
 IF (WIN32)
+	SET (HDF5_ZIP_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/hdf5")
 	SET (HDF5_ZIP_ROOT "hdf5-1.8.18-win64-vs2013-noszip")
 	SET (ZIP_EXT ".zip")
 	SET (HDF5_MSI_WORKING_DIR "${HDF5_ZIP_DESTIN_DIR}/hdf5")
 ELSEIF (UNIX)
+	SET (HDF5_ZIP_DESTIN_DIR "${PROJECT_BINARY_DIR}/../Release/third_party/hdf5")
 	SET (HDF5_ZIP_ROOT "hdf5-1.8.18-linux-centos7-x86_64-gcc485-noszip-shared")
 	SET (ZIP_EXT ".tar.gz")
 ENDIF()
@@ -115,12 +119,14 @@ SET (HDF5_C_INCLUDE_DIR "${HDF5_INSTALL_PREFIX}/include/")
 ##### MINIZIP_1_1
 
 IF (WIN32)
+	SET (MINIZIP_1_1_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/minizip_1_1/")
 	SET (MINIZIP_1_1_ROOT "minizip-1.1-win64-vs2013-static")
 ELSEIF (UNIX)
+	SET (MINIZIP_1_1_DESTIN_DIR "${PROJECT_BINARY_DIR}/../Release/third_party/minizip_1_1/")
 	SET (MINIZIP_1_1_ROOT "minizip-1.1-linux-ubuntu1604-x86_64-gcc540")
 ENDIF()
 
-SET (MINIZIP_1_1_DESTIN_DIR "${PROJECT_BINARY_DIR}/third_party/minizip_1_1/")
+
 SET (MINIZIP_1_1_DESTIN "${MINIZIP_1_1_DESTIN_DIR}/minizip_1_1${ZIP_EXT}")
 
 IF(NOT EXISTS ${MINIZIP_1_1_DESTIN})
