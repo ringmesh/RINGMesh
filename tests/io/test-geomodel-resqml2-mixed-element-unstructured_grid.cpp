@@ -66,8 +66,9 @@ void load_geomodel( GeoModel3D& geomodel, const std::string& file )
 }
 
 /*
-The unstructured grid in the following .epc is built with the code below
-UnstructuredGridMixedElementsRepresentationTest.epc
+// The unstructured grid in the following
+//    .epc is built with the code below
+//        UnstructuredGridMixedElementsRepresentationTest.epc
 
 const ULONG64 nodesCount = 10;
 double pts[] = { 0, 0, 300, 700, 0, 350, 0, 150, 300, 700, 150, 350, 0, 0, 500,
@@ -110,6 +111,44 @@ rep->setGeometry( face_righthandness,
     node_indices_per_face,
     nodeIndicesCumulativeCountPerFace,
     gsoap_resqml2_0_1::resqml2__CellShape::resqml2__CellShape__polyhedral );
+
+RESQML2_0_1_NS::HorizonInterpretation* interp =
+    this->epcDoc->createHorizonInterpretation(
+        this->epcDoc->createHorizon(
+            GuidTools::generateUidAsString(), "tri_surface" ),
+        GuidTools::generateUidAsString(),
+        "tri_surface" );
+
+RESQML2_0_1_NS::TriangulatedSetRepresentation* trep =
+    this->epcDoc->createTriangulatedSetRepresentation(
+        (AbstractFeatureInterpretation*) interp,
+        crs,
+        GuidTools::generateUidAsString(),
+        "tri_surface" );
+REQUIRE( rep != nullptr );
+
+unsigned int faces[48] = { 0, 1, 3, 0, 3, 2, 0, 1, 5, 0, 5, 4, 1, 3, 7, 1, 7, 5,
+    3, 2, 6, 3, 6, 7, 0, 4, 6, 0, 6, 2,
+
+    8, 4, 5, 4, 8, 6, 6, 8, 7,
+
+    9, 5, 7, 9, 7, 8, 9, 8, 5 };
+
+for( int f = 0; f < 16; ++f )
+{
+    std::vector< double > threepts;
+    for( int v = 0; v < 3; ++v )
+    {
+        int v_base = faces[f * 3 + v] * 3;
+        threepts.push_back( pts[v_base] );
+        threepts.push_back( pts[v_base + 1] );
+        threepts.push_back( pts[v_base + 2] );
+    }
+    unsigned int tri[3] = { f * 3, f * 3 + 1, f * 3 + 2 };
+    trep->pushBackTrianglePatch(
+        3, &threepts[0], 1, tri, this->epcDoc->getHdfProxySet()[0] );
+}
+
 // cleaning
 delete crsTest;
 
