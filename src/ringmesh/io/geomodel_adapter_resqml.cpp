@@ -130,7 +130,7 @@ namespace RINGMesh
           hdf_proxy_( nullptr ),
           local_3d_crs_( nullptr )
     {
-        ringmesh_assert( init() );
+        init();
     }
 
     bool GeoModelAdapterRESQMLImpl::init()
@@ -671,7 +671,7 @@ namespace RINGMesh
 
     void GeoModelAdapterRESQML::save_file()
     {
-        ringmesh_assert( impl_->save_file() );
+        impl_->save_file();
     }
 
 } // namespace RINGMesh
