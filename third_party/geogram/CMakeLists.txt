@@ -27,7 +27,7 @@ option(GEOGRAM_WITH_LEGACY_NUMERICS "Legacy numerical libraries" ON)
 option(GEOGRAM_WITH_HLBFGS "Non-linear solver (Yang Liu's HLBFGS)" ON)
 option(GEOGRAM_WITH_TETGEN "Tetrahedral mesher (Hang Si's TetGen)" ON)
 option(GEOGRAM_WITH_TRIANGLE "Triangle mesher (Jonathan Shewchuk's triangle)" ON)
-option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing vpipeline and optimal transport)" ON)
+option(GEOGRAM_WITH_EXPLORAGRAM "Experimental code (hexahedral meshing pipeline and optimal transport)" ON)
 option(GEOGRAM_WITH_LUA "Built-in LUA interpreter" ON)
 option(GEOGRAM_LIB_ONLY "Libraries only (no example programs/no viewer)" OFF)
 option(GEOGRAM_WITH_FPG "Predicate generator (Sylvain Pion's FPG)" OFF)
@@ -38,8 +38,8 @@ set(VORPALINE_PLATFORM "" CACHE STRING "")
 include(cmake/geogram.cmake)
 
 set(VORPALINE_VERSION_MAJOR 1)
-set(VORPALINE_VERSION_MINOR 5)
-set(VORPALINE_VERSION_PATCH 3)
+set(VORPALINE_VERSION_MINOR 6)
+set(VORPALINE_VERSION_PATCH 7)
 set(VORPALINE_VERSION ${VORPALINE_VERSION_MAJOR}.${VORPALINE_VERSION_MINOR}.${VORPALINE_VERSION_PATCH})
 
 set(VORPALINE_INCLUDE_SUBPATH geogram${VORPALINE_VERSION_MAJOR})
@@ -95,8 +95,6 @@ configure_file(
 
 add_custom_target(uninstall
     COMMAND ${CMAKE_COMMAND} -P ${CMAKE_CURRENT_BINARY_DIR}/cmake_uninstall.cmake)
-
-
 
 ##############################################################################
 # Geogram/Vorpaline sources

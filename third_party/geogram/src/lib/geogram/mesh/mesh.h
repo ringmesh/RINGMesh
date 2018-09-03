@@ -68,7 +68,7 @@ namespace GEO {
     /**
      * \brief Base class for mesh sub-element storage.
      * \details Sub-elements are those that cannot exist
-     *  independantly (such as MeshFacetCorner, MeshCellCorner
+     *  independently (such as MeshFacetCorner, MeshCellCorner
      *  and MeshCellFacet).
      * \relates Mesh
      */
@@ -137,16 +137,17 @@ namespace GEO {
         index_t create_sub_elements(index_t nb) {
             index_t result = nb_;
             if(nb_ + nb > attributes_.size()) {
-                index_t new_size=nb_ + nb;
+                index_t new_capacity=nb_ + nb;
                 if(nb < 128) {
-                    new_size = geo_max(index_t(16),attributes_.size());
-                    while(new_size < nb_ + nb) {
-                        new_size *= 2;
+                    new_capacity = std::max(index_t(16),attributes_.size());
+                    while(new_capacity < nb_ + nb) {
+                        new_capacity *= 2;
                     }
                 }
-                attributes_.resize(new_size);
+                attributes_.reserve(new_capacity);
             }
             nb_ += nb;
+	    attributes_.resize(nb_);
             return result;
         }
 
@@ -157,10 +158,12 @@ namespace GEO {
         index_t create_sub_element() {
             index_t result = nb_;
             ++nb_;
-            if(attributes_.size() < nb_) {
-                index_t new_size = geo_max(index_t(16),attributes_.size()*2);
-                attributes_.resize(new_size);
+            if(attributes_.capacity() < nb_) {
+                index_t new_capacity =
+		    std::max(index_t(16),attributes_.capacity()*2);
+		attributes_.reserve(new_capacity);
             }
+	    attributes_.resize(nb_);
             return result;
         }
 
@@ -472,7 +475,7 @@ namespace GEO {
             geo_debug_assert(v < nb());            
             geo_debug_assert(!single_precision());
             geo_debug_assert(dimension() >= 3);
-            return *(vec3*)(&point_[v*point_.dimension()]);
+            return *(const vec3*)(&point_[v*point_.dimension()]);
         }
         
         /**
@@ -1293,6 +1296,17 @@ namespace GEO {
     protected:
 
         /**
+         * \brief Indicates that the stored elements are only triangles.
+         */
+        void is_simplicial() {
+	    if(!is_simplicial_) {
+		is_simplicial_ = true;
+		facet_ptr_.resize(1);
+		facet_ptr_[0] = 0;
+	    }
+	}
+	
+        /**
          * \brief Indicates that the stored elements are no
          *  longer only triangles.
          * \details Creates the facet pointers for the pre-existing
@@ -1312,7 +1326,10 @@ namespace GEO {
         MeshVertices& vertices_;        
         MeshFacetCornersStore& facet_corners_;
         friend class Mesh;
-        friend class GeogramIOHandler;                
+        friend class GeogramIOHandler;
+	friend void GEOGRAM_API tessellate_facets(
+	    Mesh& M, index_t max_nb_vertices
+	);
     };
     
     /*************************************************************************/
@@ -1851,7 +1868,7 @@ namespace GEO {
          *  local corner index in the facet
          * \param[in] c the cell, in 0..nb()-1
          * \param[in] lf the local facet index, in 0..nb_facets(c)-1
-         * \param[in] lv the local corner index, in 0..facet_nb_vertices(c,lf)-1
+         * \param[in] lc the local corner index, in 0..facet_nb_vertices(c,lf)-1
          * \return corner \p lc of facet \p lf in cell \p c
          */
         index_t facet_corner(index_t c, index_t lf, index_t lc) const {
@@ -1928,7 +1945,7 @@ namespace GEO {
             // faces is created for each cell, so that a single cell
             // pointer is used for both.
             
-            index_t cell_size = geo_max(desc.nb_vertices, desc.nb_facets);
+            index_t cell_size = std::max(desc.nb_vertices, desc.nb_facets);
             index_t first_cell = nb();
             index_t co = cell_corners_.nb();
             

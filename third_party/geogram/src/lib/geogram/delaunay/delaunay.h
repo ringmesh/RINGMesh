@@ -150,7 +150,7 @@ namespace GEO {
          * - "BPOW" - Weighted regular 3D triangulation (dimension 4 only)
          * - "NN" - Delaunay with NearestNeighborSearch (any dimension)
          * - "default" - uses the command line argument "algo:delaunay"
-         * \retval nil if \p format is not a valid Delaunay algorithm name.
+         * \retval nullptr if \p format is not a valid Delaunay algorithm name.
          * \retval otherwise, a pointer to a Delaunay algorithm object. The
          * returned pointer must be stored in an Delaunay_var that does
          * automatic destruction:
@@ -311,7 +311,7 @@ namespace GEO {
         
         /**
          * \brief Gets the constraints.
-         * \return the constraints or nil if no constraints
+         * \return the constraints or nullptr if no constraints
          *  were definied.
          */
         const Mesh* constraints() const {
@@ -379,7 +379,7 @@ namespace GEO {
          *  local facet index.
          * \param[in] c cell index
          * \param[in] lf local facet index
-         * \return the index of the cell adjacent to \p c accross
+         * \return the index of the cell adjacent to \p c accros
          *  facet \p lf if it exists, or -1 if on border
          */
         signed_index_t cell_adjacent(index_t c, index_t lf) const {
@@ -407,7 +407,7 @@ namespace GEO {
         }
         
         /**
-         * \brief Retreives a local vertex index from cell index
+         * \brief Retrieves a local vertex index from cell index
          *  and global vertex index.
          * \param[in] c cell index
          * \param[in] v global vertex index
@@ -426,11 +426,11 @@ namespace GEO {
         }
 
         /**
-         * \brief Retreives a local facet index from two adacent
+         * \brief Retrieves a local facet index from two adacent
          *  cell global indices.
          * \param[in] c1 global index of first cell
          * \param[in] c2 global index of second cell
-         * \return the local index of the face accross which
+         * \return the local index of the face accros which
          *  \p c2 is adjacent to \p c1
          * \pre cell \p c1 and cell \p c2 are adjacent
          */
@@ -680,13 +680,13 @@ namespace GEO {
         /**
          * \brief Stores for each vertex v a cell incident to v.
          */
-        void update_v_to_cell();
+        virtual void update_v_to_cell();
 
         /**
          * \brief Updates the circular incident cell lists.
          * \details Used by next_around_vertex().
          */
-        void update_cicl();
+        virtual void update_cicl();
 
         /**
          * \brief Computes the stored neighbor lists.

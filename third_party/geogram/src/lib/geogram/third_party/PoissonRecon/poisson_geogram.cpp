@@ -61,19 +61,6 @@
 #pragma warning disable 869 177 300 2415
 #endif
 
-#ifdef GEO_COMPILER_MSVC
-#define isnan _isnan
-#define isfinite _finite
-#else
-#ifndef isnan
-#define isnan std::isnan
-#endif
-#ifndef isfinite
-#define isfinite std::isfinite
-#endif
-#endif
-
-
 #include "MyTime.h"
 #include "MarchingCubes.h"
 #include "Octree.h"
@@ -182,20 +169,20 @@ namespace GEO {
 
         keep_voxel_ = false;
         voxel_res_ = 0;
-        voxel_values_ = nil;
+        voxel_values_ = nullptr;
 
 	geo_cite("DBLP:journals/tog/KazhdanH13");
     }
 
     PoissonReconstruction::~PoissonReconstruction() {
         delete[] voxel_values_;
-        voxel_values_ = nil;
+        voxel_values_ = nullptr;
         voxel_res_ = 0;
     }
     
     void PoissonReconstruction::reconstruct(Mesh* points, Mesh* surface) {
         delete[] voxel_values_;
-        voxel_values_ = nil;
+        voxel_values_ = nullptr;
         
         Reset<double>();
 

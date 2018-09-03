@@ -66,7 +66,7 @@ namespace {
     size_t safe_strncpy(
         char* dest, const char* source, size_t max_dest_size
     ) {
-        strncpy(dest, source, max_dest_size);
+        strncpy(dest, source, max_dest_size-1);
         dest[max_dest_size-1] = '\0';
         return strlen(dest);
     }
@@ -106,7 +106,11 @@ namespace GEO {
         save_mode_(save_mode),
         are_you_sure_(false)
     {
+#ifdef GEO_OS_WINDOWS
+	directory_ = FileSystem::documents_directory() + "/";
+#else	
         directory_ = FileSystem::get_current_working_directory() + "/";
+#endif	
 	set_default_filename(default_filename);
 	current_file_index_ = 0;
 	current_directory_index_ = 0;
@@ -114,7 +118,7 @@ namespace GEO {
     }
 
     FileDialog::FileDialog() :
-        application_(nil),
+        application_(nullptr),
         visible_(false),
         current_write_extension_index_(0),        
         pinned_(false),
@@ -286,25 +290,21 @@ namespace GEO {
             } else {
 		selected_file_ = file;
                 if(
-		    application_ != nil &&
+		    application_ != nullptr &&
 		    application_->save(file)
 		) {
-		    Logger::out("I/O") << "Saved " << current_file_ << std::endl;
+		    Logger::out("I/O") << "Saved "
+				       << current_file_ << std::endl;
 		}
             }
         } else {
 	    selected_file_ = file;
-	    if(application_ != nil) {
+	    if(application_ != nullptr) {
 		application_->load(file);
 	    }
         }
         
         if(!pinned_) {
-            // Note: If I do not do that, then the system thinks that the
-            // enter key is still pressed (it misses the key release event)
-            // I do not know why...
-            const int key_index = ImGui::GetIO().KeyMap[ImGuiKey_Enter];
-            ImGui::GetIO().KeysDown[key_index] = false;
             hide();
         }
     }
@@ -320,7 +320,7 @@ namespace GEO {
                 ImGui::scaling()*400.0f,
                 ImGui::scaling()*400.0f
             ),
-            ImGuiSetCond_Once
+            ImGuiCond_Once
         );
 
         ImGui::Begin(
@@ -336,7 +336,7 @@ namespace GEO {
         }
         ImGui::SameLine();
         if(ImGui::Button("home")) {
-            set_directory(FileSystem::home_directory());
+            set_directory(FileSystem::documents_directory());
             update_files();
         }
         ImGui::SameLine();            
@@ -345,11 +345,7 @@ namespace GEO {
         }
 
 	if(!save_mode_) {
-	    // There is probably a simpler way to align right...	    
-	    ImGui::SameLine(
-		0.0f,
-		ImGui::GetWindowWidth()-ImGui::scaling()*215.0f
-	    );        
+	    ImGui::SameLine();        
 	    ImGui::Text("pin");
 	    ImGui::SameLine();
 	    ImGui::Checkbox("##pin", &pinned_);
@@ -357,8 +353,10 @@ namespace GEO {
 		ImGui::SetTooltip("Keeps this dialog open.");
 	    }
 	}
-        
+
+	draw_disk_drives();
         ImGui::Separator();
+	
         {
             std::vector<std::string> path;
             String::split_string(directory_, '/', path);
@@ -474,7 +472,7 @@ namespace GEO {
                     ImGui::PushItemWidth(-1.0);
 
                     if(
-		       application_ != nil &&
+		       application_ != nullptr &&
 		       extensions_.size() == 0
 		    ) {
                         String::split_string(
@@ -522,7 +520,7 @@ namespace GEO {
         }
         if(
             ImGui::BeginPopupModal(
-                "File exists", NULL, ImGuiWindowFlags_AlwaysAutoResize
+                "File exists", nullptr, ImGuiWindowFlags_AlwaysAutoResize
             )
         ) {
             ImGui::Text(
@@ -551,12 +549,12 @@ namespace GEO {
 	if(!FileSystem::is_file(filename)) {
 	    return false;
 	}
-	if(application_ != nil) {
+	if(application_ != nullptr) {
 	    return application_->can_load(filename);
 	}
 	std::string ext = FileSystem::extension(filename);
 	for(size_t i=0; i<extensions_.size(); ++i) {
-	    if(extensions_[i] == ext) {
+	    if(extensions_[i] == ext || extensions_[i] == "*") {
 		return true;
 	    }
 	}
@@ -567,6 +565,23 @@ namespace GEO {
     void FileDialog::set_extensions(const std::string& extensions) {
 	extensions_.clear();
 	GEO::String::split_string(extensions, ';', extensions_);
+    }
+
+    void FileDialog::draw_disk_drives() {
+#ifdef GEO_OS_WINDOWS	
+	DWORD drives = GetLogicalDrives();
+	for(DWORD b=0; b<16; ++b) {
+	    if((drives & (1u << b)) != 0) {
+		std::string drive;
+		drive += char('A' + char(b));
+		drive += ":";
+		if(ImGui::Button(drive.c_str())) {
+		    set_directory(drive);
+		}
+		ImGui::SameLine();
+	    }
+	}
+#endif	
     }
     
 }

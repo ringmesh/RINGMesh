@@ -165,7 +165,6 @@ namespace {
         }
         return result;
     }
-
 }
 
 namespace GEO {
@@ -189,7 +188,7 @@ namespace GEO {
     void StatusBar::progress(GEO::index_t step, GEO::index_t percent) {
         step_ = step;
         percent_ = percent;
-        glup_viewer_gui_update();        
+	update();
     }
 
     void StatusBar::end(bool canceled) {
@@ -202,11 +201,12 @@ namespace GEO {
 
     void StatusBar::draw() {
         ImGui::Begin(
-            "##Status", NULL,
+            "##Status", nullptr,
             ImGuiWindowFlags_NoResize |
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse |
-            ImGuiWindowFlags_NoTitleBar             
+            ImGuiWindowFlags_NoTitleBar |
+            ImGuiWindowFlags_NoScrollbar	    
         );
         if(progress_) {
             if(ImGui::Button("cancel")) {
@@ -227,24 +227,35 @@ namespace GEO {
                 "%)";
             
             ImGui::ProgressBar(
-                geo_max(0.001f, float(percent_)/float(100.0)),
+                std::max(0.001f, float(percent_)/float(100.0)),
                 ImVec2(-1,0.0),
                 overlay.c_str()
             );
         }
         ImGui::End();
     }
+
+    void StatusBar::update() {
+	glup_viewer_gui_update();
+    }
     
     /*****************************************************************/
 
     Console::Console(bool* visible_flag) :
         visible_flag_(visible_flag),
-        completion_callback_(nil),
-        history_callback_(nil),
+        completion_callback_(nullptr),
+        history_callback_(nullptr),
         history_index_(0),
         max_history_index_(0),
         fixed_layout_(true) {
 	input_buf_[0] = '\0';
+	console_font_ = nullptr;
+	scroll_to_bottom_ = false;
+    }
+
+    void Console::notify_error(const std::string& err) {
+	geo_argused(err);
+	return;
     }
     
     void Console::div(const std::string& value) {
@@ -257,16 +268,17 @@ namespace GEO {
         
     void Console::warn(const std::string& value) {
         this->printf("[W] %s", value.c_str());
-        if(visible_flag_ != nil) {
+        if(visible_flag_ != nullptr) {
             *visible_flag_ = true;
         }
     }
         
     void Console::err(const std::string& value) {
         this->printf("[E] %s", value.c_str());
-        if(visible_flag_ != nil) {
+        if(visible_flag_ != nullptr) {
             *visible_flag_ = true;
         }
+	notify_error(value);
     }
 
     void Console::status(const std::string& value) {
@@ -281,12 +293,12 @@ namespace GEO {
         buf_.clear();
         line_offsets_.clear();
     }
-
+    
     void Console::printf(const char* fmt, ...) {
-        int old_size = buf_.size();
         va_list args;
         va_start(args, fmt);
-        buf_.appendv(fmt, args);
+        int old_size = buf_.size();
+        buf_.appendfv(fmt, args); 
         va_end(args);
         for (int new_size = buf_.size(); old_size < new_size; old_size++) {
             if (buf_[old_size] == '\n') {
@@ -294,7 +306,11 @@ namespace GEO {
             }
         }
         scroll_to_bottom_ = true;
-        glup_viewer_gui_update();
+	update();
+    }
+
+    void Console::update() {
+        glup_viewer_gui_update();	
     }
 
     static int TextEditCallbackStub(ImGuiTextEditCallbackData* data) {
@@ -306,7 +322,7 @@ namespace GEO {
     int Console::TextEditCallback(ImGuiTextEditCallbackData* data)  {
         switch (data->EventFlag) {
         case ImGuiInputTextFlags_CallbackCompletion: {
-	    if(completion_callback_ != nil) {
+	    if(completion_callback_ != nullptr) {
 		static const char*
 		    completer_word_break_characters = " .(){},+-*/=";
 		// Locate beginning of current word
@@ -315,7 +331,7 @@ namespace GEO {
 		while (word_start > data->Buf)
 		{
 		    const char c = word_start[-1];
-		    if(strchr(completer_word_break_characters,c) != nil) {
+		    if(strchr(completer_word_break_characters,c) != nullptr) {
 			break;
 		    }
 		    word_start--;
@@ -344,7 +360,7 @@ namespace GEO {
 		    size_t cur_char = 0;
 		    bool finished = false;
 		    while(!finished) {
-			char c;
+			char c = '\0';
 			for(size_t i=0; i<matches.size(); ++i) {
 			    if(
 				cur_char >= matches[i].length() ||
@@ -380,33 +396,42 @@ namespace GEO {
 	    }
 	} break;
         case ImGuiInputTextFlags_CallbackHistory: {
-	    if(max_history_index_ > 0 && history_callback_ != nil) {
-		int h = int(history_index_);
-		if(data->EventKey == ImGuiKey_UpArrow) {
-		    --h;
-		    if(h < 0) {
-			h += int(max_history_index_+1);
+	    if(history_callback_ != nullptr) {
+		std::string history_command;
+		//   Call the callback first, to give it the opportunity to
+		// declare the history size.
+		history_callback_(this, history_index_, history_command);
+		if(max_history_index_ > 0) {
+		    int h = int(history_index_);
+		    if(data->EventKey == ImGuiKey_UpArrow) {
+			--h;
+			if(h < 0) {
+			    h = int(max_history_index_);
+			}
+		    } else if(data->EventKey == ImGuiKey_DownArrow) {
+			++h;
+			if(h > int(max_history_index_)) {
+			    h = 0;
+			}
 		    }
-		} else if(data->EventKey == ImGuiKey_DownArrow) {
-		    ++h;
-		    if(h >= int(max_history_index_+1)) {
-			h -= int(max_history_index_+1);
+		    {
+			history_index_ = index_t(h);
+			if(history_index_ == max_history_index_) {
+			    history_command = "";
+			} else {
+			    history_callback_(this, history_index_, history_command);
+			}
+			int newpos = std::min(
+			    data->BufSize-1, int(history_command.length())
+			);
+			strncpy(data->Buf, history_command.c_str(), size_t(newpos));
+			data->Buf[newpos] = '\0';
+			data->CursorPos = newpos;
+			data->SelectionStart = newpos;
+			data->SelectionEnd = newpos;
+			data->BufTextLen = newpos;
+			data->BufDirty = true;   
 		    }
-		}
-		{
-		    history_index_ = index_t(h);
-		    std::string history_command;
-		    history_callback_(this, history_index_, history_command);
-		    int newpos = geo_min(
-			data->BufSize-1, int(history_command.length())
-		    );
-		    strncpy(data->Buf, history_command.c_str(), size_t(newpos));
-		    data->Buf[newpos] = '\0';
-		    data->CursorPos = newpos;
-		    data->SelectionStart = newpos;
-		    data->SelectionEnd = newpos;
-		    data->BufTextLen = newpos;
-                    data->BufDirty = true;   
 		}
 	    }
         } break;
@@ -415,21 +440,25 @@ namespace GEO {
     }
 
     bool Console::exec_command(const char* command) {
-	++max_history_index_;
-	history_index_ = max_history_index_;
+	// Note: history_index_ and max_history_index_ are
+	// not managed here. They are managed by the callback.
 	return Application::instance()->exec_command(command);
     }
     
-    void Console::draw(bool* visible) {
-        visible_flag_ = visible;
-        ImGui::Begin(
-            "Console", visible,
-	    fixed_layout_ ? (
-		ImGuiWindowFlags_NoResize |
-		ImGuiWindowFlags_NoMove |
-		ImGuiWindowFlags_NoCollapse
-	    ) : 0
-        );
+    void Console::draw(bool* visible, bool with_window) {
+	if(!*visible) {
+	    return;
+	}
+	if(with_window) {
+	    ImGui::Begin(
+		"Console", visible,
+		fixed_layout_ ? (
+		    ImGuiWindowFlags_NoResize |
+		    ImGuiWindowFlags_NoMove |
+		    ImGuiWindowFlags_NoCollapse
+		) : 0
+	    );
+	}
         if (ImGui::Button("Clear")) {
             clear();
         }
@@ -438,11 +467,29 @@ namespace GEO {
         ImGui::SameLine();
         filter_.Draw("Filter", -100.0f);
         ImGui::Separator();
+
+	if(console_font_ != nullptr) {
+	    ImGui::PushFont(console_font_);
+	} else if(
+	    ImGui::GetIO().Fonts->Fonts.size() >= 4 &&
+	    Application::instance() != nullptr
+	) {
+	    if(Application::instance()->scaling() == 2.0f) {
+		console_font_ = ImGui::GetIO().Fonts->Fonts[3];
+	    } else {
+		console_font_ = ImGui::GetIO().Fonts->Fonts[2];
+	    }
+	    ImGui::PushFont(console_font_);	    
+	}
+
+	
+	float scaling = ImGui::GetIO().FontDefault->FontSize / 16.0f;
+	
         ImGui::BeginChild(
             "scrolling",
 	    ImVec2(
 		0.0f,
-		-20.0f * ImGui::GetIO().FontGlobalScale
+		-20.0f * scaling
 	    ),
 	    false,
             ImGuiWindowFlags_HorizontalScrollbar
@@ -454,10 +501,10 @@ namespace GEO {
         {
             const char* buf_begin = buf_.begin();
             const char* line = buf_begin;
-            for (int line_no = 0; line != NULL; line_no++) {
+            for (int line_no = 0; line != nullptr; line_no++) {
                 const char* line_end =
                     (line_no < line_offsets_.Size) ?
-                    buf_begin + line_offsets_[line_no] : NULL;
+                    buf_begin + line_offsets_[line_no] : nullptr;
                 
                 if (!filter_.IsActive() ||
 		    filter_.PassFilter(line, line_end)
@@ -468,25 +515,27 @@ namespace GEO {
 			(line[1] == 'E' || line[1] == 'W')
 		    );
 		    if(is_error) {
-			ImGui::PushStyleColor(ImGuiCol_Text,ImVec4(1.0f,0.4f,0.4f,1.0f));
+			ImGui::PushStyleColor(
+			    ImGuiCol_Text,ImVec4(1.0f,0.0f,0.0f,1.0f)
+			);
 		    }
                     ImGui::TextUnformatted(line, line_end);
 		    if(is_error) {
 			ImGui::PopStyleColor();
 		    }
                 }
-                line = line_end && line_end[1] ? line_end + 1 : NULL;
+                line = line_end && line_end[1] ? line_end + 1 : nullptr;
             }
         } 
         if (scroll_to_bottom_) {
-            ImGui::SetScrollHere(1.0f);
+            ImGui::SetScrollHere();
         }
         scroll_to_bottom_ = false;
         ImGui::EndChild();
 
-	ImGui::Text("Command>>");
+	ImGui::Text(">>>");
 	ImGui::SameLine();
-	ImGui::PushItemWidth(-1);
+	ImGui::PushItemWidth(-20);
         if(ImGui::InputText(
 	       "##CommandInput", input_buf_, geo_imgui_string_length,
 	       ImGuiInputTextFlags_EnterReturnsTrue |
@@ -515,8 +564,14 @@ namespace GEO {
         ) {
             ImGui::SetKeyboardFocusHere(-1); // Auto focus previous widget
 	}
-	
-        ImGui::End();
+
+	if(console_font_ != nullptr) {
+	    ImGui::PopFont();
+	}
+
+	if(with_window) {
+	    ImGui::End();
+	}
     }
     
     /*****************************************************************/
@@ -530,11 +585,11 @@ namespace GEO {
     /*****************************************************************/
 
     void Command::flush_queue() {
-        if(queued_ != nil) {
+        if(queued_ != nullptr) {
             // Steal the queued command to avoid
             // infinite recursion.
             SmartPointer<Command> queued = queued_;
-            queued_ = nil;
+            queued_ = nullptr;
             queued->apply();
         }
     }
@@ -735,7 +790,7 @@ namespace GEO {
     }
     
     void Command::apply() {
-        if(invoker_ != nil) {
+        if(invoker_ != nullptr) {
             invoker_->invoke();
         }
     }
@@ -997,9 +1052,20 @@ namespace GEO {
     /**********************************************************************/
 
     TextEditor::TextEditor(bool* visible) : visible_(visible) {
-	text_[0] = '\0';
+	impl_.SetText("\n");
+	impl_.SetCursorPosition(
+	    ::TextEditor::Coordinates(0,0)
+	);
+	impl_.SetLanguageDefinition(
+	    ::TextEditor::LanguageDefinition::Lua()
+	);
+	impl_.SetPalette(::TextEditor::GetDarkPalette());	    	    
     }
 
+    std::string TextEditor::text() const {
+	return impl_.GetText();
+    }
+    
     void TextEditor::draw() {
 	ImGui::Begin(
 	    "Text Editor", visible_,
@@ -1007,18 +1073,17 @@ namespace GEO {
             ImGuiWindowFlags_NoMove |
             ImGuiWindowFlags_NoCollapse 
 	);
-	ImVec2 sz = ImGui::GetWindowSize();
-	float margin = 40.0f;
-	if(Application::instance()->retina_mode()) {
-	    margin *= 2.0f;
+
+	if(Application::instance()->scaling() == 2.0f) {
+	    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[3]);
+	} else {
+	    ImGui::PushFont(ImGui::GetIO().Fonts->Fonts[2]);
 	}
-	ImGui::InputTextMultiline(
-	    "##source",
-	    text_,
-	    65535,
-	    ImVec2(-1.0f, sz.y - margin),
-	    ImGuiInputTextFlags_AllowTabInput 
-	);
+
+	impl_.Render("##source");
+	
+	ImGui::PopFont();
+	
 	ImGui::End();
     }
 
@@ -1030,25 +1095,34 @@ namespace GEO {
 	    text += line;
 	    text += "\n";
 	}
-	strcpy(text_, text.c_str()); // TODO: test size.
+	impl_.SetText(text);
+	impl_.SetCursorPosition(
+	    ::TextEditor::Coordinates(0,0)
+	);
     }
 
     void TextEditor::save(const std::string& filename) {
 	std::ofstream out(filename.c_str());
-	out << text_;
+	out << impl_.GetText();
     }
 
     void TextEditor::clear() {
-	text_[0] = '\0';
+	impl_.SetText("\n");
+	impl_.SetCursorPosition(
+	    ::TextEditor::Coordinates(0,0)
+	);
     }
 
     void TextEditor::load_data(const char* data) {
-	strcpy(text_, data); // TODO: test size.	
+	impl_.SetText(data);
+	impl_.SetCursorPosition(
+	    ::TextEditor::Coordinates(0,0)
+	);
     }
     
     /**********************************************************************/
     
-    Application* Application::instance_ = nil;
+    Application* Application::instance_ = nullptr;
     
     Application::Application(
         int argc, char** argv, const std::string& usage, lua_State* lua_state
@@ -1063,7 +1137,7 @@ namespace GEO {
     {
 
         name_ = (argc == 0) ? "" : FileSystem::base_name(argv[0]);
-        geo_assert(instance_ == nil);
+        geo_assert(instance_ == nullptr);
         instance_ = this;
 
         GEO::initialize();
@@ -1116,7 +1190,7 @@ namespace GEO {
 
 #ifdef GEOGRAM_WITH_LUA	
 	lua_error_occured_ = false;
-	if(lua_state != nil) {
+	if(lua_state != nullptr) {
 	    lua_state_ = lua_state;
 	    owns_lua_state_ = false;
 	} else {
@@ -1151,11 +1225,11 @@ namespace GEO {
 #ifdef GEOGRAM_WITH_LUA
 	if(owns_lua_state_) {
 	    lua_close(lua_state_);
-	    lua_state_ = nil;
+	    lua_state_ = nullptr;
 	}
 #endif	
         geo_assert(instance_ == this);        
-        instance_ = nil;
+        instance_ = nullptr;
     }
 
     static GLboolean keyboard_func_ext(const char* q, GlupViewerEvent ev) {
@@ -1189,10 +1263,10 @@ namespace GEO {
                 path_ = FileSystem::dir_name(filenames[filenames.size()-1]);
             }
         } else {
-            path_ = FileSystem::home_directory();
+            path_ = FileSystem::documents_directory();
         }
 
-        glup_viewer_set_window_title((char*)(name_.c_str()));
+        glup_viewer_set_window_title(name_.c_str());
         glup_viewer_set_init_func(init_graphics_callback);
         glup_viewer_set_display_func(draw_scene_callback);
         glup_viewer_set_overlay_func(draw_gui_callback);
@@ -1270,7 +1344,7 @@ namespace GEO {
             GLuint gl_texture_id;
             ImTextureID imgui_texture_id;
         };
-        imgui_texture_id = 0;
+        imgui_texture_id = nullptr;
         gl_texture_id = gl_texture_id_in;
         return imgui_texture_id;
     }
@@ -1348,12 +1422,12 @@ namespace GEO {
 
 	std::string keys = GEO::CmdLine::get_arg("gfx:keypress");
 	for(size_t i=0; i<keys.length(); ++i) {
-	    glup_viewer_char_callback(nil,(unsigned int)(keys[i]));
+	    glup_viewer_char_callback(nullptr,(unsigned int)(keys[i]));
 	}
     }
 
     void Application::init_graphics_callback() {
-        if(instance() != nil) {
+        if(instance() != nullptr) {
             instance()->init_graphics();
         }
     }
@@ -1362,7 +1436,7 @@ namespace GEO {
     }
 
     void Application::draw_scene_callback() {
-        if(instance() != nil) {
+        if(instance() != nullptr) {
 	    
 	    glup_viewer_set_background_color(
 		instance()->background_color_1_.x,
@@ -1392,7 +1466,17 @@ namespace GEO {
     }
 
     void Application::draw_gui() {
-        ImGui::GetIO().FontGlobalScale = scaling_;
+	// TODO: better management of font size (for now we use two
+	// hardwired sizes)
+	// Fonts are created in glup_viewer_gui_init(), in glup_viewer_gui_private.cpp
+	
+	//ImGui::GetIO().FontGlobalScale = scaling_;
+	if(scaling_ == 2.0f) {
+	    ImGui::GetIO().FontDefault = ImGui::GetIO().Fonts->Fonts[1];
+	} else {
+	    ImGui::GetIO().FontDefault = ImGui::GetIO().Fonts->Fonts[0];
+	}
+	
         draw_menu_bar();
 	if(text_editor_visible_) {
 	    int w,h;
@@ -1406,11 +1490,11 @@ namespace GEO {
 	    h -= MENU_HEIGHT();
 	    ImGui::SetNextWindowPos(
 		ImVec2(0.0f, float(MENU_HEIGHT())),
-		fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once
+		fixed_layout_ ? ImGuiCond_Always : ImGuiCond_Once
 	    );
 	    ImGui::SetNextWindowSize(
 		ImVec2(float(w), float(h)),
-		fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once		
+		fixed_layout_ ? ImGuiCond_Always : ImGuiCond_Once		
 	    );
 	    text_editor_.draw();
 	    if(console_visible_) {
@@ -1448,40 +1532,40 @@ namespace GEO {
         }
         h -= MENU_HEIGHT();
 
-        if(Command::current() != nil) {
+        if(Command::current() != nullptr) {
             h /= 2;
         }
         
 	if(fixed_layout_) {
 	    ImGui::SetNextWindowPos(
 		ImVec2(0.0f, float(MENU_HEIGHT())),
-		ImGuiSetCond_Always 
+		ImGuiCond_Always 
 	    );
 	    ImGui::SetNextWindowSize(
 		ImVec2(float(PANE_WIDTH()), float(h)),
-		ImGuiSetCond_Always 
+		ImGuiCond_Always 
 	    );
 	} else {
 	    ImGui::SetNextWindowPos(
 		ImVec2(float(MENU_HEIGHT()), 2.0f*float(MENU_HEIGHT())),
-		ImGuiSetCond_Once			    
+		ImGuiCond_Once			    
 	    );
 	    ImGui::SetNextWindowSize(
 		ImVec2(float(PANE_WIDTH()), float(h)/2.0f),
-		ImGuiSetCond_Once			    	    
+		ImGuiCond_Once			    	    
 	    );
 	}
 
         draw_viewer_properties_window();
 
-        if(Command::current() != nil) {
+        if(Command::current() != nullptr) {
             ImGui::SetNextWindowPos(
                 ImVec2(0.0f, float(MENU_HEIGHT()+h+1)),
-                ImGuiSetCond_Always
+                ImGuiCond_Always
             );
             ImGui::SetNextWindowSize(
                 ImVec2(float(PANE_WIDTH()), float(h-1)),
-                ImGuiSetCond_Always
+                ImGuiCond_Always
             );
             draw_command();
         }
@@ -1500,12 +1584,12 @@ namespace GEO {
 
         ImGui::SetNextWindowPos(
             ImVec2(float(w-PANE_WIDTH()), float(MENU_HEIGHT())),
-	    fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once	    
+	    fixed_layout_ ? ImGuiCond_Always : ImGuiCond_Once	    
         );
         
         ImGui::SetNextWindowSize(
             ImVec2(float(PANE_WIDTH()), float(h)),
-	    fixed_layout_ ? ImGuiSetCond_Always : ImGuiSetCond_Once	    
+	    fixed_layout_ ? ImGuiCond_Always : ImGuiCond_Once	    
         );
         
         draw_object_properties_window();
@@ -1514,7 +1598,7 @@ namespace GEO {
     void Application::draw_viewer_properties_window() {
         ImGui::Begin(
             "Viewer",
-	    fixed_layout_ ? &left_pane_visible_ : nil,
+	    fixed_layout_ ? &left_pane_visible_ : nullptr,
             fixed_layout_ ? (
 		ImGuiWindowFlags_NoResize |
 		ImGuiWindowFlags_NoMove |
@@ -1605,7 +1689,7 @@ namespace GEO {
     }
     
     void Application::draw_command() {
-        geo_assert(Command::current() != nil);
+        geo_assert(Command::current() != nullptr);
         if(!Command::current()->is_visible()) {
             Command::reset_current();
             return;
@@ -1625,17 +1709,17 @@ namespace GEO {
         int w,h;
         glup_viewer_get_screen_size(&w, &h);
         h = h - CONSOLE_HEIGHT();
-        if(status_bar_->active()) {
+        if(!fixed_layout_ || status_bar_->active()) {
             h -= (STATUS_HEIGHT() + 1);
         }
 	if(fixed_layout_) {
 	    ImGui::SetNextWindowPos(
 		ImVec2(0.0f, float(h)),
-		ImGuiSetCond_Always 
+		ImGuiCond_Always 
 	    );
 	    ImGui::SetNextWindowSize(
 		ImVec2(float(w),float(CONSOLE_HEIGHT())),
-		ImGuiSetCond_Always 
+		ImGuiCond_Always 
 	    );
 	} else {
 	    ImGui::SetNextWindowPos(
@@ -1659,11 +1743,11 @@ namespace GEO {
         glup_viewer_get_screen_size(&w, &h);
         ImGui::SetNextWindowPos(
             ImVec2(0.0f, float(h-STATUS_HEIGHT())),
-            ImGuiSetCond_Always
+            ImGuiCond_Always
         );
         ImGui::SetNextWindowSize(
             ImVec2(float(w),float(STATUS_HEIGHT()-1)),
-            ImGuiSetCond_Always
+            ImGuiCond_Always
         );
         status_bar_->draw();
     }
@@ -1733,14 +1817,14 @@ namespace GEO {
     void Application::draw_save_menu() {
 #ifdef GEO_OS_EMSCRIPTEN
         if(ImGui::BeginMenu("Save as...")) {
-	    ImGui::MenuItem("Supported extensions:", NULL, false, false);
+	    ImGui::MenuItem("Supported extensions:", nullptr, false, false);
             std::vector<std::string> extensions;
             String::split_string(
                 supported_write_file_extensions(), ';', extensions
             );
             for(index_t i=0; i<extensions.size(); ++i) {
 		ImGui::MenuItem(
-		    (" ." + extensions[i]).c_str(), NULL, false, false
+		    (" ." + extensions[i]).c_str(), nullptr, false, false
 		);	    		
 	    }
 	    ImGui::Separator();
@@ -1810,19 +1894,19 @@ namespace GEO {
 
     void Application::draw_windows_menu() {
         if(ImGui::BeginMenu("Windows")) {
-            ImGui::MenuItem("object properties", NULL, &right_pane_visible_);
-            ImGui::MenuItem("viewer properties", NULL, &left_pane_visible_);
-            ImGui::MenuItem("console", NULL, &console_visible_);
-            ImGui::MenuItem("text editor", NULL, &text_editor_visible_);
+            ImGui::MenuItem("object properties", nullptr, &right_pane_visible_);
+            ImGui::MenuItem("viewer properties", nullptr, &left_pane_visible_);
+            ImGui::MenuItem("console", nullptr, &console_visible_);
+            ImGui::MenuItem("text editor", nullptr, &text_editor_visible_);
 	    
             if(ImGui::MenuItem(
-                "show/hide GUI [T]", NULL,
+                "show/hide GUI [T]", nullptr,
                 (bool*)glup_viewer_is_enabled_ptr(GLUP_VIEWER_TWEAKBARS)
             )) {
                 glup_viewer_post_redisplay();
             }
             ImGui::Separator();
-            if(ImGui::MenuItem("Big text", NULL, &retina_mode_)) {
+            if(ImGui::MenuItem("Big text", nullptr, &retina_mode_)) {
                 scaling_ = retina_mode_ ? 2.0f : 1.0f;
                 glup_viewer_post_redisplay();
             }
@@ -1831,13 +1915,13 @@ namespace GEO {
     }
     
     void Application::draw_gui_callback() {
-        if(instance() != nil) {
+        if(instance() != nullptr) {
             instance()->draw_gui();
         }
     }
 
     void Application::dropped_file_callback(char* filename) {
-        if(instance() != nil) {
+        if(instance() != nullptr) {
             instance()->load(std::string(filename));
         }
     }
@@ -1881,7 +1965,7 @@ namespace GEO {
 	    adjust_lua_glup_state(lua_state_);
 	    const char* msg = lua_tostring(lua_state_,-1);
 	    const char* msg2 = strchr(msg,']');
-	    if(msg2 != nil) {
+	    if(msg2 != nullptr) {
 		msg = msg2+2;
 	    }
 	    Logger::err("LUA") << "line " << msg << std::endl;
@@ -2001,9 +2085,9 @@ namespace GEO {
                 attribute_max_ = Numeric::min_float32();
                 for(index_t i=0; i<subelements.nb(); ++i) {
                     attribute_min_ =
-                        geo_min(attribute_min_, float(attribute[i]));
+                        std::min(attribute_min_, float(attribute[i]));
                     attribute_max_ =
-                        geo_max(attribute_max_, float(attribute[i]));
+                        std::max(attribute_max_, float(attribute[i]));
                 }
             } 
         }
@@ -2141,25 +2225,25 @@ namespace GEO {
     }
 
     void SimpleMeshApplication::increment_anim_time_callback() {
-        instance()->anim_time_ = geo_min(
+        instance()->anim_time_ = std::min(
             instance()->anim_time_ + 0.05f, 1.0f
         );
     }
         
     void SimpleMeshApplication::decrement_anim_time_callback() {
-        instance()->anim_time_ = geo_max(
+        instance()->anim_time_ = std::max(
             instance()->anim_time_ - 0.05f, 0.0f
         );
     }
 
     void SimpleMeshApplication::increment_cells_shrink_callback() {
-        instance()->cells_shrink_ = geo_min(
+        instance()->cells_shrink_ = std::min(
             instance()->cells_shrink_ + 0.05f, 1.0f
         );
     }
         
     void SimpleMeshApplication::decrement_cells_shrink_callback() {
-        instance()->cells_shrink_ = geo_max(
+        instance()->cells_shrink_ = std::max(
             instance()->cells_shrink_ - 0.05f, 0.0f
         );
     }
@@ -2198,7 +2282,7 @@ namespace GEO {
     
     void SimpleMeshApplication::draw_scene() {
 
-        if(mesh_gfx_.mesh() == nil) {
+        if(mesh_gfx_.mesh() == nullptr) {
             return;
         }
         
@@ -2298,7 +2382,7 @@ namespace GEO {
         if(!FileSystem::is_file(filename)) {
             Logger::out("I/O") << "is not a file" << std::endl;
         }
-        mesh_gfx_.set_mesh(nil);
+        mesh_gfx_.set_mesh(nullptr);
 
         mesh_.clear(false,false);
         
@@ -2377,21 +2461,21 @@ namespace GEO {
             if(M_in.vertices.single_precision()) {
                 const float* p = M_in.vertices.single_precision_point_ptr(v);
                 for(coord_index_t c = 0; c < 3; ++c) {
-                    xyzmin[c] = geo_min(xyzmin[c], double(p[c]));
-                    xyzmax[c] = geo_max(xyzmax[c], double(p[c]));
+                    xyzmin[c] = std::min(xyzmin[c], double(p[c]));
+                    xyzmax[c] = std::max(xyzmax[c], double(p[c]));
                     if(animate) {
-                        xyzmin[c] = geo_min(xyzmin[c], double(p[c+3]));
-                        xyzmax[c] = geo_max(xyzmax[c], double(p[c+3]));
+                        xyzmin[c] = std::min(xyzmin[c], double(p[c+3]));
+                        xyzmax[c] = std::max(xyzmax[c], double(p[c+3]));
                     }
                 }
             } else {
                 const double* p = M_in.vertices.point_ptr(v);
                 for(coord_index_t c = 0; c < 3; ++c) {
-                    xyzmin[c] = geo_min(xyzmin[c], p[c]);
-                    xyzmax[c] = geo_max(xyzmax[c], p[c]);
+                    xyzmin[c] = std::min(xyzmin[c], p[c]);
+                    xyzmax[c] = std::max(xyzmax[c], p[c]);
                     if(animate) {
-                        xyzmin[c] = geo_min(xyzmin[c], p[c+3]);
-                        xyzmax[c] = geo_max(xyzmax[c], p[c+3]);
+                        xyzmin[c] = std::min(xyzmin[c], p[c+3]);
+                        xyzmax[c] = std::max(xyzmax[c], p[c+3]);
                     }
                 }
             }

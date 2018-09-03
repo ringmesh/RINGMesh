@@ -131,8 +131,8 @@ namespace RINGMesh
                     &( model_.geological_entity(
                         GeologicalEntityType( "Layer" ), layer_id ) ) );
                 ringmesh_assert( layer != nullptr );
-                const Interface< 3 >* top_interface = nil;
-                const Interface< 3 >* base_interface = nil;
+                const Interface< 3 >* top_interface = nullptr;
+                const Interface< 3 >* base_interface = nullptr;
                 RockFeature rock( name_of_unit );
                 if( unitList[i + 1] != "none" )
                 {

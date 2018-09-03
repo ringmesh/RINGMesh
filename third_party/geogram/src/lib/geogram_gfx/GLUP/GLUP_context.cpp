@@ -80,55 +80,73 @@ namespace {
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_vertex_shader_preamble_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void fragment_shader_preamble_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_fragment_shader_preamble_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void geometry_shader_preamble_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_geometry_shader_preamble_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void marching_cells_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_marching_cells_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void tess_control_shader_preamble_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_tess_control_shader_preamble_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void tess_evaluation_shader_preamble_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_tess_evaluation_shader_preamble_pseudo_file(sources);
+	sources.push_back("#define ");
+	sources.push_back(ctxt->profile_name());
+	sources.push_back("\n");
     }
 
     void toggles_pseudo_file(
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_toggles_pseudo_file(sources);
     }
 
@@ -136,7 +154,7 @@ namespace {
 	GLSL::PseudoFileProvider* provider, std::vector<GLSL::Source>& sources
     ) {
 	GLUP::Context* ctxt = dynamic_cast<GLUP::Context*>(provider);
-	geo_assert(ctxt != nil);
+	geo_assert(ctxt != nullptr);
 	ctxt->get_primitive_pseudo_file(sources);
     }
 }
@@ -210,7 +228,7 @@ namespace GLUP {
         // the number of extensions, then extension names one extension
         // at a time using glGetStringi
         if(use_core_profile_) {
-            if(glGetStringi != 0) {
+            if(glGetStringi != nullptr) {
                 GLuint num_ext;
                 glGetIntegerv(GL_NUM_EXTENSIONS, (GLint*)&num_ext);
                 if(num_ext != 0) {
@@ -236,10 +254,10 @@ namespace GLUP {
         // support glGetStringi...
         
         const char* extensions = (const char*)(glGetString(GL_EXTENSIONS));
-        if(extensions == nil) {
+        if(extensions == nullptr) {
             return false;
         }
-        return (strstr(extensions, extension.c_str()) != nil);
+        return (strstr(extensions, extension.c_str()) != nullptr);
     }
     
     static const char* primitive_name[GLUP_NB_PRIMITIVES] = {
@@ -473,7 +491,7 @@ namespace GLUP {
         uniform_buffer_=0;
         uniform_binding_point_=0;
         uniform_buffer_size_=0;
-        uniform_buffer_data_=nil;
+        uniform_buffer_data_=nullptr;
         uniform_buffer_dirty_=true;
 	lighting_dirty_=true;
 	
@@ -490,7 +508,7 @@ namespace GLUP {
             (CmdLine::get_arg("gfx:GL_profile") == "ES");            
         
         user_program_ = 0;
-        world_clip_plane_ = nil;
+        world_clip_plane_ = nullptr;
         latest_program_ = 0;
         toggles_config_ = 0;
 
@@ -610,20 +628,20 @@ namespace GLUP {
             shader_source_header_,
             Context::uniform_state_declaration(),
             create_vertex_program_that_uses_all_UBO_variables().c_str(),
-            0
+            nullptr
         );
 
         GLuint GLUP_fragment_shader = GLSL::compile_shader(
             GL_FRAGMENT_SHADER,
             shader_source_header_,
             fragment_shader_source_,
-            0
+            nullptr
         );
 
         default_program_ = GLSL::create_program_from_shaders(
             GLUP_vertex_shader,
             GLUP_fragment_shader,
-            0
+            nullptr
         );
 
         // Get UBO size
@@ -790,7 +808,7 @@ namespace GLUP {
                 immediate_state_.buffer[i].VBO(),
                 GL_ARRAY_BUFFER,
                 immediate_state_.buffer[i].size_in_bytes(),
-                nil // no need to copy the buffer, it will be overwritten after.
+                nullptr // no need to copy the buffer, it will be overwritten after.
             );
         }
         
@@ -1511,7 +1529,7 @@ namespace GLUP {
                 primitive_info_[immediate_state_.primitive()].GL_primitive,
                 GLsizei(nb_elements),
                 GL_UNSIGNED_SHORT,
-                0
+                nullptr
             );
         } else {
             glDrawArrays(
@@ -1741,7 +1759,7 @@ namespace GLUP {
                     GL_UNSIGNED_SHORT, // components are bytes
                     GL_FALSE,          // do not normalize
                     0,                 // stride
-                    0          // pointer (relative to bound VBO beginning)
+                    nullptr            // pointer (relative to bound VBO beginning)
                 );
             }
             
@@ -1971,8 +1989,8 @@ namespace GLUP {
                 GLint(immediate_state_.buffer[i].dimension()),
                 GL_FLOAT,
                 GL_FALSE,
-                0,  // stride
-                0   // pointer (relative to bound VBO beginning)
+                0,      // stride
+                nullptr // pointer (relative to bound VBO beginning)
             );
         }
         glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -2058,7 +2076,7 @@ namespace GLUP {
                 GL_UNSIGNED_SHORT, // components are 16 bits integers
                 GL_FALSE,          // do not normalize
                 0,                 // stride
-                0                  // pointer (relative to bound VBO beginning)
+                nullptr            // pointer (relative to bound VBO beginning)
             );
             glBindBuffer(GL_ARRAY_BUFFER, 0);
             glupBindVertexArray(0);
@@ -2148,7 +2166,7 @@ namespace GLUP {
     }
     
     const MarchingCell& Context::get_marching_cell() const {
-        const MarchingCell* result = nil;
+        const MarchingCell* result = nullptr;
         switch(primitive_source_) {
         case GLUP_TETRAHEDRA:
             result = &marching_tet_;

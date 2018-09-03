@@ -778,6 +778,15 @@ namespace RINGMesh
         bool is_meshed() const;
 
     private:
+        void copy_mesh_entity( const GeoModelMeshEntity< 2 >& from ) final
+        {
+            const auto& surface_from =
+                dynamic_cast< const Surface< 2 >& >( from );
+            GeoModelMeshEntity< 2 >::copy_mesh_entity( from );
+            sides_ = surface_from.sides_;
+        }
+
+    private:
         /*! Additional information to store oriented boundary Lines
          * Side: + (true) or - (false)
          * The size of this vector must be the same than boundary_

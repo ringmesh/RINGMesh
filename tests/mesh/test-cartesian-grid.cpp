@@ -131,6 +131,211 @@ void test_cartesian_grids()
         throw RINGMeshException(
             "TEST", "Error in calculating the inverse offset 2" );
     }
+
+    std::vector< float > fvalues( cartesiangrid.nb_cells() );
+    std::vector< index_t > uvalues( cartesiangrid.nb_cells() );
+    std::vector< int > ivalues( cartesiangrid.nb_cells() );
+    std::vector< double > dvalues( cartesiangrid.nb_cells() );
+    for( auto i : range( cartesiangrid.nb_cells() ) )
+    {
+        fvalues[i] = static_cast< float >( i );
+        uvalues[i] = i;
+        ivalues[i] = static_cast< int >( i );
+        dvalues[i] = static_cast< double >( i );
+    }
+    std::string fname{ "f_index" };
+    std::string uname{ "u_index" };
+    std::string iname{ "i_index" };
+    std::string dname{ "d_index" };
+    cartesiangrid.add_attribute< float >( fname, fvalues );
+    cartesiangrid.add_attribute< index_t >( uname, uvalues );
+    cartesiangrid.add_attribute< int >( iname, ivalues );
+    cartesiangrid.add_attribute< double >( dname, dvalues );
+
+    for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
+    {
+        for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
+        {
+            for( auto k : range( cartesiangrid.nb_cells_axis( 2 ) ) )
+            {
+                sivec3 position{ (signed_index_t) i, (signed_index_t) j,
+                    (signed_index_t) k };
+                index_t cell_offset = cartesiangrid.cell_offset( position );
+                if( cartesiangrid.get_attribute_value< float >(
+                        fname, position )
+                        != static_cast< float >( cell_offset )
+                    || cartesiangrid.get_attribute_value< index_t >(
+                           uname, position )
+                           != cell_offset
+                    || cartesiangrid.get_attribute_value< int >(
+                           iname, position )
+                           != static_cast< int >( cell_offset )
+                    || cartesiangrid.get_attribute_value< double >(
+                           dname, position )
+                           != static_cast< double >( cell_offset ) )
+                {
+                    throw RINGMeshException(
+                        "Test", "Error in attribute value #1." );
+                }
+            }
+        }
+    }
+
+    GEO::Attribute< float > findices{ cartesiangrid.attributes_manager(),
+        fname };
+    GEO::Attribute< index_t > uindices{ cartesiangrid.attributes_manager(),
+        uname };
+    GEO::Attribute< int > iindices{ cartesiangrid.attributes_manager(), iname };
+    GEO::Attribute< double > dindices{ cartesiangrid.attributes_manager(),
+        dname };
+    for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
+    {
+        for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
+        {
+            for( auto k : range( cartesiangrid.nb_cells_axis( 2 ) ) )
+            {
+                sivec3 position{ (signed_index_t) i, (signed_index_t) j,
+                    (signed_index_t) k };
+                index_t cell_offset = cartesiangrid.cell_offset( position );
+                if( findices[cell_offset] != static_cast< float >( cell_offset )
+                    || uindices[cell_offset] != cell_offset
+                    || iindices[cell_offset]
+                           != static_cast< int >( cell_offset )
+                    || dindices[cell_offset]
+                           != static_cast< double >( cell_offset ) )
+                {
+                    throw RINGMeshException(
+                        "Test", "Error in attribute value #2." );
+                }
+            }
+        }
+    }
+
+    CartesianGridBuilder3D cgbuilder{ cartesiangrid };
+    cgbuilder.remove_section_from_cartesian_grid( 2, 4 );
+    if( cartesiangrid.nb_cells_axis( 2 ) != 8u )
+    {
+        throw RINGMeshException( "Test remove section",
+            "Wrong number of sections left : ",
+            cartesiangrid.nb_cells_axis( 2 ), "instead of 8." );
+    }
+    for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
+    {
+        for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
+        {
+            for( auto k : range( 3 ) )
+            {
+                sivec3 position{ (signed_index_t) i, (signed_index_t) j,
+                    (signed_index_t) k };
+                index_t cell_offset = cartesiangrid.cell_offset( position );
+                if( uindices[cell_offset] != cell_offset )
+                {
+                    throw RINGMeshException(
+                        "Test remove section", "Error in attribute value #1." );
+                }
+            }
+        }
+    }
+    for( auto i : range( cartesiangrid.nb_cells_axis( 0 ) ) )
+    {
+        for( auto j : range( cartesiangrid.nb_cells_axis( 1 ) ) )
+        {
+            for( auto k : range( 4, cartesiangrid.nb_cells_axis( 2 ) ) )
+            {
+                sivec3 position{ (signed_index_t) i, (signed_index_t) j,
+                    (signed_index_t) k };
+                index_t cell_offset = cartesiangrid.cell_offset( position );
+                if( uindices[cell_offset] != ( cell_offset + 10 * 8 ) )
+                {
+                    throw RINGMeshException(
+                        "Test remove section", "Error in attribute value #2." );
+                }
+            }
+        }
+    }
+}
+
+void test_cartesian_grid_exception()
+{
+    bool exceptions_are_thrown{ false };
+
+    vec3 origin{ 100, 200, -4 };
+    vec3 x{ 1, 2, -1 };
+    vec3 y{ 2, 1, 4 };
+    vec3 z{ 3, -2, -1 };
+
+    Frame3D frame{ x, y, z };
+    ReferenceFrame3D reference_frame{ origin, frame };
+    ivec3 grid_dimensions{ 10, 8, 9 };
+    CartesianGrid3D cartesiangrid{ grid_dimensions, reference_frame };
+
+    std::vector< bool > values( cartesiangrid.nb_cells() - 1 );
+    std::string name{ "index" };
+    try
+    {
+        cartesiangrid.add_attribute< bool >( name, values );
+    }
+    catch( const RINGMeshException& e )
+    {
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
+    }
+    if( !exceptions_are_thrown )
+    {
+        throw RINGMeshException(
+            "Test", "Exception attribute vector size is not thrown" );
+    }
+    else
+    {
+        exceptions_are_thrown = false;
+    }
+    values.push_back( true );
+
+    try
+    {
+        cartesiangrid.add_attribute< bool >( name, values );
+    }
+    catch( const RINGMeshException& e )
+    {
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
+    }
+    if( !exceptions_are_thrown )
+    {
+        throw RINGMeshException(
+            "Test", "Exception attribute type is not thrown" );
+    }
+    else
+    {
+        exceptions_are_thrown = false;
+    }
+
+    std::vector< float > fvalues( cartesiangrid.nb_cells() );
+    for( auto i : range( cartesiangrid.nb_cells() ) )
+    {
+        fvalues[i] = static_cast< float >( i );
+    }
+    std::string fname{ "f_index" };
+    cartesiangrid.add_attribute< float >( fname, fvalues );
+    try
+    {
+        sivec3 position{ -1, 0, 0 };
+        cartesiangrid.get_attribute_value< float >( fname, position );
+    }
+    catch( const RINGMeshException& e )
+    {
+        exceptions_are_thrown = true;
+        Logger::out( "Test", "Exception \"", e.what(), "\" is well thrown." );
+    }
+    if( !exceptions_are_thrown )
+    {
+        throw RINGMeshException(
+            "Test", "Exception out of frame is not thrown" );
+    }
+    else
+    {
+        exceptions_are_thrown = false;
+    }
 }
 
 int main()
@@ -142,12 +347,11 @@ int main()
         Logger::out( "TEST", "Frames and Cartesian Grid" );
 
         test_frames();
+        Logger::out( "TEST", "Frames : OK" );
         test_cartesian_grids();
-    }
-    catch( const RINGMeshException& e )
-    {
-        Logger::err( e.category(), e.what() );
-        return 1;
+        Logger::out( "TEST", "Cartesian grids : OK" );
+        test_cartesian_grid_exception();
+        Logger::out( "TEST", "Grid exceptions : OK" );
     }
     catch( const std::exception& e )
     {

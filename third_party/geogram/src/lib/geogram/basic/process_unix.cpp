@@ -150,19 +150,19 @@ namespace {
 #ifdef GEO_OS_ANDROID
             mutex_ = 0;
 #else
-            pthread_mutex_init(&mutex_, 0);
+            pthread_mutex_init(&mutex_, nullptr);
 #endif
             pthread_attr_init(&attr_);
             pthread_attr_setdetachstate(&attr_, PTHREAD_CREATE_JOINABLE);
         }
 
         /** \copydoc GEO::ThreadManager::maximum_concurrent_threads() */
-        virtual index_t maximum_concurrent_threads() {
+        index_t maximum_concurrent_threads() override {
             return Process::number_of_cores();
         }
 
         /** \copydoc GEO::ThreadManager::enter_critical_section() */
-        virtual void enter_critical_section() {
+	void enter_critical_section() override {
 #ifdef GEO_OS_ANDROID
             lock_mutex_arm(&mutex_);
 #else
@@ -171,7 +171,7 @@ namespace {
         }
 
         /** \copydoc GEO::ThreadManager::leave_critical_section() */
-        virtual void leave_critical_section() {
+	void leave_critical_section() override {
 #ifdef GEO_OS_ANDROID
             unlock_mutex_arm(&mutex_);
 #else
@@ -181,7 +181,7 @@ namespace {
 
     protected:
         /** \brief PThreadManager destructor */
-        virtual ~PThreadManager() {
+	~PThreadManager() override {
             pthread_attr_destroy(&attr_);
 #ifndef GEO_OS_ANDROID
             pthread_mutex_destroy(&mutex_);
@@ -199,16 +199,16 @@ namespace {
         static void* run_thread(void* thread_in) {
             Thread* thread = reinterpret_cast<Thread*>(thread_in);
             // Sets the thread-local-storage instance pointer, so
-            // that Thread::current() can retreive it.
+            // that Thread::current() can retrieve it.
             set_current_thread(thread);
             thread->run();
-            return nil;
+            return nullptr;
         }
 
         /** \copydoc GEO::ThreadManager::run_concurrent_threads() */
-        virtual void run_concurrent_threads(
+	void run_concurrent_threads (
             ThreadGroup& threads, index_t max_threads
-        ) {
+        ) override {
             // TODO: take max_threads into account
             geo_argused(max_threads);
 
@@ -221,7 +221,7 @@ namespace {
                 );
             }
             for(index_t i = 0; i < threads.size(); ++i) {
-                pthread_join(thread_impl_[i], nil);
+                pthread_join(thread_impl_[i], nullptr);
             }
 
         }
@@ -246,11 +246,11 @@ namespace {
      * \param[in] message optional message to print
      */
     GEO_NORETURN_DECL void abnormal_program_termination(
-        const char* message = nil
+        const char* message = nullptr
     ) GEO_NORETURN;
     
     void abnormal_program_termination(const char* message) {
-        if(message != nil) {
+        if(message != nullptr) {
             // Do not use Logger here!
             std::cout
                 << "Abnormal program termination: "
@@ -329,7 +329,7 @@ namespace {
      * program.
      */
     void sigint_handler(int) {
-        if(Progress::current_task() != nil) {
+        if(Progress::current_task() != nullptr) {
             Progress::cancel();
         } else {
             exit(1);

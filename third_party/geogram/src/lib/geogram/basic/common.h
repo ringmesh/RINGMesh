@@ -67,14 +67,28 @@
 namespace GEO {
 
     /**
+     * \brief Symbolic constants for GEO::initialize() 
+     */
+    enum {
+	GEOGRAM_NO_HANDLER = 0,
+	GEOGRAM_INSTALL_HANDLERS = 1
+    };
+    
+    /**
      * \brief Initialize Geogram
+     * \param[in] flags an or combination of
+     *  - GEOGRAM_INSTALL_HANDLERS to install geogram error handlers. This avoid
+     *  opening dialog boxes under Windows. This is useful for the automatic
+     *  test suite. Else continuous integration tests hang because of the dialog
+     *  box. Normal users may want to keep the default Windows behavior, since 
+     *  geogram error handlers may make debugging more difficult under Windows.
      * \details This function must be called once at the very beginning of a
      * program to initialize the Vorpaline library. It also installs a exit()
      * handler that calls function terminate() when the program exists
      * normally. If it is called multiple times, then the supplemental calls
      * have no effect.
      */
-    void GEOGRAM_API initialize();
+    void GEOGRAM_API initialize(int flags = GEOGRAM_INSTALL_HANDLERS);
 
     /**
      * \brief Cleans up Geogram
@@ -209,7 +223,7 @@ namespace GEO {
 
 // =============================== WINDOWS defines =========================
 
-#elif defined(WIN32) || defined(_WIN64)
+#elif defined(_WIN32) || defined(_WIN64)
 
 #define GEO_OS_WINDOWS
 
@@ -219,8 +233,8 @@ namespace GEO {
 
 #if defined(_MSC_VER)
 #  define GEO_COMPILER_MSVC
-#else
-#  error "Unsupported compiler"
+#elif defined(__MINGW32__) || defined(__MINGW64__)
+#  define GEO_COMPILER_MINGW
 #endif
 
 #if defined(_WIN64)
@@ -242,6 +256,8 @@ namespace GEO {
 
 #if defined(__clang__)
 #  define GEO_COMPILER_CLANG
+#elif defined(__GNUC__)
+#  define GEO_COMPILER_GCC
 #else
 #  error "Unsupported compiler"
 #endif
@@ -264,9 +280,11 @@ namespace GEO {
 
 // =============================== Unsupported =============================
 #else
-
 #error "Unsupported operating system"
+#endif
 
+#if defined(GEO_COMPILER_GCC) || defined(GEO_COMPILER_CLANG) || defined(GEO_COMPILER_MINGW)
+#define GEO_COMPILER_GCC_FAMILY
 #endif
 
 #ifdef DOXYGEN_ONLY
@@ -310,7 +328,7 @@ namespace GEO {
 #define GEO_NORETURN_DECL 
 #endif
 
-#if defined(GEO_COMPILER_CLANG)
+#if defined(GEO_COMPILER_CLANG) || defined(GEO_COMPILER_EMSCRIPTEN)
 #if __has_feature(cxx_noexcept)
 #define GEO_NOEXCEPT noexcept
 #endif

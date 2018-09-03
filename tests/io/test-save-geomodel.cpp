@@ -244,13 +244,13 @@ void process_extension( const std::string& extension )
     {
         return;
     }
-#if defined( RINGMESH_WINDOWS ) || defined( RINGMESH_APPLE )
     if( extension == "adeli" )
     {
         // @todo Temporary switch off the test for saving GeoModel into
         // ADELI file format. Going to be fixed...
         return;
     }
+#if defined( RINGMESH_WINDOWS ) || defined( RINGMESH_APPLE )
     if( extension == "csmp" )
     {
         // @todo Temporary switch off the test for saving GeoModel into

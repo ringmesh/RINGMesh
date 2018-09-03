@@ -174,7 +174,7 @@ namespace GEO {
          *  used to protect the calls to random(), this is necessary
          *  if multiple threads use locate() simultaneously
          * \param[out] orient a pointer to an array of three Sign%s
-         *  or nil. If non-nil, returns the orientation with respect
+         *  or nullptr. If non-nullptr, returns the orientation with respect
          *  to the three edges of the triangle that contains \p p.
          * \return the index of a triangle that contains \p p.
          *  If the point is outside the convex hull of
@@ -186,7 +186,7 @@ namespace GEO {
          index_t locate(
             const double* p, index_t hint = NO_TRIANGLE,
             bool thread_safe = false,
-            Sign* orient = nil
+            Sign* orient = nullptr
          ) const;
          
         /**
@@ -676,7 +676,7 @@ namespace GEO {
          * \brief Gets the index of a triangle adjacent to another one.
          * \param[in] t index of the triangle
          * \param[in] le local edge (0,1,2) index in \p t
-         * \return the triangle adjacent to \p t accross edge \p le
+         * \return the triangle adjacent to \p t accros edge \p le
          */
         signed_index_t triangle_adjacent(index_t t, index_t le) const {
             geo_debug_assert(t < max_t());
@@ -690,7 +690,7 @@ namespace GEO {
          * \param[in] t1 index of the first triangle
          * \param[in] le1 local facet index (0,1,2) in t1
          * \param[in] t2 index of the triangle
-         *  adjacent to \p t1 accross \p lf1
+         *  adjacent to \p t1 accros \p lf1
          */
         void set_triangle_adjacent(index_t t1, index_t le1, index_t t2) {
             geo_debug_assert(t1 < max_t());
@@ -701,7 +701,7 @@ namespace GEO {
         }
         
         /**
-         * \brief Finds the index of the edge accross which t1 is 
+         * \brief Finds the index of the edge accros which t1 is 
          *  adjacent to t2_in.
          * \param[in] t1 first triangle
          * \param[in] t2_in second triangle
@@ -777,14 +777,14 @@ namespace GEO {
             const double* pv[3];
             for(index_t i=0; i<3; ++i) {
                 signed_index_t v = triangle_vertex(t,i);
-                pv[i] = (v == -1) ? nil : vertex_ptr(index_t(v));
+                pv[i] = (v == -1) ? nullptr : vertex_ptr(index_t(v));
             }
 
             // Check for virtual triangles (then in_circle()
             // is replaced with orient2d())
             for(index_t le = 0; le < 3; ++le) {
 
-                if(pv[le] == nil) {
+                if(pv[le] == nullptr) {
 
                     // Facet of a virtual triangle opposite to
                     // infinite vertex corresponds to
@@ -848,7 +848,7 @@ namespace GEO {
         /**
          * \brief Finds the index of an integer in an array of three integers.
          * \param[in] T a const pointer to an array of three integers
-         * \param[in] v the integer to retreive in \p T
+         * \param[in] v the integer to retrieve in \p T
          * \return the index (0,1 or 2) of \p v in \p T
          * \pre The three entries of \p T are different and one of them is
          *  equal to \p v.
@@ -861,7 +861,7 @@ namespace GEO {
             // generating branching instructions.
             // Thank to Laurent Alonso for this idea.
             index_t result = index_t( (T[1] == v) | ((T[2] == v) * 2) );
-            // Sanity check, important if it was T[0], not explicitely
+            // Sanity check, important if it was T[0], not explicitly
             // tested (detects input that does not meet the precondition).
             geo_debug_assert(T[result] == v);
             return result; 

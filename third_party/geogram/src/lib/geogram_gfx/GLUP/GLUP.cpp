@@ -49,6 +49,7 @@
 #include <geogram_gfx/GLUP/GLUP_context_ES.h>
 #include <geogram_gfx/basic/GLSL.h>
 #include <geogram/basic/logger.h>
+#include <geogram/basic/file_system.h>
 #include <geogram/basic/command_line.h>
 
 #ifdef GEO_OS_EMSCRIPTEN
@@ -58,17 +59,42 @@
 
 /*****************************************************************************/
 
+namespace {
+    using namespace GEO;
+    void downgrade_message() {
+	static bool done = false;
+	if(!done) {
+	    done = true;
+	    Logger::out("GLUP") << "Something happened, trying to fix (by downgrading)" << std::endl;
+	    Logger::out("GLUP") << "If this does not work, try the following options:" << std::endl;
+	    Logger::out("GLUP") << " (1) make sure your OpenGL driver is up to date" << std::endl;
+	    Logger::out("GLUP") << " (2) create a file named \'"
+				<< CmdLine::get_config_file_name() << "\' in " << std::endl;
+	    Logger::out("GLUP") << "     your home directory (" << FileSystem::home_directory() << ")" << std::endl;
+	    Logger::out("GLUP") << "     with: " << std::endl;
+	    Logger::out("GLUP") << "       gfx:GL_profile=core" << std::endl;
+	    Logger::out("GLUP") << " (3) create a file named \'"
+				<< CmdLine::get_config_file_name() << "\' in " << std::endl;
+	    Logger::out("GLUP") << "     your home directory (" << FileSystem::home_directory() << ")" << std::endl;
+	    Logger::out("GLUP") << "     with: " << std::endl;
+	    Logger::out("GLUP") << "       gfx:GL_profile=compatibility" << std::endl;
+	    Logger::out("GLUP") << "       gfx:GLUP_profile=VanillaGL" << std::endl;
+	    Logger::out("GLUP") << " Note: solution (3) will result in degraded performance."
+				<< std::endl;
+	}
+    }
+}
+
+/*****************************************************************************/
+
 namespace GLUP {
     using namespace GEO;
-    static Context* current_context_ = nil;
+    static Context* current_context_ = nullptr;
     static std::set<Context*> all_contexts_;
     static bool initialized_ = false;
     static void cleanup() {
-        for(
-            std::set<Context*>::iterator it=all_contexts_.begin();
-            it != all_contexts_.end(); ++it
-        ) {
-            delete *it;
+        for(auto ctxt : all_contexts_) {
+            delete ctxt;
         }
         all_contexts_.clear();
     }
@@ -82,7 +108,148 @@ const char* glupUniformStateDeclaration() {
     return GLUP::current_context_->uniform_state_declaration();
 }
 
-void GLUP_API glupBindUniformState(GLUPuint program) {
+GLUPuint glupCompileShader(GLUPenum target, const char* source) {
+    GEO_CHECK_GL();
+    GLUP::current_context_->setup_shaders_source_for_primitive(GLUP_TRIANGLES);
+    // First param: ignored.
+    // Second param: all toggle states are unknown.
+    GLUP::current_context_->setup_shaders_source_for_toggles(0,~0);
+    GEO_CHECK_GL();
+    GLUPuint result = GLSL::compile_shader_with_includes(
+	target, source, GLUP::current_context_
+    );
+    GEO_CHECK_GL();
+    return result;
+}
+
+namespace {
+    /**
+     * \brief Converts a comment //stage GL_VERTEX_SHADER into
+     *  the associated GLUPenum value.
+     * \param[in,out] comment_str on entry, a pointer to the comment.
+     *  on exit, the next line. A '\0' terminator is inserted in
+     *  the string (replaces the '\n' that ends the line).
+     * \return the target or 0 if an error was encountered.
+     */
+    static GLUPenum stage_to_target(char*& comment_str) {
+	char* p1 = comment_str + 8;
+	char* p2 = strchr(p1, '\n');
+	if(p2 == nullptr) {
+	    Logger::err("GLSL")
+		<< "Missing CR in //stage GL_xxxxx declaration"
+		<< std::endl;
+	    return 0;
+	}
+	std::string stage_str(p1, size_t(p2-p1));
+	GLenum stage = 0;
+	if(stage_str == "GL_VERTEX_SHADER") {
+	    stage = GL_VERTEX_SHADER;
+	} else if(stage_str == "GL_FRAGMENT_SHADER") {
+	    stage = GL_FRAGMENT_SHADER;
+	}
+
+#ifndef GEO_OS_EMSCRIPTEN
+	else if(stage_str == "GL_GEOMETRY_SHADER") {
+	    stage = GL_GEOMETRY_SHADER;
+                } else if(stage_str == "GL_TESS_CONTROL_SHADER") {
+	    stage = GL_TESS_CONTROL_SHADER;
+	} else if(stage_str == "GL_TESS_EVALUATION_SHADER") {
+	    stage = GL_TESS_EVALUATION_SHADER;
+	}
+#endif
+	else {
+	    Logger::err("GLSL") << stage_str << ": unknown stage"
+				<< std::endl;
+	}
+	*comment_str = '\0';
+	comment_str = p2+1;
+	return stage;
+    }
+}
+
+GLUPuint glupCompileProgram(const char* source_in) {
+    std::string source(source_in);
+    std::vector<const char*> sources;
+    std::vector<GLUPenum> targets;
+    std::vector<GLuint> shaders;
+
+    char* p = const_cast<char*>(source.c_str());
+
+    bool has_vertex_shader = false;
+    for(
+	p = strstr(p,"//stage");
+	(p != nullptr) && (*p != '\0');
+	p = strstr(p,"//stage ")
+    ) {
+	GLUPenum target = stage_to_target(p);
+	if(target == 0) {
+	    return 0;
+	}
+	sources.push_back(p);
+	targets.push_back(target);
+	has_vertex_shader = has_vertex_shader || (target == GL_VERTEX_SHADER);
+    }
+
+    // Use default vertex shader if no vertex shader was specified.
+    if(!has_vertex_shader) {
+	if(!strcmp(glupCurrentProfileName(),"GLUPES2")) {
+	    targets.push_back(GL_VERTEX_SHADER);	    
+	    sources.push_back("//import <GLUPES/vertex_shader.h>\n");
+	} else if(
+	    !strcmp(glupCurrentProfileName(),"GLUP150") ||
+	    !strcmp(glupCurrentProfileName(),"GLUP440")	    
+	) {
+	    targets.push_back(GL_VERTEX_SHADER);	    	    
+	    sources.push_back("//import <GLUPGLSL/vertex_shader.h>\n");	    
+	}
+    }
+    
+    GLuint program = 0;
+    try {
+	for(index_t i=0; i<index_t(sources.size()); ++i) {
+	    GLUPuint shader = glupCompileShader(targets[i], sources[i]);
+	    if(shader == 0) {
+		throw(GLSL::GLSLCompileError());
+	    }
+	    shaders.push_back(shader);
+	}
+	
+    	program = glCreateProgram();
+	
+	for(index_t i=0; i<index_t(shaders.size()); ++i) {
+	    glAttachShader(program, shaders[i]);
+	}
+	
+        GEO_CHECK_GL();    	
+        glBindAttribLocation(program, GLUP::GLUP_VERTEX_ATTRIBUTE, "vertex_in");
+        glBindAttribLocation(program, GLUP::GLUP_COLOR_ATTRIBUTE, "color_in");
+        glBindAttribLocation(program, GLUP::GLUP_TEX_COORD_ATTRIBUTE, "tex_coord_in");
+        glBindAttribLocation(program, GLUP::GLUP_NORMAL_ATTRIBUTE, "normal_in");
+	
+        GEO_CHECK_GL();    		
+	GLSL::link_program(program);
+        GEO_CHECK_GL();    			
+	GLUP::current_context_->bind_uniform_state(program);
+        GEO_CHECK_GL();
+    } catch(...) {
+	if(program != 0) {
+	    Logger::err("GLSL") << "Could not compile program"
+				<< std::endl;
+	    glDeleteProgram(program);
+	    program = 0;
+	}
+    }
+
+    // Shaders are reference-counted, now they are attached
+    // to the program.
+    for(index_t i=0; i<index_t(shaders.size()); ++i) {
+	glDeleteShader(shaders[i]);
+    }
+    
+    return program;
+}
+
+void glupBindUniformState(GLUPuint program) {
     GEO_CHECK_GL(); 
     GLUP::current_context_->bind_uniform_state(program);
     GEO_CHECK_GL();
@@ -134,7 +301,7 @@ static bool supports_tessellation_shader() {
 #endif
 
 GLUPcontext glupCreateContext() {
-  
+    
     if(!GLUP::initialized_) {
         GLUP::initialized_ = true;
         atexit(GLUP::cleanup);
@@ -143,7 +310,7 @@ GLUPcontext glupCreateContext() {
     GEO_CHECK_GL();
     
     std::string GLUP_profile = GEO::CmdLine::get_arg("gfx:GLUP_profile");
-    GLUP::Context* result = nil;
+    GLUP::Context* result = nullptr;
 
     if(GLUP_profile == "auto") {
       
@@ -159,6 +326,7 @@ GLUPcontext glupCreateContext() {
 	      GEO::Logger::out("GLUP")
 		<< "GLSL version >= 4.4 but tessellation unsupported"
 		<< std::endl;
+	      downgrade_message();
 	      GEO::Logger::out("GLUP") << "Downgrading to GLUP 150..."
 				       << std::endl;
 	      GLSL_version = 1.5;
@@ -190,9 +358,10 @@ GLUPcontext glupCreateContext() {
 	    GEO::Logger::warn("GLUP")
 	        << "Caught an exception in GLUP440, downgrading to GLUP150"
 	        << std::endl;
+	    downgrade_message();	    
 	    GLUP_profile = "GLUP150";
 	    delete result;
-	    result = nil;
+	    result = nullptr;
 	}
     }
 #endif
@@ -206,9 +375,10 @@ GLUPcontext glupCreateContext() {
 	    GEO::Logger::warn("GLUP")
 	        << "Caught an exception in GLUP150, downgrading to GLUPES2"
 	        << std::endl;
+	    downgrade_message();	    
 	    GLUP_profile = "GLUPES2";
 	    delete result;
-	    result = nil;
+	    result = nullptr;
 	}
     }
 #endif
@@ -222,9 +392,10 @@ GLUPcontext glupCreateContext() {
 	    GEO::Logger::warn("GLUP")
 	        << "Caught an exception in GLUPES2, downgrading to VanillaGL"
 	        << std::endl;
+	    downgrade_message();	    
 	    GLUP_profile = "VanillaGL";
 	    delete result;
-	    result = nil;
+	    result = nullptr;
 	}
     }
 #endif
@@ -245,13 +416,13 @@ GLUPcontext glupCreateContext() {
 		  << "Caught an exception in VanillaGL"
 		  << std::endl;
 		delete result;
-		result = nil;
+		result = nullptr;
 	    }
 	}
     }
 #endif
 
-    if(result == nil) {
+    if(result == nullptr) {
         GEO::Logger::err("GLUP") << "Could not create context"
 			    << std::endl;
     } else {
@@ -267,12 +438,12 @@ void glupDeleteContext(GLUPcontext context_in) {
     GLUP::Context* context =
         reinterpret_cast<GLUP::Context*>(context_in);
 
-    std::set<GLUP::Context*>::iterator it = GLUP::all_contexts_.find(context);
+    auto it = GLUP::all_contexts_.find(context);
     geo_assert(it != GLUP::all_contexts_.end());
     GLUP::all_contexts_.erase(it);
     
     if(GLUP::current_context_ == context) {
-        GLUP::current_context_ = nil;
+        GLUP::current_context_ = nullptr;
     }
     delete context;
 }
@@ -334,7 +505,7 @@ GLUPboolean glupIsEnabled(GLUPtoggle toggle) {
 
 /********************** Texturing ******************************/
 
-void GLUP_API glupTextureType(GLUPtextureType type) {
+void glupTextureType(GLUPtextureType type) {
     GEO_CHECK_GL();                
     GLUP::current_context_->uniform_state().texture_type.set(type);
 }
@@ -346,7 +517,7 @@ GLUPtextureType glupGetTextureType() {
     );
 }
 
-void GLUP_API glupTextureMode(GLUPtextureMode mode) {
+void glupTextureMode(GLUPtextureMode mode) {
     GEO_CHECK_GL();
     GLUP::current_context_->uniform_state().texture_mode.set(mode);    
 }
@@ -489,8 +660,8 @@ GLUPint glupGetMeshWidth() {
 
 void glupSetCellsShrink(GLUPfloat x) {
     GEO_CHECK_GL();                
-    x = GEO::geo_min(x, 1.0f);
-    x = GEO::geo_max(x, 0.0f);
+    x = std::min(x, 1.0f);
+    x = std::max(x, 0.0f);
     GLUP::current_context_->uniform_state().cells_shrink.set(x);
 }
 
@@ -919,7 +1090,7 @@ void glupPerspective(
     glupMultMatrixf(M);    
 }
 
-GLUPint GLUP_API glupProject(
+GLUPint glupProject(
     GLUPdouble objx, GLUPdouble objy, GLUPdouble objz,
     const GLUPdouble modelMatrix[16],
     const GLUPdouble projMatrix[16],
@@ -1384,7 +1555,7 @@ namespace GLUP {
             type(GL_FLOAT),
             normalized(GL_FALSE),
             stride(0),
-            pointer(NULL),
+            pointer(nullptr),
             buffer_binding(0) {
         }
 
@@ -1460,7 +1631,7 @@ namespace GLUP {
                 glDisableVertexAttribArray(index);            
             }
             glBindBuffer(GL_ARRAY_BUFFER, GLuint(buffer_binding));
-            if(buffer_binding != 0 || pointer != nil ) {
+            if(buffer_binding != 0 || pointer != nullptr ) {
                 glVertexAttribPointer(
                     index, size, GLenum(type),
                     GLboolean(normalized), GLsizei(stride), pointer
@@ -1478,7 +1649,7 @@ namespace GLUP {
             type=GL_FLOAT;
             normalized=GL_FALSE;
             stride=0;
-            pointer=NULL;
+            pointer=nullptr;
             buffer_binding=0; 
         }
         
@@ -1504,7 +1675,7 @@ namespace GLUP {
          * \details For GLUP, only 4 are needed. Can be
          *  increased if need be.
          */
-        static const GLint MAX_VERTEX_ATTRIB = 4;
+        enum {MAX_VERTEX_ATTRIB = 4};
 
         /**
          * \brief VertexArrayObject constructor.
@@ -1513,8 +1684,8 @@ namespace GLUP {
             element_array_buffer_binding_(0) {
             if(max_vertex_attrib == 0) {
                 glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attrib);
-                max_vertex_attrib = geo_min(
-                    max_vertex_attrib, MAX_VERTEX_ATTRIB
+                max_vertex_attrib = std::min(
+                    max_vertex_attrib, GLint(MAX_VERTEX_ATTRIB)
                 );
             }
         }
@@ -1568,7 +1739,7 @@ namespace GLUP {
         GLint element_array_buffer_binding_;
     };
 
-
+    
     /**
      * \brief Manages the emulated vertex array objects.
      */
@@ -1587,9 +1758,9 @@ namespace GLUP {
          */
         ~VertexArrayObjectAllocator() {
             for(index_t i=0; i<slots_.size(); ++i) {
-                if(slots_[i].VAO != nil) {
+                if(slots_[i].VAO != nullptr) {
                     delete slots_[i].VAO;
-                    slots_[i].VAO = nil;
+                    slots_[i].VAO = nullptr;
                 }
             }
         }
@@ -1644,7 +1815,7 @@ namespace GLUP {
              * \brief Slot constructor.
              */
             Slot() :
-                VAO(nil), next(0) {
+                VAO(nullptr), next(0) {
             }
 
             /**
@@ -1684,7 +1855,7 @@ void glupGenVertexArrays(GLUPsizei n, GLUPuint* arrays) {
 #ifdef GEO_OS_EMSCRIPTEN
         glGenVertexArraysOES(n, arrays);
 #else
-	if(glGenVertexArrays == nil) {
+	if(glGenVertexArrays == nullptr) {
 	    GLUP::vertex_array_emulate = true;
 	    glupGenVertexArrays(n,arrays);
 	    return;
@@ -1703,7 +1874,7 @@ void glupDeleteVertexArrays(GLUPsizei n, const GLUPuint *arrays) {
 #ifdef GEO_OS_EMSCRIPTEN
         glDeleteVertexArraysOES(n, arrays);        
 #else
-	if(glDeleteVertexArrays == nil) {
+	if(glDeleteVertexArrays == nullptr) {
 	    GLUP::vertex_array_emulate = true;
 	    glupDeleteVertexArrays(n,arrays);
 	    return;
@@ -1732,7 +1903,7 @@ void glupBindVertexArray(GLUPuint array) {
 #ifdef GEO_OS_EMSCRIPTEN
         glBindVertexArrayOES(array);        
 #else
-	if(glBindVertexArray == nil) {
+	if(glBindVertexArray == nullptr) {
 	    GLUP::vertex_array_emulate = true;
 	    glupBindVertexArray(array);
 	    return;

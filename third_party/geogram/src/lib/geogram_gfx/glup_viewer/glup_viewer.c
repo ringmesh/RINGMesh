@@ -19,24 +19,25 @@
  *
  */
 
-
-#include "glup_viewer.h"
-
-#include <stdlib.h>
-#include <stdarg.h>
-
 /* 
  * Many documentation tags in GLFW that are
  * not understood by CLANG.
  */
 #ifdef __clang__
 #pragma GCC diagnostic ignored "-Wdocumentation"
+#pragma GCC diagnostic ignored "-Wstrict-prototypes"
 #endif
 
-#ifdef GEO_USE_BUILTIN_GLFW3
-#include <third_party/glfw/include/GLFW/glfw3.h>
-#else
+#include "glup_viewer.h"
+
+#include <stdlib.h>
+#include <stdarg.h>
+
+
+#ifdef GEO_USE_SYSTEM_GLFW3
 #include <GLFW/glfw3.h>
+#else
+#include <third_party/glfw/include/GLFW/glfw3.h>
 #endif
 
 #ifdef __EMSCRIPTEN__
@@ -169,12 +170,14 @@ static GLfloat params[7] = {
 };
 static int nb_params = 7;
 
-static char* title = "g33>|< Viewer";
+static const char* title = "g33>|< Viewer";
 
 static GLuint background_tex = 0;
 
 static GLFWwindow* glup_viewer_window = NULL;
 
+
+static GLboolean transparent = GL_FALSE;
 
 /* ========================== Trackball prototypes ========================= */
 /* (from SGI, see copyright below) */
@@ -483,8 +486,8 @@ static int mouse_pressed = 0;
 
 static void mouse(GLFWwindow* w, int button, int action, int mods) {
     glup_viewer_post_redisplay();
+    glup_viewer_gui_mouse_button_callback(w, button, action, mods);
     if(glup_viewer_gui_takes_input()) {
-        glup_viewer_gui_mouse_button_callback(w, button, action, mods);
         return;
     }
     
@@ -516,8 +519,8 @@ static void mouse(GLFWwindow* w, int button, int action, int mods) {
 
 static void scroll(GLFWwindow* w, double xoffset, double yoffset) {
     glup_viewer_post_redisplay();
+    glup_viewer_gui_scroll_callback(w, xoffset, yoffset);    
     if(glup_viewer_gui_takes_input()) {
-        glup_viewer_gui_scroll_callback(w, xoffset, yoffset);
         return;
     }
     
@@ -651,7 +654,7 @@ void glup_viewer_clear_text() {
     }
 }
 
-void glup_viewer_printf(char* format, ...) {
+void glup_viewer_printf(const char* format, ...) {
     va_list args;
     char buffer[1024];
     va_start(args, format);
@@ -838,15 +841,20 @@ static void draw_background() {
 
     if(background_tex == 0) {
 
-        glupEnable(GLUP_VERTEX_COLORS);        
-        glupBegin(GLUP_QUADS);
-        glupColor3fv(bkg1);
-        glupVertex3f(-1, -1, z);
-        glupVertex3f(1, -1, z);
-        glupColor3fv(bkg2);
-        glupVertex3f(1, 1, z);
-        glupVertex3f(-1, 1, z);
-        glupEnd();
+	if(transparent) {
+	    glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
+	    glClear(GL_COLOR_BUFFER_BIT);
+	} else {
+	    glupEnable(GLUP_VERTEX_COLORS);        
+	    glupBegin(GLUP_QUADS);
+	    glupColor3fv(bkg1);
+	    glupVertex3f(-1, -1, z);
+	    glupVertex3f(1, -1, z);
+	    glupColor3fv(bkg2);
+	    glupVertex3f(1, 1, z);
+	    glupVertex3f(-1, 1, z);
+	    glupEnd();
+	}
         
     } else {
         
@@ -1125,8 +1133,10 @@ static void copy_image_to_clipboard(void);
 void glup_viewer_char_callback(GLFWwindow* w, unsigned int c);
 
 void glup_viewer_char_callback(GLFWwindow* w, unsigned int c) {
+
+    glup_viewer_gui_char_callback(w,c);
+    
     if(glup_viewer_gui_takes_input()) {
-        glup_viewer_gui_char_callback(w,c);
         return;
     }
     
@@ -1181,8 +1191,9 @@ static void glup_viewer_key_callback(
     static char buffer[2];
 #endif
     
+    glup_viewer_gui_key_callback(w, key, scancode, action, mods);
+
     if(glup_viewer_gui_takes_input()) {
-        glup_viewer_gui_key_callback(w, key, scancode, action, mods);
 	/* 
 	 * We continue capturing keypresses on function keys even if
 	 * ImGUI window is active, else we cannot "run program" with
@@ -1192,6 +1203,7 @@ static void glup_viewer_key_callback(
 	    return;
 	}
     }
+    
 
     if(keyboard_func_ext != NULL && action != GLFW_REPEAT) {
 	ev = (action == GLFW_PRESS) ? GLUP_VIEWER_DOWN : GLUP_VIEWER_UP;
@@ -1291,7 +1303,8 @@ static void glup_viewer_key_callback(
     glup_viewer_post_redisplay();
 }
 
-void glup_viewer_home() {
+
+void glup_viewer_home(void) {
     cur_xlat[0] = cur_xlat[1] = cur_xlat[2] = 0.0;
     params[GLUP_VIEWER_ZOOM] = 1.0;
     trackball(cur_rot, 0.0, 0.0, 0.0, 0.0);
@@ -1342,7 +1355,7 @@ static void init() {
     glup_viewer_home();
 }
 
-void glup_viewer_set_window_title(char* s) {
+void glup_viewer_set_window_title(const char* s) {
     title = s;
 }
 
@@ -1560,7 +1573,18 @@ void glup_viewer_main_loop(int argc, char** argv) {
     }
 
     glup_viewer_set_screen_size_from_args();
+
+    transparent = glup_viewer_get_arg_bool("gfx:transparent");
     
+    if(transparent) {
+/*	glfwWindowHint(GLFW_ALPHA_BITS,8);  */
+#ifdef GLFW_ALPHA_MASK	    
+	glfwWindowHint(GLFW_ALPHA_MASK,GL_TRUE);
+#else
+	fprintf(stderr,"Transparent not supported by this version of GLFW\n");
+#endif	    
+    }
+   
     if( 
         glup_viewer_get_arg_bool("gfx:fullscreen") ||
         glup_viewer_is_enabled(GLUP_VIEWER_FULL_SCREEN) 
@@ -1569,13 +1593,23 @@ void glup_viewer_main_loop(int argc, char** argv) {
         const GLFWvidmode* vidmode = glfwGetVideoMode(monitor);
         glup_viewer_W = vidmode->width;
         glup_viewer_H = vidmode->height;
-        /* 
-         * Note: I'd rather not use a fullscreen window because it may change the resolution,
-         * this can be very annoying when doing a presentation, since the beamer may have
-         * difficulties to quickly react to resolution changes.
-         */
+
+	if(glup_viewer_get_arg_bool("gfx:no_decoration")) {
+	    glfwWindowHint(GLFW_FOCUSED,GL_TRUE);	
+	    glfwWindowHint(GLFW_DECORATED,GL_FALSE);
+	    glfwWindowHint(GLFW_RESIZABLE,GL_FALSE);
+	    glfwWindowHint(GLFW_AUTO_ICONIFY,GL_FALSE);
+	    glfwWindowHint(GLFW_FLOATING,GL_FALSE);
+	    glfwWindowHint(GLFW_MAXIMIZED,GL_TRUE);
+	}				
+	
         glup_viewer_window = glfwCreateWindow(
-            glup_viewer_W, glup_viewer_H, title, NULL /* glfwGetPrimaryMonitor() */, NULL
+            glup_viewer_W, glup_viewer_H, title,
+	    (
+		glup_viewer_get_arg_bool("gfx:no_decoration") ?
+		glfwGetPrimaryMonitor() : NULL
+	    ), 
+	    NULL
         );
     } else {
         glup_viewer_window = glfwCreateWindow(
@@ -1605,6 +1639,7 @@ void glup_viewer_main_loop(int argc, char** argv) {
     glfwSetScrollCallback(glup_viewer_window,scroll);
     
     init();
+    glfwGetFramebufferSize(glup_viewer_window, &glup_viewer_W, &glup_viewer_H);    
     reshape(glup_viewer_W, glup_viewer_H);
 
     atexit(cleanup);
@@ -2055,7 +2090,7 @@ static unsigned char i2a[1024];
  */
 static int char_to_index[256][256];
 
-void glTexImage2DXPM(const char** xpm_data) {
+void glTexImage2DXPM(char const* const* xpm_data) {
     int width, height, nb_colors, chars_per_pixel;
     int line = 0;
     int color = 0;
@@ -2064,6 +2099,7 @@ void glTexImage2DXPM(const char** xpm_data) {
     int x, y;
     unsigned char* rgba;
     unsigned char* pixel;
+
     sscanf(
         xpm_data[line], "%6d%6d%6d%6d",
         &width, &height, &nb_colors, &chars_per_pixel
@@ -2078,7 +2114,7 @@ void glTexImage2DXPM(const char** xpm_data) {
         return;
     }
     for(color = 0; color < nb_colors; color++) {
-        int r, g, b, a;
+        int r, g, b;
         int none ;
         
         key1 = xpm_data[line][0];
@@ -2097,18 +2133,21 @@ void glTexImage2DXPM(const char** xpm_data) {
         }
         colorcode += 3;
 
-        r = 16 * htoi(colorcode[0]) + htoi(colorcode[1]);
-        g = 16 * htoi(colorcode[2]) + htoi(colorcode[3]);
-        b = 16 * htoi(colorcode[4]) + htoi(colorcode[5]);
-
+	if(strlen(colorcode) == 12) {
+	    r = 16 * htoi(colorcode[0]) + htoi(colorcode[1]);
+	    g = 16 * htoi(colorcode[4]) + htoi(colorcode[5]);
+	    b = 16 * htoi(colorcode[8]) + htoi(colorcode[9]);
+	} else {
+	    r = 16 * htoi(colorcode[0]) + htoi(colorcode[1]);
+	    g = 16 * htoi(colorcode[2]) + htoi(colorcode[3]);
+	    b = 16 * htoi(colorcode[4]) + htoi(colorcode[5]);
+	}
+	    
         i2r[color] = (unsigned char) r;
         i2g[color] = (unsigned char) g;
         i2b[color] = (unsigned char) b;
 	if(none) {
 	    i2a[color] = 0;
-	} else if(colorcode[6] != '\0' && colorcode[7] != '\0') {
-	    a = 16 * htoi(colorcode[6]) + htoi(colorcode[7]);	    
-	    i2a[color] = (unsigned char) a;
 	} else {
 	    i2a[color] = 255;
 	}

@@ -92,16 +92,6 @@ namespace GEO {
             }
         }
 
-        /**
-         * \brief vecng default copy constructor.
-         * \param[in] rhs a const reference to the vecng to be copied
-         */
-        vecng(const vecng<DIM,T>& rhs) {
-            for(index_t i = 0; i < DIM; i++) {
-                data_[i] = rhs.data_[i];
-            }
-        }
-        
         // This one should never be called :
         // a template constructor cannot be a copy constructor
 
@@ -145,17 +135,6 @@ namespace GEO {
             for(index_t i = 0; i < DIM; i++) {
                 data_[i] = T(v[i]);
             }
-        }
-
-        /**
-         * \brief Assignment operator
-         * \details This copies coordinates of vector \p v to this vector.
-         * \param[in] v a vector of same dimension and same type
-         * \return a reference to this vector
-         */
-        vector_type& operator= (const vector_type& v) {
-            memcpy(data_, v.data(), DIM * sizeof(T));
-            return *this;
         }
 
         /**
@@ -260,7 +239,7 @@ namespace GEO {
 
         /**
          * \brief Subtracts a vector in place
-         * \details Substracts coordinates of vector \p v from this vector
+         * \details Subtracts coordinates of vector \p v from this vector
          * coordinates
          * \param[in] v another vector
          * \return a reference to this vector
@@ -322,8 +301,8 @@ namespace GEO {
         }
 
         /**
-         * \brief Substracts 2 vectors
-         * \details Builds a vector by substracting coordinates of vector \p v
+         * \brief Subtracts 2 vectors
+         * \details Builds a vector by subtracting coordinates of vector \p v
          * to coordinates of this vector.
          * \param[in] v another vector
          * \return the result vector (\p this - \p v)

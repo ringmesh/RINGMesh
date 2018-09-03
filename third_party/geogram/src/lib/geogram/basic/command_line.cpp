@@ -85,6 +85,11 @@ namespace {
     using namespace GEO;
     using namespace CmdLine;
 
+    std::string config_file_name = "geogram.ini";
+    
+    int geo_argc = 0;
+    char** geo_argv = nullptr;
+    
     // True if displaying help in a way that
     // it will be easily processed by help2man
     bool man_mode = false;
@@ -152,7 +157,7 @@ namespace {
     const unsigned int feature_max_length = 12;
 
     /** \brief Pointer to command line private data */
-    CommandLineDesc* desc_ = nil;
+    CommandLineDesc* desc_ = nullptr;
 
     /**
      * \brief Checks if an argument name matches a sub-strung
@@ -266,12 +271,14 @@ namespace {
 	    return;
 	}
 	init = true;
-	Logger::out("geogram.ini") << "Home directory:" << FileSystem::home_directory()
-				   << std::endl;
-	std::string config_filename = FileSystem::home_directory() + "/geogram.ini";
+	Logger::out("config") << "Configuration file name:" << config_file_name
+			      << std::endl;
+	Logger::out("config") << "Home directory:" << FileSystem::home_directory()
+			      << std::endl;
+	std::string config_filename = FileSystem::home_directory() + "/" + config_file_name;
 	std::string section = "*";
 	if(FileSystem::is_file(config_filename)) {
-	    Logger::out("geogram.ini") << "Using configuration file:"
+	    Logger::out("config") << "Using configuration file:"
 				       << config_filename
 				       << std::endl;
 	    std::ifstream in(config_filename.c_str());
@@ -287,7 +294,7 @@ namespace {
 			if(CmdLine::arg_is_declared(argname)) {
 			    CmdLine::set_arg(argname, argval);
 			} else {
-			    Logger::warn("geogram.ini") << argname << "=" << argval << " ignored" << std::endl;
+			    Logger::warn("config") << argname << "=" << argval << " ignored" << std::endl;
 			}
 		    }
 		}
@@ -310,6 +317,9 @@ namespace {
     bool parse_internal(
         int argc, char** argv, std::vector<std::string>& unparsed_args
     ) {
+	geo_argc = argc;
+	geo_argv = argv;
+	
 	parse_config_file(argc, argv);
 	
         bool ok = true;
@@ -332,13 +342,9 @@ namespace {
                 } else {
 
                     std::vector<std::string> matches;
-                    for(
-                        Args::const_iterator it = desc_->args.begin();
-                        it != desc_->args.end();
-                        ++it
-                    ) {
-                        if(arg_matches(parsed_arg[0], it->first)) {
-                            matches.push_back(it->first);
+                    for( auto& it : desc_->args) {
+                        if(arg_matches(parsed_arg[0], it.first)) {
+                            matches.push_back(it.first);
                         }
                     }
 
@@ -430,7 +436,7 @@ namespace {
      */
     void show_group(const std::string& group, bool advanced) {
 
-        Groups::const_iterator it = desc_->groups.find(group);
+        auto it = desc_->groups.find(group);
         if(it == desc_->groups.end()) {
             return;
         }
@@ -457,7 +463,7 @@ namespace {
         index_t max_left_width = 0;
 
         for(size_t i = 0; i < g.args.size(); i++) {
-            Args::const_iterator ita = desc_->args.find(g.args[i]);
+            auto ita = desc_->args.find(g.args[i]);
             if(ita == desc_->args.end()) {
                 continue;
             }
@@ -476,7 +482,7 @@ namespace {
             line.desc = arg.desc;
             lines.push_back(line);
 
-            max_left_width = geo_max(
+            max_left_width = std::max(
                 index_t(line.name.length() + line.value.length()),
                 max_left_width
             );
@@ -517,9 +523,25 @@ namespace GEO {
         void terminate() {
             ui_close_separator();
             delete desc_;
-            desc_ = nil;
+            desc_ = nullptr;
         }
 
+	int argc() {
+	    return geo_argc;
+	}
+
+	char** argv() {
+	    return geo_argv;
+	}
+
+	void set_config_file_name(const std::string& filename) {
+	    config_file_name = filename;
+	}
+
+	std::string get_config_file_name() {
+	    return config_file_name;
+	}
+	
         bool parse(
             int argc, char** argv, std::vector<std::string>& unparsed_args,
             const std::string& additional_arg_specs
@@ -676,7 +698,7 @@ namespace GEO {
             Environment::instance()->set_value(name, default_value);
 
             std::string group = arg_group(name);
-            Groups::iterator it = desc_->groups.find(group);
+            auto it = desc_->groups.find(group);
             if(it == desc_->groups.end()) {
                 Logger::err("CmdLine")
                     << "Argument group does not exist: " << name
@@ -688,7 +710,7 @@ namespace GEO {
         }
 
         ArgType get_arg_type(const std::string& name) {
-            Args::const_iterator it = desc_->args.find(name);
+            auto it = desc_->args.find(name);
             return it == desc_->args.end()
                    ? ARG_UNDEFINED
                    : it->second.type;
@@ -810,23 +832,15 @@ namespace GEO {
                     << std::endl;
             }
 
-            for(
-                GroupNames::const_iterator it = desc_->group_names.begin();
-                it != desc_->group_names.end();
-                ++it
-            ) {
-                show_group(*it, advanced);
+            for(auto& it : desc_->group_names) {
+                show_group(it, advanced);
             }
         }
 
         void get_args(std::vector<std::string>& args) {
             args.clear();
-            for(
-                Args::const_iterator it = desc_->args.begin();
-                it != desc_->args.end();
-                ++it
-            ) {
-                std::string cur_arg = it->first + "=" + get_arg(it->first);
+            for(auto& it : desc_->args) {
+                std::string cur_arg = it.first + "=" + get_arg(it.first);
                 args.push_back(cur_arg);
             }
         }
@@ -948,7 +962,7 @@ namespace GEO {
         index_t ui_terminal_width() {
             index_t ui_term_width_bkp = ui_term_width;
             update_ui_term_width();
-            ui_term_width = geo_min(ui_term_width, ui_term_width_bkp);
+            ui_term_width = std::min(ui_term_width, ui_term_width_bkp);
             return ui_term_width;
         }
 

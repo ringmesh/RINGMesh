@@ -50,6 +50,7 @@
 
 #include <geogram/basic/common.h>
 #include <geogram/basic/environment.h>
+#include <geogram/basic/process.h>
 #include <iostream>
 #include <fstream>
 #include <sstream>
@@ -84,7 +85,7 @@ namespace GEO {
          * \param[in] loggerStream the LoggerStream that owns this buffer
          */
         LoggerStreamBuf(LoggerStream* loggerStream) :
-            loggerStream_(loggerStream) {
+  	loggerStream_(loggerStream) {
         }
 
     private:
@@ -494,7 +495,7 @@ namespace GEO {
          * \brief Checks if a client is registered
          * \param[in] client a logger client
          * \retval true if \p client is registered to the Logger
-         * \retval false othwerwise
+         * \retval false otherwise
          */
         bool is_client(LoggerClient* client) const;
 
@@ -513,7 +514,7 @@ namespace GEO {
         /**
          * \brief Checks the quiet mode
          * \retval true if the quiet mode is on
-         * \retval false othwerwise
+         * \retval false otherwise
          */
         bool is_quiet() const {
             return quiet_;
@@ -535,7 +536,7 @@ namespace GEO {
         /**
          * \brief Checks the minimal mode
          * \retval true if the minimal mode is on
-         * \retval false othwerwise
+         * \retval false otherwise
          */
         bool is_minimal() const {
             return minimal_;
@@ -556,7 +557,7 @@ namespace GEO {
         /**
          * \brief Checks the console pretty mode
          * \retval true if the console pretty mode is on
-         * \retval false othwerwise
+         * \retval false otherwise
          */
         bool is_pretty() const {
             return pretty_;
@@ -710,8 +711,10 @@ namespace GEO {
         bool quiet_;
         bool pretty_;
         bool minimal_;
+	bool notifying_error_;
         
         friend class LoggerStream;
+        friend class LoggerStreamBuf;
     };
 
     /************************************************************************/

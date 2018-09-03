@@ -118,12 +118,7 @@ if(WIN32)
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${GEOGRAM_INSTALL_PREFIX}/bin"
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            COMMENT "Copy geogram binaries")
-    add_custom_command(TARGET copy_dll PRE_BUILD
-        COMMAND  "${CMAKE_COMMAND}" -E copy_directory
-            "${GEOGRAM_INSTALL_PREFIX}/lib"
-            "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
-            COMMENT "Copy geogram visualization libraries")
+            COMMENT "Copy geogram binaries from ${GEOGRAM_INSTALL_PREFIX}/bin")
     add_custom_command(TARGET copy_dll PRE_BUILD
         COMMAND  "${CMAKE_COMMAND}" -E copy_directory
             "${ZLIB_ROOT}/bin"
@@ -190,7 +185,7 @@ macro(add_ringmesh_executable exe_path folder_name)
     set_target_properties(${exe_name} 
         PROPERTIES 
             FOLDER ${folder_name}
-            INSTALL_RPATH "${OS_RPATH}/../lib"
+            INSTALL_RPATH "${OS_RPATH}/../bin"
     )
 endmacro()
 

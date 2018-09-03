@@ -44,7 +44,6 @@
 
 namespace RINGMesh
 {
-    FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderCopy );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderRepair );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
@@ -255,7 +254,6 @@ namespace RINGMesh
         friend class GeoModelBuilderRemoveBase< DIMENSION >;
         friend class GeoModelBuilderRemove< DIMENSION >;
         friend class GeoModelBuilderRepair< DIMENSION >;
-        friend class GeoModelBuilderCopy< DIMENSION >;
         friend class GeoModelBuilderInfo< DIMENSION >;
 
     private:
