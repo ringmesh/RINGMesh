@@ -1452,12 +1452,12 @@ namespace RINGMesh
     void GeoModelBuilder< 3 >::build_regions_from_lines_and_surfaces()
     {
         std::set< gmme_id > regions_to_delete;
-        for (auto r : range(geomodel_.nb_regions()))
+        for( auto r : range( geomodel_.nb_regions() ) )
         {
-            const Region3D& region = geomodel_.region(r);
-            regions_to_delete.insert(region.gmme());
+            const Region3D& region = geomodel_.region( r );
+            regions_to_delete.insert( region.gmme() );
         }
-        remove.remove_mesh_entities(regions_to_delete);
+        remove.remove_mesh_entities( regions_to_delete );
 
         RegionTopologyFromGeoModelSurfaces region_computer{ geomodel_ };
         region_computer.compute_region_info();
