@@ -292,9 +292,11 @@ namespace RINGMesh
          * @brief Get the PointSetMesh
          * @return the PointSetMesh
          */
-        const PointSetMesh< DIMENSION > & mesh() const {
+        const PointSetMesh< DIMENSION >& mesh() const
+        {
             return *mesh_;
         }
+
     private:
         /*!
          * @brief Initialize the vertices from the vertices
@@ -561,7 +563,8 @@ namespace RINGMesh
          * @brief Get the mesh containing all the polygons
          * @return the SurfaceMesh containing all the polygons
          */
-        const SurfaceMesh< DIMENSION >& mesh() const {
+        const SurfaceMesh< DIMENSION >& mesh() const
+        {
             return *mesh_;
         }
 
@@ -766,7 +769,8 @@ namespace RINGMesh
          * @brief Get the mesh containing all the edges
          * @return the LineMesh containing all the edges
          */
-        const LineMesh< DIMENSION >& mesh() const {
+        const LineMesh< DIMENSION >& mesh() const
+        {
             return *mesh_;
         }
 
@@ -1213,7 +1217,8 @@ namespace RINGMesh
          * @brief Get the mesh containing all the cells
          * @return the VolumeMesh containing all the cells
          */
-        const VolumeMesh< DIMENSION >& mesh() const {
+        const VolumeMesh< DIMENSION >& mesh() const
+        {
             return *mesh_;
         }
 
