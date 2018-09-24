@@ -243,11 +243,10 @@ namespace RINGMesh
     {
         hdf_proxy_->close();
 
-        std::cout << "Start serialization of " << pck_->getName() << " in "
-                  << ( pck_->getStorageDirectory().empty()
-                             ? "working directory."
-                             : pck_->getStorageDirectory() )
-                  << std::endl;
+        Logger::out( "", "Start serialization of ", pck_->getName(), " in ",
+            ( pck_->getStorageDirectory().empty()
+                    ? "working directory."
+                    : pck_->getStorageDirectory() ) );
 
         pck_->serialize();
     }
@@ -515,7 +514,7 @@ namespace RINGMesh
                         }
                         face_indices_per_cell.push_back( facet_count++ );
 
-                        // TODO compute real face righthandness
+                        // TODO: compute real face righthandness
                         face_righthandness.push_back( 1 );
                         cumul_vertices_face.push_back(
                             node_indices_per_face.size() );
@@ -650,7 +649,7 @@ namespace RINGMesh
         }
         catch( const std::invalid_argument& Exp )
         {
-            std::cerr << "Error : " << Exp.what() << ".\n";
+            Logger::err( "Exception", Exp.what() );
         }
 
         return true;

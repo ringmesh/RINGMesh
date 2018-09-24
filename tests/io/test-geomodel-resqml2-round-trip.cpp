@@ -133,7 +133,7 @@ void compare_geomodels(
             all_units1.size(), " vs ", all_units2.size() );
     }
 
-    // TODO for the moment, we check names, better with uid
+    // TODO: for the moment, we check names, better with uid
     bool identical = true;
     for( auto unit_index : range( all_units1.size() ) )
     {

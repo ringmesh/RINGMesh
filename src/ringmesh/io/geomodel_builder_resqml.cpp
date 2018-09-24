@@ -89,33 +89,27 @@ namespace RINGMesh
         void showAllMetadata(
             AbstractObject* obj, const std::string& prefix = "" )
         {
-            std::cout << prefix << "Title is : " << obj->getTitle()
-                      << std::endl;
-            std::cout << prefix << "Guid is : " << obj->getUuid() << std::endl;
+            Logger::out( "", prefix, "Title is : ", obj->getTitle() );
+            Logger::out( "", prefix, "Guid is : ", obj->getUuid() );
             if( !obj->isPartial() )
             {
                 for( unsigned int i = 0; i < obj->getAliasCount(); ++i )
                 {
-                    std::cout
-                        << prefix
-                        << "Alias is : " << obj->getAliasAuthorityAtIndex( i )
-                        << ":" << obj->getAliasTitleAtIndex( i ) << std::endl;
+                    Logger::out( "", prefix,
+                        "Alias is : ", obj->getAliasAuthorityAtIndex( i ), ":",
+                        obj->getAliasTitleAtIndex( i ) );
                 }
                 for( unsigned int i = 0; i < obj->getExtraMetadataCount(); ++i )
                 {
-                    std::cout << prefix << "Extrametadata is : "
-                              << obj->getExtraMetadataKeyAtIndex( i ) << ":"
-                              << obj->getExtraMetadataStringValueAtIndex( i )
-                              << std::endl;
+                    Logger::out( "", prefix, "Extrametadata is : ",
+                        obj->getExtraMetadataKeyAtIndex( i ), ":",
+                        obj->getExtraMetadataStringValueAtIndex( i ) );
                 }
             }
             else
             {
-                std::cout << prefix << "IS PARTIAL!" << std::endl;
+                Logger::out( "", prefix, "IS PARTIAL!" );
             }
-            std::cout << prefix
-                      << "--------------------------------------------------"
-                      << std::endl;
         }
 
     } // anonymous namespace
@@ -140,8 +134,9 @@ namespace RINGMesh
     class GeoModelBuilderRESQMLImpl
     {
     public:
-        GeoModelBuilderRESQMLImpl(
-            GeoModelBuilderRESQML& builder, GeoModel3D& geomodel );
+        GeoModelBuilderRESQMLImpl( GeoModelBuilderRESQML& builder,
+            GeoModel3D& geomodel,
+            GeoModelAccess< 3 >& geomodel_access );
         ~GeoModelBuilderRESQMLImpl() = default;
 
         bool load_file();
@@ -157,6 +152,7 @@ namespace RINGMesh
     private:
         GeoModelBuilderRESQML& builder_;
         GeoModel3D& geomodel_;
+        GeoModelAccess< 3 >& geomodel_access_;
 
         std::map< AbstractFeatureInterpretation*, gmge_id >
             interp_2_geo_entity_;
@@ -164,8 +160,12 @@ namespace RINGMesh
     };
 
     GeoModelBuilderRESQMLImpl::GeoModelBuilderRESQMLImpl(
-        GeoModelBuilderRESQML& builder, GeoModel3D& geomodel )
-        : builder_( builder ), geomodel_( geomodel )
+        GeoModelBuilderRESQML& builder,
+        GeoModel3D& geomodel,
+        GeoModelAccess< 3 >& geomodel_access )
+        : builder_( builder ),
+          geomodel_( geomodel ),
+          geomodel_access_( geomodel_access )
     {
     }
 
@@ -240,8 +240,8 @@ namespace RINGMesh
 
         if( horizons.size() >= 1 && horizons.size() <= 2 )
         {
-            // TODO the following detection is not working if the region doesn't
-            // contain a single face of one or even both horizons
+            // TODO: the following detection is not working if the region
+            // doesn't contain a single face of one or even both horizons
             std::vector< gmge_id > horizons_list;
             for( auto h : horizons )
             {
@@ -284,14 +284,14 @@ namespace RINGMesh
     {
         const std::vector< RESQML2_0_1_NS::StratigraphicColumn* >
             stratiColumnSet = pck.getStratigraphicColumnSet();
-        // TODO only one column for the moment
+        // TODO: only one column for the moment
         ringmesh_assert( stratiColumnSet.size() <= 1 );
 
         for( auto column : stratiColumnSet )
         {
             showAllMetadata( column );
 
-            // TODO now we read only rank 0
+            // TODO: now we read only rank 0
             ringmesh_assert(
                 column->getStratigraphicColumnRankInterpretationSet().size()
                 == 1 );
@@ -300,7 +300,7 @@ namespace RINGMesh
                 column->getStratigraphicColumnRankInterpretationSet() )
             {
                 showAllMetadata( rank_interp );
-                // TODO only chronostrati
+                // TODO: only chronostrati
                 ringmesh_assert( rank_interp->isAChronoStratiRank() );
 
                 for( auto unit :
@@ -322,8 +322,8 @@ namespace RINGMesh
                             geomodel_.geological_entity(
                                 GeologicalEntityType( "Layer" ),
                                 layer.index() ) );
-                        const_cast< Layer3D& >( layer3d ).set_name(
-                            unit->getInterpretedFeature()->getTitle() );
+                        builder_.geology.set_geological_entity_name(
+                            layer, unit->getInterpretedFeature()->getTitle() );
                         unit_2_info_[unit].name_ =
                             unit->getInterpretedFeature()->getTitle();
                     }
@@ -358,7 +358,7 @@ namespace RINGMesh
                 }
 
                 // assign regions to layers
-                // TODO this is a workaround until the
+                // TODO: this is a workaround until the
                 // SealedVolumeFrameworkRepresentation
                 // is released in fesapi that tells us the layer information of
                 // a region
@@ -369,9 +369,8 @@ namespace RINGMesh
                     const Layer3D& layer3d = static_cast< const Layer3D& >(
                         geomodel_.geological_entity(
                             GeologicalEntityType( "Layer" ), layer.index() ) );
-                    const_cast< Region3D& >( region ).set_name(
-                        layer3d.name() );
-
+                    builder_.topology.set_mesh_entity_name(
+                        region.gmme(), layer3d.name() );
                     builder_.geology.add_parent_children_relation(
                         layer, region.gmme() );
                 }
@@ -412,16 +411,14 @@ namespace RINGMesh
                     units.push_back( sunit );
 
 #ifdef RINGMESH_DEBUG
-                    std::cout << " relation base: " << (int) unit.relation_base_
-                              << std::endl;
-                    std::cout << " relation top: " << (int) unit.relation_top_
-                              << std::endl;
-                    std::cout
-                        << " interface base: " << unit.interface_base_.index()
-                        << std::endl;
-                    std::cout
-                        << " interface top: " << unit.interface_top_.index()
-                        << std::endl;
+                    Logger::out(
+                        "", " relation base: ", (int) unit.relation_base_ );
+                    Logger::out(
+                        "", " relation top: ", (int) unit.relation_top_ );
+                    Logger::out(
+                        "", " interface base: ", unit.interface_base_.index() );
+                    Logger::out(
+                        "", " interface top: ", unit.interface_top_.index() );
 #endif
                 }
 
@@ -477,10 +474,10 @@ namespace RINGMesh
                 ContinuousProperty& continuousProp =
                     static_cast< ContinuousProperty& >( property );
 
-                if( ( property.getValuesHdfDatatype()
-                            == AbstractValuesProperty::FLOAT
-                        || property.getValuesHdfDatatype()
-                               == AbstractValuesProperty::DOUBLE ) )
+                if( property.getValuesHdfDatatype()
+                        == AbstractValuesProperty::FLOAT
+                    || property.getValuesHdfDatatype()
+                           == AbstractValuesProperty::DOUBLE )
                 {
                     GEO::Attribute< double > attribute;
                     attribute.create_vector_attribute(
@@ -543,13 +540,8 @@ namespace RINGMesh
 
             if( feature != nullptr )
             {
-                const Interface3D& interface =
-                    static_cast< const Interface3D& >(
-                        geomodel_.geological_entity(
-                            GeologicalEntityType( "Interface" ),
-                            interface_id.index() ) );
-                const_cast< Interface3D& >( interface )
-                    .set_name( feature->getTitle() );
+                builder_.geology.set_geological_entity_name(
+                    interface_id, feature->getTitle() );
 
                 if( dynamic_cast< TectonicBoundaryFeature* >( feature )
                     != nullptr )
@@ -907,7 +899,7 @@ namespace RINGMesh
             {
                 AbstractValuesProperty* propVal =
                     unstructured_grid->getValuesPropertySet()[prop_index];
-                // TODO there is only one patch in a UnstructuredGrid
+                // TODO: there is only one patch in a UnstructuredGrid
 
                 const gsoap_resqml2_0_1::resqml2__IndexableElements attachment =
                     propVal->getAttachmentKind();
@@ -950,7 +942,8 @@ namespace RINGMesh
     GeoModelBuilderRESQML::GeoModelBuilderRESQML(
         GeoModel3D& geomodel, const std::string& filename )
         : GeoModelBuilderFile( geomodel, std::move( filename ) ),
-          impl_( new GeoModelBuilderRESQMLImpl( *this, this->geomodel_ ) )
+          impl_( new GeoModelBuilderRESQMLImpl(
+              *this, this->geomodel_, this->geomodel_access_ ) )
     {
     }
 
