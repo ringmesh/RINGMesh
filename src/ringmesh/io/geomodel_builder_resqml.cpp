@@ -174,32 +174,28 @@ namespace RINGMesh
         std::string resqmlResult = pck.deserialize();
         if( !resqmlResult.empty() )
         {
-            std::cerr << resqmlResult << std::endl;
-            std::cout << "Press enter to continue..." << std::endl;
-            std::cin.get();
+            Logger::err( "", "RESQML2 document deserialization failed..." );
+            return;
         }
 
-        std::cout << "EpcDocument name " << pck.getName() << " in "
-                  << ( pck.getStorageDirectory().empty()
-                             ? "working directory."
-                             : pck.getStorageDirectory() )
-                  << std::endl;
+        Logger::out( "", "EpcDocument name ", pck.getName(), " in ",
+            ( pck.getStorageDirectory().empty() ? "working directory."
+                                                : pck.getStorageDirectory() ) );
 
         unsigned int hdfProxyCount = pck.getHdfProxyCount();
-        std::cout << "There are " << pck.getHdfProxyCount()
-                  << " hdf files associated to this epc document." << std::endl;
+        Logger::out( "", "There are ", pck.getHdfProxyCount(),
+            " hdf files associated to this epc document." );
         for( unsigned int hdfProxyIndex = 0; hdfProxyIndex < hdfProxyCount;
              ++hdfProxyIndex )
         {
-            std::cout << "Hdf file relative path : "
-                      << pck.getHdfProxy( hdfProxyIndex )->getRelativePath()
-                      << std::endl;
+            Logger::out( "", "Hdf file relative path : ",
+                pck.getHdfProxy( hdfProxyIndex )->getRelativePath() );
         }
         for( size_t warningIndex = 0; warningIndex < pck.getWarnings().size();
              ++warningIndex )
         {
-            std::cout << "Warning #" << warningIndex << " : "
-                      << pck.getWarnings()[warningIndex] << std::endl;
+            Logger::out( "", "Warning #", warningIndex, " : ",
+                pck.getWarnings()[warningIndex] );
         }
     }
 
@@ -429,23 +425,21 @@ namespace RINGMesh
             }
         }
 
-        if( stratiColumnSet.empty() )
+        if( stratiColumnSet.empty()
+            && !geomodel_.entity_type_manager()
+                    .geological_entity_manager.is_valid_type(
+                        Layer3D::type_name_static() ) )
         {
-            if( !geomodel_.entity_type_manager()
-                     .geological_entity_manager.is_valid_type(
-                         Layer3D::type_name_static() ) )
+            const gmge_id layer = builder_.geology.create_geological_entity(
+                Layer3D::type_name_static() );
+
+            builder_.geology.set_geological_entity_geol_feature(
+                layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
+
+            for( auto& region : geomodel_.regions() )
             {
-                const gmge_id layer = builder_.geology.create_geological_entity(
-                    Layer3D::type_name_static() );
-
-                builder_.geology.set_geological_entity_geol_feature(
-                    layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
-
-                for( auto& region : geomodel_.regions() )
-                {
-                    builder_.geology.add_parent_children_relation(
-                        layer, region.gmme() );
-                }
+                builder_.geology.add_parent_children_relation(
+                    layer, region.gmme() );
             }
         }
     }
@@ -707,11 +701,6 @@ namespace RINGMesh
                             {
                                 vertices[3] = (index_t) node_index;
                                 found = true;
-                                break;
-                            }
-
-                            if( found )
-                            {
                                 break;
                             }
                         }

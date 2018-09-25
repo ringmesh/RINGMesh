@@ -119,7 +119,6 @@ namespace RINGMesh
         std::map< gmge_id, AbstractFeature* > geo_entity_2_feature_;
         std::map< AbstractFeature*, AbstractFeatureInterpretation* >
             feature_2_interp_;
-        std::map< std::string, PropertyKind* > type_2_property_kind_;
     };
 
     GeoModelAdapterRESQMLImpl::GeoModelAdapterRESQMLImpl(
@@ -512,7 +511,8 @@ namespace RINGMesh
                             node_indices_per_face.push_back(
                                 region.cell_facet_vertex_index( t, f, v ) );
                         }
-                        face_indices_per_cell.push_back( facet_count++ );
+                        face_indices_per_cell.push_back( facet_count );
+                        ++facet_count;
 
                         // TODO: compute real face righthandness
                         face_righthandness.push_back( 1 );

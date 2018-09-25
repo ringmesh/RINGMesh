@@ -310,8 +310,6 @@ namespace RINGMesh
             std::unique_ptr< GeoModelGeologicalEntity< DIMENSION > > > >
             geological_entities_;
 
-        std::unique_ptr< const StratigraphicColumn > strati_column_;
-
         /*!
          * @}
          */
@@ -320,6 +318,9 @@ namespace RINGMesh
          * @todo Move it out. It has nothing to do here. [JP]
          */
         const WellGroup< DIMENSION >* wells_{ nullptr };
+
+    private:
+        std::unique_ptr< const StratigraphicColumn > strati_column_;
     };
     ALIAS_2D_AND_3D( GeoModelBase );
 
