@@ -33,6 +33,12 @@
 
 set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
 
+if(RINGMESH_WITH_RESMQML2)
+    set(RINGMesh_DEPENDENCY fesapi_ext geogram_ext tinyxml2_ext zlib_ext minizip_ext)
+else()
+    set(RINGMesh_DEPENDENCY geogram_ext tinyxml2_ext zlib_ext minizip_ext)
+endif()
+
 ExternalProject_Add(ringmesh_ext
     PREFIX ${RINGMesh_PATH_BIN}
     SOURCE_DIR ${PROJECT_SOURCE_DIR}
@@ -54,5 +60,5 @@ ExternalProject_Add(ringmesh_ext
     BINARY_DIR ${RINGMesh_PATH_BIN}
     BUILD_ALWAYS 1
     INSTALL_COMMAND ""
-    DEPENDS fesapi_ext geogram_ext tinyxml2_ext zlib_ext minizip_ext 
+    DEPENDS ${RINGMesh_DEPENDENCY}
 )

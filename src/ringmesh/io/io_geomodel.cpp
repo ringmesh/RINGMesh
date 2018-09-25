@@ -83,7 +83,9 @@ namespace
 #include "geomodel/io_mfem.hpp"
 #include "geomodel/io_model3d.hpp"
 #include "geomodel/io_msh.hpp"
+#ifdef RINGMESH_WITH_RESQML2
 #include "geomodel/io_resqml.hpp"
+#endif
 #include "geomodel/io_smesh.hpp"
 #include "geomodel/io_stl.hpp"
 #include "geomodel/io_stradivarius.hpp"
@@ -109,7 +111,7 @@ namespace
         }
         return handler;
     }
-}
+} // namespace
 
 namespace RINGMesh
 {
@@ -169,8 +171,10 @@ namespace RINGMesh
             "smesh" );
         GeoModelOutputHandlerFactory3D::register_creator< STLIOHandler >(
             "stl" );
+#ifdef RINGMESH_WITH_RESQML2
         GeoModelOutputHandlerFactory3D::register_creator< RESQMLIOHandler >(
             "epc" );
+#endif
     }
 
     template <>
@@ -181,8 +185,10 @@ namespace RINGMesh
         GeoModelInputHandlerFactory3D::register_creator< MLIOHandler >( "ml" );
         GeoModelInputHandlerFactory3D::register_creator< TSolidIOHandler >(
             "so" );
+#ifdef RINGMESH_WITH_RESQML2
         GeoModelInputHandlerFactory3D::register_creator< RESQMLIOHandler >(
             "epc" );
+#endif
     }
 
     /***************************************************************************/
