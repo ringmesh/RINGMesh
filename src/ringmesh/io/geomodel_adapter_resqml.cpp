@@ -96,6 +96,9 @@ namespace RINGMesh
         bool save_file();
         void serialize();
         bool write_surfaces();
+        index_t write_triangulated_patches(
+            const GeoModelGeologicalEntity3D& interface,
+            TriangulatedSetRepresentation* rep );
         bool write_volumes();
 
         bool write_property( bool first_patch,
@@ -345,6 +348,48 @@ namespace RINGMesh
         return true;
     }
 
+    index_t GeoModelAdapterRESQMLImpl::write_triangulated_patches(
+        const GeoModelGeologicalEntity3D& interface,
+        TriangulatedSetRepresentation* rep )
+    {
+        index_t interface_vertex_count = 0;
+        for( auto i : range( interface.nb_children() ) )
+        {
+            const Surface3D& surface =
+                static_cast< const Surface3D& >( interface.child( i ) );
+
+            std::unique_ptr< double[] > points(
+                new double[surface.nb_vertices() * 3] );
+
+            vec3 p;
+            for( auto v : range( surface.nb_vertices() ) )
+            {
+                p = surface.vertex( v );
+                points[v * 3] = p[0];
+                points[v * 3 + 1] = p[1];
+                points[v * 3 + 2] = p[2];
+            }
+
+            std::unique_ptr< unsigned int[] > node_indices(
+                new unsigned int[surface.nb_mesh_elements() * 3] );
+            for( auto t : range( surface.nb_mesh_elements() ) )
+            {
+                for( auto v : range( surface.nb_mesh_element_vertices( t ) ) )
+                {
+                    node_indices[t * 3 + v] =
+                        interface_vertex_count
+                        + surface.mesh_element_vertex_index( { t, v } );
+                }
+            }
+
+            rep->pushBackTrianglePatch( surface.nb_vertices(), &points[0],
+                surface.nb_mesh_elements(), &node_indices[0], hdf_proxy_ );
+
+            interface_vertex_count += surface.nb_vertices();
+        }
+        return interface_vertex_count;
+    }
+
     bool GeoModelAdapterRESQMLImpl::write_surfaces()
     {
         for( const auto& interface :
@@ -385,42 +430,8 @@ namespace RINGMesh
                 pck_->createTriangulatedSetRepresentation(
                     interp, local_3d_crs_, guid, feature->getTitle() );
 
-            unsigned int interface_vertex_count = 0;
-            for( auto i : range( interface.nb_children() ) )
-            {
-                const Surface3D& surface =
-                    static_cast< const Surface3D& >( interface.child( i ) );
-
-                std::unique_ptr< double[] > points(
-                    new double[surface.nb_vertices() * 3] );
-
-                vec3 p;
-                for( auto v : range( surface.nb_vertices() ) )
-                {
-                    p = surface.vertex( v );
-                    points[v * 3] = p[0];
-                    points[v * 3 + 1] = p[1];
-                    points[v * 3 + 2] = p[2];
-                }
-
-                std::unique_ptr< unsigned int[] > node_indices(
-                    new unsigned int[surface.nb_mesh_elements() * 3] );
-                for( auto t : range( surface.nb_mesh_elements() ) )
-                {
-                    for( auto v :
-                        range( surface.nb_mesh_element_vertices( t ) ) )
-                    {
-                        node_indices[t * 3 + v] =
-                            interface_vertex_count
-                            + surface.mesh_element_vertex_index( { t, v } );
-                    }
-                }
-
-                rep->pushBackTrianglePatch( surface.nb_vertices(), &points[0],
-                    surface.nb_mesh_elements(), &node_indices[0], hdf_proxy_ );
-
-                interface_vertex_count += surface.nb_vertices();
-            }
+            const index_t interface_vertex_count =
+                write_triangulated_patches( interface, rep );
 
             if( interface_vertex_count == 0 )
             {

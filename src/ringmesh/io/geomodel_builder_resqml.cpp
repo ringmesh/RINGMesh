@@ -151,7 +151,11 @@ namespace RINGMesh
         gmge_id read_surface_geology( TriangulatedSetRepresentation* tri_set );
         void read_rank_interpreation(
             StratigraphicColumnRankInterpretation* rank_interp );
-        index_t find_matching_geomodel_region( const VolumeMesh3D& mesh );
+        void build_strati_column(
+            StratigraphicColumnRankInterpretation* rank_interp,
+            const std::string& column_name );
+
+        index_t find_matching_geomodel_region( const VolumeMesh3D& mesh ) const;
 
     private:
         GeoModelBuilderRESQML& builder_;
@@ -298,9 +302,6 @@ namespace RINGMesh
             unit_2_info_[unit].layer_ = layer;
             if( unit->getInterpretedFeature() != nullptr )
             {
-                const Layer3D& layer3d =
-                    static_cast< const Layer3D& >( geomodel_.geological_entity(
-                        GeologicalEntityType( "Layer" ), layer.index() ) );
                 builder_.geology.set_geological_entity_name(
                     layer, unit->getInterpretedFeature()->getTitle() );
                 unit_2_info_[unit].name_ =
@@ -327,6 +328,73 @@ namespace RINGMesh
                 [(AbstractFeatureInterpretation*) rank_interp
                         ->getHorizonInterpretationOfContact( contactIndex )];
         }
+
+        // assign regions to layers
+        // TODO: this is a workaround until the
+        // SealedVolumeFrameworkRepresentation
+        // is released in fesapi that tells us the layer information of
+        // a region
+        for( auto& region : geomodel_.regions() )
+        {
+            gmge_id layer = find_layer( region );
+            ringmesh_assert( layer.is_defined() );
+            const Layer3D& layer3d =
+                static_cast< const Layer3D& >( geomodel_.geological_entity(
+                    GeologicalEntityType( "Layer" ), layer.index() ) );
+            builder_.topology.set_mesh_entity_name(
+                region.gmme(), layer3d.name() );
+            builder_.geology.add_parent_children_relation(
+                layer, region.gmme() );
+        }
+    }
+
+    void GeoModelBuilderRESQMLImpl::build_strati_column(
+        StratigraphicColumnRankInterpretation* rank_interp,
+        const std::string& column_name )
+    {
+        // build the stati column
+        RockFeature rock( "rock", ROCKTYPE::NONE );
+        std::vector< std::shared_ptr< const StratigraphicUnit > > units;
+
+        for( auto unit_key :
+            rank_interp->getStratigraphicUnitInterpretationSet() )
+        {
+            const UnitInfo& unit = unit_2_info_[unit_key];
+            const Interface3D* top =
+                unit.interface_top_.is_defined()
+                    ? dynamic_cast< const Interface3D* >(
+                          &geomodel_.geological_entity(
+                              Interface3D::type_name_static(),
+                              unit.interface_top_.index() ) )
+                    : nullptr;
+            const Interface3D* base =
+                unit.interface_base_.is_defined()
+                    ? dynamic_cast< const Interface3D* >(
+                          &geomodel_.geological_entity(
+                              Interface3D::type_name_static(),
+                              unit.interface_base_.index() ) )
+                    : nullptr;
+
+            std::shared_ptr< const StratigraphicUnit > sunit(
+                new UnsubdividedStratigraphicUnit( unit.name_, base, top,
+                    static_cast< const Layer3D& >( geomodel_.geological_entity(
+                        Layer3D::type_name_static(), unit.layer_.index() ) ),
+                    unit.relation_top_, unit.relation_base_, rock, 0, 10 ) );
+
+            units.push_back( sunit );
+
+#ifdef RINGMESH_DEBUG
+            Logger::out( "", " relation base: ", (int) unit.relation_base_ );
+            Logger::out( "", " relation top: ", (int) unit.relation_top_ );
+            Logger::out(
+                "", " interface base: ", unit.interface_base_.index() );
+            Logger::out( "", " interface top: ", unit.interface_top_.index() );
+#endif
+        }
+
+        StratigraphicColumn* strati = new StratigraphicColumn(
+            column_name, units, STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
+        geomodel_.set_stratigraphic_column( strati );
     }
 
     void GeoModelBuilderRESQMLImpl::read_strati_column( EpcDocument& pck )
@@ -366,75 +434,7 @@ namespace RINGMesh
 
                 read_rank_interpreation( rank_interp );
 
-                // assign regions to layers
-                // TODO: this is a workaround until the
-                // SealedVolumeFrameworkRepresentation
-                // is released in fesapi that tells us the layer information of
-                // a region
-                for( auto& region : geomodel_.regions() )
-                {
-                    gmge_id layer = find_layer( region );
-                    ringmesh_assert( layer.is_defined() );
-                    const Layer3D& layer3d = static_cast< const Layer3D& >(
-                        geomodel_.geological_entity(
-                            GeologicalEntityType( "Layer" ), layer.index() ) );
-                    builder_.topology.set_mesh_entity_name(
-                        region.gmme(), layer3d.name() );
-                    builder_.geology.add_parent_children_relation(
-                        layer, region.gmme() );
-                }
-
-                // build the stati column
-                RockFeature rock( "rock", ROCKTYPE::NONE );
-                std::vector< std::shared_ptr< const StratigraphicUnit > > units;
-
-                for( auto unit_key :
-                    rank_interp->getStratigraphicUnitInterpretationSet() )
-                {
-                    const UnitInfo& unit = unit_2_info_[unit_key];
-                    const Interface3D* top =
-                        unit.interface_top_.is_defined()
-                            ? dynamic_cast< const Interface3D* >(
-                                  &geomodel_.geological_entity(
-                                      Interface3D::type_name_static(),
-                                      unit.interface_top_.index() ) )
-                            : nullptr;
-                    const Interface3D* base =
-                        unit.interface_base_.is_defined()
-                            ? dynamic_cast< const Interface3D* >(
-                                  &geomodel_.geological_entity(
-                                      Interface3D::type_name_static(),
-                                      unit.interface_base_.index() ) )
-                            : nullptr;
-
-                    std::shared_ptr< const StratigraphicUnit > sunit(
-                        new UnsubdividedStratigraphicUnit( unit.name_, base,
-                            top,
-                            static_cast< const Layer3D& >(
-                                geomodel_.geological_entity(
-                                    Layer3D::type_name_static(),
-                                    unit.layer_.index() ) ),
-                            unit.relation_top_, unit.relation_base_, rock, 0,
-                            10 ) );
-
-                    units.push_back( sunit );
-
-#ifdef RINGMESH_DEBUG
-                    Logger::out(
-                        "", " relation base: ", (int) unit.relation_base_ );
-                    Logger::out(
-                        "", " relation top: ", (int) unit.relation_top_ );
-                    Logger::out(
-                        "", " interface base: ", unit.interface_base_.index() );
-                    Logger::out(
-                        "", " interface top: ", unit.interface_top_.index() );
-#endif
-                }
-
-                StratigraphicColumn* strati =
-                    new StratigraphicColumn( column->getTitle(), units,
-                        STRATIGRAPHIC_PARADIGM::CHRONOSTRATIGRAPHIC );
-                geomodel_.set_stratigraphic_column( strati );
+                build_strati_column( rank_interp, column->getTitle() );
             }
         }
 
@@ -806,7 +806,7 @@ namespace RINGMesh
     } // namespace
 
     index_t GeoModelBuilderRESQMLImpl::find_matching_geomodel_region(
-        const VolumeMesh3D& mesh )
+        const VolumeMesh3D& mesh ) const
     {
         const auto& nn_search = mesh.cell_facet_nn_search();
 
