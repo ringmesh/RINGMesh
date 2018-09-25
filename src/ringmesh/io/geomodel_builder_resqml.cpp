@@ -148,6 +148,10 @@ namespace RINGMesh
 
     protected:
         gmge_id find_layer( const Region3D& region ) const;
+        gmge_id read_surface_geology( TriangulatedSetRepresentation* tri_set );
+        void read_rank_interpreation(
+            StratigraphicColumnRankInterpretation* rank_interp );
+        index_t find_matching_geomodel_region( const VolumeMesh3D& mesh );
 
     private:
         GeoModelBuilderRESQML& builder_;
@@ -276,82 +280,91 @@ namespace RINGMesh
         return gmge_id();
     }
 
+    void GeoModelBuilderRESQMLImpl::read_rank_interpreation(
+        StratigraphicColumnRankInterpretation* rank_interp )
+    {
+        showAllMetadata( rank_interp );
+
+        for( auto unit : rank_interp->getStratigraphicUnitInterpretationSet() )
+        {
+            const gmge_id layer = builder_.geology.create_geological_entity(
+                Layer3D::type_name_static() );
+
+            builder_.geology.set_geological_entity_geol_feature(
+                layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
+
+            interp_2_geo_entity_[unit] = layer;
+
+            unit_2_info_[unit].layer_ = layer;
+            if( unit->getInterpretedFeature() != nullptr )
+            {
+                const Layer3D& layer3d =
+                    static_cast< const Layer3D& >( geomodel_.geological_entity(
+                        GeologicalEntityType( "Layer" ), layer.index() ) );
+                builder_.geology.set_geological_entity_name(
+                    layer, unit->getInterpretedFeature()->getTitle() );
+                unit_2_info_[unit].name_ =
+                    unit->getInterpretedFeature()->getTitle();
+            }
+        }
+
+        for( auto contactIndex : range( rank_interp->getContactCount() ) )
+        {
+            unit_2_info_[rank_interp->getSubjectOfContact( contactIndex )]
+                .relation_base_ = get_contact_mode(
+                rank_interp->getSubjectContactModeOfContact( contactIndex ) );
+            unit_2_info_[rank_interp->getSubjectOfContact( contactIndex )]
+                .interface_base_ = interp_2_geo_entity_
+                [(AbstractFeatureInterpretation*) rank_interp
+                        ->getHorizonInterpretationOfContact( contactIndex )];
+
+            unit_2_info_[rank_interp->getDirectObjectOfContact( contactIndex )]
+                .relation_top_ = get_contact_mode(
+                rank_interp->getDirectObjectContactModeOfContact(
+                    contactIndex ) );
+            unit_2_info_[rank_interp->getDirectObjectOfContact( contactIndex )]
+                .interface_top_ = interp_2_geo_entity_
+                [(AbstractFeatureInterpretation*) rank_interp
+                        ->getHorizonInterpretationOfContact( contactIndex )];
+        }
+    }
+
     void GeoModelBuilderRESQMLImpl::read_strati_column( EpcDocument& pck )
     {
         const std::vector< RESQML2_0_1_NS::StratigraphicColumn* >
             stratiColumnSet = pck.getStratigraphicColumnSet();
-        // TODO: only one column for the moment
-        ringmesh_assert( stratiColumnSet.size() <= 1 );
+
+        if( stratiColumnSet.size() > 1 )
+        {
+            Logger::warn( "I/O", "RESQML2 load supports zero or one "
+                                 "stratigraphic column for the moment." );
+            return;
+        }
 
         for( auto column : stratiColumnSet )
         {
-            showAllMetadata( column );
+            if( column->getStratigraphicColumnRankInterpretationSet().size()
+                != 1 )
+            {
+                Logger::warn( "I/O", "RESQML2 load only rank one "
+                                     "interpretation for the moment." );
+                continue;
+            }
 
-            // TODO: now we read only rank 0
-            ringmesh_assert(
-                column->getStratigraphicColumnRankInterpretationSet().size()
-                == 1 );
+            showAllMetadata( column );
 
             for( auto rank_interp :
                 column->getStratigraphicColumnRankInterpretationSet() )
             {
-                showAllMetadata( rank_interp );
-                // TODO: only chronostrati
-                ringmesh_assert( rank_interp->isAChronoStratiRank() );
-
-                for( auto unit :
-                    rank_interp->getStratigraphicUnitInterpretationSet() )
+                if( !rank_interp->isAChronoStratiRank() )
                 {
-                    const gmge_id layer =
-                        builder_.geology.create_geological_entity(
-                            Layer3D::type_name_static() );
-
-                    builder_.geology.set_geological_entity_geol_feature(
-                        layer, GMGE::GEOL_FEATURE::STRATI_UNIT );
-
-                    interp_2_geo_entity_[unit] = layer;
-
-                    unit_2_info_[unit].layer_ = layer;
-                    if( unit->getInterpretedFeature() != nullptr )
-                    {
-                        const Layer3D& layer3d = static_cast< const Layer3D& >(
-                            geomodel_.geological_entity(
-                                GeologicalEntityType( "Layer" ),
-                                layer.index() ) );
-                        builder_.geology.set_geological_entity_name(
-                            layer, unit->getInterpretedFeature()->getTitle() );
-                        unit_2_info_[unit].name_ =
-                            unit->getInterpretedFeature()->getTitle();
-                    }
+                    Logger::warn( "I/O",
+                        "RESQML2 load supports only chronological "
+                        "stratigraphic rank for the moment." );
+                    continue;
                 }
 
-                for( auto contactIndex :
-                    range( rank_interp->getContactCount() ) )
-                {
-                    unit_2_info_[rank_interp->getSubjectOfContact(
-                                     contactIndex )]
-                        .relation_base_ = get_contact_mode(
-                        rank_interp->getSubjectContactModeOfContact(
-                            contactIndex ) );
-                    unit_2_info_[rank_interp->getSubjectOfContact(
-                                     contactIndex )]
-                        .interface_base_ = interp_2_geo_entity_
-                        [(AbstractFeatureInterpretation*)
-                                rank_interp->getHorizonInterpretationOfContact(
-                                    contactIndex )];
-
-                    unit_2_info_[rank_interp->getDirectObjectOfContact(
-                                     contactIndex )]
-                        .relation_top_ = get_contact_mode(
-                        rank_interp->getDirectObjectContactModeOfContact(
-                            contactIndex ) );
-                    unit_2_info_[rank_interp->getDirectObjectOfContact(
-                                     contactIndex )]
-                        .interface_top_ = interp_2_geo_entity_
-                        [(AbstractFeatureInterpretation*)
-                                rank_interp->getHorizonInterpretationOfContact(
-                                    contactIndex )];
-                }
+                read_rank_interpreation( rank_interp );
 
                 // assign regions to layers
                 // TODO: this is a workaround until the
@@ -507,6 +520,47 @@ namespace RINGMesh
         }
     } // namespace
 
+    gmge_id GeoModelBuilderRESQMLImpl::read_surface_geology(
+        TriangulatedSetRepresentation* tri_set )
+    {
+        showAllMetadata( tri_set );
+
+        const gmge_id interface_id = builder_.geology.create_geological_entity(
+            Interface3D::type_name_static() );
+
+        AbstractFeature* feature = nullptr;
+        if( tri_set->getInterpretation() != nullptr )
+        {
+            feature = tri_set->getInterpretation()->getInterpretedFeature();
+        }
+
+        if( feature != nullptr )
+        {
+            builder_.geology.set_geological_entity_name(
+                interface_id, feature->getTitle() );
+
+            if( dynamic_cast< TectonicBoundaryFeature* >( feature ) != nullptr )
+            {
+                builder_.geology.set_geological_entity_geol_feature(
+                    interface_id, GMGE::GEOL_FEATURE::FAULT );
+            }
+            else if( dynamic_cast< FrontierFeature* >( feature ) != nullptr )
+            {
+                builder_.geology.set_geological_entity_geol_feature(
+                    interface_id, GMGE::GEOL_FEATURE::VOI );
+            }
+            else if( dynamic_cast< GeneticBoundaryFeature* >( feature )
+                     != nullptr )
+            {
+                builder_.geology.set_geological_entity_geol_feature(
+                    interface_id, GMGE::GEOL_FEATURE::STRATI );
+            }
+
+            interp_2_geo_entity_[tri_set->getInterpretation()] = interface_id;
+        }
+        return interface_id;
+    }
+
     bool GeoModelBuilderRESQMLImpl::read_surfaces( const EpcDocument& pck )
     {
         std::vector< TriangulatedSetRepresentation* > all_tri_set_rep =
@@ -520,45 +574,7 @@ namespace RINGMesh
 
         for( auto tri_set : all_tri_set_rep )
         {
-            showAllMetadata( tri_set );
-
-            const gmge_id interface_id =
-                builder_.geology.create_geological_entity(
-                    Interface3D::type_name_static() );
-
-            AbstractFeature* feature = nullptr;
-            if( tri_set->getInterpretation() != nullptr )
-            {
-                feature = tri_set->getInterpretation()->getInterpretedFeature();
-            }
-
-            if( feature != nullptr )
-            {
-                builder_.geology.set_geological_entity_name(
-                    interface_id, feature->getTitle() );
-
-                if( dynamic_cast< TectonicBoundaryFeature* >( feature )
-                    != nullptr )
-                {
-                    builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::FAULT );
-                }
-                else if( dynamic_cast< FrontierFeature* >( feature )
-                         != nullptr )
-                {
-                    builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::VOI );
-                }
-                else if( dynamic_cast< GeneticBoundaryFeature* >( feature )
-                         != nullptr )
-                {
-                    builder_.geology.set_geological_entity_geol_feature(
-                        interface_id, GMGE::GEOL_FEATURE::STRATI );
-                }
-
-                interp_2_geo_entity_[tri_set->getInterpretation()] =
-                    interface_id;
-            }
+            const gmge_id interface_id = read_surface_geology( tri_set );
 
             ULONG64 global_point_count = 0;
             for( auto patch : range( tri_set->getPatchCount() ) )
@@ -641,6 +657,106 @@ namespace RINGMesh
 
     namespace
     {
+        void read_tetrahedron( VolumeMeshBuilder3D& mesh_builder,
+            UnstructuredGridRepresentation& unstructed_grid )
+        {
+            const index_t cell =
+                mesh_builder.create_cells( (index_t) 1, CellType::TETRAHEDRON );
+
+            std::vector< index_t > vertices = {
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[0],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[1],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[2],
+                0
+            };
+
+            bool found = false;
+            for( unsigned int f = 1; f < 4; ++f )
+            {
+                const ULONG64 nb_nodes =
+                    unstructed_grid.getNodeCountOfFaceOfCell( cell, f );
+
+                for( ULONG64 node = 0; node < nb_nodes; ++node )
+                {
+                    const ULONG64 node_index =
+                        unstructed_grid.getNodeIndicesOfFaceOfCell(
+                            cell, f )[node];
+                    if( node_index != vertices[0] && node_index != vertices[1]
+                        && node_index != vertices[2] )
+                    {
+                        vertices[3] = (index_t) node_index;
+                        found = true;
+                        break;
+                    }
+                }
+            }
+            ringmesh_assert( found );
+
+            for( auto v_id : range( 4 ) )
+            {
+                mesh_builder.set_cell_vertex( { cell, v_id }, vertices[v_id] );
+            }
+        }
+
+        void read_pyramid( VolumeMeshBuilder3D& mesh_builder,
+            UnstructuredGridRepresentation& unstructed_grid )
+        {
+            const index_t cell =
+                mesh_builder.create_cells( (index_t) 1, CellType::PYRAMID );
+
+            std::vector< index_t > vertices = {
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[1],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[0],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[3],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[2],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 1 )[0]
+            };
+
+            for( auto v_id : range( 5 ) )
+            {
+                mesh_builder.set_cell_vertex( { cell, v_id }, vertices[v_id] );
+            }
+        }
+
+        void read_hexahedron( VolumeMeshBuilder3D& mesh_builder,
+            UnstructuredGridRepresentation& unstructed_grid )
+        {
+            const index_t cell =
+                mesh_builder.create_cells( (index_t) 1, CellType::HEXAHEDRON );
+
+            std::vector< index_t > vertices = {
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[0],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[1],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[3],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 0 )[2],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 1 )[0],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 1 )[1],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 1 )[3],
+                (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
+                    cell, 1 )[2]
+            };
+
+            for( auto v_id : range( 8 ) )
+            {
+                mesh_builder.set_cell_vertex( { cell, v_id }, vertices[v_id] );
+            }
+        }
+
         bool read_volume_rep( VolumeMesh3D& mesh,
             UnstructuredGridRepresentation& unstructed_grid )
         {
@@ -671,101 +787,15 @@ namespace RINGMesh
                     (index_t) unstructed_grid.getFaceCountOfCell( c );
                 if( nb_faces == 4 )
                 {
-                    const index_t cell = mesh_builder->create_cells(
-                        (index_t) 1, CellType::TETRAHEDRON );
-
-                    std::vector< index_t > vertices = {
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[0],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[1],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[2],
-                        0
-                    };
-
-                    bool found = false;
-                    for( unsigned int f = 1; f < nb_faces; ++f )
-                    {
-                        const ULONG64 nb_nodes =
-                            unstructed_grid.getNodeCountOfFaceOfCell( cell, f );
-
-                        for( ULONG64 node = 0; node < nb_nodes; ++node )
-                        {
-                            const ULONG64 node_index =
-                                unstructed_grid.getNodeIndicesOfFaceOfCell(
-                                    cell, f )[node];
-                            if( node_index != vertices[0]
-                                && node_index != vertices[1]
-                                && node_index != vertices[2] )
-                            {
-                                vertices[3] = (index_t) node_index;
-                                found = true;
-                                break;
-                            }
-                        }
-                    }
-                    ringmesh_assert( found );
-
-                    for( auto v_id : range( 4 ) )
-                    {
-                        mesh_builder->set_cell_vertex(
-                            { cell, v_id }, vertices[v_id] );
-                    }
+                    read_tetrahedron( *mesh_builder, unstructed_grid );
                 }
                 else if( nb_faces == 5 )
                 {
-                    const index_t cell = mesh_builder->create_cells(
-                        (index_t) 1, CellType::PYRAMID );
-
-                    std::vector< index_t > vertices = {
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[1],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[0],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[3],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[2],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 1 )[0]
-                    };
-
-                    for( auto v_id : range( 5 ) )
-                    {
-                        mesh_builder->set_cell_vertex(
-                            { cell, v_id }, vertices[v_id] );
-                    }
+                    read_pyramid( *mesh_builder, unstructed_grid );
                 }
                 else if( nb_faces == 6 )
                 {
-                    const index_t cell = mesh_builder->create_cells(
-                        (index_t) 1, CellType::HEXAHEDRON );
-
-                    std::vector< index_t > vertices = {
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[0],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[1],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[3],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 0 )[2],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 1 )[0],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 1 )[1],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 1 )[3],
-                        (index_t) unstructed_grid.getNodeIndicesOfFaceOfCell(
-                            cell, 1 )[2]
-                    };
-
-                    for( auto v_id : range( 8 ) )
-                    {
-                        mesh_builder->set_cell_vertex(
-                            { cell, v_id }, vertices[v_id] );
-                    }
+                    read_hexahedron( *mesh_builder, unstructed_grid );
                 }
             }
             unstructed_grid.unloadGeometry();
@@ -774,6 +804,60 @@ namespace RINGMesh
             return true;
         }
     } // namespace
+
+    index_t GeoModelBuilderRESQMLImpl::find_matching_geomodel_region(
+        const VolumeMesh3D& mesh )
+    {
+        const auto& nn_search = mesh.cell_facet_nn_search();
+
+        int region_index = -1;
+        for( auto r : range( geomodel_.nb_regions() ) )
+        {
+            const Region3D& region = geomodel_.region( r );
+
+            bool match = true;
+            for( auto b : range( region.nb_boundaries() ) )
+            {
+                const Surface3D& surface = region.boundary( b );
+                for( auto p : range( surface.nb_mesh_elements() ) )
+                {
+                    auto center = surface.mesh_element_barycenter( p );
+                    auto result = nn_search.get_neighbors(
+                        center, surface.geomodel().epsilon() );
+                    if( result.empty() )
+                    {
+                        match = false;
+                        break;
+                    }
+                }
+                if( !match )
+                {
+                    break;
+                }
+            }
+            if( match )
+            {
+                region_index = (int) r;
+                break;
+            }
+        }
+
+        if( region_index == -1 )
+        {
+            if( !geomodel_.entity_type_manager()
+                     .mesh_entity_manager.is_valid_type(
+                         Region3D::type_name_static() ) )
+            {
+                return -1;
+            }
+            else
+            {
+                region_index = 0;
+            }
+        }
+
+        return region_index;
+    }
 
     bool GeoModelBuilderRESQMLImpl::read_volumes( const EpcDocument& pck )
     {
@@ -802,53 +886,13 @@ namespace RINGMesh
 
             // the volume mesh from resqml is here, need to find the
             // corresponding region of in the GeoModel3D
-            const auto& nn_search = mesh->cell_facet_nn_search();
 
-            int region_index = -1;
-            for( auto r : range( geomodel_.nb_regions() ) )
-            {
-                const Region3D& region = geomodel_.region( r );
-
-                bool match = true;
-                for( auto b : range( region.nb_boundaries() ) )
-                {
-                    const Surface3D& surface = region.boundary( b );
-                    for( auto p : range( surface.nb_mesh_elements() ) )
-                    {
-                        auto center = surface.mesh_element_barycenter( p );
-                        auto result = nn_search.get_neighbors(
-                            center, surface.geomodel().epsilon() );
-                        if( result.empty() )
-                        {
-                            match = false;
-                            break;
-                        }
-                    }
-                    if( !match )
-                    {
-                        break;
-                    }
-                }
-                if( match )
-                {
-                    region_index = (int) r;
-                    break;
-                }
-            }
-
+            const int region_index = find_matching_geomodel_region( *mesh );
             if( region_index == -1 )
             {
-                if( !geomodel_.entity_type_manager()
-                         .mesh_entity_manager.is_valid_type(
-                             Region3D::type_name_static() )
-                    || unstructuredGridRepSet.size() > 1 )
-                {
-                    return false;
-                }
-                else
-                {
-                    region_index = 0;
-                }
+                Logger::err( "I/O", "RESQML2 could not find a matching region "
+                                    "for the volumn mesh" );
+                return false;
             }
 
             // corresponding region found, build its volume mesh
