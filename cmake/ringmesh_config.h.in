@@ -59,8 +59,4 @@ namespace RINGMesh
 #cmakedefine RINGMESH_WITH_GUI
 #cmakedefine RINGMESH_WITH_RESQML2
 
-/* Absolute path to fesapi resources directory */
-static const std::string fesapi_resources_path =
-"@FESAPI_RESOURCES_DIRECTORY@/";
-
 } // namespace RINGMesh

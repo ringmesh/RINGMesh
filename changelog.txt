@@ -1,7 +1,7 @@
 #### Release: 5.1.0 ####
 
 New Features:
- * 
+ * Support input and output resqml2 standards
 
 Bug fix:
  * Fix geomodel_copy in 2D

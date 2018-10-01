@@ -71,7 +71,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target coverage -- -j2
@@ -97,7 +97,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON..
         - cd Debug
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
@@ -115,7 +115,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF..
         - cmake --build . --config Debug
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config Debug
         - cmake --build ringmesh --target package
@@ -132,7 +132,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON ..
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_GUI:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF..
         - cd Debug
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target test -- -j2
@@ -156,7 +156,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
+        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
         - cmake --build ringmesh --target package
@@ -180,7 +180,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
+        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
         - cmake --build ringmesh --target package
