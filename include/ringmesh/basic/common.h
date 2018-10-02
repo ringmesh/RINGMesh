@@ -43,11 +43,6 @@
 #include <ringmesh/basic/export.h>
 #include <ringmesh/ringmesh_config.h>
 
-/* Absolute path to fesapi resources directory */
-#if defined( RINGMESH_WITH_RESQML2 )
-static const std::string fesapi_resources_path = "/resources/";
-#endif
-
 #if defined( _WIN32 )
 #define RINGMESH_WINDOWS
 #else

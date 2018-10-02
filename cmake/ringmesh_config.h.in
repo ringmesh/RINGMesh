@@ -41,8 +41,6 @@
 
 #pragma once
 
-#include <string>
-
 namespace RINGMesh
 {
 #define RINGMesh_VERSION_MAJOR @RINGMesh_VERSION_MAJOR@
@@ -58,5 +56,10 @@ namespace RINGMesh
 #cmakedefine RINGMESH_WITH_TESTS
 #cmakedefine RINGMESH_WITH_GUI
 #cmakedefine RINGMESH_WITH_RESQML2
+
+#if defined( RINGMESH_WITH_RESQML2 )
+	#include <string>
+	static const std::string fesapi_resources_path = "@FESAPI_RESOURCES_DIRECTORY@/";
+#endif
 
 } // namespace RINGMesh
