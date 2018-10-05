@@ -74,9 +74,9 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderBase );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( GeoModelBuilderGM );
-
     ALIAS_2D_AND_3D( GeoModelMeshEntity );
     ALIAS_2D_AND_3D( Region );
+    class StratigraphicColumn;
 } // namespace RINGMesh
 
 namespace RINGMesh
@@ -221,6 +221,10 @@ namespace RINGMesh
             return epsilon() * epsilon();
         }
 
+        void set_stratigraphic_column( const StratigraphicColumn* column );
+
+        const StratigraphicColumn* stratigraphic_column() const;
+
         /*!
          * @}
          */
@@ -314,6 +318,9 @@ namespace RINGMesh
          * @todo Move it out. It has nothing to do here. [JP]
          */
         const WellGroup< DIMENSION >* wells_{ nullptr };
+
+    private:
+        std::unique_ptr< const StratigraphicColumn > strati_column_;
     };
     ALIAS_2D_AND_3D( GeoModelBase );
 

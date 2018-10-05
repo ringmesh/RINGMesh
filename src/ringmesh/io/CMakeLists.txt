@@ -58,6 +58,7 @@ target_sources(${target_name}
         "${lib_source_dir}/geomodel/io_tetgen.hpp"
         "${lib_source_dir}/geomodel/io_tsolid.hpp"
         "${lib_source_dir}/geomodel/io_vtk.hpp"
+        "${lib_source_dir}/geomodel/io_resqml.hpp" 
         "${lib_source_dir}/stratigraphic_column/io_xml.hpp"
         "${lib_source_dir}/well_group/io_smesh.hpp"
         "${lib_source_dir}/well_group/io_wl.hpp"
@@ -69,6 +70,17 @@ target_sources(${target_name}
         "${lib_include_dir}/io.h"
         "${lib_include_dir}/zip_file.h"
 )
+
+if(RINGMESH_WITH_RESQML2)
+target_sources(${target_name}
+    PRIVATE
+        "${lib_source_dir}/geomodel_builder_resqml.cpp"
+        "${lib_source_dir}/geomodel_adapter_resqml.cpp"
+    PRIVATE # Could be PUBLIC from CMake 3.3
+        "${lib_include_dir}/geomodel_builder_resqml.h"
+        "${lib_include_dir}/geomodel_adapter_resqml.h"
+)
+endif()
 
 target_link_libraries(${target_name} 
     PUBLIC

@@ -1,0 +1,10 @@
+Corner 8
+Line 12
+Surface 6
+Vertex 8
+Polygon 12
+Cell 6
+Interface 6
+Contact 12
+Region 1
+Layer 1

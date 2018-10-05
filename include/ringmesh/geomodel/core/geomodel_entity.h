@@ -101,6 +101,7 @@ namespace RINGMesh
         {
             name_ = from.name_;
         }
+
         virtual bool is_index_valid() const = 0;
 
     protected:

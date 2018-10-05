@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -37,36 +37,24 @@
 
 #include <ringmesh/io/common.h>
 
-#include <ringmesh/geomodel/builder/geomodel_builder.h>
-
-/*!
- * @brief Classes to build GeoModel from various inputs
- * @author Jeanne Pellerin
- */
+namespace RINGMesh
+{
+    class GeoModelAdapterRESQMLImpl;
+}
 
 namespace RINGMesh
 {
-    /*!
-     * @brief Abstract interface class to load and build GeoModels from files
-     */
-    template < index_t DIMENSION >
-    class io_api GeoModelBuilderFile : public GeoModelBuilder< DIMENSION >
+    class io_api GeoModelAdapterRESQML
     {
     public:
-        GeoModelBuilderFile(
-            GeoModel< DIMENSION >& geomodel, std::string filename );
+        GeoModelAdapterRESQML(
+            const GeoModel3D& geomodel, const std::string& filename );
+        ~GeoModelAdapterRESQML();
 
-        void build_geomodel();
-
-        const std::string& filename() const
-        {
-            return filename_;
-        }
+        void save_file();
 
     private:
-        virtual void load_file() = 0;
-
-    private:
-        const std::string filename_;
+        std::unique_ptr< GeoModelAdapterRESQMLImpl > impl_;
     };
+
 } // namespace RINGMesh

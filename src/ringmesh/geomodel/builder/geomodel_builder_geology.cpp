@@ -502,6 +502,16 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelBuilderGeology< DIMENSION >::set_geological_entity_name(
+        const gmge_id& gmge_id, const std::string& name )
+    {
+        GeoModelGeologicalEntityAccess< DIMENSION > gmge_access{
+            geomodel_access_.modifiable_geological_entity( gmge_id )
+        };
+        gmge_access.modifiable_name() = name;
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderGeology< DIMENSION >::update_parent_entity_children(
         index_t relationship_id,
         const gmge_id& new_parent_gmge,

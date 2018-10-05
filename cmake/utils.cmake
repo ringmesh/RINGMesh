@@ -45,7 +45,13 @@ function(add_ringmesh_library directory)
             $<BUILD_INTERFACE:${PROJECT_BINARY_DIR}>
             $<INSTALL_INTERFACE:include>
     )
-    target_link_libraries(${target_name} PUBLIC Geogram::geogram)
+    set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
+    if(RINGMESH_WITH_RESQML2)
+        find_package(Fesapi REQUIRED)
+        target_link_libraries(${target_name} PUBLIC  Geogram::geogram fesapi)
+    else()
+        target_link_libraries(${target_name} PUBLIC  Geogram::geogram)
+    endif()
     if(WIN32)
         target_compile_definitions(${target_name} 
             PUBLIC 
@@ -58,7 +64,7 @@ function(add_ringmesh_library directory)
     set(lib_include_dir ${PROJECT_SOURCE_DIR}/include/ringmesh/${directory})
     set(lib_source_dir ${PROJECT_SOURCE_DIR}/src/ringmesh/${directory})
     include(${PROJECT_SOURCE_DIR}/src/ringmesh/${directory}/CMakeLists.txt)
-    
+
     export(TARGETS ${target_name} 
         NAMESPACE RINGMesh:: 
         FILE lib/cmake/RINGMesh/RINGMesh_${target_name}_target.cmake
@@ -97,9 +103,9 @@ function(add_js_target target src)
     set_target_properties(${js_target}
         PROPERTIES 
             OUTPUT_NAME ${target_node_name}
-          	RUNTIME_OUTPUT_DIRECTORY ${output_directory}
-          	LIBRARY_OUTPUT_DIRECTORY ${output_directory}
-          	ARCHIVE_OUTPUT_DIRECTORY ${output_directory}
+              RUNTIME_OUTPUT_DIRECTORY ${output_directory}
+              LIBRARY_OUTPUT_DIRECTORY ${output_directory}
+              ARCHIVE_OUTPUT_DIRECTORY ${output_directory}
     )
     target_link_libraries(${js_target} ${target} nbind)
 endfunction()
@@ -127,6 +133,23 @@ if(WIN32)
             "${TINYXML2_INSTALL_PREFIX}/bin"
             "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
             COMMENT "Copy tinyxml2 binaries")
+    if(RINGMESH_WITH_RESQML2)
+        add_custom_command(TARGET copy_dll PRE_BUILD
+            COMMAND  "${CMAKE_COMMAND}" -E copy_directory
+                "${FESAPI_INSTALL_PREFIX}/lib"
+                "${PROJECT_BINARY_DIR}/$<CONFIGURATION>"
+                COMMENT "Copy fesapi binaries")
+        add_custom_command(TARGET copy_dll PRE_BUILD
+            COMMAND  "${CMAKE_COMMAND}" -E copy
+                "${HDF5_INSTALL_PREFIX}/bin/hdf5.dll"
+                "${PROJECT_BINARY_DIR}/$<CONFIGURATION>/hdf5.dll"
+                COMMENT "Copy hdf5 binaries")
+        add_custom_command(TARGET copy_dll PRE_BUILD
+            COMMAND  "${CMAKE_COMMAND}" -E copy
+                "${HDF5_INSTALL_PREFIX}/bin/zlib.dll"
+                "${PROJECT_BINARY_DIR}/$<CONFIGURATION>/zlib.dll"
+                COMMENT "Copy zlib for hdf5 binaries")
+    endif()
 endif(WIN32)
 endmacro()
 

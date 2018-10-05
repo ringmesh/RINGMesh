@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2012-2018, Association Scientifique pour la Geologie et ses
+ * Copyright (c) 2018, Association Scientifique pour la Geologie et ses
  * Applications (ASGA). All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without
@@ -33,40 +33,33 @@
  *     FRANCE
  */
 
-#pragma once
-
-#include <ringmesh/io/common.h>
-
-#include <ringmesh/geomodel/builder/geomodel_builder.h>
-
-/*!
- * @brief Classes to build GeoModel from various inputs
- * @author Jeanne Pellerin
- */
-
-namespace RINGMesh
+namespace
 {
-    /*!
-     * @brief Abstract interface class to load and build GeoModels from files
-     */
-    template < index_t DIMENSION >
-    class io_api GeoModelBuilderFile : public GeoModelBuilder< DIMENSION >
+
+    using namespace RINGMesh;
+
+    class RESQMLIOHandler final : public GeoModelInputHandler3D,
+                                  public GeoModelOutputHandler3D
     {
     public:
-        GeoModelBuilderFile(
-            GeoModel< DIMENSION >& geomodel, std::string filename );
-
-        void build_geomodel();
-
-        const std::string& filename() const
+        void load( const std::string& filename, GeoModel3D& geomodel ) final
         {
-            return filename_;
+            std::ifstream input( filename.c_str() );
+            if( !input )
+            {
+                throw RINGMeshException(
+                    "I/O", "Failed loading geomodel from file ", filename );
+            }
+
+            GeoModelBuilderRESQML builder( geomodel, filename );
+            builder.build_geomodel();
+        }
+        void save(
+            const GeoModel3D& geomodel, const std::string& filename ) final
+        {
+            GeoModelAdapterRESQML adapter( geomodel, filename );
+            adapter.save_file();
         }
 
-    private:
-        virtual void load_file() = 0;
-
-    private:
-        const std::string filename_;
     };
-} // namespace RINGMesh
+}

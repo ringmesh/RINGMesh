@@ -1,0 +1,10 @@
+Corner 36
+Line 68
+Surface 41
+Vertex 151
+Polygon 379
+Cell 0
+Interface 10
+Contact 31
+Region 8
+Layer 1

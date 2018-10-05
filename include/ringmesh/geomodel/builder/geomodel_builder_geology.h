@@ -76,6 +76,9 @@ namespace RINGMesh
             typename GeoModelGeologicalEntity< DIMENSION >::GEOL_FEATURE
                 geol_feature );
 
+        void set_geological_entity_name(
+            const gmge_id& gmge_id, const std::string& name );
+
         void set_mesh_entity_parent( const gmme_id& child_gmme,
             index_t id,
             const gmge_id& parent_gmge,
