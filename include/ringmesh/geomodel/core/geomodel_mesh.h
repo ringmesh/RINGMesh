@@ -288,6 +288,15 @@ namespace RINGMesh
          */
         void erase_vertices( std::vector< index_t >& to_delete ) const;
 
+        /*!
+         * @brief Get the PointSetMesh
+         * @return the PointSetMesh
+         */
+        const PointSetMesh< DIMENSION >& mesh() const
+        {
+            return *mesh_;
+        }
+
     private:
         /*!
          * @brief Initialize the vertices from the vertices
@@ -550,6 +559,15 @@ namespace RINGMesh
          */
         const SurfaceAABBTree< DIMENSION >& aabb() const;
 
+        /*!
+         * @brief Get the mesh containing all the polygons
+         * @return the SurfaceMesh containing all the polygons
+         */
+        const SurfaceMesh< DIMENSION >& mesh() const
+        {
+            return *mesh_;
+        }
+
     private:
         /*!
          * Initialize the polygons of the GeoModelMesh
@@ -746,6 +764,15 @@ namespace RINGMesh
          * Clear edge data: line_id_ and edge_id_
          */
         void clear_edge_data();
+
+        /*!
+         * @brief Get the mesh containing all the edges
+         * @return the LineMesh containing all the edges
+         */
+        const LineMesh< DIMENSION >& mesh() const
+        {
+            return *mesh_;
+        }
 
     protected:
         GeoModelMeshEdges( GeoModelMesh< DIMENSION >& gmm,
@@ -1185,6 +1212,15 @@ namespace RINGMesh
          * @brief return the AABB tree for the cells of the mesh
          */
         const VolumeAABBTree< DIMENSION >& aabb() const;
+
+        /*!
+         * @brief Get the mesh containing all the cells
+         * @return the VolumeMesh containing all the cells
+         */
+        const VolumeMesh< DIMENSION >& mesh() const
+        {
+            return *mesh_;
+        }
 
     private:
         /// enum to characterize the action to do concerning a surface
