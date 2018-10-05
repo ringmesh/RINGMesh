@@ -40,6 +40,7 @@
  */
 
 #pragma once
+#include <string>
 
 namespace RINGMesh
 {
@@ -55,4 +56,10 @@ namespace RINGMesh
 #cmakedefine RINGMESH_WITH_UTILITIES
 #cmakedefine RINGMESH_WITH_TESTS
 #cmakedefine RINGMESH_WITH_GUI
+#cmakedefine RINGMESH_WITH_RESQML2
+
+#if defined( RINGMESH_WITH_RESQML2 )
+	static const std::string fesapi_resources_path = "@FESAPI_RESOURCES_DIRECTORY@/";
+#endif
+
 } // namespace RINGMesh

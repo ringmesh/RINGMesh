@@ -94,7 +94,11 @@ namespace RINGMesh
             /// An unspecified fault
             FAULT,
             /// Volume Of Interest
-            VOI
+            VOI,
+            // stratigraphic unit
+            STRATI_UNIT,
+            // geobody
+            GEOBODY
         };
 
         /*!

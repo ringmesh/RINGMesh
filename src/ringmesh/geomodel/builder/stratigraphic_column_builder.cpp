@@ -118,7 +118,8 @@ namespace RINGMesh
 
         // Creation of StratigraphicUnit
 
-        std::vector< const StratigraphicUnit* > units_vec_construction;
+        std::vector< std::shared_ptr< const StratigraphicUnit > >
+            units_vec_construction;
         for( index_t i = 0; i < unitList.size(); i += 3 )
         {
             const std::string& name_of_unit = unitList[i];
@@ -159,15 +160,16 @@ namespace RINGMesh
                             base_interface_id ) ) );
                     ringmesh_assert( layer != nullptr );
                 }
-                UnsubdividedStratigraphicUnit unit( name_of_unit,
-                    *top_interface, *base_interface, *layer,
-                    RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
-                    std::numeric_limits< double >::max() );
-                units_vec_construction.push_back( &unit );
+                std::shared_ptr< const StratigraphicUnit > unit(
+                    new UnsubdividedStratigraphicUnit( name_of_unit,
+                        top_interface, base_interface, *layer,
+                        RELATION::CONFORMABLE, RELATION::CONFORMABLE, rock, 0,
+                        std::numeric_limits< double >::max() ) );
+                units_vec_construction.push_back( unit );
             }
         }
-        const std::vector< const StratigraphicUnit* > units_vec =
-            units_vec_construction;
+        const std::vector< std::shared_ptr< const StratigraphicUnit > >
+            units_vec = units_vec_construction;
         STRATIGRAPHIC_PARADIGM paradigm_upper;
         if( paradigm_str == "chronostratigraphy" )
         {

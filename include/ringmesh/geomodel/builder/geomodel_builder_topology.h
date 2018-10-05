@@ -144,6 +144,9 @@ namespace RINGMesh
             index_t current_local_boundary_corner_id,
             index_t new_global_boundary_corner_id );
 
+        void set_mesh_entity_name(
+            const gmme_id& gmge_id, const std::string& name );
+
     protected:
         GeoModelBuilderTopologyBase( GeoModelBuilder< DIMENSION >& builder,
             GeoModel< DIMENSION >& geomodel );

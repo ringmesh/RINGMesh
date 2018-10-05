@@ -657,6 +657,16 @@ namespace RINGMesh
     }
 
     template < index_t DIMENSION >
+    void GeoModelBuilderTopologyBase< DIMENSION >::set_mesh_entity_name(
+        const gmme_id& gmme_id, const std::string& name )
+    {
+        GeoModelMeshEntityAccess< DIMENSION > gmme_access{
+            geomodel_access_.modifiable_mesh_entity( gmme_id )
+        };
+        gmme_access.modifiable_name() = name;
+    }
+
+    template < index_t DIMENSION >
     void GeoModelBuilderTopologyBase< DIMENSION >::
         add_line_corner_boundary_relation(
             index_t incident_line_id, index_t boundary_corner_id )

@@ -175,7 +175,7 @@ void check_files( const std::string& file1, const std::string& file2 )
     }
 }
 
-void check_output( GEO::LineInput& in )
+void check_output_by_file( GEO::LineInput& in )
 {
     while( !in.eof() && in.get_line() )
     {
@@ -187,10 +187,50 @@ void check_output( GEO::LineInput& in )
 }
 
 template < index_t DIMENSION >
-void io_geomodel(
-    const std::string& geomodel_file, const std::string& extension )
+void check_output_by_model(
+    const GeoModel< DIMENSION >& geomodel1, const std::string& extension )
 {
-    GeoModel< DIMENSION > geomodel;
+    GeoModel< DIMENSION > geomodel2;
+    geomodel_load( geomodel2, ringmesh_test_output_path + "geomodel"
+                                  + std::to_string( DIMENSION ) + "d."
+                                  + extension );
+
+    const auto& all_mesh_entity_types =
+        geomodel1.entity_type_manager().mesh_entity_manager.mesh_entity_types();
+    for( const auto& cur_entity_type : all_mesh_entity_types )
+    {
+        if( geomodel1.nb_mesh_entities( cur_entity_type )
+            != geomodel2.nb_mesh_entities( cur_entity_type ) )
+        {
+            throw RINGMeshException( "TEST", "Number of entities of type ",
+                cur_entity_type.string(), " of two GeoModels not equal: ",
+                geomodel1.nb_mesh_entities( cur_entity_type ), " ",
+                geomodel2.nb_mesh_entities( cur_entity_type ) );
+        }
+    }
+
+    const auto& all_geological_entity_types =
+        geomodel1.entity_type_manager()
+            .geological_entity_manager.geological_entity_types();
+
+    for( const auto& cur_entity_type : all_geological_entity_types )
+    {
+        if( geomodel1.nb_geological_entities( cur_entity_type )
+            != geomodel2.nb_geological_entities( cur_entity_type ) )
+        {
+            throw RINGMeshException( "TEST", "Number of entities of type ",
+                cur_entity_type.string(), " of two GeoModels not equal: ",
+                geomodel1.nb_geological_entities( cur_entity_type ), " ",
+                geomodel2.nb_geological_entities( cur_entity_type ) );
+        }
+    }
+}
+
+template < index_t DIMENSION >
+void io_geomodel( GeoModel< DIMENSION >& geomodel,
+    const std::string& geomodel_file,
+    const std::string& extension )
+{
     geomodel_load( geomodel, geomodel_file );
     geomodel_save( geomodel, ringmesh_test_output_path + "geomodel"
                                  + std::to_string( DIMENSION ) + "d."
@@ -274,9 +314,19 @@ void process_extension( const std::string& extension )
         throw RINGMeshException( "TEST", "Failed to load file: ", info );
     }
     get_line( in );
+
+    GeoModel< DIMENSION > geomodel;
     io_geomodel< DIMENSION >(
-        ringmesh_test_data_path + in.field( 0 ), extension );
-    check_output( in );
+        geomodel, ringmesh_test_data_path + in.field( 0 ), extension );
+
+    if( extension == "epc" )
+    {
+        check_output_by_model< DIMENSION >( geomodel, extension );
+    }
+    else
+    {
+        check_output_by_file( in );
+    }
     Logger::out( "TEST", "Format ", extension, " OK" );
 }
 

@@ -126,7 +126,20 @@ namespace RINGMesh
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
-            return geomodel->region( 0 ).cell_attribute_manager();
+
+            index_t entity_index = 0;
+            index_t max_nb_attributes = 0;
+            for( auto e : range( geomodel->nb_regions() ) )
+            {
+                if( geomodel->region( e ).cell_attribute_manager().nb()
+                    > max_nb_attributes )
+                {
+                    entity_index = e;
+                    max_nb_attributes =
+                        geomodel->region( e ).cell_attribute_manager().nb();
+                }
+            }
+            return geomodel->region( entity_index ).cell_attribute_manager();
         }
 
     private:
@@ -194,7 +207,20 @@ namespace RINGMesh
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
-            return geomodel->region( 0 ).vertex_attribute_manager();
+
+            index_t entity_index = 0;
+            index_t max_nb_attributes = 0;
+            for( auto e : range( geomodel->nb_regions() ) )
+            {
+                if( geomodel->region( e ).vertex_attribute_manager().nb()
+                    > max_nb_attributes )
+                {
+                    entity_index = e;
+                    max_nb_attributes =
+                        geomodel->region( e ).vertex_attribute_manager().nb();
+                }
+            }
+            return geomodel->region( entity_index ).vertex_attribute_manager();
         }
 
     private:
@@ -262,7 +288,21 @@ namespace RINGMesh
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
-            return geomodel->surface( 0 ).polygon_attribute_manager();
+
+            index_t entity_index = 0;
+            index_t max_nb_attributes = 0;
+            for( auto e : range( geomodel->nb_surfaces() ) )
+            {
+                if( geomodel->surface( e ).polygon_attribute_manager().nb()
+                    > max_nb_attributes )
+                {
+                    entity_index = e;
+                    max_nb_attributes =
+                        geomodel->surface( e ).polygon_attribute_manager().nb();
+                }
+            }
+            return geomodel->surface( entity_index )
+                .polygon_attribute_manager();
         }
 
     private:
@@ -327,7 +367,20 @@ namespace RINGMesh
         {
             const GeoModel< DIMENSION >* geomodel =
                 this->manager_->gfx().geomodel();
-            return geomodel->surface( 0 ).vertex_attribute_manager();
+
+            index_t entity_index = 0;
+            index_t max_nb_attributes = 0;
+            for( auto e : range( geomodel->nb_surfaces() ) )
+            {
+                if( geomodel->surface( e ).vertex_attribute_manager().nb()
+                    > max_nb_attributes )
+                {
+                    entity_index = e;
+                    max_nb_attributes =
+                        geomodel->surface( e ).vertex_attribute_manager().nb();
+                }
+            }
+            return geomodel->surface( entity_index ).vertex_attribute_manager();
         }
 
     private:
