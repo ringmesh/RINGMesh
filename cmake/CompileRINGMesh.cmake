@@ -33,10 +33,9 @@
 
 set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
 
+set(RINGMesh_DEPENDENCY geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 if(RINGMESH_WITH_RESQML2)
-    set(RINGMesh_DEPENDENCY fesapi_ext geogram_ext tinyxml2_ext zlib_ext minizip_ext)
-else()
-    set(RINGMesh_DEPENDENCY geogram_ext tinyxml2_ext zlib_ext minizip_ext)
+    set(RINGMesh_DEPENDENCY ${RINGMesh_DEPENDENCY} fesapi_ext)
 endif()
 
 ExternalProject_Add(ringmesh_ext
@@ -50,9 +49,6 @@ ExternalProject_Add(ringmesh_ext
     CMAKE_CACHE_ARGS
         ${RINGMESH_EXTRA_ARGS}
         -DUSE_SUPERBUILD:BOOL=OFF
-        -DHDF5_INSTALL_PREFIX:PATH=${HDF5_INSTALL_PREFIX}
-        -DFESAPI_PATH:PATH=${FESAPI_PATH}
-        -DFESAPI_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
         -DGEOGRAM_INSTALL_PREFIX:PATH=${GEOGRAM_INSTALL_PREFIX}
         -DZLIB_ROOT:PATH=${ZLIB_ROOT}
         -DTINYXML2_INSTALL_PREFIX:PATH=${TINYXML2_INSTALL_PREFIX}

@@ -34,19 +34,21 @@
 
 @PACKAGE_INIT@ 
 
-if(EXISTS ${PACKAGE_PREFIX_DIR}/lib/cmake/modules/FindGeogram.cmake)
+set_and_check(GEOGRAM_INSTALL_PREFIX "@PACKAGE_GEOGRAM_INSTALL_PREFIX@")
+
+#if(EXISTS ${PACKAGE_PREFIX_DIR}/lib/cmake/modules/FindGeogram.cmake)
     # Install/Package configuration
-    set_and_check(GEOGRAM_INSTALL_PREFIX ${PACKAGE_PREFIX_DIR})
-else()
+#    set_and_check(GEOGRAM_INSTALL_PREFIX ${PACKAGE_PREFIX_DIR})
+#else()
     # Build tree configuration
-    set_and_check(GEOGRAM_INSTALL_PREFIX @GEOGRAM_INSTALL_PREFIX@)
-endif()
+#    set_and_check(GEOGRAM_INSTALL_PREFIX @GEOGRAM_INSTALL_PREFIX@)
+#endif()
 list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
 
-if(RINGMESH_WITH_RESQML2)
-	set_and_check(FESAPI_INSTALL_PREFIX @FESAPI_INSTALL_PREFIX@)
+if(EXISTS ${PACKAGE_FESAPI_INSTALL_PREFIX}/lib/cmake/modules/FindFesapi.cmake)
+	set_and_check(FESAPI_INSTALL_PREFIX "@PACKAGE_FESAPI_INSTALL_PREFIX@")
 	list(APPEND CMAKE_MODULE_PATH ${FESAPI_INSTALL_PREFIX}/lib/cmake/modules)
 	find_package(Fesapi REQUIRED)
 endif()
