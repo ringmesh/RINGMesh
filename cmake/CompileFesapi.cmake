@@ -32,7 +32,6 @@
 #     FRANCE
 
 SET(FESAPI_PATH ${PROJECT_SOURCE_DIR}/third_party/fesapi)
-SET(FESAPI_RESOURCES_DIRECTORY "${FESAPI_PATH}/resources")
 SET(FESAPI_PATH_BIN ${PROJECT_BINARY_DIR}/third_party/fesapi)
 SET(FESAPI_INSTALL_PREFIX ${FESAPI_PATH_BIN}/install
     CACHE INTERNAL "Fesapi install directory")
