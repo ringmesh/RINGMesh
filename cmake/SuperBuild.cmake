@@ -66,15 +66,6 @@ if(CPACK_PACKAGE_FILE_NAME)
     )
 endif()
 
-if(RINGMESH_WITH_RESQML2)
-	set(RINGMESH_EXTRA_ARGS 
-		${RINGMESH_EXTRA_ARGS}
-		-DHDF5_INSTALL_PREFIX:PATH=${HDF5_INSTALL_PREFIX}
-        -DFESAPI_PATH:PATH=${FESAPI_PATH}
-        -DFESAPI_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
-	)
-endif()
-
 #------------------------------------------------------------------------------------------------
 # Generate configuration directories for single-configuration generators (Make)
 # and run cmake configuration command in each one of them

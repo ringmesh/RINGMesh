@@ -36,6 +36,12 @@ set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
 set(RINGMesh_DEPENDENCY geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 if(RINGMESH_WITH_RESQML2)
     set(RINGMesh_DEPENDENCY ${RINGMesh_DEPENDENCY} fesapi_ext)
+	set(RINGMESH_EXTRA_ARGS 
+		${RINGMESH_EXTRA_ARGS}
+		-DHDF5_INSTALL_PREFIX:PATH=${HDF5_INSTALL_PREFIX}
+        -DFESAPI_PATH:PATH=${FESAPI_PATH}
+        -DFESAPI_INSTALL_PREFIX:PATH=${FESAPI_INSTALL_PREFIX}
+	)
 endif()
 
 ExternalProject_Add(ringmesh_ext
