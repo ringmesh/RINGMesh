@@ -48,14 +48,14 @@ else(UNIX)
 endif(UNIX)
 
 # RINGMesh depends on Geogram Tinyxml2 Minizip and zlib
-list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
+list(APPEND CMAKE_MODULE_PATH "${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules")
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
 find_package(ZLIB REQUIRED)
 find_package(tinyxml2 REQUIRED PATHS ${TINYXML2_INSTALL_PREFIX})
 include(${MINIZIP_INSTALL_PREFIX}/cmake/minizip-exports.cmake)
 if(RINGMESH_WITH_RESQML2)
-	list(APPEND CMAKE_MODULE_PATH ${FESAPI_INSTALL_PREFIX}/lib/cmake/modules)
+	list(APPEND CMAKE_MODULE_PATH "${FESAPI_INSTALL_PREFIX}/lib/cmake/modules")
 	find_package(Fesapi REQUIRED)
 endif()
 install(
