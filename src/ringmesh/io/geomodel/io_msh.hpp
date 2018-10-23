@@ -46,7 +46,7 @@ namespace
     // Vertices order for a tetrahedron in GMSH
     static index_t vertices_in_tetrahedron[4] = { 0, 1, 2, 3 };
     // Vertices order for an hexahedron in GMSH
-    static index_t vertices_in_hexahedron[8] = { 4, 0, 5, 1, 7, 3, 6, 2 };
+    static index_t vertices_in_hexahedron[8] = {0, 4, 5, 1, 2, 6, 7, 3};
     // Vertices order for a prism in GMSH
     static index_t vertices_in_prism[6] = { 0, 1, 2, 3, 4, 5 };
     // Vertices order for a pyramid in GMSH
