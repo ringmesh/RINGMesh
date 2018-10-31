@@ -39,7 +39,7 @@ list(APPEND CMAKE_MODULE_PATH ${GEOGRAM_INSTALL_PREFIX}/lib/cmake/modules)
 set(VORPALINE_BUILD_DYNAMIC TRUE CACHE BOOL "")
 find_package(Geogram REQUIRED)
 
-if(EXISTS ${PACKAGE_FESAPI_INSTALL_PREFIX}/lib/cmake/modules/FindFesapi.cmake)
+if(EXISTS @PACKAGE_FESAPI_INSTALL_PREFIX@/lib/cmake/modules/FindFesapi.cmake)
 	set_and_check(FESAPI_INSTALL_PREFIX "@PACKAGE_FESAPI_INSTALL_PREFIX@")
 	list(APPEND CMAKE_MODULE_PATH ${FESAPI_INSTALL_PREFIX}/lib/cmake/modules)
 	find_package(Fesapi REQUIRED)
