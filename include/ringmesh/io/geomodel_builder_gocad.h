@@ -152,6 +152,7 @@ namespace RINGMesh
 
         // The vertices and the atoms
         index_t nb_attribute_fields_{ 0 };
+        index_t nb_cell_attribute_fields_{ 0 };
 
         // Current interface index
         index_t cur_interface_{ NO_ID };
@@ -523,9 +524,11 @@ namespace RINGMesh
 
         // Names of the attributes for the TSolid
         std::vector< std::string > vertex_attribute_names_{};
+        std::vector< std::string > cell_attribute_names_{};
 
         // Dimensions of the attributes for the TSolid
         std::vector< index_t > vertex_attribute_dims_{};
+        std::vector< index_t > cell_attribute_dims_{};
 
         //// Current lighttsolid gocad vertex index 1
         index_t cur_gocad_vrtx_id1_{ NO_ID };
