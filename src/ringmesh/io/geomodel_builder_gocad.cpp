@@ -107,7 +107,8 @@ namespace
         GEO::LineInput& in, index_t start_field, index_t nb_attribute_fields )
     {
         std::vector< double > cell( nb_attribute_fields );
-        for( auto& cur_attribute : cell ) {
+        for( auto& cur_attribute : cell )
+        {
             cur_attribute = in.field_as_double( start_field++ );
         }
         return cell;
@@ -615,7 +616,7 @@ namespace
     {
         index_t read_fields{ 0 };
         for( auto attrib_itr :
-            range( load_storage.vertex_attribute_names_.size() )) 
+            range( load_storage.vertex_attribute_names_.size() ) )
         {
             std::string name = load_storage.vertex_attribute_names_[attrib_itr];
             if( region.vertex_attribute_manager().is_defined( name ) )
@@ -627,7 +628,7 @@ namespace
             GEO::Attribute< double > attr;
             index_t nb_dimensions =
                 load_storage.vertex_attribute_dims_[attrib_itr];
-            
+
             attr.create_vector_attribute( region.vertex_attribute_manager(),
                 load_storage.vertex_attribute_names_[attrib_itr],
                 nb_dimensions );
@@ -650,14 +651,14 @@ namespace
             read_fields += nb_dimensions;
         }
 
-        read_fields = 0 ;
+        read_fields = 0;
         for( auto attrib_itr :
-            range( load_storage.cell_attribute_names_.size() ) ) {
-            
+            range( load_storage.cell_attribute_names_.size() ) )
+        {
             std::string name = load_storage.cell_attribute_names_[attrib_itr];
 
-
-            if( region.cell_attribute_manager().is_defined( name ) ) {
+            if( region.cell_attribute_manager().is_defined( name ) )
+            {
                 Logger::warn( "Transfer attribute", "The attribute ", name,
                     " already exists on the ", region.gmme() );
                 continue;
@@ -667,20 +668,19 @@ namespace
             index_t nb_dimensions =
                 load_storage.cell_attribute_dims_[attrib_itr];
             attr.create_vector_attribute( region.cell_attribute_manager(),
-                load_storage.cell_attribute_names_[attrib_itr],
-                nb_dimensions );
+                load_storage.cell_attribute_names_[attrib_itr], nb_dimensions );
             // Does it resize all the past attributes to the size of the current
             // attribute?
             // Problematic, isn't it?
 
             region.cell_attribute_manager().resize(
                 static_cast< index_t >( region_attributes.size() )
-                * nb_dimensions
+                    * nb_dimensions
                 + nb_dimensions );
 
-            for( auto c_itr : range( region_attributes.size() ) ) 
+            for( auto c_itr : range( region_attributes.size() ) )
             {
-                for( auto attrib_dim_itr : range( nb_dimensions ) ) 
+                for( auto attrib_dim_itr : range( nb_dimensions ) )
                 {
                     attr[c_itr * nb_dimensions + attrib_dim_itr] =
                         region_attributes[c_itr][read_fields + attrib_dim_itr];
@@ -688,7 +688,6 @@ namespace
             }
             read_fields += nb_dimensions;
         }
-
     }
 
     // Indices begin to 1 in Gocad
@@ -1143,7 +1142,8 @@ namespace
         }
     };
 
-    class LoadCellAttributeTSolid final: public TSolidLineParser {
+    class LoadCellAttributeTSolid final : public TSolidLineParser
+    {
     public:
         LoadCellAttributeTSolid(
             GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
@@ -1155,9 +1155,9 @@ namespace
         void execute(
             GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
-            load_storage.cell_attribute_names_.reserve(
-                line.nb_fields() - 1 );
-            for( auto attrib_name_itr : range( 1, line.nb_fields() ) ) {
+            load_storage.cell_attribute_names_.reserve( line.nb_fields() - 1 );
+            for( auto attrib_name_itr : range( 1, line.nb_fields() ) )
+            {
                 load_storage.cell_attribute_names_.emplace_back(
                     line.field( attrib_name_itr ) );
             }
@@ -1198,7 +1198,8 @@ namespace
         }
     };
 
-    class LoadCellAttributeDimensionTSolid final: public TSolidLineParser {
+    class LoadCellAttributeDimensionTSolid final : public TSolidLineParser
+    {
     public:
         LoadCellAttributeDimensionTSolid(
             GeoModelBuilderTSolid& gm_builder, GeoModel3D& geomodel )
@@ -1211,7 +1212,8 @@ namespace
             GEO::LineInput& line, TSolidLoadingStorage& load_storage ) final
         {
             load_storage.cell_attribute_dims_.reserve( line.nb_fields() - 1 );
-            for( auto attrib_size_itr : range( 1, line.nb_fields() ) ) {
+            for( auto attrib_size_itr : range( 1, line.nb_fields() ) )
+            {
                 load_storage.cell_attribute_dims_.push_back(
                     line.field_as_uint( attrib_size_itr ) );
                 load_storage.nb_cell_attribute_fields_ +=
@@ -1373,7 +1375,8 @@ namespace
             load_storage.tetra_corners_.insert(
                 load_storage.tetra_corners_.end(), corners.begin(),
                 corners.end() );
-            if( load_storage.nb_cell_attribute_fields_ > 0 ) {
+            if( load_storage.nb_cell_attribute_fields_ > 0 )
+            {
                 std::vector< double > attribute = read_cell_attributes(
                     line, 5, load_storage.nb_cell_attribute_fields_ );
                 load_storage.attributes_.push_back( attribute );
