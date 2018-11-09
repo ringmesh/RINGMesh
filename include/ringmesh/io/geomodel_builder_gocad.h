@@ -264,7 +264,7 @@ namespace RINGMesh
             const std::vector< std::vector< double > >& stored_attributes,
             index_t region_id,
             const std::map< index_t, index_t >& lighttsolid_atom_map,
-            std::vector< std::vector< double > >& region_tetra_attributes )
+            std::vector< std::vector< double > >& region_vertices_attributes )
             const
         {
             ringmesh_assert(
@@ -276,7 +276,7 @@ namespace RINGMesh
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() )
                     {
-                        region_tetra_attributes.push_back(
+                        region_vertices_attributes.push_back(
                             stored_attributes[gocad_id] );
                     }
                     else
@@ -287,10 +287,27 @@ namespace RINGMesh
                         if( region( corresponding_gocad_id )
                             != region( gocad_id ) )
                         {
-                            region_tetra_attributes.push_back(
+                            region_vertices_attributes.push_back(
                                 stored_attributes[corresponding_gocad_id] );
                         }
                     }
+                }
+                gocad_id++;
+            }
+        }
+
+        void get_cells_attributes_list_from_gocad_ids(
+            const std::vector< std::vector< double > >& stored_attributes,
+            index_t region_id,
+            const std::map< index_t, index_t >& lighttsolid_atom_map,
+            std::vector< std::vector< double > >& region_tetra_attributes )
+            const
+        {
+            
+            for( auto gocad_id : range( stored_attributes.size() ) ) {
+                if( vertices_region_id_[gocad_id*4] == region_id ) {
+                        region_tetra_attributes.push_back(
+                            stored_attributes[gocad_id] );
                 }
                 gocad_id++;
             }
