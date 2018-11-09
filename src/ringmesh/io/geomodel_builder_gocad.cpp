@@ -619,7 +619,8 @@ namespace
             range( load_storage.vertex_attribute_names_.size() ) )
         {
             std::string name = load_storage.vertex_attribute_names_[attrib_itr];
-            if( region.vertex_attribute_manager().is_defined( name ) ) {
+            if( region.vertex_attribute_manager().is_defined( name ) )
+            {
                 Logger::warn( "Transfer attribute", "The attribute ", name,
                     " already exists on the ", region.gmme() );
                 continue;
@@ -636,11 +637,13 @@ namespace
             // Problematic, isn't it?
             region.vertex_attribute_manager().resize(
                 static_cast< index_t >( region_attributes.size() )
-                * nb_dimensions
+                    * nb_dimensions
                 + nb_dimensions );
 
-            for( auto v_itr : range( region_attributes.size() ) ) {
-                for( auto attrib_dim_itr : range( nb_dimensions ) ) {
+            for( auto v_itr : range( region_attributes.size() ) )
+            {
+                for( auto attrib_dim_itr : range( nb_dimensions ) )
+                {
                     attr[v_itr * nb_dimensions + attrib_dim_itr] =
                         region_attributes[v_itr][read_fields + attrib_dim_itr];
                 }
@@ -1574,9 +1577,8 @@ namespace
 
                 assign_attributes_to_mesh( geomodel().region( region_id ),
                     load_storage, region_attributes[region_id] );
-                assign_cell_attributes_to_mesh(
-                    geomodel().region( region_id ), load_storage,
-                    region_attributes[region_id] );
+                assign_cell_attributes_to_mesh( geomodel().region( region_id ),
+                    load_storage, region_attributes[region_id] );
             }
             load_storage.tetra_corners_.clear();
             load_storage.attributes_.clear();
