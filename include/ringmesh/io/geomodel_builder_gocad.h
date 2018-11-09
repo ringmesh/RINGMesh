@@ -303,11 +303,12 @@ namespace RINGMesh
             std::vector< std::vector< double > >& region_tetra_attributes )
             const
         {
-            
-            for( auto gocad_id : range( stored_attributes.size() ) ) {
-                if( vertices_region_id_[gocad_id*4] == region_id ) {
-                        region_tetra_attributes.push_back(
-                            stored_attributes[gocad_id] );
+            for( auto gocad_id : range( stored_attributes.size() ) )
+            {
+                if( vertices_region_id_[gocad_id * 4] == region_id )
+                {
+                    region_tetra_attributes.push_back(
+                        stored_attributes[gocad_id] );
                 }
                 gocad_id++;
             }

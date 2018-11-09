@@ -1078,8 +1078,7 @@ namespace
                 load_storage.cur_gocad_vrtx_id3_, region_id );
             load_storage.vertex_map_.record_vertex_with_its_region(
                 load_storage.cur_gocad_vrtx_id4_, region_id );
-
-            }
+        }
     };
 
     class LoadVertex final : public GocadLineParser
@@ -1403,7 +1402,8 @@ namespace
                 line.field_as_uint( 3 ) - GOCAD_OFFSET;
             load_storage.cur_gocad_vrtx_id4_ =
                 line.field_as_uint( 4 ) - GOCAD_OFFSET;
-            if( load_storage.nb_cell_attribute_fields_ > 0 ) {
+            if( load_storage.nb_cell_attribute_fields_ > 0 )
+            {
                 std::vector< double > attribute = read_cell_attributes(
                     line, 5, load_storage.nb_cell_attribute_fields_ );
                 load_storage.cell_attributes_.push_back( attribute );
@@ -1542,7 +1542,8 @@ namespace
                 load_storage.vertex_map_.nb_regions() );
             region_vertices.resize( load_storage.vertex_map_.nb_regions() );
             region_attributes.resize( load_storage.vertex_map_.nb_regions() );
-            region_cell_attributes.resize( load_storage.vertex_map_.nb_regions() );
+            region_cell_attributes.resize(
+                load_storage.vertex_map_.nb_regions() );
             load_storage.vertex_map_.local_ids_.resize(
                 load_storage.vertex_map_.nb_regions() );
 
@@ -1588,13 +1589,12 @@ namespace
                 builder().geometry.set_region_geometry( region_id,
                     region_vertices[region_id],
                     region_tetra_corners_local[region_id] );
-                
+
                 assign_attributes_to_mesh( geomodel().region( region_id ),
                     load_storage, region_attributes[region_id] );
 
-                assign_cell_attributes_to_mesh(
-                    geomodel().region( region_id ), load_storage,
-                    region_cell_attributes[region_id] );
+                assign_cell_attributes_to_mesh( geomodel().region( region_id ),
+                    load_storage, region_cell_attributes[region_id] );
             }
             load_storage.tetra_corners_.clear();
             load_storage.attributes_.clear();
