@@ -149,6 +149,7 @@ namespace RINGMesh
         std::vector< vec3 > vertices_;
 
         std::vector< std::vector< double > > attributes_;
+        std::vector< std::vector< double > > cell_attributes_;
 
         // The vertices and the atoms
         index_t nb_attribute_fields_{ 0 };
