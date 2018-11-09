@@ -616,12 +616,8 @@ namespace
     {
         index_t read_fields{ 0 };
         for( auto attrib_itr :
-<<<<<<< HEAD
-            range( load_storage.vertex_attribute_names_.size() ) ) {
-=======
             range( load_storage.vertex_attribute_names_.size() ) )
         {
->>>>>>> f155a87f4ec78331c47e336388d3ba940dc4844d
             std::string name = load_storage.vertex_attribute_names_[attrib_itr];
             if( region.vertex_attribute_manager().is_defined( name ) ) {
                 Logger::warn( "Transfer attribute", "The attribute ", name,
@@ -653,15 +649,11 @@ namespace
         }
     }
 
-<<<<<<< HEAD
     void assign_cell_attributes_to_mesh( const Region3D& region,
         TSolidLoadingStorage& load_storage,
         const std::vector< std::vector< double > >& region_attributes )
     {
         index_t read_fields{ 0 };
-=======
-        read_fields = 0;
->>>>>>> f155a87f4ec78331c47e336388d3ba940dc4844d
         for( auto attrib_itr :
             range( load_storage.cell_attribute_names_.size() ) )
         {
