@@ -672,6 +672,18 @@ namespace RINGMesh
         {
         }
 
+		void clear_vertex_linked_objects() override
+		{
+			this->delete_vertex_nn_search();
+			clear_polygon_linked_objects();
+		}
+
+		void clear_polygon_linked_objects()
+		{
+			delete_polygon_aabb();
+			delete_polygon_nn_search();
+		}
+
     private:
         /*!
          * @brief Deletes the NNSearch on polygons
@@ -689,17 +701,6 @@ namespace RINGMesh
             surface_mesh_.polygon_aabb_.reset();
         }
 
-        void clear_vertex_linked_objects() override
-        {
-            this->delete_vertex_nn_search();
-            clear_polygon_linked_objects();
-        }
-
-        void clear_polygon_linked_objects()
-        {
-            delete_polygon_aabb();
-            delete_polygon_nn_search();
-        }
         /*!
          * \brief Creates a polygon
          * \param[in] vertices a const reference to a vector that
