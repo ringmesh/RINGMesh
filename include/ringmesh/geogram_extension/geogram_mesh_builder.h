@@ -205,7 +205,7 @@ private:                                                                       \
                 mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
             CVT.compute_surface( mesh_.mesh_.get(), false );
             Logger::instance()->set_minimal( false );
-            clear_vertex_linked_objects();
+            this->clear_vertex_linked_objects();
         }
 
         index_t do_create_polygon(
