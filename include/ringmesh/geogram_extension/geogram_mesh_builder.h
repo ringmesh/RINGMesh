@@ -38,6 +38,7 @@
 #include <ringmesh/geogram_extension/common.h>
 
 #include <geogram/basic/command_line.h>
+#include <geogram/voronoi/CVT.h>
 
 #include <ringmesh/geogram_extension/geogram_mesh.h>
 
