@@ -190,19 +190,22 @@ private:                                                                       \
         {
         }
 
-		void triangulate_with_geogram_cvt(
-		                 const SurfaceMeshBase< DIMENSION >& surface_in )
-		{
-		   Logger::instance()->set_minimal( true );
-		   const auto& geogram_surface_in =
-			   dynamic_cast< const RINGMesh::GeogramSurfaceMesh< DIMENSION >& >(surface_in);
-		   GEO::CentroidalVoronoiTesselation CVT(geogram_surface_in.mesh_.get(), DIMENSION, GEO::CmdLine::get_arg( "algo:delaunay" ) );
-		   CVT.set_points(
-		                   mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
-		   CVT.compute_surface( mesh_.mesh_.get(), false );
-		   Logger::instance()->set_minimal( false );
-		   clear_vertex_linked_objects();
-		}
+        void triangulate_with_geogram_cvt(
+            const SurfaceMeshBase< DIMENSION >& surface_in )
+        {
+            Logger::instance()->set_minimal( true );
+            const auto& geogram_surface_in = dynamic_cast<
+                const RINGMesh::GeogramSurfaceMesh< DIMENSION >& >(
+                surface_in );
+            GEO::CentroidalVoronoiTesselation CVT(
+                geogram_surface_in.mesh_.get(), DIMENSION,
+                GEO::CmdLine::get_arg( "algo:delaunay" ) );
+            CVT.set_points(
+                mesh_.nb_vertices(), mesh_.mesh_->vertices.point_ptr( 0 ) );
+            CVT.compute_surface( mesh_.mesh_.get(), false );
+            Logger::instance()->set_minimal( false );
+            clear_vertex_linked_objects();
+        }
 
         index_t do_create_polygon(
             const std::vector< index_t >& vertices ) override

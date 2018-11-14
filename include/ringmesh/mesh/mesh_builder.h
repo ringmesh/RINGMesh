@@ -672,17 +672,17 @@ namespace RINGMesh
         {
         }
 
-		void clear_vertex_linked_objects() override
-		{
-			this->delete_vertex_nn_search();
-			clear_polygon_linked_objects();
-		}
+        void clear_vertex_linked_objects() override
+        {
+            this->delete_vertex_nn_search();
+            clear_polygon_linked_objects();
+        }
 
-		void clear_polygon_linked_objects()
-		{
-			delete_polygon_aabb();
-			delete_polygon_nn_search();
-		}
+        void clear_polygon_linked_objects()
+        {
+            delete_polygon_aabb();
+            delete_polygon_nn_search();
+        }
 
     private:
         /*!
