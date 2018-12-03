@@ -149,9 +149,11 @@ namespace RINGMesh
         std::vector< vec3 > vertices_;
 
         std::vector< std::vector< double > > attributes_;
+        std::vector< std::vector< double > > cell_attributes_;
 
         // The vertices and the atoms
         index_t nb_attribute_fields_{ 0 };
+        index_t nb_cell_attribute_fields_{ 0 };
 
         // Current interface index
         index_t cur_interface_{ NO_ID };
@@ -262,7 +264,7 @@ namespace RINGMesh
             const std::vector< std::vector< double > >& stored_attributes,
             index_t region_id,
             const std::map< index_t, index_t >& lighttsolid_atom_map,
-            std::vector< std::vector< double > >& region_tetra_attributes )
+            std::vector< std::vector< double > >& region_vertices_attributes )
             const
         {
             ringmesh_assert(
@@ -274,7 +276,7 @@ namespace RINGMesh
                     if( lighttsolid_atom_map.find( gocad_id )
                         == lighttsolid_atom_map.end() )
                     {
-                        region_tetra_attributes.push_back(
+                        region_vertices_attributes.push_back(
                             stored_attributes[gocad_id] );
                     }
                     else
@@ -285,10 +287,28 @@ namespace RINGMesh
                         if( region( corresponding_gocad_id )
                             != region( gocad_id ) )
                         {
-                            region_tetra_attributes.push_back(
+                            region_vertices_attributes.push_back(
                                 stored_attributes[corresponding_gocad_id] );
                         }
                     }
+                }
+                gocad_id++;
+            }
+        }
+
+        void get_cells_attributes_list_from_gocad_ids(
+            const std::vector< std::vector< double > >& stored_attributes,
+            index_t region_id,
+            const std::map< index_t, index_t >& lighttsolid_atom_map,
+            std::vector< std::vector< double > >& region_tetra_attributes )
+            const
+        {
+            for( auto gocad_id : range( stored_attributes.size() ) )
+            {
+                if( vertices_region_id_[gocad_id * 4] == region_id )
+                {
+                    region_tetra_attributes.push_back(
+                        stored_attributes[gocad_id] );
                 }
                 gocad_id++;
             }
@@ -523,9 +543,11 @@ namespace RINGMesh
 
         // Names of the attributes for the TSolid
         std::vector< std::string > vertex_attribute_names_{};
+        std::vector< std::string > cell_attribute_names_{};
 
         // Dimensions of the attributes for the TSolid
         std::vector< index_t > vertex_attribute_dims_{};
+        std::vector< index_t > cell_attribute_dims_{};
 
         //// Current lighttsolid gocad vertex index 1
         index_t cur_gocad_vrtx_id1_{ NO_ID };
