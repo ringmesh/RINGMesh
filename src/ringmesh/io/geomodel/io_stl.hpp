@@ -60,7 +60,7 @@ namespace
     void end_triangle( std::ostream& out )
     {
         out << "endloop" << EOL;
-		out << "endfacet" << EOL;
+	out << "endfacet" << EOL;
     }
 
     void save_triangle_vertex( const GeoModel3D& geomodel,
