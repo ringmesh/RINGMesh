@@ -111,8 +111,15 @@ void glup_viewer_gui_init(GLFWwindow* w) {
 #endif
     {
         GEO::Logger::out("ImGUI") << "Viewer GUI init (GL3)"
-                                  << std::endl;        
-        ImGui_ImplOpenGL3_Init();        
+                                  << std::endl;
+#if defined(GEO_OS_APPLE)
+        ImGui_ImplOpenGL3_Init("#version 330");	
+#elif defined(GEO_OS_ANDROID)
+	// TODO: have also version for OpenGL ES 2.0.
+        ImGui_ImplOpenGL3_Init("#version 300 es");
+#else	
+        ImGui_ImplOpenGL3_Init("#version 100");
+#endif	
     }
 
     ImGuiStyle& style = ImGui::GetStyle();

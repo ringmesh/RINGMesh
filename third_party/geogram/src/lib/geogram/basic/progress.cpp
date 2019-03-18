@@ -279,6 +279,7 @@ namespace GEO {
 
     void ProgressTask::next() {
         step_++;
+	step_ = std::min(step_, max_steps_);
         update();
     }
 

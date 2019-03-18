@@ -147,7 +147,7 @@ namespace {
             // under Android, so I'm using assembly functions
             // from atomics (I'm sure they got the right memory
             // barriers for SMP).
-#ifdef GEO_OS_ANDROID
+#if defined(GEO_OS_ANDROID) || defined(GEO_OS_RASPBERRY)
             mutex_ = 0;
 #else
             pthread_mutex_init(&mutex_, nullptr);
@@ -163,8 +163,10 @@ namespace {
 
         /** \copydoc GEO::ThreadManager::enter_critical_section() */
 	void enter_critical_section() override {
-#ifdef GEO_OS_ANDROID
-            lock_mutex_arm(&mutex_);
+#if defined(GEO_OS_RASPBERRY)
+            lock_mutex_arm32(&mutex_);
+#elif defined(GEO_OS_ANDROID)
+            lock_mutex_android(&mutex_);
 #else
             pthread_mutex_lock(&mutex_);
 #endif
@@ -172,8 +174,10 @@ namespace {
 
         /** \copydoc GEO::ThreadManager::leave_critical_section() */
 	void leave_critical_section() override {
-#ifdef GEO_OS_ANDROID
-            unlock_mutex_arm(&mutex_);
+#if defined(GEO_OS_RASPBERRY)
+            unlock_mutex_arm32(&mutex_);	    
+#elif defined(GEO_OS_ANDROID)
+            unlock_mutex_android(&mutex_);
 #else
             pthread_mutex_unlock(&mutex_);
 #endif
@@ -227,8 +231,10 @@ namespace {
         }
 
     private:
-#ifdef GEO_OS_ANDROID
-        arm_mutex_t mutex_;
+#if defined(GEO_OS_RASPBERRY)
+        arm32_mutex_t mutex_;	
+#elif defined(GEO_OS_ANDROID)
+        android_mutex_t mutex_;
 #else
         pthread_mutex_t mutex_;
 #endif
@@ -334,15 +340,6 @@ namespace {
         } else {
             exit(1);
         }
-    }
-
-    /**
-     * Catches unexpected C++ exceptions
-     */
-    GEO_NORETURN_DECL void unexpected_handler() GEO_NORETURN;
-    
-    void unexpected_handler() {
-        abnormal_program_termination("function unexpected() was called");
     }
 
     /**
@@ -513,8 +510,7 @@ namespace GEO {
             sigemptyset(&sa.sa_mask);
             sigaction(SIGFPE, &sa, &old_sa);
 
-            // Install unexpected and uncaught c++ exception handlers
-            std::set_unexpected(unexpected_handler);
+            // Install uncaught c++ exception handlers
             std::set_terminate(terminate_handler);
 
             // Install memory allocation handler

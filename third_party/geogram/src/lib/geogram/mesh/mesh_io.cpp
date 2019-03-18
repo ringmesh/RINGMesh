@@ -4606,7 +4606,7 @@ namespace GEO {
 /****************************************************************************/
 
 namespace GEO {
-	GEO::Process::spinlock lock = { 0 };
+
     MeshIOFlags::MeshIOFlags() {
         dimension_ = 3;
         attributes_ = MESH_NO_ATTRIBUTES;
@@ -4619,11 +4619,9 @@ namespace GEO {
         const std::string& filename, Mesh& M,
         const MeshIOFlags& ioflags
     ) {
-		GEO::Process::acquire_spinlock(lock);
         Logger::out("I/O")
             << "Loading file " << filename << "..."
             << std::endl;
-		GEO::Process::release_spinlock(lock);
 
         M.clear();
 
@@ -4672,9 +4670,8 @@ namespace GEO {
                 M.cells.compute_borders();
             }
         }
-		GEO::Process::acquire_spinlock(lock);
+
         M.show_stats("I/O");
-		GEO::Process::release_spinlock(lock);
         
         return true;
     }
@@ -4683,11 +4680,9 @@ namespace GEO {
         const Mesh& M, const std::string& filename,
         const MeshIOFlags& ioflags
     ) {
-		GEO::Process::acquire_spinlock(lock);
         Logger::out("I/O")
             << "Saving file " << filename << "..."
             << std::endl;
-		GEO::Process::release_spinlock(lock);
 
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
         if(handler != nullptr && handler->save(M, filename, ioflags)) {

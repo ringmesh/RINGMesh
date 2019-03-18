@@ -5,8 +5,8 @@
 include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Set the Clang compilers
-#set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
-#set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
+set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
 
 # Warning flags
 set(NORMAL_WARNINGS -Wall -Wextra)
@@ -62,7 +62,6 @@ add_flags(CMAKE_CXX_FLAGS -Qunused-arguments -std=c++11 -Wno-c++98-compat)
 
 
 # Compile and link with OpenMP ** NOT YET SUPPORTED in clang 3 **
-SET(USE_OPENMP FALSE)
 #add_flags(CMAKE_CXX_FLAGS -fopenmp)
 #add_flags(CMAKE_C_FLAGS -fopenmp)
 
