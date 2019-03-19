@@ -68,7 +68,8 @@ message(STATUS "GEOGRAM_FOUND " ${GEOGRAM_FOUND})
 If (GEOGRAM_FOUND)
   
         set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
-  
+		message(STATUS "GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX})
+
         if (NOT TARGET Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
 
