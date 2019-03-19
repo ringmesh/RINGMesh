@@ -4684,19 +4684,19 @@ namespace GEO {
         const Mesh& M, const std::string& filename,
         const MeshIOFlags& ioflags
     ) {
+		GEO::Process::acquire_spinlock(lock);
         Logger::out("I/O")
             << "Saving file " << filename << "..."
             << std::endl;
+		GEO::Process::release_spinlock(lock);
 
         MeshIOHandler_var handler = MeshIOHandler::get_handler(filename);
         if(handler != nullptr && handler->save(M, filename, ioflags)) {
             return true;
         }
-        GEO::Process::acquire_spinlock(lock);
         Logger::err("I/O")
             << "Could not save file: " << filename
             << std::endl;
-        GEO::Process::release_spinlock(lock);
         return false;
     }
 

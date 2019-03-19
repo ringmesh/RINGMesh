@@ -62,13 +62,11 @@ include (FindPackageHandleStandardArgs)
 find_package_handle_standard_args(
   GEOGRAM DEFAULT_MSG GEOGRAM_LIBRARY GEOGRAM_INCLUDE_DIR
 )
-message(STATUS "GEOGRAM_FOUND " ${GEOGRAM_FOUND})
 
 # Create an imported target for Geogram 
 If (GEOGRAM_FOUND)
   
-        set(GEOGRAM_INSTALL_PREFIX ${GEOGRAM_INCLUDE_DIR}/..)
-		message(STATUS "GEOGRAM_INSTALL_PREFIX " ${GEOGRAM_INSTALL_PREFIX})
+        set(GEOGRAM_INSTALL_PREFIX "${GEOGRAM_INCLUDE_DIR}/../..")
 
         if (NOT TARGET Geogram::geogram)
                 add_library (Geogram::geogram UNKNOWN IMPORTED)
