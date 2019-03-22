@@ -72,6 +72,7 @@
 #include <geogram/numerics/predicates/orient2d.h>
 #include <geogram/numerics/predicates/orient3d.h>
 #include <geogram/numerics/predicates/det3d.h>
+#include <geogram/numerics/predicates/det4d.h>
 #include <geogram/numerics/predicates/dot3d.h>
 #include <geogram/numerics/predicates/aligned3d.h>
 
@@ -283,7 +284,6 @@ namespace {
 	return m[0]+m[1];
     }
 
-
     /**
      * \brief Arithmetic filter for the in_sphere_3d_SOS() predicate.
      * \details This version is optimized using the AVX2 instruction 
@@ -338,7 +338,7 @@ namespace {
 	__m128d max_max = _mm_max_pd(maxX, _mm_max_pd(maxY, maxZ));
 
 	// Computing dynamic filter
-	__m128d eps     = _mm_set_pd1(1.2466136531027298e-13);
+	__m128d eps     = _mm_set1_pd(1.2466136531027298e-13);
 	        eps     = _mm_mul_pd(eps, _mm_mul_pd(maxX, _mm_mul_pd(maxY, maxZ)));
 		eps     = _mm_mul_pd(eps, _mm_mul_pd(max_max, max_max));
 	
@@ -2266,6 +2266,46 @@ namespace GEO {
 	    return result;
 	}
 
+
+	Sign det_4d(
+	    const double* p0, const double* p1, const double* p2, const double* p3
+	) {
+	    Sign result = Sign(
+		det_4d_filter(p0, p1, p2, p3)
+	    );
+	    
+	    if(result == 0) {
+		const expansion& p0_0 = expansion_create(p0[0]);
+		const expansion& p0_1 = expansion_create(p0[1]);
+		const expansion& p0_2 = expansion_create(p0[2]);
+		const expansion& p0_3 = expansion_create(p0[3]);		
+		
+		const expansion& p1_0 = expansion_create(p1[0]);
+		const expansion& p1_1 = expansion_create(p1[1]);
+		const expansion& p1_2 = expansion_create(p1[2]);
+		const expansion& p1_3 = expansion_create(p1[3]);		
+		
+		const expansion& p2_0 = expansion_create(p2[0]);
+		const expansion& p2_1 = expansion_create(p2[1]);
+		const expansion& p2_2 = expansion_create(p2[2]);
+		const expansion& p2_3 = expansion_create(p2[3]);
+
+		const expansion& p3_0 = expansion_create(p3[0]);
+		const expansion& p3_1 = expansion_create(p3[1]);
+		const expansion& p3_2 = expansion_create(p3[2]);
+		const expansion& p3_3 = expansion_create(p3[3]);			
+
+		result = sign_of_expansion_determinant(
+		    p0_0, p0_1, p0_2, p0_3,
+		    p1_0, p1_1, p1_2, p1_3,
+		    p2_0, p2_1, p2_2, p2_3,
+		    p3_0, p3_1, p3_2, p3_3		    
+		);
+	    }
+	    return result;
+	}
+
+	
 	bool aligned_3d(
 	    const double* p0, const double* p1, const double* p2
 	) {
@@ -2290,6 +2330,47 @@ namespace GEO {
 		result = dot_3d_exact(p0, p1, p2);
 	    }
 	    return result;
+	}
+
+	bool points_are_identical_2d(
+	    const double* p1,
+	    const double* p2
+	) {
+	    return
+		(p1[0] == p2[0]) &&
+		(p1[1] == p2[1]) 
+	    ;
+	}
+
+	bool points_are_identical_3d(
+	    const double* p1,
+	    const double* p2
+	) {
+	    return
+		(p1[0] == p2[0]) &&
+		(p1[1] == p2[1]) &&
+		(p1[2] == p2[2])
+	    ;
+	}
+
+	bool points_are_colinear_3d(
+	    const double* p1,
+	    const double* p2,
+	    const double* p3
+	) {
+	    // Colinearity is tested by using four coplanarity
+	    // tests with four points that are not coplanar.
+	    // TODO: use PCK::aligned_3d() instead (to be tested)	
+	    static const double q000[3] = {0.0, 0.0, 0.0};
+	    static const double q001[3] = {0.0, 0.0, 1.0};
+	    static const double q010[3] = {0.0, 1.0, 0.0};
+	    static const double q100[3] = {1.0, 0.0, 0.0};
+	    return
+		PCK::orient_3d(p1, p2, p3, q000) == ZERO &&
+		PCK::orient_3d(p1, p2, p3, q001) == ZERO &&
+		PCK::orient_3d(p1, p2, p3, q010) == ZERO &&
+		PCK::orient_3d(p1, p2, p3, q100) == ZERO
+	    ;
 	}
 	
         void initialize() {
