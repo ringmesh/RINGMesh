@@ -93,5 +93,3 @@ target_link_libraries(${target_name}
         tinyxml2 
         MINIZIP::minizip
 )
-
-add_js_target(${target_name} "${lib_source_dir}/io_js.cpp")

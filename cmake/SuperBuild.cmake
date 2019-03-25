@@ -34,9 +34,6 @@
 #------------------------------------------------------------------------------------------------
 # Get all the submodules
 set(submodules data third_party/zlib third_party/tinyxml2)
-if(RINGMESH_WITH_GUI)
-    set(submodules ${submodules} third_party/nbind)
-endif()
 if(RINGMESH_WITH_RESQML2)
     set(submodules ${submodules} third_party/fesapi)
 endif()
@@ -55,7 +52,6 @@ set(RINGMESH_EXTRA_ARGS
     -DRINGMESH_WITH_TESTS:BOOL=${RINGMESH_WITH_TESTS}
     -DRINGMESH_WITH_TUTORIALS:BOOL=${RINGMESH_WITH_TUTORIALS}
     -DBUILD_GEOGRAM_WITHOUT_EXE:BOOL=${BUILD_GEOGRAM_WITHOUT_EXE}
-    -DRINGMESH_WITH_GUI:BOOL=${RINGMESH_WITH_GUI}
     -DRINGMESH_WITH_RESQML2:BOOL=${RINGMESH_WITH_RESQML2}
 )
 

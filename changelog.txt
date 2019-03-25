@@ -5,9 +5,11 @@ New Features:
 
 Bug fix:
  * Fix geomodel_copy in 2D
+ * remove the try for RINGMESH GUI with nbind
 
 Improvements:
- *
+ * geogram release 1.6.10
+
 
 
 #### Release: 5.1.0 ####
