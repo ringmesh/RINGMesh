@@ -7,9 +7,6 @@
 [submodule "third_party/zlib"]
 	path = third_party/zlib
 	url = https://github.com/madler/zlib
-[submodule "third_party/nbind"]
-	path = third_party/nbind
-	url = https://github.com/ringmesh/nbind
 [submodule "third_party/fesapi"]
 	path = third_party/fesapi
 	url = https://github.com/ringmesh/fesapi

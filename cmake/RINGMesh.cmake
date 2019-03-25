@@ -69,47 +69,6 @@ install(
 
 include(GenerateExportHeader)
 
-if(RINGMESH_WITH_GUI)
-    message(STATUS "Configure RINGMesh with GUI")
-    find_program(NPM NAMES npm.cmd npm)
-    if(NOT NPM)
-        message(FATAL_ERROR "npm is needed to create the GUI")
-    endif()
-    execute_process(COMMAND ${NPM} install)
-    include(node_modules/node-cmake/NodeJS.cmake)
-    nodejs_init()
-    
-    function(add_nodejs_module NAME)
-        _add_nodejs_module(${NAME} ${ARGN})
-        set_target_properties(${NAME} 
-            PROPERTIES 
-                C_VISIBILITY_PRESET default
-                CXX_VISIBILITY_PRESET default
-        )
-    endfunction()
-    
-    set(NBIND_DIR ${PROJECT_SOURCE_DIR}/third_party/nbind)
-    set(NBIND_SOURCE_FILES
-        ${NBIND_DIR}/src/common.cc
-        ${NBIND_DIR}/src/reflect.cc
-        ${NBIND_DIR}/src/v8/Binding.cc
-        ${NBIND_DIR}/src/v8/Buffer.cc
-    )
-    add_nodejs_module(nbind ${NBIND_SOURCE_FILES})
-    target_include_directories(nbind 
-        SYSTEM PUBLIC ${NBIND_DIR}/include)
-    target_compile_definitions(nbind
-        PUBLIC
-            -DBUILDING_NODE_EXTENSION
-            -DUSING_V8_SHARED
-            -DUSING_UV_SHARED
-    )
-    generate_export_header(nbind
-        EXPORT_MACRO_NAME nbind_api 
-        EXPORT_FILE_NAME ${NBIND_DIR}/include/nbind/export.h
-    )
-endif()
-
 #------------------------------------------------------------------------------------------------
 # Build configuration
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_BINARY_DIR}/lib)
