@@ -5,8 +5,8 @@
 include(${GEOGRAM_SOURCE_DIR}/cmake/platforms/Linux.cmake)
 
 # Set the Clang compilers
-#set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
-#set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
+set(CMAKE_C_COMPILER "/usr/bin/clang-3.8" CACHE string "clang compiler" FORCE)
+set(CMAKE_CXX_COMPILER "/usr/bin/clang++-3.8" CACHE string "clang compiler" FORCE)
 
 # Warning flags
 set(NORMAL_WARNINGS -Wall -Wextra)
