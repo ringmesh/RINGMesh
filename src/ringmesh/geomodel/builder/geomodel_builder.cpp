@@ -275,7 +275,7 @@ namespace
              * @param index Index of this PolygonToSort in
              * GeoModelRegionFromSurfaces
              * @param surface_index Index of the Surface
-			 * @param normal normal to the polygon - normalized vector
+             * @param normal normal to the polygon - normalized vector
              * @param p0 point of the polygon
              * @param p1 point of the polygon
              */
@@ -1121,10 +1121,11 @@ namespace RINGMesh
                 return surface_ids_[0] == NO_ID || surface_ids_[1] == NO_ID;
             }
 
-			bool is_internal_line() const {
-				//TODO to be implement by EMNA
-				return false;
-			}
+            bool is_internal_line() const
+            {
+                // TODO to be implement by EMNA
+                return false;
+            }
 
             index_t plus_surface_index() const
             {
@@ -1296,11 +1297,14 @@ namespace RINGMesh
                 line_indicent_surfaces,
             const index_t nb_found_surfaces ) const
         {
-			//THIS is test that detect holes in surfaces. 
-			//TODO EMNA should process particular step if we have internal inclusion or boundaries
-			// 1 - iterates on the line_indicent_surfaces
-			// 2 - compare couple minus,plus if all minus are associated with the same plus it means that they are the same surfaces
-			// 3 - in this case unpade minus and plus to the same index. desable polygone build for on of the surfaces.
+            // THIS is test that detect holes in surfaces.
+            // TODO EMNA should process particular step if we have internal
+            // inclusion or boundaries
+            // 1 - iterates on the line_indicent_surfaces
+            // 2 - compare couple minus,plus if all minus are associated with
+            // the same plus it means that they are the same surfaces 3 - in
+            // this case unpade minus and plus to the same index. desable
+            // polygone build for on of the surfaces.
             std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
@@ -1366,7 +1370,8 @@ namespace RINGMesh
                     polygon_vertices, polygon_corners, polygon_vertex_ptr );
             }
         }
-		// TODO :: TO be removed by emna because the universe will not be created anymore.
+        // TODO :: TO be removed by emna because the universe will not be
+        // created anymore.
         void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
