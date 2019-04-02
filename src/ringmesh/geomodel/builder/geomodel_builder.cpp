@@ -1121,11 +1121,6 @@ namespace RINGMesh
                 return surface_ids_[0] == NO_ID || surface_ids_[1] == NO_ID;
             }
 
-			bool is_internal_line() const {
-				//TODO to be implement by EMNA
-				return false;
-			}
-
             index_t plus_surface_index() const
             {
                 return surface_ids_[0];
@@ -1291,17 +1286,12 @@ namespace RINGMesh
             }
         }
 
-        void check_internal_floating_lines(
+        void check_internal_intrusion_or_boundaries(
             const std::vector< LineIncidentSurfacePair >&
                 line_indicent_surfaces,
-            const index_t nb_found_surfaces ) const
+			std::vector< std::vector< Impl::OrientedLine > >& surface_boundary_lines) const
         {
-			//THIS is test that detect holes in surfaces. 
-			//TODO EMNA should process particular step if we have internal inclusion or boundaries
-			// 1 - iterates on the line_indicent_surfaces
-			// 2 - compare couple minus,plus if all minus are associated with the same plus it means that they are the same surfaces
-			// 3 - in this case unpade minus and plus to the same index. desable polygone build for on of the surfaces.
-            std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
+            std::vector< bool > are_surfaces_hole(surface_boundary_lines.size(), true );
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
                 if( line_indicent_surfaces[line_id].plus_surface_index()
@@ -1317,6 +1307,13 @@ namespace RINGMesh
                 are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
             if( nb_pb_surfaces > 0 )
             {
+				//TODO by EMNA
+				// 1 - check if is it internal boundary
+				//   * do not create surface inside by removing the corresponding oriented line in the surface_boundary_lines vector
+				//   * associate a particular feature
+				// 2 - check if it is inclusions 
+				//   * create the inclusion surface 
+				//   * associate a particlar feature
                 throw RINGMeshException( "Surface2D",
                     "During surface from corners "
                     " and lines build, ",
@@ -1436,8 +1433,8 @@ namespace RINGMesh
         impl_->find_surfaces_boundary_lines(
             line_incident_surfaces, surface_boundary_lines );
 
-        impl_->check_internal_floating_lines( line_incident_surfaces,
-            static_cast< index_t >( surface_boundary_lines.size() ) );
+        impl_->check_internal_intrusion_or_boundaries( line_incident_surfaces,
+            surface_boundary_lines);
 
         // Generate surface polygons
         impl_->build_surface_polygons( *this, surface_boundary_lines );
