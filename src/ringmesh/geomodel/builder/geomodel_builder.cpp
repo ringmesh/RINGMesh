@@ -275,7 +275,7 @@ namespace
              * @param index Index of this PolygonToSort in
              * GeoModelRegionFromSurfaces
              * @param surface_index Index of the Surface
-			 * @param normal normal to the polygon - normalized vector
+             * @param normal normal to the polygon - normalized vector
              * @param p0 point of the polygon
              * @param p1 point of the polygon
              */
@@ -1292,6 +1292,7 @@ namespace RINGMesh
 			std::vector< std::vector< Impl::OrientedLine > >& surface_boundary_lines) const
         {
             std::vector< bool > are_surfaces_hole(surface_boundary_lines.size(), true );
+
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
                 if( line_indicent_surfaces[line_id].plus_surface_index()
@@ -1363,7 +1364,8 @@ namespace RINGMesh
                     polygon_vertices, polygon_corners, polygon_vertex_ptr );
             }
         }
-		// TODO :: TO be removed by emna because the universe will not be created anymore.
+        // TODO :: TO be removed by emna because the universe will not be
+        // created anymore.
         void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
