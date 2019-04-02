@@ -1289,9 +1289,11 @@ namespace RINGMesh
         void check_internal_intrusion_or_boundaries(
             const std::vector< LineIncidentSurfacePair >&
                 line_indicent_surfaces,
-			std::vector< std::vector< Impl::OrientedLine > >& surface_boundary_lines) const
+            std::vector< std::vector< Impl::OrientedLine > >&
+                surface_boundary_lines ) const
         {
-            std::vector< bool > are_surfaces_hole(surface_boundary_lines.size(), true );
+            std::vector< bool > are_surfaces_hole(
+                surface_boundary_lines.size(), true );
 
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
@@ -1308,13 +1310,15 @@ namespace RINGMesh
                 are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
             if( nb_pb_surfaces > 0 )
             {
-				//TODO by EMNA
-				// 1 - check if is it internal boundary
-				//   * do not create surface inside by removing the corresponding oriented line in the surface_boundary_lines vector
-				//   * associate a particular feature
-				// 2 - check if it is inclusions 
-				//   * create the inclusion surface 
-				//   * associate a particlar feature
+                // TODO by EMNA
+                // 1 - check if is it internal boundary
+                //   * do not create surface inside by removing the
+                //   corresponding oriented line in the surface_boundary_lines
+                //   vector
+                //   * associate a particular feature
+                // 2 - check if it is inclusions
+                //   * create the inclusion surface
+                //   * associate a particlar feature
                 throw RINGMeshException( "Surface2D",
                     "During surface from corners "
                     " and lines build, ",
@@ -1435,8 +1439,8 @@ namespace RINGMesh
         impl_->find_surfaces_boundary_lines(
             line_incident_surfaces, surface_boundary_lines );
 
-        impl_->check_internal_intrusion_or_boundaries( line_incident_surfaces,
-            surface_boundary_lines);
+        impl_->check_internal_intrusion_or_boundaries(
+            line_incident_surfaces, surface_boundary_lines );
 
         // Generate surface polygons
         impl_->build_surface_polygons( *this, surface_boundary_lines );
