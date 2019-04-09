@@ -1356,7 +1356,7 @@ namespace RINGMesh
                     // reset the index of line incident surfaces to
                     // englobing_surface_id
                     //(line_indicent_surfaces[line_id].plus_surface_index() &
-                    //line_indicent_surfaces[line_id].minus_surface_index())
+                    // line_indicent_surfaces[line_id].minus_surface_index())
                 }
             }
             index_t nb_floating_set_of_lines{ static_cast< index_t >(
