@@ -1297,7 +1297,43 @@ namespace RINGMesh
 			return 0;
 		}
 
+		/*!
+		 * This function iterates on lines and manage internal boundaries. 
+		 * @param line_indicent_surfaces vector of lines and incident surfaces to manage.
+		 * @return the number of intenal boundaries. 
+		*/
+		index_t manage_internal_boundary (
+			const std::vector< LineIncidentSurfacePair >&  line_indicent_surfaces,
+			const index_t nb_found_surfaces
+			) const {
+			std::vector< bool > are_surfaces_hole(nb_found_surfaces, true);
+			for (auto line_id : range(geomodel_.nb_lines()))
+			{
+				if (line_indicent_surfaces[line_id].plus_surface_index()
+					!= line_indicent_surfaces[line_id].minus_surface_index())
+				{
+					are_surfaces_hole[line_indicent_surfaces[line_id].plus_surface_index()] = false;
+					are_surfaces_hole[line_indicent_surfaces[line_id].minus_surface_index()] = false;
+				}
+				else { // if a line have the same minus and plus surface index this line is an internal boundary.
+				   //TODO by Emna 
+				   // find the englobing surface for the current line
+				   //implement the following function
+					index_t englobing_surface_id = find_englobing_surface(line_id);
+					// reset the index of line incident surfaces to englobing_surface_id
+					//(line_indicent_surfaces[line_id].plus_surface_index() & line_indicent_surfaces[line_id].minus_surface_index())
+				}
+			}
+			return{ static_cast<index_t>(std::count(
+				are_surfaces_hole.begin(), are_surfaces_hole.end(), true)) };
+		}
+		/*!
+		* This function find all line boundary indices associated to a surface
+		* @param surface_id index of the current surface
+		* @return a set of line index that are either the minus or the plus boundary.
+		*/
 		std::set<index_t> get_line_boundary_indices(index_t surface_id) const{
+			//Todo implement it
 			return std::set<index_t>();
 		}
 
@@ -1319,33 +1355,9 @@ namespace RINGMesh
         void check_internal_intrusion_or_boundaries(
             const std::vector< LineIncidentSurfacePair >&
                 line_indicent_surfaces,
-            std::vector< std::vector< Impl::OrientedLine > >&
-                surface_boundary_lines ) const
+			const index_t nb_found_surfaces) const
         {
-            std::vector< bool > are_surfaces_hole(
-                surface_boundary_lines.size(), true );
-
-            for( auto line_id : range( geomodel_.nb_lines() ) )
-            {
-                if( line_indicent_surfaces[line_id].plus_surface_index()
-                    != line_indicent_surfaces[line_id].minus_surface_index() )
-                {
-                    are_surfaces_hole[line_indicent_surfaces[line_id]
-                                          .plus_surface_index()] = false;
-                    are_surfaces_hole[line_indicent_surfaces[line_id]
-                                          .minus_surface_index()] = false;
-                }
-				else { // if a line have the same minus and plus surface index this line is an internal boundary.
-					   //TODO by Emna 
-					   // find the englobing surface for the current line
-					   //implement the following function
-					   index_t englobing_surface_id = find_englobing_surface(line_id);
-					   // reset the index of line incident surfaces to englobing_surface_id
-					   //(line_indicent_surfaces[line_id].plus_surface_index() & line_indicent_surfaces[line_id].minus_surface_index())
-				}
-            }
-            index_t nb_floating_set_of_lines{ static_cast< index_t >( std::count(
-                are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
+			index_t nb_floating_set_of_lines = manage_internal_boundary(line_indicent_surfaces, nb_found_surfaces);
 			if (nb_floating_set_of_lines > 0)
 			{
 			//TODO by EMNA
@@ -1358,9 +1370,9 @@ namespace RINGMesh
 				" group(s) of lines are "
 				"floating inside a surface. This is not yet handled by the "
 				"algorithm. Aborting...");
-		}
-		//TODO Manage intrusions surfaces
-		//manage_intrusion_surface();
+			}
+			//TODO Manage intrusions surfaces
+			manage_intrusion_surface();
 
         }
 
@@ -1474,8 +1486,8 @@ namespace RINGMesh
         impl_->find_surfaces_boundary_lines(
             line_incident_surfaces, surface_boundary_lines );
 
-        impl_->check_internal_intrusion_or_boundaries(
-            line_incident_surfaces, surface_boundary_lines );
+		impl_->check_internal_intrusion_or_boundaries(line_incident_surfaces,
+			static_cast< index_t >(surface_boundary_lines.size()));
 
         // Generate surface polygons
         impl_->build_surface_polygons( *this, surface_boundary_lines );
