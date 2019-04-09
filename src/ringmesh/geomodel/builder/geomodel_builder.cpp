@@ -1371,7 +1371,7 @@ namespace RINGMesh
             // or minus side)
             return;
         }
-		
+
         void check_internal_intrusion_or_boundaries(
             const std::vector< LineIncidentSurfacePair >&
                 line_indicent_surfaces,
