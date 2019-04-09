@@ -51,6 +51,7 @@ namespace RINGMesh
     FORWARD_DECLARATION_DIMENSION_CLASS( SurfaceMesh );
 
     struct PolygonLocalEdge;
+    struct ElementLocalVertex;
 } // namespace RINGMesh
 
 namespace RINGMesh
