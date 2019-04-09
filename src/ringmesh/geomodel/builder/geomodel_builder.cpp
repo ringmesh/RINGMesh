@@ -1286,36 +1286,46 @@ namespace RINGMesh
             }
         }
 
-		/*!
-		* This function implement a geometric test to find the englobing surface index for the current line
-		* @param line_id index of the current line
-		* @return the englobing surface index
-		* @note you may need other inputs.
-		*/
-		index_t find_englobing_surface(index_t line_id) const {
-			// implement geometrical test to detect the index of the surface that englobe the line
-			return 0;
-		}
+        /*!
+         * This function implement a geometric test to find the englobing
+         * surface index for the current line
+         * @param line_id index of the current line
+         * @return the englobing surface index
+         * @note you may need other inputs.
+         */
+        index_t find_englobing_surface( index_t line_id ) const
+        {
+            // implement geometrical test to detect the index of the surface
+            // that englobe the line
+            return 0;
+        }
 
-		std::set<index_t> get_line_boundary_indices(index_t surface_id) const{
-			return std::set<index_t>();
-		}
+        std::set< index_t > get_line_boundary_indices(
+            index_t surface_id ) const
+        {
+            return std::set< index_t >();
+        }
 
-		void manage_intrusion_surface() const{
-			//iterate on every surfaces
-			index_t surface_id;
-			std::set<index_t> line_boundary_indices = get_line_boundary_indices(surface_id);
-			//interates on every other surfaces
-			index_t upper_surface_id;
-			std::set<index_t> upper_line_boundary_indices = get_line_boundary_indices(upper_surface_id);
-			//compare the two sets: line_boundary_indices and upper_line_boundary_indices
-			//if equal do:
-			// find englobing_surface_index for upper_line_boundary_indices
-			// set line_indicent_surfaces corresponding to every upper_line_boundary_indices to
-			//englobing_surface_index (be careful it correspond to eitehr plus or minus side)
-			return;
-		}
-		
+        void manage_intrusion_surface() const
+        {
+            // iterate on every surfaces
+            index_t surface_id;
+            std::set< index_t > line_boundary_indices =
+                get_line_boundary_indices( surface_id );
+            // interates on every other surfaces
+            index_t upper_surface_id;
+            std::set< index_t > upper_line_boundary_indices =
+                get_line_boundary_indices( upper_surface_id );
+            // compare the two sets: line_boundary_indices and
+            // upper_line_boundary_indices  if equal do:
+            // find englobing_surface_index for upper_line_boundary_indices
+            // set line_indicent_surfaces corresponding to every
+            // upper_line_boundary_indices to
+            // englobing_surface_index (be careful it correspond to eitehr plus
+            // or minus side)
+            return;
+        }
+
         void check_internal_intrusion_or_boundaries(
             const std::vector< LineIncidentSurfacePair >&
                 line_indicent_surfaces,
@@ -1335,33 +1345,38 @@ namespace RINGMesh
                     are_surfaces_hole[line_indicent_surfaces[line_id]
                                           .minus_surface_index()] = false;
                 }
-				else { // if a line have the same minus and plus surface index this line is an internal boundary.
-					   //TODO by Emna 
-					   // find the englobing surface for the current line
-					   //implement the following function
-					   index_t englobing_surface_id = find_englobing_surface(line_id);
-					   // reset the index of line incident surfaces to englobing_surface_id
-					   //(line_indicent_surfaces[line_id].plus_surface_index() & line_indicent_surfaces[line_id].minus_surface_index())
-				}
+                else
+                { // if a line have the same minus and plus surface index this
+                  // line is an internal boundary.
+                    // TODO by Emna
+                    // find the englobing surface for the current line
+                    // implement the following function
+                    index_t englobing_surface_id =
+                        find_englobing_surface( line_id );
+                    // reset the index of line incident surfaces to
+                    // englobing_surface_id
+                    //(line_indicent_surfaces[line_id].plus_surface_index() &
+                    //line_indicent_surfaces[line_id].minus_surface_index())
+                }
             }
-            index_t nb_floating_set_of_lines{ static_cast< index_t >( std::count(
-                are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
-			if (nb_floating_set_of_lines > 0)
-			{
-			//TODO by EMNA
-			// update message to say that we have taken into account the internal boundary.
-			// remove exception
-			throw RINGMeshException("Surface2D",
-				"During surface from corners "
-				" and lines build, ",
-				nb_floating_set_of_lines,
-				" group(s) of lines are "
-				"floating inside a surface. This is not yet handled by the "
-				"algorithm. Aborting...");
-		}
-		//TODO Manage intrusions surfaces
-		//manage_intrusion_surface();
-
+            index_t nb_floating_set_of_lines{ static_cast< index_t >(
+                std::count( are_surfaces_hole.begin(), are_surfaces_hole.end(),
+                    true ) ) };
+            if( nb_floating_set_of_lines > 0 )
+            {
+                // TODO by EMNA
+                // update message to say that we have taken into account the
+                // internal boundary. remove exception
+                throw RINGMeshException( "Surface2D",
+                    "During surface from corners "
+                    " and lines build, ",
+                    nb_floating_set_of_lines,
+                    " group(s) of lines are "
+                    "floating inside a surface. This is not yet handled by the "
+                    "algorithm. Aborting..." );
+            }
+            // TODO Manage intrusions surfaces
+            // manage_intrusion_surface();
         }
 
         std::vector< vec2 > get_surface_polygon_vertices(
