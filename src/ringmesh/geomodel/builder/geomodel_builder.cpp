@@ -1302,9 +1302,10 @@ namespace RINGMesh
 
         /*!
          * This function iterates on lines and manages internal boundaries.
-         * @param line_indicent_surfaces for each line, a pair of incident 
-		 * surfaces is given (corresponding to plus and minus sides).
-		 * @note internal boundaries corresponds to lines having the same plus and minus.
+         * @param line_indicent_surfaces for each line, a pair of incident
+         * surfaces is given (corresponding to plus and minus sides).
+         * @note internal boundaries corresponds to lines having the same plus
+         * and minus.
          * @return the number of connected set of intenal boundaries.
          */
         index_t manage_internal_boundary(
@@ -1353,9 +1354,9 @@ namespace RINGMesh
             return std::set< index_t >();
         }
 
-		/*!
-		* TODO by Emna 
-		*/
+        /*!
+         * TODO by Emna
+         */
         void manage_intrusion_surface() const
         {
             // iterate on every surfaces
@@ -1440,7 +1441,7 @@ namespace RINGMesh
             }
         }
 
-		void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
+        void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
         {
