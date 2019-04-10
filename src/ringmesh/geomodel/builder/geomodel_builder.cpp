@@ -1287,7 +1287,7 @@ namespace RINGMesh
         }
 
         /*!
-         * This function implement a geometric test to find the englobing
+         * This function implements a geometric test to find the englobing
          * surface index for the current line
          * @param line_id index of the current line
          * @return the englobing surface index
@@ -1301,10 +1301,11 @@ namespace RINGMesh
         }
 
         /*!
-         * This function iterates on lines and manage internal boundaries.
-         * @param line_indicent_surfaces vector of lines and incident surfaces
-         * to manage.
-         * @return the number of intenal boundaries.
+         * This function iterates on lines and manages internal boundaries.
+         * @param line_indicent_surfaces for each line, a pair of incident 
+		 * surfaces is given (corresponding to plus and minus sides).
+		 * @note internal boundaries corresponds to lines having the same plus and minus.
+         * @return the number of connected set of intenal boundaries.
          */
         index_t manage_internal_boundary(
             const std::vector< LineIncidentSurfacePair >&
@@ -1340,7 +1341,7 @@ namespace RINGMesh
                 are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
         }
         /*!
-         * This function find all line boundary indices associated to a surface
+         * This function finds all line boundary indices associated to a surface
          * @param surface_id index of the current surface
          * @return a set of line index that are either the minus or the plus
          * boundary.
@@ -1352,6 +1353,9 @@ namespace RINGMesh
             return std::set< index_t >();
         }
 
+		/*!
+		* TODO by Emna 
+		*/
         void manage_intrusion_surface() const
         {
             // iterate on every surfaces
@@ -1435,9 +1439,8 @@ namespace RINGMesh
                     polygon_vertices, polygon_corners, polygon_vertex_ptr );
             }
         }
-        // TODO :: TO be removed by emna because the universe will not be
-        // created anymore.
-        void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
+
+		void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
         {
