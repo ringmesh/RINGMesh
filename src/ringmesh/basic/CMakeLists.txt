@@ -53,6 +53,7 @@ target_sources(${target_name}
         "${lib_include_dir}/command_line.h"
         "${lib_include_dir}/common.h"
         "${lib_include_dir}/frame.h"
+        "${lib_include_dir}/factory.h"
         "${lib_include_dir}/geometry.h"
         "${lib_include_dir}/logger.h"
         "${lib_include_dir}/matrix.h"
