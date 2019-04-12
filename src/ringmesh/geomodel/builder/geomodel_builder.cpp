@@ -1398,7 +1398,7 @@ namespace RINGMesh
                     "algorithm. Aborting..." );
             }
             // TODO Manage intrusions surfaces
-            //manage_intrusion_surface();
+            // manage_intrusion_surface();
         }
 
         std::vector< vec2 > get_surface_polygon_vertices(
