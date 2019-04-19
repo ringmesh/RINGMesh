@@ -90,7 +90,8 @@ void test_geomodel_2D_with_internal_features()
 {
     Logger::out( "TEST", "Load GeoModel2D with internal features" );
     GeoModel2D geomodel;
-    geomodel_load( geomodel, ringmesh_test_data_path + "model_with_internal_features.gm" );
+    geomodel_load(
+        geomodel, ringmesh_test_data_path + "model_with_internal_features.gm" );
     check_geomodel( geomodel );
 }
 
