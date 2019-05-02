@@ -1293,19 +1293,50 @@ namespace RINGMesh
          * @return the englobing surface index
          * @note you may need other inputs.
          */
-        index_t find_englobing_surface( index_t line_id ) const
+		index_t find_englobing_surface(index_t line_id, std::vector< LineIncidentSurfacePair >& line_indicent_surfaces ) const
         {
             // implement geometrical test to detect the index of the surface
             // that englobe the line
+			// create Line2D = tracer de rayon
 
-			//for (index_t surface_id; surface_id <= geomodel_.nb_surfaces;++ surface_id)
-			//{ 
+			const Line2D & line = geomodel_.line(line_id);
+			
+			Geometry::Line2D Ray_tracer{ { 0.5, 0.5 }, line.vertex(0) };
+			
+		     int intersection_count = 0;
+			
+			 for  (auto surface_id : range(geomodel_.nb_surfaces()))
+			 {	
+				 std::vector< OrientedLine > boundaries_of_curr_surface =
+					                     get_surface_boundaries(surface_id, line_indicent_surfaces);
+				  
+				 for ( index_t id=0; id <= boundaries_of_curr_surface.size(); ++ id)
+                 { 
+					 const Line2D & line_boundary = geomodel_.line(id);
 
+					 for (index_t segment_id : range(line_boundary.nb_mesh_elements()))
+					 {
+						 const Geometry::Segment2D segment_of_line(
+							 line_boundary.mesh_element_vertex({ segment_id, 0 }),
+							 line_boundary.mesh_element_vertex({ segment_id, 1 })
+							 );
+					
+					// Geometry::Line2D line_id = line_indicent_surfaces[id];
 
-
-
-		    //}
-
+					 std::tuple< bool, vec2 > inter = Intersection::segment_line(segment_of_line, Ray_tracer);
+                                               
+				     if (std::get<0>(inter) == true)
+				       {
+				 	    ++ intersection_count; }				      
+		             }
+			    }
+			   
+				if (intersection_count % 2 != 0) 
+			     {
+			        return surface_id;  } 
+			  
+			     break;
+			}
 
             return 0;
         }
@@ -1344,7 +1375,7 @@ namespace RINGMesh
                     // englobing_surface_id
 					
 					index_t englobing_surface_id =
-                        find_englobing_surface( line_id );
+						find_englobing_surface(line_id, line_indicent_surfaces);
 
 					line_indicent_surfaces[line_id].set_side_surface_index( true, englobing_surface_id);
 					line_indicent_surfaces[line_id].set_side_surface_index( false, englobing_surface_id);                                  
@@ -1366,7 +1397,7 @@ namespace RINGMesh
 			
 			for (auto line_id : range(geomodel_.nb_lines()))
 			{
-
+				
 			  if ((line_indicent_surfaces[line_id].plus_surface_index() == surface_id) ||
 				(line_indicent_surfaces[line_id].minus_surface_index()== surface_id))
 
@@ -1377,51 +1408,80 @@ namespace RINGMesh
 			
 			return line_boundary_indices;
         }
+		// determine if the lines index are the minus or the plus
+		// @return the side of the line ( true = plus, false = minus)
+
+		 bool line_side (const std::vector< LineIncidentSurfacePair >&
+		 line_indicent_surfaces, index_t surface_id, index_t line_id)const
+		 { 
+		       if (  line_indicent_surfaces[line_id].plus_surface_index() == surface_id)
+		           { return true;
+                   }
+
+		  return false;
+		}
+		 //// set line_indicent_surfaces corresponding to every
+         // upper_line_boundary_indices to
+         // englobing_surface_index (it correspond to eitehr plus
+         // or minus side)
+		 //@param line_id, surface_id and line_indicent_surface
+
+		 void set_line_indices_surface (std::vector< LineIncidentSurfacePair >&
+			 line_indicent_surfaces, index_t line_id, index_t surface_id, index_t englobing_surface_id_for_upper_line)const
+		 {
+			 if (line_side (line_indicent_surfaces,surface_id, line_id)== true)
+			 {
+			    line_indicent_surfaces[line_id].set_side_surface_index(true, englobing_surface_id_for_upper_line);			  
+			 }
+
+			 line_indicent_surfaces[line_id].set_side_surface_index(false, englobing_surface_id_for_upper_line);
+		 }		
 
         /*!
          * TODO by Emna
          */
-		void manage_intrusion_surface(const std::vector< LineIncidentSurfacePair >&
-			line_indicent_surfaces ) const
-        {
-           
-			for (auto surface_id : range(geomodel_.nb_surfaces()))
-			{ 
-               for (index_t upper_surface_id = surface_id +1; upper_surface_id <= geomodel_.nb_surfaces(); ++ upper_surface_id)
-				{
-					// iterate on every surfaces
-                     std::set< index_t > line_boundary_indices =
-				           get_line_boundary_indices(line_indicent_surfaces, surface_id);
+             // TODO Manage intrusions surfaces
+            // manage_intrusion_surface();
+		 // compare the two sets: line_boundary_indices and
+		 // upper_line_boundary_indices  if equal do://
+		 // find englobing_surface_index for upper_line_boundary_indices
 
-                    // interates on every other surfaces
+		void manage_intrusion_surface( std::vector< LineIncidentSurfacePair >&
+			line_indicent_surfaces) const
+        {           
+		 for (auto surface_id : range(geomodel_.nb_surfaces()))
+		  { 
+			// iterate on every surfaces
+			std::set< index_t > line_boundary_indices =
+				  get_line_boundary_indices(line_indicent_surfaces, surface_id);
               
-                     std::set< index_t > upper_line_boundary_indices =
+		    for (index_t upper_surface_id = surface_id +1; upper_surface_id <= geomodel_.nb_surfaces(); ++ upper_surface_id)
+			{			
+               // interates on every other surfaces             
+               std::set< index_t > upper_line_boundary_indices =
                            get_line_boundary_indices( line_indicent_surfaces, upper_surface_id);
 			
-			         if (line_boundary_indices == upper_line_boundary_indices)
-			          {
-				           index_t englobing_surface_id_for_upper_line = find_englobing_surface(surface_id);
+			   if (line_boundary_indices == upper_line_boundary_indices)
+			     {
+                   std::set<index_t>::iterator i;
 						  
-						   std::set<index_t> ::iterator it;
-
-						   for (it = line_boundary_indices.begin(); it != line_boundary_indices.end(); it++)
-							   
-						  {
-						   line_indicent_surfaces[it].set_side_surface_index(true, englobing_surface_id_for_upper_line);
-		  				  }
-
-						   //index_t englobing_surface_id = line_indicent_surfaces[upper_line_boundary_indices].plus_surface_index();//
-			         } 
-			    }
-			}
-
-            // compare the two sets: line_boundary_indices and
-            // upper_line_boundary_indices  if equal do://
-            // find englobing_surface_index for upper_line_boundary_indices
-            // set line_indicent_surfaces corresponding to every
-            // upper_line_boundary_indices to
-            // englobing_surface_index (be careful it correspond to eitehr plus
-            // or minus side)
+			       for (i = upper_line_boundary_indices.begin(); i != upper_line_boundary_indices.end(); ++i)
+				     {  						
+					   if (line_indicent_surfaces[*i].plus_surface_index() == *i)  
+					    {							
+						  index_t line_id = *i ;															
+						  index_t englobing_surface_id_for_upper_line = find_englobing_surface(line_id, line_indicent_surfaces);								 
+								 						    						     					    					
+					      for (index_t it; it <= upper_line_boundary_indices.size(); ++it)							   
+					       {
+							   set_line_indices_surface(line_indicent_surfaces, it, surface_id, englobing_surface_id_for_upper_line);
+						   }
+						  break;	
+					    }	
+					 }						   							 						 
+				} 
+		    }
+		  }
             return;
         }
 
@@ -1444,11 +1504,7 @@ namespace RINGMesh
 
                 // TODO by EMNA // Done
                 // update message to say that we have taken into account the
-                // internal boundary. remove exception
-                
-            
-            // TODO Manage intrusions surfaces
-            // manage_intrusion_surface();
+                // internal boundary. remove exception                                      
         }
 
         std::vector< vec2 > get_surface_polygon_vertices(
