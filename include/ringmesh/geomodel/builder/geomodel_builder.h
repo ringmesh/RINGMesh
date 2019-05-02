@@ -33,7 +33,6 @@
  *     FRANCE
  */
 
-
 #pragma once
 
 #include <ringmesh/basic/pimpl.h>
