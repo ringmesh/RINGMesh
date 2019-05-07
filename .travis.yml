@@ -74,8 +74,8 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - cd Coverage
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build --target coverage -- -j2
-        - cmake --build --target package
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target coverage -- -j2
+        - cmake --build . --target package
         - cd $TRAVIS_BUILD_DIR
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
@@ -99,8 +99,8 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON ..
         - cd Debug
         - cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build --target test -- -j2
-        - cmake --build --target package
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
+        - cmake --build . --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
           cd $TRAVIS_BUILD_DIR;
@@ -116,8 +116,8 @@ jobs:
         - cd build
         - CXX=clang++ CC=clang cmake -G Xcode -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - cmake --build . --config Debug
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build --target RUN_TESTS --config Debug
-        - cmake --build --target package
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config Debug
+        - cmake --build . --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
           cd $TRAVIS_BUILD_DIR;
@@ -134,8 +134,8 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - cd Debug
         - cmake --build . -- -j2
-        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build --target test -- -j2
-        - cmake --build --target package
+        - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
+        - cmake --build . --target package
       after_failure:
         - if [ "$TRAVIS_BRANCH" = "master" && "$TRAVIS_EVENT_TYPE" != "pull_request" ]; then 
           cd $TRAVIS_BUILD_DIR;
@@ -158,7 +158,7 @@ jobs:
         - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
-        - cmake --build --target package
+        - cmake --build . --target package
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
@@ -182,7 +182,7 @@ jobs:
         - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cd Release
         - cmake --build . -- -j2
-        - cmake --build --target package
+        - cmake --build . --target package
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
