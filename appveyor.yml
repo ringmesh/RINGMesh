@@ -54,12 +54,12 @@ for:
 
   test_script:
    - if %configuration% == Debug (
-     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+     cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
      )
 
   deploy_script:
    - if %configuration% == RelWithDebInfo (
-     cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+     cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
      && copy ..\ringmesh\%RINGMESH_PACKAGE%.zip download\
@@ -80,6 +80,6 @@ for:
    - cmake --build . --config %configuration% -- %MSBUILD_FLAGS%
 
   test_script:
-   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build ringmesh --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
-   - cmake --build ringmesh --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
+   - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target RUN_TESTS --config %configuration% -- %MSBUILD_FLAGS%
+   - cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
    

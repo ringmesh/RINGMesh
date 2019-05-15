@@ -1,14 +1,15 @@
-#### Release: 5.1.0 ####
+#### Release: 5.1.1 ####
 
 New Features:
  * Support input and output resqml2 standards
+ * change build organization: remove "ringmesh" folder
 
 Bug fix:
  * Fix geomodel_copy in 2D
  * remove the try for RINGMESH GUI with nbind
 
 Improvements:
- * geogram release 1.6.10
+ * geogram release 1.6.11
 
 
 

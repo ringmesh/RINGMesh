@@ -31,7 +31,8 @@
 #     54518 VANDOEUVRE-LES-NANCY
 #     FRANCE
 
-set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR}/ringmesh)
+
+set(RINGMesh_PATH_BIN ${PROJECT_BINARY_DIR})
 
 set(RINGMesh_DEPENDENCY geogram_ext tinyxml2_ext zlib_ext minizip_ext)
 if(RINGMESH_WITH_RESQML2)
