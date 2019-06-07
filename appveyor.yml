@@ -62,7 +62,7 @@ for:
      cmake --build . --target PACKAGE --config %configuration% -- %MSBUILD_FLAGS%
      && git clone -b master https://github.com/ringmesh/web
      && cd web
-     && copy ..\ringmesh\%RINGMESH_PACKAGE%.zip download\
+     && copy ..\%RINGMESH_PACKAGE%.zip download\
      && git config --global user.email "appveyor@fake.email"
      && git config --global user.name "AppVeyor"
      && git add download\%RINGMESH_PACKAGE%.zip
