@@ -392,10 +392,12 @@ namespace GEO {
                 }
             }
             unbind_attributes();
+	    /*
             if(ioflags.has_element(MESH_FACETS) && M.facets.nb() == 0) {
                 Logger::err("I/O") << "Mesh contains no facet" << std::endl;
                 return false;
             }
+	    */
             return true;
         }
 
@@ -4673,8 +4675,7 @@ namespace GEO {
         }
 		GEO::Process::acquire_spinlock(lock);
         M.show_stats("I/O");
-        GEO::Process::release_spinlock(lock);
-		
+		GEO::Process::release_spinlock(lock);
         return true;
     }
 
