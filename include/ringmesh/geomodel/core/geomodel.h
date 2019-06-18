@@ -206,7 +206,7 @@ namespace RINGMesh
             return static_cast< index_t >( lines_.size() );
         }
         index_t nb_surfaces() const
-        {
+		{			
             return static_cast< index_t >( surfaces_.size() );
         }
 

@@ -1066,17 +1066,6 @@ namespace RINGMesh
         geometry.clear_geomodel_mesh();
     }
 
-    template < index_t DIMENSION >
-    void GeoModelBuilderBase< DIMENSION >::end_geomodel()
-    {
-        if( geomodel_.name().empty() )
-        {
-            info.set_geomodel_name( "model_default_name" );
-        }
-
-        cut_geomodel_on_internal_boundaries();
-        print_geomodel( geomodel_ );
-    }
 
     class GeoModelBuilder< 2 >::Impl
     {
@@ -1225,7 +1214,7 @@ namespace RINGMesh
         }
 
         std::vector< OrientedLine > get_surface_boundaries(
-            const index_t cur_surface_id,
+             index_t cur_surface_id,
             std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
             const
         {
@@ -1237,31 +1226,32 @@ namespace RINGMesh
 
             // From the first line, the lines are walked turning around corners
             // in the same direction (clockwise). Line after line, the
-            // boundaries
-            // of the currently processed surface are found until the algorithm
-            // has gone back to the first line.
+            // boundaries of the currently processed surface are found until 
+            // the algorithm has gone back to the first line.
             // By convention, if a line is walked from its first boundary
             // towards
             // its second boundary, the surface is set as incident by the + side
             // of the line.
             do
             {
-                ringmesh_assert(
+                 //ringmesh_assert(
                     line_indicent_surfaces[cur_line_and_side.index]
                         .side_surface_index( cur_line_and_side.side )
-                    == NO_ID );
+                    == NO_ID ;
                 line_indicent_surfaces[cur_line_and_side.index]
                     .set_side_surface_index(
                         cur_line_and_side.side, cur_surface_id );
+								
                 cur_surface_boundaries.emplace_back( cur_line_and_side );
 
                 cur_line_and_side =
                     get_next_surface_boundary_line( cur_line_and_side );
             } while( cur_line_and_side != first_line_and_side );
+												
             return cur_surface_boundaries;
         }
 
-        void find_surfaces_boundary_lines(
+            void find_surfaces_boundary_lines(
             std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
@@ -1269,7 +1259,7 @@ namespace RINGMesh
             // This vector registers for each line the index of the two incident
             // surfaces
             line_indicent_surfaces.resize( this->geomodel_.nb_lines() );
-            index_t surface_counter{ 0 };
+            index_t surface_counter{0};
             while( std::count_if( line_indicent_surfaces.begin(),
                        line_indicent_surfaces.end(),
                        []( const LineIncidentSurfacePair& line ) {
@@ -1279,78 +1269,88 @@ namespace RINGMesh
             {
                 auto cur_surface_boundaries = get_surface_boundaries(
                     surface_counter, line_indicent_surfaces );
-
+				
                 surface_boundary_lines.emplace_back(
                     std::move( cur_surface_boundaries ) );
                 ++surface_counter;
-            }
+				std::cout << " counter" << surface_counter << std::endl;
+            }					  
         }
 
         /*!
          * This function implements a geometric test to find the englobing
          * surface index for the current line
-         * @param line_id index of the current line
+         * @param line_id index of the current line, line_indicent_surfaces for each line , number of the found surfaces
          * @return the englobing surface index
          * @note you may need other inputs.
          */
+			/* Check that the found surface id is different from itself
+			*/
         index_t find_englobing_surface( index_t line_id,
-            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
+            const std::vector< LineIncidentSurfacePair >& line_indicent_surfaces, index_t nb_found_surfaces)
             const
         {
-            // implement geometrical test to detect the index of the surface
-            // that englobe the line
-            // create Line2D = tracer de rayon
-
+        // implement geometrical test to detect the index of the surface
+        // that englobe the line
+        // create Line2D = tracer de rayon
+							
             const Line2D& line = geomodel_.line( line_id );
 
-            Geometry::Line2D Ray_tracer{ { 0.5, 0.5 }, line.vertex( 0 ) };
+            Geometry::Line2D Ray_tracer{ { 0.5,0.7 }, line.vertex( 0 ) };
+				               
+            for(index_t surface_id = 0; surface_id < nb_found_surfaces; ++surface_id)
+              {
+			     int intersection_count = 0;				  
+               std::set< index_t > boundaries_of_curr_surface =
+                      get_line_boundary_indices(
+                         line_indicent_surfaces, surface_id );				 
+				
+			   std::tuple< bool, vec2 > inter(false, {0,0});
+                  for( index_t id : boundaries_of_curr_surface )
+				  {     
+				    if (line_indicent_surfaces[id].plus_surface_index() 
+					  == line_indicent_surfaces[id].minus_surface_index())
+					  {
+					  continue ;
+					  }
 
-            int intersection_count = 0;
+				    const Line2D& line_boundary = geomodel_.line( id );
+					
+					for( index_t segment_id :
+							range( line_boundary.nb_mesh_elements() ) )
+						{						
+						  const Geometry::Segment2D segment_of_line(
+								line_boundary.mesh_element_vertex(
+									{ segment_id, 0 } ),
+								line_boundary.mesh_element_vertex(
+									{ segment_id, 1 } ) );
+						
+						  inter = Intersection::segment_line(								  
+									segment_of_line, Ray_tracer );
 
-            for( auto surface_id : range( geomodel_.nb_surfaces() ) )
-            {
-                std::vector< OrientedLine > boundaries_of_curr_surface =
-                    get_surface_boundaries(
-                        surface_id, line_indicent_surfaces );
+						  vec2 inter_point = std::get< 1 >(inter); 
+						  vec2 vec_origin_point; 
 
-                for( index_t id = 0; id <= boundaries_of_curr_surface.size();
-                     ++id )
-                {
-                    const Line2D& line_boundary = geomodel_.line( id );
+						  vec_origin_point[0] = (inter_point[0] - line.vertex(0)[0]);
+						  vec_origin_point[1] = (inter_point[1] - line.vertex(0)[1]);
 
-                    for( index_t segment_id :
-                        range( line_boundary.nb_mesh_elements() ) )
-                    {
-                        const Geometry::Segment2D segment_of_line(
-                            line_boundary.mesh_element_vertex(
-                                { segment_id, 0 } ),
-                            line_boundary.mesh_element_vertex(
-                                { segment_id, 1 } ) );
+						  double vec_dir = dot(vec_origin_point,  vec2( 0.5, 0.7 ));
 
-                        // Geometry::Line2D line_id =
-                        // line_indicent_surfaces[id];
-
-                        std::tuple< bool, vec2 > inter =
-                            Intersection::segment_line(
-                                segment_of_line, Ray_tracer );
-
-                        if( std::get< 0 >( inter ) == true )
-                        {
-                            ++intersection_count;
-                        }
-                    }
-                }
-
-                if( intersection_count % 2 != 0 )
-                {
-                    return surface_id;
-                }
-
-                break;
-            }
-
-            return 0;
-        }
+						  if (std::get< 0 >(inter) == true && vec_dir >0)
+							{
+								++intersection_count;								
+							}																																									
+						}						
+                   }
+				 
+                   if( intersection_count % 2 != 0 )
+                   {
+					   return surface_id;					  
+                   }				
+                 }
+				  
+            return NO_ID;
+        }		
 
         /*!
          * This function iterates on lines and manages internal boundaries.
@@ -1364,41 +1364,50 @@ namespace RINGMesh
             std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
             const index_t nb_found_surfaces ) const
         {
+			index_t count = 0;
             std::vector< bool > are_surfaces_hole( nb_found_surfaces, true );
             for( auto line_id : range( geomodel_.nb_lines() ) )
             {
                 if( line_indicent_surfaces[line_id].plus_surface_index()
                     != line_indicent_surfaces[line_id].minus_surface_index() )
                 {
-                    are_surfaces_hole[line_indicent_surfaces[line_id]
-                                          .plus_surface_index()] = false;
-                    are_surfaces_hole[line_indicent_surfaces[line_id]
-                                          .minus_surface_index()] = false;
+					if (line_indicent_surfaces[line_id].plus_surface_index() != NO_ID){
+						are_surfaces_hole[line_indicent_surfaces[line_id]
+							.plus_surface_index()] = false;
+					}
+					if (line_indicent_surfaces[line_id].minus_surface_index() != NO_ID){
+						are_surfaces_hole[line_indicent_surfaces[line_id]
+							.minus_surface_index()] = false;
+					}
                 }
                 else
                 { // if a line have the same minus and plus surface index this
-                  // line is an internal boundary.
-                    // TODO by Emna
-                    // find the englobing surface for the current line
-                    // implement the following function
-                    // reset the index of line incident surfaces to
-                    // englobing_surface_id
+                  // line is an internal boundary.                   
+                  // find the englobing surface for the current line
+                  // implement the following function
+                  // reset the index of line incident surfaces to
+                  // englobing_surface_id
+									
+                index_t englobing_surface_id = find_englobing_surface(
+                       line_id, line_indicent_surfaces, nb_found_surfaces);
+			        
+			    Logger::out("the line id is`  ", line_id,
+						"the englobing surface is   ", englobing_surface_id);
 
-                    index_t englobing_surface_id = find_englobing_surface(
-                        line_id, line_indicent_surfaces );
-
-                    line_indicent_surfaces[line_id].set_side_surface_index(
+                line_indicent_surfaces[line_id].set_side_surface_index(
                         true, englobing_surface_id );
-                    line_indicent_surfaces[line_id].set_side_surface_index(
-                        false, englobing_surface_id );
+                line_indicent_surfaces[line_id].set_side_surface_index(
+                        false, englobing_surface_id );					
                 }
             }
-            return { static_cast< index_t >( std::count(
-                are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };
+             
+			return { static_cast< index_t >( std::count(
+                are_surfaces_hole.begin(), are_surfaces_hole.end(), true ) ) };			 
         }
+
         /*!
          * This function finds all line boundary indices associated to a surface
-         * @param surface_id index of the current surface
+         * @param surface_id index of the current surface and line_indicent_surfaces of each line
          * @return a set of line index that are either the minus or the plus
          * boundary.
          */
@@ -1408,22 +1417,22 @@ namespace RINGMesh
             index_t surface_id ) const
         {
             std::set< index_t > line_boundary_indices;
+           for( auto line_id : range( geomodel_.nb_lines() ) )
 
-            for( auto line_id : range( geomodel_.nb_lines() ) )
-            {
+            {				
                 if( ( line_indicent_surfaces[line_id].plus_surface_index()
                         == surface_id )
                     || ( line_indicent_surfaces[line_id].minus_surface_index()
-                           == surface_id ) )
-
+					== surface_id)) 
                 {
-                    line_boundary_indices.emplace( line_id );
+				  line_boundary_indices.emplace(line_id);
                 }
             }
 
             return line_boundary_indices;
         }
-        // determine if the lines index are the minus or the plus
+
+        // this function determine if the lines index are the minus or the plus
         // @return the side of the line ( true = plus, false = minus)
 
         bool line_side( const std::vector< LineIncidentSurfacePair >&
@@ -1439,116 +1448,186 @@ namespace RINGMesh
 
             return false;
         }
+
         //// set line_indicent_surfaces corresponding to every
         // upper_line_boundary_indices to
         // englobing_surface_index (it correspond to eitehr plus
         // or minus side)
         //@param line_id, surface_id and line_indicent_surface
 
-        void set_line_indices_surface(
-            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
-            index_t line_id,
-            index_t surface_id,
-            index_t englobing_surface_id_for_upper_line ) const
-        {
-            if( line_side( line_indicent_surfaces, surface_id, line_id )
-                == true )
-            {
-                line_indicent_surfaces[line_id].set_side_surface_index(
-                    true, englobing_surface_id_for_upper_line );
-            }
+		void reset_line_indicent_surfaces(
+			std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
+			index_t line_id,
+			index_t surface_id,
+			index_t englobing_surface_id_for_upper_line) const
+		{
+			if (line_side(line_indicent_surfaces, surface_id, line_id)
+				== true)
+			{
+				line_indicent_surfaces[line_id].set_side_surface_index(
+					true, englobing_surface_id_for_upper_line);
+			}
+			else{
 
-            line_indicent_surfaces[line_id].set_side_surface_index(
-                false, englobing_surface_id_for_upper_line );
+			line_indicent_surfaces[line_id].set_side_surface_index(
+				false, englobing_surface_id_for_upper_line);
+		}
         }
 
-        /*!
-         * TODO by Emna
-         */
-        // TODO Manage intrusions surfaces
-        // manage_intrusion_surface();
-        // compare the two sets: line_boundary_indices and
-        // upper_line_boundary_indices  if equal do://
-        // find englobing_surface_index for upper_line_boundary_indices
 
-        void manage_intrusion_surface(
-            std::vector< LineIncidentSurfacePair >& line_indicent_surfaces )
-            const
-        {
-            for( auto surface_id : range( geomodel_.nb_surfaces() ) )
-            {
-                // iterate on every surfaces
-                std::set< index_t > line_boundary_indices =
-                    get_line_boundary_indices(
-                        line_indicent_surfaces, surface_id );
+		bool check_the_englobing_surface(std::set<index_t> min, std::set<index_t>max,
+			std::vector< LineIncidentSurfacePair >& line_indicent_surfaces)
+		{ 
+			for (auto i : min) {
+				if (std::find(max.begin(), max.end(), i) == max.end()){
+					// Cur element of min is not in max
+					return false;
+				}
+			}
+			return true;			
+		}
 
-                for( index_t upper_surface_id = surface_id + 1;
-                     upper_surface_id <= geomodel_.nb_surfaces();
-                     ++upper_surface_id )
-                {
-                    // interates on every other surfaces
-                    std::set< index_t > upper_line_boundary_indices =
-                        get_line_boundary_indices(
-                            line_indicent_surfaces, upper_surface_id );
+		void check_size( std::set<index_t> line_boundaries, std::set<index_t>upper_line_boundaries,
+			std::set<index_t> &min,std::set<index_t>& max)
+		{
+			
+			if (line_boundaries.size() < upper_line_boundaries.size())
+			{ 
+				min = line_boundaries;
+				max = upper_line_boundaries;
+			}
+			
+			else
+			{
+				max = line_boundaries;
+				min = upper_line_boundaries;
+			}			
+		}
+      
+        // this function compare the two sets:
+        // line_boundary_indices and upper_line_boundary_indices
+        // if they are equal do: it find englobing_surface_index
+        // for upper_line_boundary_indices
+	
+		void manage_intrusion_surface(
+			std::vector< LineIncidentSurfacePair >& line_indicent_surfaces, index_t nb_found_surfaces)			
+		{
+			std::set<index_t> min;
+			std::set<index_t> max;
 
-                    if( line_boundary_indices == upper_line_boundary_indices )
-                    {
-                        std::set< index_t >::iterator i;
+			for (index_t surface_id = 0; surface_id <= nb_found_surfaces; ++surface_id)
+			{
+			 // iterate on every surfaces
+			 std::set< index_t > line_boundary_indices =
+				get_line_boundary_indices(
+				line_indicent_surfaces, surface_id);
+				
+             for( index_t upper_surface_id = surface_id;
+                   upper_surface_id <= nb_found_surfaces;
+                   ++upper_surface_id )
+               {
+				if (upper_surface_id == surface_id)
+				  {
+					continue;
+				  }
+               
+				// interates on every other surfaces
+                std::set< index_t > upper_line_boundary_indices =
+                       get_line_boundary_indices(
+                       line_indicent_surfaces, upper_surface_id );	
+																																					
+			    check_size(line_boundary_indices, upper_line_boundary_indices,
+						min, max);
+				if (min.size() == 0) {
+					continue;
+				}
 
-                        for( i = upper_line_boundary_indices.begin();
-                             i != upper_line_boundary_indices.end(); ++i )
-                        {
-                            if( line_indicent_surfaces[*i].plus_surface_index()
-                                == *i )
-                            {
-                                index_t line_id = *i;
-                                index_t englobing_surface_id_for_upper_line =
-                                    find_englobing_surface(
-                                        line_id, line_indicent_surfaces );
+				if (check_the_englobing_surface(min, max, line_indicent_surfaces) == true)
 
-                                for( index_t it;
-                                     it <= upper_line_boundary_indices.size();
-                                     ++it )
-                                {
-                                    set_line_indices_surface(
-                                        line_indicent_surfaces, it, surface_id,
-                                        englobing_surface_id_for_upper_line );
-                                }
-                                break;
-                            }
-                        }
-                    }
-                }
-            }
+				  {						
+					std::set< index_t >::iterator i;
+												
+					for (i = min.begin();
+						 i != min.end(); ++i)
+					{
+					   if (line_indicent_surfaces[*i].plus_surface_index() == 
+						   line_indicent_surfaces[*i].minus_surface_index())
+						 {
+						   continue ;
+						 }
+					    Logger::out(" S_id ", surface_id);
+					    Logger::out(" US_id ", upper_surface_id);
+						Logger::out("try", line_indicent_surfaces[*i].plus_surface_index(), "  ",
+						                      line_indicent_surfaces[*i].minus_surface_index());
+							
+                        index_t englobing_surface_id_for_upper_line =
+                                find_englobing_surface(
+                                    *i, line_indicent_surfaces, nb_found_surfaces);
+
+					    Logger::out("englobing surface", englobing_surface_id_for_upper_line);	
+
+						if (englobing_surface_id_for_upper_line != NO_ID)
+						  {
+							std::set< index_t >::iterator it;
+						    for (it = min.begin();
+								  it != min.end(); ++it)
+							 {	
+								 if (line_boundary_indices.size() < upper_line_boundary_indices.size()) {
+									 reset_line_indicent_surfaces(
+										 line_indicent_surfaces, *it, surface_id,
+										 englobing_surface_id_for_upper_line);
+								 }
+								 else {
+									 reset_line_indicent_surfaces(
+										 line_indicent_surfaces, *it, upper_surface_id,
+										 englobing_surface_id_for_upper_line);
+								 }
+                               }							
+							break;
+	                      }
+							
+                     }					
+
+				  }
+			    }
+
+             }
+           			
             return;
         }
 
+		
+
         void check_internal_intrusion_or_boundaries(
             std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
-            const index_t nb_found_surfaces ) const
+            const index_t nb_found_surfaces ) 
         {
             index_t nb_floating_set_of_lines = manage_internal_boundary(
                 line_indicent_surfaces, nb_found_surfaces );
+		
             if( nb_floating_set_of_lines > 0 )
-            {
+             {				
                 Logger::out( " During surface from corners ",
                     " and lines build, ", nb_floating_set_of_lines,
                     " group(s) of lines are "
                     "floating inside a surface : These Internal Boundaries "
-                    "were taken into account " );
-            }
+                    "were taken into account !!! " );
+             }
 
-            // TODO by EMNA // Done
-            // update message to say that we have taken into account the
-            // internal boundary. remove exception
+			manage_intrusion_surface(line_indicent_surfaces, nb_found_surfaces);
         }
 
+		
         std::vector< vec2 > get_surface_polygon_vertices(
             const std::vector< OrientedLine >& surface_boundaries ) const
         {
             std::vector< vec2 > polygon_vertices;
+			std::set< index_t > added_line_id;
             for( auto cur_surf_boundary : surface_boundaries )
             {
+				if (added_line_id.find(cur_surf_boundary.index) != added_line_id.end()) {
+					continue;
+				}
                 const auto& cur_line =
                     this->geomodel_.line( cur_surf_boundary.index );
                 for( auto vertex : range( 1, cur_line.nb_vertices() ) )
@@ -1558,6 +1637,7 @@ namespace RINGMesh
                             ? vertex
                             : ( cur_line.nb_vertices() - 1 ) - vertex ) );
                 }
+				added_line_id.insert(cur_surf_boundary.index);
             }
             return polygon_vertices;
         }
@@ -1568,10 +1648,10 @@ namespace RINGMesh
         {
             for( const auto& surface_boundaries : surface_boundary_lines )
             {
-                std::vector< vec2 > polygon_vertices =
+               std::vector< vec2 > polygon_vertices =
                     get_surface_polygon_vertices( surface_boundaries );
                 std::vector< index_t > polygon_corners(
-                    polygon_vertices.size() );
+				polygon_vertices.size() );
                 std::iota( polygon_corners.begin(), polygon_corners.end(), 0 );
                 auto surface_id = builder.topology.create_mesh_entity(
                     surface_type_name_static() );
@@ -1583,7 +1663,50 @@ namespace RINGMesh
             }
         }
 
+		void remove_universe(std::vector< LineIncidentSurfacePair >& line_incident_surfaces, index_t nb_found_surfaces)
+		{
+			std::set< index_t > universe_candidates;
+			std::set< index_t > tmp_cand;
+			for (auto surface_id : range( nb_found_surfaces ) ) 
+			{
+
+				index_t first_line_id;
+				for (auto line_id : range(line_incident_surfaces.size())){
+					if (line_incident_surfaces[line_id].plus_surface_index() == surface_id || line_incident_surfaces[line_id].minus_surface_index() == surface_id) {
+						first_line_id = line_id;
+						break;
+					}
+				}
+				index_t englobing_id = find_englobing_surface(
+					first_line_id, line_incident_surfaces, nb_found_surfaces);
+
+				//if (englobing_id == NO_ID || englobing_id == surface_id ) {
+				if (englobing_id == NO_ID || tmp_cand.find(englobing_id) != tmp_cand.end()){
+					universe_candidates.emplace(surface_id);
+				}
+				if (englobing_id == surface_id){
+					tmp_cand.emplace(surface_id);
+				}
+			}
+			/* Check == 1 seems not good*/
+			//if (universe_candidates.size() == 2 || universe_candidates.size() == 1) {
+				index_t universe_id = *universe_candidates.begin();
+				for (auto line_id : range(line_incident_surfaces.size())){
+					if (line_incident_surfaces[line_id].plus_surface_index() == universe_id){
+						line_incident_surfaces[line_id].set_side_surface_index(true, NO_ID);
+					} if (line_incident_surfaces[line_id].minus_surface_index() == universe_id){
+						line_incident_surfaces[line_id].set_side_surface_index(false, NO_ID);
+					}
+				}
+			/*}
+			else {
+				throw RINGMeshException("Universe", "Finding Universe in a model with several Surfaces not yet implemented...");
+			}*/
+		}
+
+		/*Function to remove*/
         void find_exterior_and_remove_it( GeoModelBuilder2D& builder,
+			std::vector< LineIncidentSurfacePair >& line_indicent_surfaces,
             std::vector< std::vector< OrientedLine > >& surface_boundary_lines )
             const
         {
@@ -1592,12 +1715,31 @@ namespace RINGMesh
             for( const auto& surface : geomodel_.surfaces() )
             {
                 double surface_area{ surface.size() };
+				Logger::out("Universe", surface.index(), " ", surface_area, " ", surface.nb_boundaries(), " ", surface_boundary_lines[surface.index()].size());
                 if( surface_area > max_surface_area )
                 {
                     max_surface_area = surface_area;
                     exterior_surface_id = surface.index();
-                }
+				}
             }
+
+			DEBUG(exterior_surface_id);
+			index_t count = 0;
+			std::set< index_t > other_candidates;
+			for (auto line : surface_boundary_lines[exterior_surface_id])
+			{ 
+				index_t other_surface = line_indicent_surfaces[line.index].side_surface_index(!line.side);
+				if (other_surface != exterior_surface_id){
+					other_candidates.emplace(other_surface);
+				}
+			}
+			DEBUG(other_candidates.size());
+			if (other_candidates.size() == 1){
+				if (surface_boundary_lines[*other_candidates.begin()].size() < surface_boundary_lines[exterior_surface_id].size()){
+					exterior_surface_id = *other_candidates.begin();
+				}
+			}
+			DEBUG(exterior_surface_id);
             std::set< gmme_id > to_remove;
             to_remove.insert(
                 { surface_type_name_static(), exterior_surface_id } );
@@ -1623,6 +1765,21 @@ namespace RINGMesh
             }
         }
 
+
+		/*std::vector< bool > check_kept_surface_ids(std::vector< LineIncidentSurfacePair >& line_incident_surfaces )
+		{
+		  std::vector< bool > kept_surface_ids(index_t size, bool  );
+		  for (auto id : range(line_incident_surfaces.size()))
+		  {
+			   std::cout <<
+				"after " << id << " " << line_incident_surfaces[id].minus_surface_index()
+				<< "  " << line_incident_surfaces[id].plus_surface_index() << std::endl;
+
+			kept_surface_ids[line_incident_surfaces[id].plus_surface_index()] = true;
+			kept_surface_ids[line_incident_surfaces[id].minus_surface_index()] = true;
+		  }
+		}*/
+
     private:
         GeoModel2D& geomodel_;
     };
@@ -1640,6 +1797,21 @@ namespace RINGMesh
         geometry.cut_surfaces_by_internal_lines();
     }
 
+	void GeoModelBuilder< 2 >::end_geomodel()
+	{
+		if (geomodel_.name().empty())
+		{
+			info.set_geomodel_name("model_default_name");
+		}
+
+		if (geomodel_.nb_surfaces() == 0) {
+			build_surfaces_from_corners_and_lines();
+		}
+
+		//cut_geomodel_on_internal_boundaries();
+		print_geomodel(geomodel_);
+	}
+
     void GeoModelBuilder< 2 >::build_surfaces_from_corners_and_lines()
     {
         if( geomodel_.nb_surfaces() > 0 )
@@ -1652,12 +1824,91 @@ namespace RINGMesh
         impl_->find_surfaces_boundary_lines(
             line_incident_surfaces, surface_boundary_lines );
 
+		for (auto id : range (line_incident_surfaces.size())) {
+			std::cout << 
+				"before "<< id<< " "<< line_incident_surfaces[id].minus_surface_index()
+				<< "  " << line_incident_surfaces[id].plus_surface_index() <<std::endl ;
+		}
+
+		impl_->remove_universe(line_incident_surfaces,
+			static_cast< index_t >(surface_boundary_lines.size()));
+
+		for (auto id : range(line_incident_surfaces.size())) {
+			std::cout <<
+				"universe " << id << " " << line_incident_surfaces[id].minus_surface_index()
+				<< "  " << line_incident_surfaces[id].plus_surface_index() << std::endl;
+		}
+				
         impl_->check_internal_intrusion_or_boundaries( line_incident_surfaces,
-            static_cast< index_t >( surface_boundary_lines.size() ) );
+			static_cast< index_t >(surface_boundary_lines.size()));
+		
+		std::vector< bool > kept_surface_ids(surface_boundary_lines.size(), false);
+		for (auto id : range(line_incident_surfaces.size()))
+		{
+			std::cout <<
+				"after " << id << " " << line_incident_surfaces[id].minus_surface_index()
+				<< "  " << line_incident_surfaces[id].plus_surface_index() << std::endl;	
+
+			if (line_incident_surfaces[id].plus_surface_index() != NO_ID){
+				kept_surface_ids[line_incident_surfaces[id].plus_surface_index()] = true;
+			}
+			if (line_incident_surfaces[id].minus_surface_index() != NO_ID){
+				kept_surface_ids[line_incident_surfaces[id].minus_surface_index()] = true;
+			}
+		}
+
+		// decalage
+		for (auto surf_id : range(surface_boundary_lines.size()))
+		{
+			auto nb_remove_surfaces_before = std::count(kept_surface_ids.begin(), kept_surface_ids.begin() + surf_id, false);
+
+			for (auto id : range(line_incident_surfaces.size())) 
+			{
+				if (line_incident_surfaces[id].plus_surface_index() == surf_id)
+				{
+					line_incident_surfaces[id].set_side_surface_index(true, 
+						line_incident_surfaces[id].plus_surface_index()- nb_remove_surfaces_before);
+				}
+				if (line_incident_surfaces[id].minus_surface_index() == surf_id)
+				{
+					line_incident_surfaces[id].set_side_surface_index(false,
+						line_incident_surfaces[id].minus_surface_index() - nb_remove_surfaces_before);
+				}
+			}
+		}
+
+		for (auto id : range(line_incident_surfaces.size()))
+		{
+			std::cout <<
+				"after decalage " << id << " " << line_incident_surfaces[id].minus_surface_index()
+				<< "  " << line_incident_surfaces[id].plus_surface_index() << std::endl;
+		}
+
+		// todo : in a single function
+		surface_boundary_lines.clear();
+		auto nb_surfaces  = std::count(kept_surface_ids.begin(), kept_surface_ids.end(), true);
+		for (auto surf_id : range(nb_surfaces))
+		{
+			std::vector< Impl::OrientedLine > cur_surface_boundaries;
+			for (auto line_id : range(line_incident_surfaces.size()))
+			{
+				if (line_incident_surfaces[line_id].plus_surface_index() == surf_id)
+				{
+					cur_surface_boundaries.emplace_back(line_id, true);
+				}
+				if (line_incident_surfaces[line_id].minus_surface_index() == surf_id)
+				{
+					cur_surface_boundaries.emplace_back(line_id, false);
+				}
+			}
+			surface_boundary_lines.push_back(cur_surface_boundaries);
+		}
+		//system("pause");
+
 
         // Generate surface polygons
         impl_->build_surface_polygons( *this, surface_boundary_lines );
-        impl_->find_exterior_and_remove_it( *this, surface_boundary_lines );
+        //impl_->find_exterior_and_remove_it( *this,line_incident_surfaces, surface_boundary_lines );
 
         // Update topology
         impl_->set_surface_line_boundary_relationships(
@@ -1675,6 +1926,17 @@ namespace RINGMesh
         geometry.cut_surfaces_by_internal_lines();
         geometry.cut_regions_by_internal_surfaces();
     }
+
+	void GeoModelBuilder<3>::end_geomodel()
+	{
+		if (geomodel_.name().empty())
+		{
+			info.set_geomodel_name("model_default_name");
+		}
+
+		cut_geomodel_on_internal_boundaries();
+		print_geomodel(geomodel_);
+	}
 
     void GeoModelBuilder< 3 >::build_regions_from_lines_and_surfaces()
     {
@@ -1792,6 +2054,8 @@ namespace RINGMesh
         to_erase.insert( cur_region.gmme() );
         remove.remove_mesh_entities( to_erase );
     }
+
+
 
     template class geomodel_builder_api GeoModelBuilderBase< 2 >;
     template class geomodel_builder_api GeoModelBuilderInfo< 2 >;
