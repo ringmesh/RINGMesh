@@ -92,7 +92,6 @@ void test_geomodel_2D_with_internal_features()
     GeoModel2D geomodel;
     geomodel_load(
         geomodel, ringmesh_test_data_path + "ModelA4_2d_nofracs.gm" );
-	
 
     check_geomodel( geomodel );
 }
@@ -103,21 +102,20 @@ int main()
     {
         Logger::out( "TEST", "Import GeoModel files" );
         test_geomodel_2D_with_internal_features();
-
     }
     catch( const RINGMeshException& e )
     {
         Logger::err( e.category(), e.what() );
-		system("pause");
+        system( "pause" );
         return 1;
     }
     catch( const std::exception& e )
     {
         Logger::err( "Exception", e.what() );
-		system("pause");
+        system( "pause" );
         return 1;
     }
     Logger::out( "TEST", "SUCCESS" );
-	system("pause");
+    system( "pause" );
     return 0;
 }

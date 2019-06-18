@@ -125,7 +125,7 @@ namespace RINGMesh
         /*!
          * @brief Finish up geomodel building and complete missing information.
          */
-		virtual void end_geomodel() = 0;
+        virtual void end_geomodel() = 0;
 
         void build_corners_from_lines();
 
@@ -164,7 +164,7 @@ namespace RINGMesh
 
         ~GeoModelBuilder();
 
-		void end_geomodel() final;
+        void end_geomodel() final;
 
         void build_surfaces_from_corners_and_lines();
 
@@ -179,7 +179,7 @@ namespace RINGMesh
     public:
         explicit GeoModelBuilder( GeoModel3D& geomodel );
 
-		void end_geomodel() final;
+        void end_geomodel() final;
 
         void build_regions_from_lines_and_surfaces();
     };
