@@ -96,8 +96,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON ..
-        - cd Debug
+        - CXX=clang++ CC=clang cmake -b Debug -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON ..
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
         - cmake --build . --target package
@@ -131,8 +130,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
-        - cd Debug
+        - CXX=clang++ CC=clang cmake -b Debug -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
         - cmake --build . --target package
@@ -155,8 +153,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
-        - cd Release
+        - CXX=g++ CC=gcc cmake -b Release -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cmake --build . -- -j2
         - cmake --build . --target package
       after_success:
@@ -179,8 +176,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
-        - cd Release
+        - CXX=clang++ CC=clang cmake -b Release -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cmake --build . -- -j2
         - cmake --build . --target package
       after_success:
