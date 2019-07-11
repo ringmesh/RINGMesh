@@ -36,11 +36,6 @@
 
 cmake_minimum_required(VERSION 3.1)
 
-# Configuration modes - Debug and Release by default + RelWithDebInfo for Windows.
-# RelWithDebInfo is mandatory to debug some plugins in Windows in debug mode (e.g., a Gocad plugin) to
-# avoid issues in particular in the STL (e.g., bad transfer of std::string from Gocad to RINGMesh).
-#set(CMAKE_CONFIGURATION_TYPES Debug Release RelWithDebInfo CACHE TYPE INTERNAL FORCE)
-
 #------------------------------------------------------------------------------------------------
 # Options of the RINGMesh project
 # They can be set
@@ -71,11 +66,6 @@ if(MG_TETRA)
     message(STATUS "Using MG-Tetra directory =  ${MG_TETRA}")
 endif(MG_TETRA)
  
-# Optional custom configuration of data directories
-#if(RINGMESH_WITH_TESTS AND UNIX)
-#    list(APPEND CMAKE_CONFIGURATION_TYPES Coverage)
-#endif()
-
 #------------------------------------------------------------------------------------------------
 # Ensure consistent choice in configuration options
 include(CMakeDependentOption)
