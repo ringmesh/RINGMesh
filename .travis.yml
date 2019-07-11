@@ -71,8 +71,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=g++ CC=gcc cmake -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
-        - cd Coverage
+        - CXX=g++ CC=gcc cmake -DCMAKE_BUILD_TYPE=Coverage -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target coverage -- -j2
         - cmake --build . --target package
@@ -96,7 +95,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -b Debug -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON ..
+        - CXX=clang++ CC=clang cmake -DCMAKE_BUILD_TYPE=DEBUG -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON ..
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
         - cmake --build . --target package
@@ -130,7 +129,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -b Debug -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
+        - CXX=clang++ CC=clang cmake -DCMAKE_BUILD_TYPE=DEBUG -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
         - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target test -- -j2
         - cmake --build . --target package
@@ -153,14 +152,14 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=g++ CC=gcc cmake -b Release -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
+        - CXX=g++ CC=gcc cmake -DCMAKE_BUILD_TYPE=RELEASE -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=ON -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cmake --build . -- -j2
         - cmake --build . --target package
       after_success:
         - git clone -b master https://github.com/ringmesh/web
         - cd web
         - mkdir -p download
-        - cp -f ../ringmesh/$RINGMESH_PACKAGE.tar.gz download/
+        - cp -f ringmesh/$RINGMESH_PACKAGE.tar.gz download/
         - git add download/$RINGMESH_PACKAGE.tar.gz
         - git commit -m "Update Linux master release"
         - git push https://BotellaA:$GITHUB_TOKEN@github.com/ringmesh/web master
@@ -176,7 +175,7 @@ jobs:
       script:
         - mkdir build
         - cd build
-        - CXX=clang++ CC=clang cmake -b Release -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
+        - CXX=clang++ CC=clang cmake -DCMAKE_BUILD_TYPE=RELEASE -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF -DCPACK_PACKAGE_FILE_NAME:STRING=$RINGMESH_PACKAGE ..
         - cmake --build . -- -j2
         - cmake --build . --target package
       after_success:
