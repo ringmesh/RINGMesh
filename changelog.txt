@@ -3,6 +3,7 @@
 New Features:
  * Support input and output resqml2 standards
  * change build organization: remove "ringmesh" folder
+ * remove multiconfiguration imposed in CMAKE 
 
 Bug fix:
  * Fix geomodel_copy in 2D
