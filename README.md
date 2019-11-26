@@ -1,4 +1,4 @@
-RINGMesh has now been industrialized by [Geode-solutions](https://geode-solutions.com/) with the [OpenGeode](https://geode-solutions.com/opengeode) platform. 
+RINGMesh has now been industrialized with the [OpenGeode](https://github.com/Geode-solutions/OpenGeode) platform. 
 
 **The legacy code is still available but the [RING team](https://www.ring-team.org/home) supports, uses and contributes to [OpenGeode](https://geode-solutions.com/opengeode).** 
 
