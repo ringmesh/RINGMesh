@@ -84,7 +84,7 @@ namespace
             print_geomodel_mesh_cell_volumes( geomodel );
         }
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {

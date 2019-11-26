@@ -44,7 +44,7 @@ namespace
     using namespace RINGMesh;
 
 #include "stratigraphic_column/io_xml.hpp"
-}
+} // namespace
 
 namespace RINGMesh
 {

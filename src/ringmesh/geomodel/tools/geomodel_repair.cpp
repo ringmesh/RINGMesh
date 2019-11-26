@@ -752,7 +752,7 @@ namespace
             }
         }
     }
-}
+} // namespace
 
 namespace RINGMesh
 {

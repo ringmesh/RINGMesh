@@ -151,7 +151,7 @@ namespace
         }
         geomodel_save( geomodel, output_geomodel_name );
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {

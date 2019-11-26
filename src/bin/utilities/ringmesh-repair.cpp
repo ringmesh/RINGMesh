@@ -113,7 +113,7 @@ namespace
             repair_geomodel< 3 >( in_model_file_name );
         }
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {

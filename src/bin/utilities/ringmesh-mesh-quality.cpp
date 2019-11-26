@@ -139,7 +139,7 @@ namespace
         }
         geomodel_save( geomodel, geomodel_out_name );
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {
