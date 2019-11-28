@@ -728,7 +728,7 @@ namespace
             future.wait();
         }
     }
-}
+} // namespace
 
 int main()
 {

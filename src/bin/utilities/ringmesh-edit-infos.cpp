@@ -103,7 +103,7 @@ namespace
             "edit:name=new_geomodel_name ",
             "[out:geomodel=path/to/input/new_geomodel_file.ext]" );
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {

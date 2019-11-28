@@ -51,7 +51,7 @@ namespace
     {
         return x * x;
     }
-}
+} // namespace
 
 void test_boxes()
 {

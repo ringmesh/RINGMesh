@@ -51,8 +51,8 @@ namespace RINGMesh
         struct Plane;
         FORWARD_DECLARATION_DIMENSION_STRUCT( Line );
         ALIAS_2D( Line );
-    }
-}
+    } // namespace Geometry
+} // namespace RINGMesh
 
 namespace RINGMesh
 {

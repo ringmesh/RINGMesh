@@ -131,7 +131,7 @@ namespace
         float angle{ 80 };
         glup_viewer_set_scene_rotation( axis, angle );
     }
-}
+} // namespace
 namespace RINGMesh
 {
     template < index_t DIMENSION >
