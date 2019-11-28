@@ -50,24 +50,13 @@ jobs:
     - stage: compile and test
       os: linux
       env:
-        - TEST="Gcc and Sonar Check"
-      addons:
-        sonarcloud:
-          organization: "ringmesh"
-          token:
-            secure: "iBY+oKod3+StQmrdPMT4uPrDmQpm/PeOwFor5XJPDmJsZlWmrqU7wD178JFozQ3jfYsz/gLjM5VDq6mBveoPQxqBnFPnUpaj/IPvF3Fk3EKOY9qgOfil2w+WOrgvt51cMBxGwpc2VUsXs4noQWT5axbFCF2vFmGOOwP7+7yixY7UedXiyC92t6TL9VQ7zvy+RpvVbOyfRVvp43w6Frnn9R1ff2ni4ZrqOP4EtoliyUecofENtuOjtVABB9rV6Kj9t8/VIzqNtDjGSJvQWu8+2qYHwfE5ZbzuRUmqWHUyxPPJyoOKaONSi08hSMX+hRf5gqPOoU/3II5MVyeHT00ND5lUJKTxMUeFwpR6L4AAngDuoQeJu4/2jbCp9Q4J8gbkbxQFWSHWNIBi9cgIAvxddiKuitYaVeUseVuS68AwLY4N4dbccxIMidUxJ82X60JNmuY6xsOvx8XIGsZP8RQyvAxwblWA/DzgGuAvJS3KqIyqoBJNyCbdaLVLWwmek+YC3UBAi9QAMVnkNMBkRxhMuJd10AVUuR2bueq9B7u7Bo6zuOvbR/Pf2H8ScYl6v3qM7AcZmN8kKxNB0rzcSR15Z7565f3FKJaSjeDTXA/4s4ZOcxBKPhEG9QGDdcDVJADb0iKOPBPkXBEqC7rOy0e+7xp3Ih9qtstiSQbJUWxVIbU="
-          github_token:
-            secure: "daSx13oBTpZmYC/X3GGb1Sd8uk1Qn5x3s3g0YgvzhFGrzia2u7vLnG2RyLB2/BEJlscDb49E3evsiIcZWEotXTwZnGggI2PcYJu3dOHV2H0pEjuHuQrEBg9SsSn6O9KkvJyHbpNGJQuvPLWQkTPRD85B7G7Usd27ejiiKpQlvMjCP3t6GFNZWm6htgwrgrSBmeSx1O6FVnrUGWm1V6JaTfyh33TauG6p738G6XiHtHLnmMPygK1kkzi4AtE1Wibd0wRf8+GUFsoIwIplpOXTqBqKEX/rHI0rE4CaKOPLb5zGx12B/lRRYK7LA0Lz1htVJ08MuZ1xUm8fv3ThKP/XkuJ06XPh53wfRfBa6u8yydDO9t10DPtdOwAoMv+N0BsKuztJmkzNTYnVLoqLWVdpOQv6uAa+LS0nLvFsMPY0ECwrwRWZwvQkAM2Xm9gmUhGvbqHeBxQmjObwMqnvAfXxvbfh5DnAKpcFZTed/W4c/qr2+2NQj3ctOpYGa3ieYqrU9j+Ga3QZ+3gjvZD4m4KGDvOEJNat5XrcmUU7LYFrjGZEq3cTlQpxrIqG5vBt2ZDj9Pca5ORuOvQnrRBONpIAtm/huqQG6yY3jwbfUOt/9afKYm3gFiv/toloGTec5Z8rZ8XOEj8924BOPxz7IITyY5CFgS/AyjLU1Jn6Rhd7t3w="
-        apt:
+        - TEST="Gcc Check"
+      apt:
           packages:
             - libxrandr-dev
             - libxinerama-dev
             - libxcursor-dev
             - libxi-dev
-      install:
-        - wget https://sonarqube.com/static/cpp/build-wrapper-linux-x86.zip
-        - unzip build-wrapper-linux-x86.zip
-        - export PATH=$PWD/build-wrapper-linux-x86:$PATH
       script:
         - mkdir build
         - cd build
