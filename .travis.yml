@@ -61,7 +61,7 @@ jobs:
         - mkdir build
         - cd build
         - CXX=g++ CC=gcc cmake -DCMAKE_BUILD_TYPE=Coverage -DRINGMESH_WITH_GRAPHICS:BOOL=ON -DRINGMESH_WITH_UTILITIES:BOOL=ON -DRINGMESH_WITH_TESTS:BOOL=ON -DRINGMESH_WITH_TUTORIALS:BOOL=ON -DRINGMESH_WITH_RESQML2:BOOL=OFF ..
-        - build-wrapper-linux-x86-64 --out-dir $TRAVIS_BUILD_DIR/bw-outputs cmake --build . -- -j2
+        - cmake --build . -- -j2
         - cmake -E env CTEST_OUTPUT_ON_FAILURE=1 cmake --build . --target coverage -- -j2
         - cmake --build . --target package
         - cd $TRAVIS_BUILD_DIR
