@@ -74,36 +74,6 @@ if(NOT CMAKE_BUILD_TYPE AND NOT CMAKE_CONFIGURATION_TYPES)
         "Debug" "Release" "MinSizeRel" "RelWithDebInfo")
 endif()
 
-if(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-    # If the CMAKE_BUILD_TYPE is no defined
-    # i.e. at first run of that file
-    if(NOT CMAKE_BUILD_TYPE)
-      # For all configuration types
-      foreach(config IN LISTS CMAKE_CONFIGURATION_TYPES)
-          project(MULTI_CONFIG NONE)
-          # The binary directory for this configuration
-          set(project_binary_dir_config  ${PROJECT_BINARY_DIR}/${config})
-
-          # Create the directory
-          file(MAKE_DIRECTORY ${project_binary_dir_config})
-
-          # Launch cmake for this configuration
-          # by specifying the CMAKE_BUILD_TYPE and the PROJECT _BINARY_DIR,
-          # and pass on all the options
-          execute_process(
-             COMMAND ${CMAKE_COMMAND} ${CMAKE_SOURCE_DIR}
-                -G ${CMAKE_GENERATOR}
-                ${RINGMESH_EXTRA_ARGS} 
-                -DCMAKE_BUILD_TYPE=${config}
-                WORKING_DIRECTORY ${project_binary_dir_config})
-      endforeach()
-
-      # Get out when all configurations have been run
-      # We do not want to execute the rest of the file in that case
-      return()
-    endif()
-endif(CMAKE_GENERATOR STREQUAL "Unix Makefiles")
-
 # Execute the superbuild
 project(SUPERBUILD)
 
