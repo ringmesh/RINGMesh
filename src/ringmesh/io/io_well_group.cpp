@@ -56,7 +56,7 @@ namespace
 
 #include "well_group/io_smesh.hpp"
 #include "well_group/io_wl.hpp"
-}
+} // namespace
 
 namespace RINGMesh
 {

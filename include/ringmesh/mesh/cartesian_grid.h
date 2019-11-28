@@ -54,7 +54,7 @@ namespace RINGMesh
 {
     FORWARD_DECLARATION_DIMENSION_CLASS( CartesianGridBaseBuilder );
     FORWARD_DECLARATION_DIMENSION_CLASS( CartesianGridBuilder );
-}
+} // namespace RINGMesh
 
 /*!
  * @file Generic class for creating cartesian grids
@@ -787,4 +787,4 @@ namespace RINGMesh
     private:
         CartesianGrid< 3 >& cartesian_grid_;
     };
-}
+} // namespace RINGMesh

@@ -282,7 +282,7 @@ namespace
         surface_mesh_connected_component_test();
         volume_mesh_connected_component_test();
     }
-}
+} // namespace
 
 int main()
 {

@@ -88,7 +88,7 @@ namespace
             "ringmesh-convert in:geomodel=path/to/input/geomodel.ext ",
             "out:geomodel=path/to/output/geomodel.ext" );
     }
-}
+} // namespace
 
 namespace RINGMesh
 {
@@ -100,8 +100,8 @@ namespace RINGMesh
                 "in:mesh", "", "Filename of the input mesh" );
             GEO::CmdLine::declare_arg( "out:mesh", "", "Saves the mesh" );
         }
-    }
-}
+    } // namespace CmdLine
+} // namespace RINGMesh
 int main( int argc, char** argv )
 {
     using namespace RINGMesh;

@@ -140,7 +140,7 @@ namespace
             translate_geomodel< 3 >( input_geomodel_name );
         }
     }
-}
+} // namespace
 
 int main( int argc, char** argv )
 {
