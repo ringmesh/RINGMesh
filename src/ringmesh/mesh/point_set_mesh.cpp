@@ -86,34 +86,6 @@ namespace RINGMesh
         return std::make_tuple( nb_compoments, components );
     }
 
-    template < index_t DIMENSION >
-    std::unique_ptr< LineMesh< DIMENSION > > LineMesh< DIMENSION >::create_mesh(
-        const MeshType type )
-    {
-        MeshType new_type = type;
-        if( new_type.empty() )
-        {
-            if( !PointSetMeshFactory< DIMENSION >::has_creator(
-                    "GeogramPointSetMesh" ) )
-            {
-                throw RINGMeshException(
-                    "LineMesh", "Default mesh data structure not registered" );
-            }
-            return create_mesh( "GeogramLineMesh" );
-        }
-        auto mesh = LineMeshFactory< DIMENSION >::create( new_type );
-        if( !mesh )
-        {
-            Logger::warn( "LineMesh",
-                "Could not create mesh data structure: ", new_type );
-            Logger::warn(
-                "LineMesh", "Falling back to GeogramLineMesh data structure" );
-
-            return create_mesh();
-        }
-        return mesh;
-    }
-
     template class mesh_api PointSetMesh< 2 >;
     template class mesh_api PointSetMesh< 3 >;
 } // namespace RINGMesh
