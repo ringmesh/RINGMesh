@@ -13,16 +13,16 @@ Code coverage: [![Coverage](https://sonarcloud.io/api/badges/measure?key=ringmes
 General information
 ====================
 
-Please visit the RINGMesh website: [www.ringmesh.org](http://www.ringmesh.org)
- * Direct access to [tutorial](http://ringmesh.org/try/tutorials/)
- * Direct access to [gallery](http://ringmesh.org/gallery/)
- * [Download information](http://ringmesh.org/download/)
+Please visit the RINGMesh website: [ringmesh.ring-team.org](https://ringmesh.ring-team.org)
+ * Direct access to [tutorial](https://ringmesh.ring-team.org/try/tutorials/)
+ * Direct access to [gallery](https://ringmesh.ring-team.org/gallery/)
+ * [Download information](https://ringmesh.ring-team.org/download/)
  
 Compiling RINGMesh
 ====================
 
 RINGMesh is a cross platform project tested under Windows, Linux and Mac OS.  
-Please follow the installation procedure described on the RINGMesh website: [ringmesh.org/try/installation/](http://ringmesh.org/try/installation/). 
+Please follow the installation procedure described on the RINGMesh website: [ringmesh.ring-team.org/try/installation/](https://ringmesh.ring-team.org/try/installation/). 
 
 Developing with RINGMesh
 =====================
