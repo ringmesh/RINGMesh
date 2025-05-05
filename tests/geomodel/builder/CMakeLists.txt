@@ -32,3 +32,4 @@
 #     FRANCE
 
 add_ringmesh_test(test-build-2d-geomodels-from-3d.cpp geomodel_tools io)
+add_ringmesh_test(test-build-2d-geomodel-with-internal-features.cpp geomodel_tools io)
