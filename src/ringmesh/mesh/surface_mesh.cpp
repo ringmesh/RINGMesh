@@ -53,7 +53,7 @@ namespace RINGMesh
         MeshType new_type = type;
         if( new_type.empty() )
         {
-            if( !PointSetMeshFactory< DIMENSION >::has_creator(
+            if( !SurfaceMeshFactory< DIMENSION >::has_creator(
                     "GeogramPointSetMesh" ) )
             {
                 throw RINGMeshException( "SurfaceMesh",
